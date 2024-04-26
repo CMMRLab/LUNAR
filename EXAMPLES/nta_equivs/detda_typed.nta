@@ -1,0 +1,38 @@
+New type assignment file for detda_typed.data > atom_typing v1.4 / 2 May 2023 w/PCFF-IFF atom-types
+equivs
+hn2    hn
+hpan   hc
+
+style id
+1      cp                   #  Correctly found
+2      cp                   #  Correctly found
+3      cp                   #  Correctly found
+4      cp                   #  Correctly found
+5      cp                   #  Correctly found
+6      cp                   #  Correctly found
+7      c2                   #  Correctly found
+8      c3                   #  Correctly found
+9      c2                   #  Correctly found
+10     c3                   #  Correctly found
+11     c3                   #  Correctly found
+12     nn                   #  Correctly found
+13     nn                   #  Correctly found
+14     hpan                 #  Correctly found
+15     hpan                 #  Correctly found
+16     hpan                 #  Correctly found
+17     hpan                 #  Correctly found
+18     hpan                 #  Correctly found
+19     hpan                 #  Correctly found
+20     hpan                 #  Correctly found
+21     hpan                 #  Correctly found
+22     hpan                 #  Correctly found
+23     hpan                 #  Correctly found
+24     hpan                 #  Correctly found
+25     hpan                 #  Correctly found
+26     hpan                 #  Correctly found
+27     hpan                 #  Correctly found
+28     hn2                  #  Correctly found
+29     hn2                  #  Correctly found
+30     hn2                  #  Correctly found
+31     hn2                  #  Correctly found
+

@@ -1,0 +1,82 @@
+cell_builder v1.4 / 2 February 2024 log file
+
+
+
+-----------------------------------------------------
+   Cell building and randomization parameters used
+-----------------------------------------------------
+unwrap atoms by iflags:                  True
+locally group atoms:                    False
+distance scale:                           1.2
+duplicate:                                 10
+max rotations:             {'x': 360.0, 'y': 360.0, 'z': 360.0}
+seed:                                   12345
+System files used:        
+   Sagar_grouping\bond_react_merge\detda_typed_IFF_merged.data qty: 1
+   Sagar_grouping\bond_react_merge\dgebf_typed_IFF_merged.data qty: 2
+
+
+
+----------------------------------------------
+              Subcell info
+----------------------------------------------
+Total number of subcells required:  30
+3-Dimensional span of each subcell: 21
+
+
+
+-----------------------------------------------------------------------------Cluster Analysis----------------------------------------------------------------------
+molID     Size       Mass      X-center   Y-center   Z-center        phi (°)      theta (°)        psi (°)     Molecule Formula              Filename         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  1        43       312.37       -21.00     -42.00       0.00         158.10         132.60           5.20        C19-H20-O4         dgebf_typed_IFF_merged.data
+  2        43       312.37        21.00      21.00       0.00         237.60          73.20         117.30        C19-H20-O4         dgebf_typed_IFF_merged.data
+  3        43       312.37        21.00     -42.00      21.00         131.90           9.60         187.90        C19-H20-O4         dgebf_typed_IFF_merged.data
+  4        31       178.28       -21.00      42.00      42.00          61.50          93.80         143.20        C11-H18-N2         detda_typed_IFF_merged.data
+  5        43       312.37       -42.00       0.00     -42.00          40.70         267.20         169.70        C19-H20-O4         dgebf_typed_IFF_merged.data
+  6        31       178.28        42.00       0.00      21.00          88.60         301.90         328.40        C11-H18-N2         detda_typed_IFF_merged.data
+  7        43       312.37       -42.00     -42.00       0.00          74.40         301.70         153.60        C19-H20-O4         dgebf_typed_IFF_merged.data
+  8        31       178.28       -21.00       0.00     -42.00          84.20         294.40          31.80        C11-H18-N2         detda_typed_IFF_merged.data
+  9        31       178.28       -42.00       0.00     -21.00           4.70         316.30         291.70        C11-H18-N2         detda_typed_IFF_merged.data
+  10       43       312.37         0.00       0.00       0.00         327.30          73.50         323.10        C19-H20-O4         dgebf_typed_IFF_merged.data
+  11       43       312.37         0.00     -21.00      42.00          49.00         357.60         204.40        C19-H20-O4         dgebf_typed_IFF_merged.data
+  12       43       312.37        21.00       0.00      21.00          95.20         214.40         244.10        C19-H20-O4         dgebf_typed_IFF_merged.data
+  13       43       312.37       -42.00      42.00       0.00         309.60         227.30         274.30        C19-H20-O4         dgebf_typed_IFF_merged.data
+  14       43       312.37        42.00     -42.00      21.00         150.60          88.20         277.90        C19-H20-O4         dgebf_typed_IFF_merged.data
+  15       43       312.37        42.00      42.00     -42.00         209.90         311.80          49.70        C19-H20-O4         dgebf_typed_IFF_merged.data
+  16       31       178.28        42.00      42.00       0.00          43.30         279.10         236.70        C11-H18-N2         detda_typed_IFF_merged.data
+  17       43       312.37         0.00       0.00      42.00         282.90         304.90         170.10        C19-H20-O4         dgebf_typed_IFF_merged.data
+  18       43       312.37        42.00      42.00     -21.00           1.40           2.70         271.90        C19-H20-O4         dgebf_typed_IFF_merged.data
+  19       43       312.37        21.00      21.00      42.00         220.80         140.00          64.20        C19-H20-O4         dgebf_typed_IFF_merged.data
+  20       43       312.37       -42.00      42.00      42.00         330.50          16.40          95.10        C19-H20-O4         dgebf_typed_IFF_merged.data
+  21       31       178.28       -42.00     -42.00      42.00         139.00          11.00         209.10        C11-H18-N2         detda_typed_IFF_merged.data
+  22       43       312.37         0.00     -42.00      42.00          76.10         105.50         241.00        C19-H20-O4         dgebf_typed_IFF_merged.data
+  23       43       312.37       -42.00       0.00       0.00          17.00          67.20         123.40        C19-H20-O4         dgebf_typed_IFF_merged.data
+  24       43       312.37         0.00      21.00      21.00          77.80         342.80         139.90        C19-H20-O4         dgebf_typed_IFF_merged.data
+  25       31       178.28       -21.00       0.00     -21.00         356.60          67.00         315.70        C11-H18-N2         detda_typed_IFF_merged.data
+  26       43       312.37        21.00     -21.00      21.00         182.30          32.10         158.90        C19-H20-O4         dgebf_typed_IFF_merged.data
+  27       31       178.28        42.00     -21.00      21.00         177.60         212.20          53.10        C11-H18-N2         detda_typed_IFF_merged.data
+  28       31       178.28       -42.00     -21.00       0.00         290.50         337.80         135.10        C11-H18-N2         detda_typed_IFF_merged.data
+  29       43       312.37       -21.00     -21.00       0.00         354.10         340.80           3.80        C19-H20-O4         dgebf_typed_IFF_merged.data
+  30       31       178.28       -21.00       0.00       0.00          20.20          24.90         291.50        C11-H18-N2         detda_typed_IFF_merged.data
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:            1170 
+nbonds:            1230 
+nangles:           2180 
+ndihedrals:        2920 
+nimpropers:        1080 
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:        105.00000  angstrom  
+Ly:        105.00000  angstrom  
+Lz:        105.00000  angstrom  
+volume:    1.1576E-18 cm^3      
+mass:      1.3334E-20 grams     
+density:    0.01152   g/cc      

@@ -1,0 +1,194 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restriced to 145.
+#
+# Last edited 4/10/2024
+#
+************
+* Overview *
+************
+
+  LUNAR/bond_react_merge.py is meant to merge/unify the LAMMPS coefficient identifiers (CoeffIDs) for an arbitrary number of LAMMPS datafiles.
+  The main purpose is to provide automated creation of LAMMPS datafiles and molecule files for the "fix bond/react" command formally known as
+  REACTER. Additionally, bond_react_merge.py can automatically generate a reaction map file relating the pre-reaction atomIDs to the post-
+  reaction atomIDs. The bond_react_merge.py module will can also be used to generate LAMMPS molecule files for other LAMMPS commands such as
+  "fix shake", "fix create_atoms", ... as these commands also use the LAMMPS molecule file format. More details can be found in the official
+  manual found in the LUNAR/docs folder. 
+
+**********
+* Inputs *
+**********
+
+  files stack and file-tag
+    A file or group of files can be added to the stack by clicking the "add file(s) to stack button", which will open up a files dialog box to
+    either select a single file or group of files. The last file on the stack can be removed by clicking "remove the last file from stack" or
+    the entire stack can be cleared by clicking "clear stack". If more files are attempted to be loaded then the number of entries on the stack,
+    the files stack will automatically grow to accommodate the new files.
+	
+    The file-tag entry must be updated to either dataN or preN or postN, where N is a unique integer. The preN and postN files that relate to
+    the same reaction must have the same N-identifier (i.e. a pre-reaction file and post-reaction file for the same reaction should be pre1 and
+    post1). Additionally, the GUI supports the bond_react_merge.py infile format where the file tag can be set as infile. A shortcut naming
+    scheme has been developed where users can set the dataN or preN postN or infile tags by setting the filename as:
+      %%%%%tag=FILETAG.data; where %%%%% can be any text.
+	  
+      The FILETAG must be located between the 'tag=' string and the '.data' or '.txt' ending.
+      
+      The FILETAG can be any of the supported file tags listed in the files variable section. Some examples:
+        detda_tag=data1.data (will load file with file-tag = data1)
+        pre_reaction_1_tag=pre1.data (will load file with file-tag = pre1)
+        post_reaction_1_tag=post1.data (will load file with file-tag = post1)
+        merge_files_tag=infile.txt (will load file with file-tag = infile)
+            
+  parent_directory
+    Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the 
+    right of the button as well. The path can be a full path or relative path or be set to the . (dot character) to write files to the
+    location where bond_react_merge.py is currently being run from. Setting parent_directory to "topofile" will use the path of the topofile
+    variable to write the files to that location on your machine. The "topofile" shortcut string should be the default usage for 1st time users.
+	
+  newfile
+    An entry to supply a string that will be used to set the output filenames. The following options exist for using the newfile string for
+    setting the output file basenames: 
+      
+      if newfile starts with ':' or ends with ':'
+        The output filename(s) will be the same as the input filename(s), but will have a suffix or prefix added to the file basename. The
+        following are examples:
+          Suffix (newfile == ':_merged'  and topofile == 'detda.data')
+            basename = 'detda_merged', where the ':' character acts as a placeholder for the topofile basename.
+          Prefix (newfile == 'merged-:'  and topofile == 'detda.data')
+            basename = 'merged-detda', where the ':' character acts as a placeholder for the topofile basename.
+        Recommended usage: common and safe as this method is safe and output filename(s) carry similar names to input filename(s).
+		
+      if newfile == 'ANYTEXT'
+        The output filename(s) will be set as the file tag of each file and 'ANYTEXT' will be a suffix appended to the file tag. For example:
+          newfile = '-merged', topofile = 'detda.data', and tag = 'data1'
+          basename = 'data1-merged'
+        Recommended usage: occasional and safe as output filename(s) no longer carry similar names as output filename(s), but is safe as output
+        filename(s) will not overwrite input filename(s).
+      
+      if newfile == '':
+        The output filename(s) will be the same as the input filename(s). This can be a dangerous option as you may inadvertently overwrite a
+        file and then must assume the file to contain certain information, but it contains other information.
+        Recommended usage: rare and dangerous as this could lead to using incorrect files if not paying attention very carefully.
+
+
+***********
+* Options *
+***********
+
+  atom_style
+    A drop-down menu to select the format of the Atoms section that will be written in the outputted LAMMPS datafile. The bond_react_merge.py
+    module supports many LAMMPS atom styles, however if the information for the atom style does not exist in the read-in datafile, the code
+    will insert ZERO's and will WARN the user of doing so. In general for fix-bond force fields the full atom style is recomended and for
+    ReaxFF the charge atom style is recomended.
+	
+  generate_map_file
+    A drop-down menu to select the Boolean to generate map files to relate the preN-tagged file to the postN-tagged file.
+	
+  write_rxn_mol2files
+    A drop-down menu to select the Boolean to write pre/post reaction .mol2 files which ChemDraw/VMD/Avogadro, etc can natively read. This
+    option is useful if you would like to visualize the pre/post-reaction templates in ChemDraw or VMD Avogadro etc. This option also works
+    well with the generate_map_file option since it is a good idea to check if the map file finds all equivalences properly and ChemDraw allows
+    multiple molecules to be opened at a time.
+	
+  write_rxn_datafiles
+    A drop-down menu to select the Boolean to write pre/post reaction *.data files with all coeffs inside. This option is mainly for debugging
+    purposes but can be used for validation that all coeff types and all topological types are mapped properly onto the newly typed coeffs. It
+    allows for the visualization of the *.data reactions in OVTIO, but could also create files that are compatible with AutoMapper (in case users
+    want to try generating map files using AutoMapper or use  AutoMapper's reduce template functionality).
+	
+  write_moleculefiles
+    A drop-down menu to select the Boolean to write out a molecule file (*.lmpmol) file for any file that has a dataN tag. This file will have
+    all the coeff types and all topological types mapped properly and can be used with the LAMMPS "create_atoms" command to build large random
+    systems. This option will also generate a file called "force_field.data", which can be used with the LAMMPS "read_data" command, to read in
+    the force field to use create atoms. Additionally, an "in.create_atoms.script" will be generated to show an example of how to read in the
+    force field, the LAMMPS molecule files, and use the "create_atoms" command.
+    
+  map_near_edge_rxn_charges
+    A drop-down menu to select the Boolean to map charges of near edge atoms from dataN or postN tagged files onto a preN and postN tagged file.
+    It is assumed that there is a dataN or postN file that has an exact topological match to the preN tagged files. The dataN or postN tagged
+    file may contain many molecules per file. Once the preN tagged file is found to be a subset of the dataN or postN tagged file the charges
+    will be mapped up to N-neighbors away and the postN tagged files will be updated via the equivalences found via the generate_map_file
+    option. This means using the map_near_edge_rxn_charges requires generate_map_file option to be True. The sequential building of reaction
+    templates such that post-reaction1 becomes pre-reaction2 is supported in this topological search, however, the int value assigned to the
+    reaction "file-tags" must increase in value as the sequential building of templates occurs. The following are valid inputs and their
+    meanings:
+      False = DO NOT attempt to match topologies for preN tagged files to dataN or postN tagged files and leave charges as is in preN/postN 
+              tagged files.
+			  
+      0 = match preN tagged files to dataN or postN tagged file and update only edge atom charges. This depth should be used if the charge was 
+          set via the bond-increment method (int value sets depth from the edge and missing bond-increments only affect the edge atom itself). 
+		  
+      1 = match preN tagged files to dataN or postN tagged file and update edge atom charges + 1 neighbor-deeper (int value sets depth from the
+          edge).
+		  
+      2 = match preN tagged files to dataN or postN tagged file and update edge atom charges + 2 neighbor-deeper (int value sets depth from the
+          edge).
+	
+  include_type_labels
+    A drop-down menu to select the Boolean to include LAMMPS TypeLabels in the written LAMMPS datafile or the written LAMMPS molecule files. If
+    the Boolean is True TypeLabels will be written in files, if the Boolean is False the written files will use the standard LAMMPS TypeIDs.
+
+  molecule_file_options
+    Is an entry to put strings into, which can add sections to the written-in LAMMPS molecule file (the "fix bond/react" template where
+    bond_react_merge will write with the *.lmpmol ending). If the entry is empty no additional sections will be written to the LAMMPS molecule
+    file and the default sections that bond_react_merge.py writes will only appear. The purpose of the molecule_file_options is to add a level
+    of automated support for adding additional sections to the LAMMPS molecule file, since bond_react_merge, will only write the minimal amount
+    of sections needed to run a "fix bond/react" simulation. Adding more sections can be useful for changing the default operations of a "fix
+    bond/react" simulation such as the usage of the "custom_charges" keyword that can change how "fix bond/react" will superimpose charges. The
+    ability to add additional sections to the LAMMPS molecule file may be necessary for usage in the other LAMMPS commands that use the LAMMPS
+    molecule file. To use any of the molecule_file_options, the generate_map_file Boolean MUST be True. The following are optional strings that
+    may be added to the molecule_file_options:
+      'molecule' which will find moleculeIDs via cluster analysis and order them from the largest-to-smallest cluster and then add a molecule
+                 section to the written *_merge.lmpmol LAMMPS molecule files.
+
+      'fragment/ID/OPTION'
+        'fragment' evokes an option to add a fragment section to the molecule file 
+        'ID' is the user-defined ID of the fragment 
+        'OPTION' is a user-defined option.
+        
+        Currently available options: 
+          'custom_charges/depth_from_edge_N' where custom_charges specifies the code to build options for "fix bond/react" custom_charges option
+          and depth_from_edge_N tells the code to build a fragmentID that only has atoms at a certain depth N away from any edge atom. This is
+          useful if the charging method used could not assign a proper charge to the edge atoms or near-edge atoms of the molecule template. This
+          code has another option: map_near_edge_rxn_charges which works well to map charges from any dataN or postN tagged files onto edge atoms
+          and a certain depth from edge atoms, but this is another workaround to the charging issue of atoms near an edge or edge atoms
+          themselves. Much like map_near_edge_rxn_charges the meaning of depth for this option is as follows: 
+            0 = preN tagged files will have a molecule file with a fragmentID with all atoms specified EXCEPT atoms at depth 0 from any edge
+                (the edge atoms ONLY). 
+            1 = preN tagged files will have a molecule file with a fragmentID with all atoms specified EXCEPT all atoms at depth 1 from any
+                edge. 
+    For an example of envoking both options place the following string in the molecule_file_options entry box:
+        molecule,fragment/qedge/custom_charges/depth_from_edge_0
+    which will add the Molecule section to the written molecule files and will also generate a fragment of atomIDs of all atoms EXCEPT the edge
+    atoms, called "qedge".
+
+
+	
+***********
+* Buttons *
+***********
+
+  Run LUNAR/bond_react_merge.py
+    A button to run the bond_react_merge.py to merge all parameters of mutliple molecular systems, using all settings defined in the GUI.
+	
+  Save the current GUI settings as the default GUI settings
+    A button to update variables in bond_react_merge.py file. Each time the GUI is launched all GUI settings are loaded from the
+    bond_react_merge.py file. Thus this button creates a method to update the bond_react_merge.py file. The CLI also initializes its defaults
+    from the variables in the bond_react_merge.py, so this button updates the defaults for that run mode as well. Finally, running
+    bond_react_merge.py from an IDE, the defaults for IDE usage are also set by the variables in the bond_react_merge.py file, thus this button
+    will also update the defaults for IDE usage.
+    
+  Quick help
+    A button to create a popup for quick help and guidance.
+
+*****************************************************************************
+* Please see the "Code: bond_react_merge.py" chapter in the official manual *
+* found in the LUNAR/docs folder for further details.                       *
+*****************************************************************************

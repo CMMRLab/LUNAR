@@ -1,0 +1,45 @@
+New type assignment file for detda_general.data > atom_typing v1.6 / 12 September 2023 w/general:1 atom-types
+equivs # please manually set equivs. format is two columns with column-1 = set-atom-type-in-"style id" and column-2 = atom-type-to-map-to
+C04-(1;C04,1;C63,2;H01)                  # set-atom-type-in-"style id"  atom-type-to-map-to
+C04-(1;C04,3;H01)                        # set-atom-type-in-"style id"  atom-type-to-map-to
+C04-(1;C63,3;H01)                        # set-atom-type-in-"style id"  atom-type-to-map-to
+C63-(1;C04,2;C63)                        # set-atom-type-in-"style id"  atom-type-to-map-to
+C63-(2;C63,1;H01)                        # set-atom-type-in-"style id"  atom-type-to-map-to
+C63-(2;C63,1;N03)                        # set-atom-type-in-"style id"  atom-type-to-map-to
+H01-(1;C04)                              # set-atom-type-in-"style id"  atom-type-to-map-to
+H01-(1;C63)                              # set-atom-type-in-"style id"  atom-type-to-map-to
+H01-(1;N03)                              # set-atom-type-in-"style id"  atom-type-to-map-to
+N03-(1;C63,2;H01)                        # set-atom-type-in-"style id"  atom-type-to-map-to
+
+style id
+1      C63-(1;C04,2;C63)                        #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+2      C63-(2;C63,1;N03)                        #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+3      C63-(1;C04,2;C63)                        #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+4      C63-(2;C63,1;H01)                        #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+5      C63-(1;C04,2;C63)                        #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+6      C63-(2;C63,1;N03)                        #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+7      C04-(1;C04,1;C63,2;H01)                  #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+8      C04-(1;C04,3;H01)                        #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+9      C04-(1;C04,1;C63,2;H01)                  #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+10     C04-(1;C04,3;H01)                        #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+11     C04-(1;C63,3;H01)                        #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+12     N03-(1;C63,2;H01)                        #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+13     N03-(1;C63,2;H01)                        #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+14     H01-(1;C63)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+15     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+16     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+17     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+18     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+19     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+20     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+21     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+22     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+23     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+24     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+25     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+26     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+27     H01-(1;C04)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+28     H01-(1;N03)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+29     H01-(1;N03)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+30     H01-(1;N03)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)
+31     H01-(1;N03)                              #  general:1 type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)

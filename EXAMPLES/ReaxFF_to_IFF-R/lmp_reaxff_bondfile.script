@@ -1,0 +1,47 @@
+# LAMMPS script to perform some dynamics and to sample bonds every so often to use
+# to generate files as inputs for atom_typing.py. This is semi-static analysis and 
+# is meant to get the "current" bonding state of the system read into this script.
+# The script currently samples bonds every 100 timesteps and runs for 1000 time
+# steps. This will generate 11 times of bond information over a 0.1ps duration:
+# 0, 0.01, 0.02, ...., 0.1ps. atom_typing.py will then read all 11 timeframes of
+# bond information and will average all bond orders together to get a time averged
+# bond order for the semi-static bonding analysis. *NOTE: the ensemble is currently
+# NPT at 300K and 1 atm, a systematic study has not been performed to find the best
+# dynamics present to sample bond orders, but it likely would be best near 0K ....
+#
+#--------------Variables--------------
+
+variable        base string detda_ReaxFF
+variable        myid string ${base}_bonds
+
+#--------------initialization--------------
+units           real
+dimension       3
+boundary        p p p
+atom_style      charge
+
+#--------------ForceField--------------
+read_data       ${base}.data 
+pair_style      reaxff NULL safezone 5.0 mincap 100
+pair_coeff      * * ffield_CHON_for_PAN_PBO.reax C H N
+fix             charges all qeq/reax 1 0.0 10.0 1.0e-6 reax/c
+
+#--------------Reset atom ids--------------
+reset_atoms    id sort yes # may not need if atomIDs are already contiguous
+
+#--------------Settings--------------
+timestep        0.1
+thermo          100 #every 0.001 picosecond
+thermo_style    custom step temp press etotal ke pe ebond eangle edihed eimp evdwl density lx ly lz
+log             ${myid}.log.lammps
+
+#-----Room temperature relaxation enviroment to sample bonds at--------------
+fix             1 all npt temp 300 300 100 aniso 1.0 1.0 1000 
+
+#--------------Get Bond information--------------
+fix             2 all reaxff/bonds 100 ${myid}.reaxff # This will be read into atom_typing.py
+
+#--------------Run--------------
+run             1000
+write_data      ${myid}.data # This will be read into atom_typing.py
+

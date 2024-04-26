@@ -1,0 +1,216 @@
+
+
+Running atom_typing v1.9 / 5 January 2024
+Using Python version 3.11.5 (tags/v3.11.5:cce6ba9, Aug 24 2023, 14:38:34) [MSC v.1936 64 bit (AMD64)]
+Assigning PCFF-IFF atom-types
+Read in EXAMPLES\ReaxFF_to_IFF-R\detda_ReaxFF_bonds.data LAMMPS datafile
+
+
+Using mass_map dictionary to set element symbols ....
+Reading ReaxFF Bond order file and finding bonds ....
+Read in EXAMPLES\ReaxFF_to_IFF-R\detda_ReaxFF_bonds.reaxff LAMMPS reaxff bond-order file
+Finding molecules ....
+Finding rings ....
+Finding fused-ring clusters ....
+Using path from topofile to set parent_directory ...
+
+
+Elements found in system:
+- C
+- H
+- N
+
+
+
+ReaxFF atom-typing specific section:
+Each bonding atom ids have had 11 Bond orders (BO) averaged over to find average BO for each bonding pair
+Total bonds created     : 31 (due to meeting specified criteria)
+Total bonds not created : 0 (due to not meeting specified criteria)
+
+---------------------------Bond type bond order statistics and info---------------------------
+   Bond       Bond    Bond Order   Bond Order      Bond Order      Bond Order        Cut-off    
+   Type      Count     Average       Minimum         Maximum     Standard Deviation    used   
+----------------------------------------------------------------------------------------------
+   C-C         11       1.1962       0.9925          1.4119          0.1801            0.3      
+   C-H         14       0.9354       0.9340          0.9375          0.0011            0.3      
+   C-N         2        1.0328       1.0313          1.0343          0.0015            0.3      
+   H-N         4        0.9368       0.9342          0.9384          0.0016            0.3      
+
+
+-------------------------------Element abo statistics and info--------------------------------
+Element    Element     abo           abo            abo            abo           Max bonded     
+Type        Count    Average       Minimum        Maximum    Standard Deviation    Cut-off    
+----------------------------------------------------------------------------------------------
+H             18      0.9594       0.9230         0.9860         0.0118               1         
+N             2       2.9150       2.6520         3.1410         0.1398               4         
+C             11      3.7819       3.1860         4.1400         0.1829               4         
+
+
+--------------------------------------------Cluster Analysis-------------------------------------
+  molID     Molecule Size          Mass              %Mass           %Size      Molecule Formula
+-------------------------------------------------------------------------------------------------
+    1              31             178.14            100.00          100.00        C11-H18-N2   
+
+
+By-products criteria: {'method': 'mass', 'criteria': 0.0}
+------By Products Tally------
+Type                    Count
+-----------------------------
+
+
+----Inputs used for find_rings----
+Walked along elements  :  ['C', 'H', 'N']
+Checked for ring sizes :  [3, 4, 5, 6, 7]
+Total rings found      :  1
+0 atoms along a ring seam had to be partitioned amoung the ring
+types (To find accurate %Mass of ring type to entire system).
+Giving preference of partionioning in this order:
+- 6 member ring
+- 5 member ring
+- 7 member ring
+- 4 member ring
+- 3 member ring
+- 8 member ring
+- minimum ring size
+*NOTE: If count of rings exists, but no atoms exist for that ring, this means the
+atoms for that ring were partionted to other rings that the atoms belong to.*
+
+---------------------------------------------------------------------------------------------
+|          Ring            |           Count           |             %Ring count            |
+|          Type            |         of Rings          |            per all rings           |
+---------------------------------------------------------------------------------------------
+|            6             |             1             |               100.00               |
+---------------------------------------------------------------------------------------------
+|    Element      |     natoms      |       Mass       |      %Mass       |     %natoms     |
+---------------------------------------------------------------------------------------------
+|       C         |        6        |      72.00       |      40.42       |      19.35      |
+|       H         |        0        |       0.00       |       0.00       |       0.00      |
+|       N         |        0        |       0.00       |       0.00       |       0.00      |
+|      all        |        6        |      72.00       |      40.42       |      19.35      |
+---------------------------------------------------------------------------------------------
+
+
+----------------------------------Ringed Clusters------------------------------------
+Ring-Formula    Ring-Size     Ring-count    Ring-Mass-tally     natoms-tally
+-------------------------------------------------------------------------------------
+C6                    6              1              72.00                6
+
+
+--------------------------------------------------Fused Ring Clusters-----------------------------------------------------
+FusedID         Size         Mass        %Mass        %Size       Nrings       %Rings                   FusedRing Formula
+--------------------------------------------------------------------------------------------------------------------------
+1                 6        72.00        40.42        19.35            1        100.0                            1:C6    
+
+
+
+-----------------------------Hybridization Information-------------------------------
+     Atom-Type            natoms            Mass            %Mass           %natoms     
+-------------------------------------------------------------------------------------
+       Sp2-C                6              72.00            40.42            19.35      
+       Sp3-C                5              60.00            33.68            16.13      
+       all-C                11             132.00           74.10            35.48      
+       all-H                18             18.14            10.19            58.06      
+       Sp2-N                2              28.00            15.72             6.45      
+       all-N                2              28.00            15.72             6.45      
+
+
+
+
+-----------------------------------------------------------------------------------------
+| Currently supported atom types (If you know your system has an atom type that is not  |
+| listed the force field specifc typing module needs to be added onto for that type).   |
+| If the atom type has a trailing (T) or (F) it means that atom type has flag settings  |
+| in the force field specifc typing module and lets you know the status of those flags. |
+| If the atom type has a trailing (Q) it means that the written datafile has the charge |
+| set for that atom type already (Mainly for PCFF-IFF or Metal/Mineral based FFs). For  |
+| most atom types with the trailing (Q) there will a flag in the specific atom typing   |
+| module to turn on or off this functionality (to give a more control of the code).     |
+|-------------------------------------   Carbon   --------------------------------------|
+|         ct             c+             cr             c-             c5                |
+|         cs             cp             cg1 (Q) (F)    c_0            c_1               |
+|         c_2            cz             ci             c=             c=1               |
+|         c=2            c3h            c3m            c4h            c4m               |
+|         c_a            cg             co             coh            ce1 (Q) (F)       |
+|         c1             c2             c3             c4o            c                 |
+|-------------------------------------  Hydrogen  --------------------------------------|
+|         hi             he1 (Q) (F)    ha1 (Q) (F)    cge (Q) (F)    hc                |
+|         hpan           hw             hos            hoy            ho2               |
+|         ho             hn2            hn             h*             hsi               |
+|         hs             hdm            h                                               |
+|-------------------------------------   Oxygen   --------------------------------------|
+|         o_1            oo             o=             o-             o*                |
+|         oe1 (Q) (F)    oa1 (Q) (F)    oz             o_2            oc                |
+|         o3e            o4e            op             o2h            osh               |
+|         osi            oc23           oh             ob                               |
+|-------------------------------------  Nitrogen  --------------------------------------|
+|         nt             ni             np             n=             n=1               |
+|         n=2            n1             n2             n_2            nho               |
+|         ni             npc            nh             n3n            n3m               |
+|         n4n            n4m            nn             na             n                 |
+|         nh+            n4                                                             |
+|-------------------------------------   Sulfer   --------------------------------------|
+|         s'             s-             s3e            s4e            sp                |
+|         sc             sh             s1             s              sf                |
+|         s_m                                                                           |
+|-------------------------------------  Silicone  --------------------------------------|
+|         sio            sc4            sc1            si                               |
+|-------------------------------------  Fluorine  --------------------------------------|
+|         f                                                                             |
+|-------------------------------------   Xenon    --------------------------------------|
+|         xe                                                                            |
+|-------------------------------------    Neon    --------------------------------------|
+|         ne                                                                            |
+|-------------------------------------  Krypton   --------------------------------------|
+|         kr                                                                            |
+|-------------------------------------   Helium   --------------------------------------|
+|         he                                                                            |
+|------------------------------------- Deuterium  --------------------------------------|
+|         dw                                                                            |
+|-------------------------------------  Chlorine  --------------------------------------|
+|         cl                                                                            |
+|-------------------------------------  Calcium   --------------------------------------|
+|         ca                                                                            |
+|-------------------------------------  Bromine   --------------------------------------|
+|         br                                                                            |
+|-------------------------------------   Argon    --------------------------------------|
+|         ar                                                                            |
+|-------------------------------------Phosphorous --------------------------------------|
+|         p              p=                                                             |
+-----------------------------------------------------------------------------------------
+|                       Total count of supported atom types: 116                        |
+
+-----------------------------------------------------------------------------------------
+
+
+
+Final outcome of found atom types:
+Total atom count                   : 31
+Total Parameterized atom count     : 31
+Assumed Parameterized atom count   : 0
+Failed Parameterized atom count    : 0
+Total Parameterized atom perentage : 100.00
+
+------Atom types Tally------
+Type                   Count
+----------------------------
+c2                         2
+c3                         3
+cp                         6
+hc                        14
+hn                         4
+nn                         2
+pdb_file = skip, so skipping writing of optional .pdb file
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\ReaxFF_to_IFF-R directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.0863344669342041
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

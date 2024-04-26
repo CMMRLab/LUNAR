@@ -1,0 +1,105 @@
+This is a saved .txt file for the print outs that appear when running auto_morse_bond v1.8 / 5 January 2024
+
+
+
+
+auto_morse_bond settings:
+- min_bond_length:      1.2
+- coeffs2skip:          []
+- alpha_specs:          {'start': 1.0, 'end': 3.5, 'increment': 0.1}
+- alpha_scale:          1.0
+- zero_effected_xterms: True
+- include_type_labels:  False
+
+
+Elements found in system:
+- C
+- H
+- N
+
+
+
+-----------------------------------------------------Cluster Analysis----------------------------------------------
+    ##     Size of Cluster            Mass               %Mass Cluster        %Size Cluster       Cluster Formula   
+-------------------------------------------------------------------------------------------------------------------
+    1               31               178.28                  100.00               100.00             C11-H18-N2     
+
+
+
+Bond length and bond type statistics and info:
+Bond order (BO) will let you know what type of bond the code determine to coeff was from atom types in bond. BO options:
+- single:   1
+- double:   2
+- triple:   3
+- aromatic: 1.5
+
+Parameters (parms) will let you know how the morse parms were found. parms options:
+- class2: coeff left as class2
+- user:   user defined values were inserted
+- code:   dissociation energy was set by the code and alpha was minized by the code
+----------------------------------------------------Bond type bond length statistics----------------------------------------------------
+Bond      Bond Type: atom 1-2 (element,ring,nb)        Bond       Bond    Bond Length   Bond Length     Bond Length     Bond Length  
+id     BO: 1, 2, 3, 0; parms: code, user, class2;     Count        r0      Average       Minimum         Maximum     Standard Deviation
+----------------------------------------------------------------------------------------------------------------------------------------
+1         C,0,4 - C,0,4  BO: 1.0  parms: file           2         1.53      1.5339       1.5322          1.5355          0.0016     
+2         C,0,4 - C,6,3  BO: 1.0  parms: file           2        1.501      1.5253       1.5221          1.5285          0.0032     
+3         C,0,4 - H,0,1  BO: N/A  parms: class2         4        1.101      1.1181       1.1174          1.1189          0.0008     
+4         C,0,4 - C,6,3  BO: 1.0  parms: file           1        1.501      1.5235       1.5235          1.5235          0.0000     
+5         C,0,4 - H,0,1  BO: N/A  parms: class2         9        1.101      1.1135       1.1070          1.1152          0.0023     
+6         C,6,3 - C,6,3  BO: 1.5  parms: file           6        1.417      1.3483       1.3417          1.3536          0.0038     
+7         C,6,3 - H,0,1  BO: N/A  parms: class2         1        1.0982     1.1005       1.1005          1.1005          0.0000     
+8         C,6,3 - N,0,3  BO: 1.0  parms: file           2        1.3912     1.2692       1.2682          1.2703          0.0010     
+9         H,0,1 - N,0,3  BO: N/A  parms: class2         4        1.026      1.0451       1.0405          1.0478          0.0030     
+
+
+
+----Inputs used for find_rings----
+elements2walk:  ['C', 'H', 'O', 'N', 'S', 'F', 'Si']
+rings2check:  [3, 4, 5, 6]
+fused-rings:  False
+fused2check:  [5, 6]
+
+
+Checked for ring sizes :  [3, 4, 5, 6]
+Total rings found :  1
+0 atoms along a ring seam had to be partitioned amoung the ring
+types (To find accurate %Mass of ring type to entire system).
+Giving preference of partionioning in this order:
+- 6 member ring
+- 5 member ring
+- 7 member ring
+- 4 member ring
+- 3 member ring
+- 8 member ring
+- minimum ring size
+*NOTE: If count of rings exists, but no atoms exist for that ring, this means the
+atoms for that ring were partionted to other rings that the atoms belong to.*
+
+---------------------------------------------------------------------------------------------
+|          Ring            |           Count           |             %Ring count            |
+|          Type            |         of Rings          |            per all rings           |
+---------------------------------------------------------------------------------------------
+|            6             |             1             |               100.00               |
+---------------------------------------------------------------------------------------------
+|    Element      |     natoms      |       Mass       |      %Mass       |     %natoms     |
+---------------------------------------------------------------------------------------------
+|       C         |        6        |      72.07       |      40.42       |      19.35      |
+|       H         |        0        |       0.00       |       0.00       |       0.00      |
+|       N         |        0        |       0.00       |       0.00       |       0.00      |
+|      all        |        6        |      72.07       |      40.42       |      19.35      |
+---------------------------------------------------------------------------------------------
+
+
+
+
+
+New combinations of harmonic and morse bond coeffs:
+1 morse  82.6961  2.0  1.53
+2 morse  82.6961  2.0  1.501
+3 class2  1.101  345.0  -691.89  844.6
+4 morse  82.6961  2.0  1.501
+5 class2  1.101  345.0  -691.89  844.6
+6 morse  150.0  1.9  1.417
+7 class2  1.0982  372.8251  -803.4526  894.3173
+8 morse  110.0001  2.1  1.3912
+9 class2  1.026  457.4592  0.0  0.0

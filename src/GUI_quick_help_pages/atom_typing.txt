@@ -1,0 +1,166 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restriced to 145.
+#
+# Last edited 4/10/2024
+#
+************
+* Overview *
+************
+
+  LUNAR/atom_typing.py is meant to assign force field specific atom types to a molecular system. This is a quick guide to the atom_typing.py
+  module. More details can be found in the official manual found in the LUNAR/docs folder. 
+
+**********
+* Inputs *
+**********
+
+  topofile   
+    Button to load in a file defining atomic positions and bonding connectivity. You may also directly type the filename in the entry to the
+    right of the button as well. The supported file extensions are:
+      .data  or  .mol  or  .mol2  or  .sdf  or  .pdf  or  .smiles
+    Using the .smiles extension requires rdkit to be installed where you may supply a SMILES string as CCC1=CC(=C(C(=C1N)C)N)CC.smiles, which
+    will generate the atomic positions using rdkit and assign atom types.
+	  
+  bondfile
+    Button to load in a file created using the LAMMPS command "fix reaxff/bonds". When pairing this with a LAMMPS datafile from a ReaxFF
+    simulation, a ReaxFF model may be converted to a fix-bond force field. All time series of bond orders will be averaged together and the bond
+    order cutoff values are defined via the bondorder dictionary found in atom_typing.py. Additionally, a maximum number of bonded atoms per
+    element type is also enforced when finding bonds from a ReaxFF bond order file, which is controlled by the maxbonded dictionary in
+    atom_typing.py.
+
+    If your system already has bonds defined you may set the bondfile entry to n.u. (not used).
+    
+  parent_directory
+    Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the
+    right of the button as well. The path can be a full path or relative path or be set to the . (dot character) to write files to the location
+    where atom_typing.py is currently being run from. Setting parent_directory to "topofile" will use the path of the topofile variable to write
+    the files to that location on your machine. The "topofile" shortcut string should be the default usage for 1st time users.
+
+  chargefile	
+    Button to load in a file defining the parameters to use for the Gasteiger charging method. You may also directly type the filename in the
+    entry to the right of the button as well. Please note that to use the Gasteiger charging method, reset_charges must be set to True. 
+	
+  newfile
+    An entry to supply a string that will be used to set the output files basename. The following options exist for using the newfile string for
+    setting the output file basename: 
+      
+      if newfile starts with ':' or ends with ':'
+        The output filename(s) will be the same as the input filename(s), but will have a suffix or prefix added to the file basename. The
+        following are examples:
+          Suffix (newfile == ':_typed'  and topofile == 'detda.data')
+            basename = 'detda_typed', where the ':' character acts as a placeholder for the topofile basename.
+          Prefix (newfile == 'typed-:'  and topofile == 'detda.data')
+            basename = 'typed-detda', where the ':' character acts as a placeholder for the topofile basename.
+        Recommended usage: common and safe as this method is safe and output filename(s) carry similar names to input filename(s).
+		
+      if newfile == 'ANYTEXT'
+        The output filename(s) will be set as 'ANYTEXT'. For example:
+          newfile = 'detda_renamed' and topofile = 'detda.data'
+          basename = 'detda_renamed'
+        Recommended usage: occasional and safe as output filename(s) no longer carry similar names as output filename(s), but is safe as output
+        filename(s) will not overwrite input filename(s).
+      
+      if newfile == '':
+        The output filename(s) will be the same as the input filename(s). This can be a dangerous option as you may inadvertently overwrite a
+        file and then may assume the file to contain certain information, but it contains other information. Recommended usage: rare and
+        dangerous as this could lead to using incorrect files if not paying attention very carefully.
+
+***********
+* Options *
+***********
+
+  ff_name
+    A drop-down menu to select the type of force field atom types to apply to the molecular system.
+	
+  reset_charges
+    A drop-down menu to select the Boolean to reset partial atomic charges or not. If the Boolean is True all atomic partial charges will be
+    reset using the Gasteiger charging method (with Gasteiger parameters defined in the chargefile), if the Boolean is False the partial atomic
+    charges will remain as the charges that are read into atom_typing.py. For chemical file formats that do not support charge information (such
+    as .mol), the charges are initialized as zeros when reading the file. If using the Gasteiger charging method, the charge will be written in
+    the outputted LAMMPS datafile that will then be passed onto all2lmp.py to apply a given force field. This means to maintain the Gasteiger
+    charging you will need to set the reset_charge Boolean in all2lmp.py to False, so all2lmp.py will use the Gasteiger charges that will be
+    read into all2lmp.py.
+	
+  delete_atoms['method']
+    A drop-down menu to select how atom clusters are identified to be removed from the system. Two methods are currently supported and are
+    described below:
+      mass = will identify clusters based on mass
+      size = will identify clusters based on the number of atoms
+	  
+  delete_atoms['criteria']
+    The float value specified in delete_atoms['criteria'] will then be the upper cutoff, where any molecule mass or size smaller (set by
+    delete_atoms['method']) than the critierai will be removed from the system. If 'criteria' is set as zero the atomIDs from the input files
+    will remain consistent with the atomIDs of the output files (hence no renaming of the atomIDs will occur even if the atomIDs are not
+    contiguous). If 'criteria' is set to something larger than zero, atomIDs will be reset to be contiguous, even if no groups of atoms are
+    removed.
+	
+  pdb_file
+    A drop-down menu to select the options to have atom_typing.py write a .pdb file. This option primarily exists to provide methods to interface
+    with packmol, but may also be found to be useful outside of interfacing with packmol. Please review the "Packmol interfacing section" in the
+    "Work flows and Use Cases" chapter of the manual found in the LUNAR/docs directory for further explanations on interfacing methods. The
+    following options are described below:
+      skip     will not write additional *_packmol.pdb and *_packmol.nta files
+      types    will write additional *_packmol.pdb file but not *_packmol.nta, with the atom types set in the atom name.
+      typeIDs  will write additional *_packmol.pdb and *_packmol.nta files, with atomTypeIDs set in the atom name column of the .pdb file and
+               atom types set in the .nta file using the "style type" method.
+			   
+************************
+* Bond finding options *
+************************
+
+  The bond finding options section of the atom_typing.py module will usually not need to be used. However, in some cases, it may be desired to
+  reset the bonds in a molecular system. The most obvious case is if VMD or Avogadro was used to create either a graphene sheet a graphite system
+  or a CNT, where both VMD and Avogadro will not provide periodic bonds linking the edge of one side to the other. The settings described below
+  will allow users to override the bonds data structure in atom_typing.py with newly created bonds based on periodic boundary flags and van der
+  Waal radius scale variable to increase or decrease the maximum cutoff distances used to find new bonds. Please see the "VMD interfacing with
+  CNT and graphite builders" in the "Workflows and Use Cases" section of the official LUNAR manual found in LUNAR/docs directory for further
+  details and examples.
+  
+  vdw_radius_scale
+    A float value to increase or decrease the van der Waal radius values. The van der Waal radius cutoff values of two atoms are summed together
+    to use as a cutoff value for the maximum distance the two atoms can be apart. If the two atoms' distances are less than the sum of the scaled
+    van der Waals radius, then they are considered to be bonded atoms, if the distances are greater they are considered to be not bonded atoms. A
+    vdw radius scale of 0.8 means a decrease in the maximum distance by 20% and a vdw radius scale of 1.2 means an increase in the maximum
+    distance scale by 20%. A good default radius scale is around 1.1.
+	
+  boundary
+    A string value with three characters with whitespace between them. This option sets the boundary of the simulation cell to use when computing
+    bonds via interatomic distance searching with bond length cutoffs set based on the vdw_radius_scale variable. The following characters are
+    supported:
+      p is periodic
+      f is non-periodic and fixed
+    The characters are based on LAMMPS syntax and each location in the string sets the x, y, or z faces of the simulation cell to that boundary.
+	
+  bonds_via_distance_override
+    A dropdown menu to select the Boolean to redefine system bonds via interatomic distance searches and bond length cutoffs. By default
+    atom_typing.py will use the bonds in the read-in file, therefore to redefine bonds the bonds_via_distance_override Boolean must be set
+    to True.
+	
+***********
+* Buttons *
+***********
+
+  Run LUNAR/atom_typing.py
+    A button to run the atom_typing.py to set the atom types of a molecular system, using all settings defined in the GUI.
+	
+  Save the current GUI settings as the default GUI settings
+    A button to update variables in atom_typing.py file. Each time the GUI is launched all GUI settings are loaded from the atom_typing.py file.
+    Thus this button creates a method to update the atom_typing.py file. The CLI also initializes its defaults from the variables in the
+    atom_typing.py, so this button updates the defaults for that run mode as well. Finally, running atom_typing.py from an IDE, the defaults for
+    IDE usage are also set by the variables in the atom_typing.py file, thus this button will also update the defaults for IDE usage.
+    
+  Quick help
+    A button to create a popup for quick help and guidance.
+
+******************************************************************************
+* Please see the "Code: atom_typing.py" chapter in the official manual found *
+* in the LUNAR/docs folder for further details.                              *
+******************************************************************************

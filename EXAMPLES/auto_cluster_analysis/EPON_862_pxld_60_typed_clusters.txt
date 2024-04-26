@@ -1,0 +1,28 @@
+
+
+----------------------------Cluster Analysis----------------------------
+  molID         size            %size           mass            %mass     
+------------------------------------------------------------------------
+    1            222            18.97          1471.95          18.33     
+    2            191            16.32          1293.67          16.11     
+    3            160            13.68          1115.39          13.89     
+    4            160            13.68          1115.39          13.89     
+    5            74             6.32           490.65           6.11      
+    6            74             6.32           490.65           6.11      
+    7            43             3.68           312.37           3.89      
+    8            43             3.68           312.37           3.89      
+    9            43             3.68           312.37           3.89      
+    10           43             3.68           312.37           3.89      
+    11           43             3.68           312.37           3.89      
+    12           43             3.68           312.37           3.89      
+    13           31             2.65           178.28           2.22      
+
+
+------------------------Distributions------------------------
+Extent of reaction aka converison      (p)   :  0.6867
+Degree of Polymerization               (Xn)  :  11.5385
+Weight-average molar mass              (Mw)  :  924.8951
+Number-average molar mass              (Mn)  :  617.7056
+Higher-average molar mass              (Mz)  :  1151.7654
+Higher-average molar mass              (Mz+1):  1258.3980
+Weight-averge reduced molecular weight (RMW) :  802.1138

@@ -1,0 +1,116 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restriced to 145.
+#
+# Last edited 4/15/2024
+#
+************
+* Overview *
+************
+
+  LUNAR/log_analysis.py  is meant to provide a general purpose plotting and analysis tool for LAMMPS logfiles. The LAMMPS logfile can be setup
+  using the LAMMPS "thermo_style    custom ..." command and can be written to based on the LAMMPS "thermo N" command. LUNAR/log_analysis.py is
+  compatible with very complex log files with many sections defined. This code minimally requires the Python numpy and matplotlib packages,
+  where pwlf is required to use the "piecewise-regression" analysis method, and scipy is required to use the "hyperbola" anaylsis method or the
+  "spline-integration" method.
+  
+**********
+* Inputs *
+**********
+
+  Methods that use the "X-lo" and "X-hi" columns
+    - "moving avrage"
+    - "average"
+    - "linear regression"
+    - "hyperbola"
+    - "piecewise-regression"
+    - "spline-integration"
+    - all other methods can leave this column empty
+
+  Methods that use the "Misc settings" column (all keywords are lowercase)
+    - "moving average"
+        window=<N>, where <N> is the number of data points to group and average together. The default window is 100 and will be applied if
+        entry is left empty. Examples:
+          window=50  # group 50 data points and average into one data point
+          window=75  # group 75 data points and average into one data point
+                  
+    - "linear regression"
+        shift=<Boolean>, where <Boolean> is True or False. If shift=True all data that is plotted except the cursor (if plotted) will be shifted
+        by the y-intercept of the linear regression. The shifting of data is useful for stress-vs-strain analysis for finding the yield strength,
+        since it is advised to shift all data, such that the linear regression starts at zero, to effectively remove the residual stress from the
+        yeild strength calculation. The default shift boolean is False and will be applied if entry is left empty. Examples:
+          shift=False  # All data will remain as is
+          shift=True   # All Y-data will be shifted by the y-intercept of the regression
+		  
+        extend=<float>, where <float> can be a positive or negative value. When the "extend" option is not used, the linear regression line that
+        is plotted will be at the "X-lo" and "X-hi" positions. However, in some cases it maybe desirable to visualize the linear regression line
+        beyound the "X-lo" and "X-hi" positions, such as to visualize where two linear regression models intersect (one method to compute Tg from
+        either a temperature-vs-density plot or a temperature-vs-volume plot. If the <float> value is postive the "extending portion" will be
+        plotted to the right of "X-lo" and "X-hi" positions, and if the <float> value is negative the "extending portion" will be plotted to the
+        left of "X-lo" and "X-hi" positions. Additionally, when the extend option is used the data will be plotted as a line, with the three
+        points showing the three data points. Examples:	
+          extend=100
+          extend=-50
+          shift=True; extend=25
+          extend=-50; shift=False
+				 
+    - "hyperbola"
+        This method implements the hypberbola fit method for computing Tg and CTE from this paper: "Uncertainty quantification in molecular
+        dynamics studies of the glass transition temperature - Paul N. Patrone, Andrew Dienstfrey, ... - Polymer Volume 87 - 2016"
+	
+        p=<float>, where <float> is between 0 and 0.9999 to set the minimum amount of convergence necessary for a dataset to be considered
+        acceptable (equation 5 from the paper listed above). When using this method an additional "transition line" will appear on the plot
+        to show the transition region of the hyperbola. The paper above uses P=0.9, thus P=0.9 is a good option. If P is not specified, the
+        transition region will not be plotted. Examples:
+          p=0.9  # Will set the minimum convergence value to 0.9
+          p=0.95 # Will set the minimum convergence value to 0.95
+		  
+        This method requires the Python scipy package (install via: pip install scipy)
+
+    - "spline-integration"
+        This method applies a spline integration (interpolation if needed between data points), where calling this method a moving average
+        is applied to the LAMMPS data and then a spline integration is applied to the moving average data.
+	
+        window=<N>, where <N> is the number of data points to group and average together. The default window is 100 and will be applied if
+        entry is left empty. Examples:
+          window=50  # group 50 data points and average into one data point
+          window=75  # group 75 data points and average into one data point
+		  
+        shift=<Boolean>, where <Boolean> is True or False. If shift=True all data that is plotted except the cursor (if plotted) will be shifted
+        by the first data point from the moving average. The shifting of data is useful for stress-vs-strain analysis for finding the yield
+        strength, since it is advised to shift all data, such that the linear regression starts at zero, to effectively remove the residual
+        stress from the yeild strength calculation. The default shift boolean is False and will be applied if entry is left empty. Examples:
+          shift=False  # All data will remain as is
+          shift=True   # All Y-data will be shifted by the y-intercept of the regression
+		  
+        This method requires the Python scipy package (install via: pip install scipy)
+		  
+    - "piecewise-regression"
+        n=<int>, where <int> is the number of break points to use to perform a "piecewise-regression", sometimes termed as a segmented linear
+        regression.
+
+        This method requires the Python pwlf package (install via: pip install pwlf)
+		
+    - "cursor"
+      x=<N>; y=<N>;, where <N> is the X or Y coordinate to place the cursor. If both x and y are not present the cursor will not plot or analyze
+      anything. Thus the default if not present is to do nothing. Examples:
+        x=10; y=200;  # Will place a cursor at (10, 200) in the plot
+        x=50; y=800;  # Will place a cursor at (50, 800) in the plot
+                 
+  All methods will use "Name" column, however if left empty the code will create the name as analysis-<N>, where <N> is the index of the analysis
+  in the GUI.   
+
+  If analysis stack has empty entries in the "X-lo" or "X-hi" columns and they are required to perform the analysis, the code will skip the
+  analysis and not plot any data. 
+
+*****************************************************************************
+* Please see the "Code: log_analysis.py" chapter in the official manual     *
+* found in the LUNAR/docs folder for further details.                       *
+*****************************************************************************

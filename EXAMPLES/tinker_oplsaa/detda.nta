@@ -1,0 +1,45 @@
+New type assignment file for detda_typed.data > atom_typing v1.4 / 2 May 2023 w/PCFF-IFF atom-types
+style id
+1      CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)] 
+2      CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)] 
+3      CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)] 
+4      CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)] 
+5      CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)] 
+6      CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)] 
+7      CT_81   # C between 6M ring and CH3 [Alkane -CH2- (partial charge: 0.0)]  
+8      CT_80   # C-H3 [Alkane CH3- (partial charge: 0.0)]
+9      CT_81   # C between 6M ring and CH3 [Alkane -CH2- (partial charge: 0.0)] 
+10     CT_80   # C-H3 [Alkane CH3- (partial charge: 0.0)]
+11     CT_80   # C-H3 [Alkane CH3- (partial charge: 0.0)]
+12     NT_730  # N Amine [Amine RNH2 (partial charge: 0.5)]
+13     NT_730  # N Amine [Amine RNH2 (partial charge: 0.5)]
+14     HA_91   # H-C in 6M ring [Aromatic H-C (partial charge: -0.062)] 
+15     HC_85   # H2-C [Alkane H-C (partial charge: 0.42)]
+16     HC_85   # H2-C [Alkane H-C (partial charge: 0.42)]
+17     HC_98   # H3-C [Methanol CH3- (partial charge: 0.42)]
+18     HC_98   # H3-C [Methanol CH3- (partial charge: 0.42)]
+19     HC_98   # H3-C [Methanol CH3- (partial charge: 0.42)]
+20     HC_85   # H2-C [Alkane H-C (partial charge: 0.42)]
+21     HC_85   # H2-C [Alkane H-C (partial charge: 0.42)]
+22     HC_98   # H3-C [Methanol CH3- (partial charge: 0.42)]
+23     HC_98   # H3-C [Methanol CH3- (partial charge: 0.42)]
+24     HC_98   # H3-C [Methanol CH3- (partial charge: 0.42)]
+25     HC_98   # H3-C [Methanol CH3- (partial charge: 0.42)]
+26     HC_98   # H3-C [Methanol CH3- (partial charge: 0.42)]
+27     HC_98   # H3-C [Methanol CH3- (partial charge: 0.42)]
+28     H_739   # H2-N [Amine RNH2 (partial charge: -0.25)]
+29     H_739   # H2-N [Amine RNH2 (partial charge: -0.25)]
+30     H_739   # H2-N [Amine RNH2 (partial charge: -0.25)]
+31     H_739   # H2-N [Amine RNH2 (partial charge: -0.25)]
+
+charge nta
+CA_90    0.248
+CT_81    0.0
+CT_80    0.0
+HA_91   -0.062
+HC_85    0.42
+HC_98    0.42
+NT_730   0.5
+H_739   -0.25
+
+neutralize system charge all

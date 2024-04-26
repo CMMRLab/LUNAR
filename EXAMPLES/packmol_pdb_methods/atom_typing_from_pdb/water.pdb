@@ -1,0 +1,10 @@
+REMARK   This PDB file was created by CS Chem3D.
+REMARK   1         2         3         4  (Atom Name: 13-16)
+REMARK7890123456789012345678901234567890
+HETATM    1  o*          1       0.000   0.388  -0.000                      O 
+HETATM    2  hw          1      -0.741  -0.194  -0.000                      H 
+HETATM    3  hw          1       0.741  -0.194   0.000                      H 
+CONECT    1    2    3
+CONECT    2    1
+CONECT    3    1
+END

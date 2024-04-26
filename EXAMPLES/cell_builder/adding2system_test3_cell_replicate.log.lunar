@@ -1,0 +1,166 @@
+
+
+Running cell_builder v1.7 / 11 April 2024
+Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+
+
+
+----------------------------------------------
+              Subcell info
+----------------------------------------------
+Total number of subcells required:  60
+Lattice spacing for subcells     : 1.8378282418115135 angstrom
+
+
+1 LAMMPS datafiles were found to have a qty of ZERO. Using these files to define a system to add molecules to.
+  Added adding2system_test3_CNT_typed_CVFF.data to system.
+  After adding files with qty's of ZERO's, the simulation domain has been established as:
+    x-dimensions: -15.6832000000   15.6832000000   xlo  xhi    (lx: 31.366, x-lattice-span: 31.243)
+    y-dimensions: -15.6780000000   15.6780000000   ylo  yhi    (ly: 31.356, y-lattice-span: 31.243)
+    z-dimensions: -28.3695885710   28.3696114290   zlo  zhi    (lz: 56.739, z-lattice-span: 56.973)
+  Resulting in the creation of a domain of 17x17x31
+  While generating lattice points 332 from domain 17x17x31 could not be generated as
+  they would result in placing a molecule to be overlapped with the existing system
+
+
+Created 60 of 60 molecules from EXAMPLES/cell_builder/adding2system_test3_water_typed_CVFF.data
+
+
+Generating new simulation cell ....
+
+
+Finding energy coeffs ....
+
+
+
+-----------------------------------------------------
+   Cell building and randomization parameters used
+-----------------------------------------------------
+unwrap atoms by iflags:                  True
+locally group atoms:                    False
+offset coeff types:                      True
+distance scale:                           1.2
+duplicate:                                 60
+max rotations:             {'x': 360.0, 'y': 360.0, 'z': 360.0}
+seed:                                   12345
+domain:                                 cubic
+System files used:        
+   EXAMPLES/cell_builder/adding2system_test3_water_typed_CVFF.data qty: 1
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+   EXAMPLES/cell_builder/adding2system_test3_CNT_typed_CVFF.data qty: 0
+       atom TypeIDs offset      2
+       bond TypeIDs offset      1
+       angle TypeIDs offset     1
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+
+
+Finding new molids ....
+-----------------------------------------------------------------------------Cluster Analysis----------------------------------------------------------------------
+molID     Size       Mass      X-center   Y-center   Z-center        phi (°)      theta (°)        psi (°)   Molecule Formula           Filename         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  1        3        18.02         12.86       3.68      16.54          64.20         158.10         132.60        H2-O1         adding2system_test3_water_typed_CVFF.data
+  2        3        18.02         12.86      -1.84      11.03         271.50         286.10          48.80        H2-O1         adding2system_test3_water_typed_CVFF.data
+  3        3        18.02          7.35       5.51      12.86         307.70         188.70         170.60        H2-O1         adding2system_test3_water_typed_CVFF.data
+  4        3        18.02         -1.84      -5.51      -9.19         357.20          76.90         353.40        H2-O1         adding2system_test3_water_typed_CVFF.data
+  5        3        18.02        -11.03      -3.68     -23.89         249.80         172.30         225.20        H2-O1         adding2system_test3_water_typed_CVFF.data
+  6        3        18.02         -7.35      14.70       1.84         220.00          37.10         212.80        H2-O1         adding2system_test3_water_typed_CVFF.data
+  7        3        18.02        -11.03       1.84     -27.57         108.20         206.90         307.20        H2-O1         adding2system_test3_water_typed_CVFF.data
+  8        3        18.02        -12.86       1.84      20.22         166.30          27.00         323.70        H2-O1         adding2system_test3_water_typed_CVFF.data
+  9        3        18.02         11.03      11.03      22.05         278.50         337.20         212.20        H2-O1         adding2system_test3_water_typed_CVFF.data
+  10       3        18.02          7.35      -1.84      -5.51         327.30         211.60         219.50        H2-O1         adding2system_test3_water_typed_CVFF.data
+  11       3        18.02          1.84       5.51       9.19         250.00         108.20         127.70        H2-O1         adding2system_test3_water_typed_CVFF.data
+  12       3        18.02         11.03       0.00     -12.86          94.40          83.20          66.90        H2-O1         adding2system_test3_water_typed_CVFF.data
+  13       3        18.02        -14.70      12.86      -9.19          66.60         118.00          61.40        H2-O1         adding2system_test3_water_typed_CVFF.data
+  14       3        18.02        -14.70     -14.70      14.70          75.70         342.10         248.80        H2-O1         adding2system_test3_water_typed_CVFF.data
+  15       3        18.02          1.84     -12.86     -20.22         315.90         274.80         327.00        H2-O1         adding2system_test3_water_typed_CVFF.data
+  16       3        18.02        -11.03       7.35     -20.22         111.60         143.00          85.40        H2-O1         adding2system_test3_water_typed_CVFF.data
+  17       3        18.02          1.84       3.68      12.86         227.90          61.30          32.70        H2-O1         adding2system_test3_water_typed_CVFF.data
+  18       3        18.02          9.19      11.03       3.68         310.80          27.80          63.90        H2-O1         adding2system_test3_water_typed_CVFF.data
+  19       3        18.02         -7.35     -14.70     -27.57         152.00         290.20         260.00        H2-O1         adding2system_test3_water_typed_CVFF.data
+  20       3        18.02         -7.35      -9.19       3.68          20.60         108.50         182.50        H2-O1         adding2system_test3_water_typed_CVFF.data
+  21       3        18.02         -7.35       1.84     -11.03          12.00          89.90         141.30        H2-O1         adding2system_test3_water_typed_CVFF.data
+  22       3        18.02          0.00      -7.35     -20.22         158.90         327.30          73.50        H2-O1         adding2system_test3_water_typed_CVFF.data
+  23       3        18.02         -9.19      11.03       5.51          25.20           5.60         256.40        H2-O1         adding2system_test3_water_typed_CVFF.data
+  24       3        18.02         -9.19       0.00      11.03           5.20          20.20          24.90        H2-O1         adding2system_test3_water_typed_CVFF.data
+  25       3        18.02        -11.03      11.03      -3.68         291.70         150.60          88.20        H2-O1         adding2system_test3_water_typed_CVFF.data
+  26       3        18.02          0.00      12.86       0.00          74.50          99.60         359.80        H2-O1         adding2system_test3_water_typed_CVFF.data
+  27       3        18.02          9.19       7.35      -1.84          49.20          27.70         263.60        H2-O1         adding2system_test3_water_typed_CVFF.data
+  28       3        18.02         -3.68      12.86      -3.68         232.50         119.70          51.30        H2-O1         adding2system_test3_water_typed_CVFF.data
+  29       3        18.02         -5.51      -5.51      23.89         284.90           1.30          60.00        H2-O1         adding2system_test3_water_typed_CVFF.data
+  30       3        18.02         -5.51      11.03      -7.35         220.40         209.00         284.00        H2-O1         adding2system_test3_water_typed_CVFF.data
+  31       3        18.02          1.84      -1.84      -7.35         162.50         200.90          74.40        H2-O1         adding2system_test3_water_typed_CVFF.data
+  32       3        18.02         -5.51      -9.19     -12.86         256.20         329.50          34.00        H2-O1         adding2system_test3_water_typed_CVFF.data
+  33       3        18.02        -14.70      -3.68       1.84          12.50          45.40         246.70        H2-O1         adding2system_test3_water_typed_CVFF.data
+  34       3        18.02        -12.86       9.19     -18.38         277.90         209.90         311.80        H2-O1         adding2system_test3_water_typed_CVFF.data
+  35       3        18.02        -12.86       5.51     -20.22         174.80          18.00         149.00        H2-O1         adding2system_test3_water_typed_CVFF.data
+  36       3        18.02          5.51     -11.03      22.05         181.80         280.90         151.00        H2-O1         adding2system_test3_water_typed_CVFF.data
+  37       3        18.02         11.03       1.84     -23.89         164.50         125.80         183.90        H2-O1         adding2system_test3_water_typed_CVFF.data
+  38       3        18.02         14.70       0.00     -20.22         143.20         220.80         140.00        H2-O1         adding2system_test3_water_typed_CVFF.data
+  39      700      8407.81         0.00       0.00       0.00           0.00           0.00           0.00         C700         adding2system_test3_CNT_typed_CVFF.data
+  40       3        18.02         -7.35      -3.68      22.05         323.10           4.70         316.30        H2-O1         adding2system_test3_water_typed_CVFF.data
+  41       3        18.02          1.84      -7.35       9.19          82.50         149.20         314.90        H2-O1         adding2system_test3_water_typed_CVFF.data
+  42       3        18.02         12.86      -7.35       5.51         283.30         171.00         133.10        H2-O1         adding2system_test3_water_typed_CVFF.data
+  43       3        18.02        -12.86     -11.03     -22.05         291.50         182.30          32.10        H2-O1         adding2system_test3_water_typed_CVFF.data
+  44       3        18.02          0.00      -1.84     -20.22         201.40         133.40         316.20        H2-O1         adding2system_test3_water_typed_CVFF.data
+  45       3        18.02         -1.84     -14.70      -9.19         327.00         348.40          39.20        H2-O1         adding2system_test3_water_typed_CVFF.data
+  46       3        18.02          1.84      11.03      25.73          72.80          72.90         234.10        H2-O1         adding2system_test3_water_typed_CVFF.data
+  47       3        18.02         -9.19       5.51      20.22          82.60         306.80          55.30        H2-O1         adding2system_test3_water_typed_CVFF.data
+  48       3        18.02          5.51       3.68      23.89          24.20         106.40         318.30        H2-O1         adding2system_test3_water_typed_CVFF.data
+  49       3        18.02        -14.70     -11.03     -14.70          75.40          11.10         152.70        H2-O1         adding2system_test3_water_typed_CVFF.data
+  50       3        18.02         -5.51      -7.35     -14.70         188.60         304.50          79.80        H2-O1         adding2system_test3_water_typed_CVFF.data
+  51       3        18.02          3.68       1.84      -3.68         257.20         254.40         233.90        H2-O1         adding2system_test3_water_typed_CVFF.data
+  52       3        18.02        -12.86     -14.70      27.57          14.40         112.60         305.60        H2-O1         adding2system_test3_water_typed_CVFF.data
+  53       3        18.02         14.70      11.03      22.05          55.70           0.80         276.90        H2-O1         adding2system_test3_water_typed_CVFF.data
+  54       3        18.02          0.00      14.70      11.03         301.90         201.70         196.70        H2-O1         adding2system_test3_water_typed_CVFF.data
+  55       3        18.02          5.51      11.03     -18.38          49.70         196.90         254.70        H2-O1         adding2system_test3_water_typed_CVFF.data
+  56       3        18.02          7.35     -12.86     -27.57         202.70          67.50         137.40        H2-O1         adding2system_test3_water_typed_CVFF.data
+  57       3        18.02         -3.68       1.84      -9.19         135.30          72.00         161.60        H2-O1         adding2system_test3_water_typed_CVFF.data
+  58       3        18.02         -1.84      14.70     -14.70           1.30         269.30         203.10        H2-O1         adding2system_test3_water_typed_CVFF.data
+  59       3        18.02          1.84     -11.03      12.86         217.40          95.50         135.20        H2-O1         adding2system_test3_water_typed_CVFF.data
+  60       3        18.02          7.35      -7.35     -12.86         235.10          44.00         257.70        H2-O1         adding2system_test3_water_typed_CVFF.data
+  61       3        18.02         -7.35       1.84     -12.86         101.90         169.20         210.20        H2-O1         adding2system_test3_water_typed_CVFF.data
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:             880 
+nbonds:            1170 
+nangles:           2160 
+ndihedrals:        4200 
+nimpropers:         700 
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         31.36640  angstrom  
+Ly:         31.35600  angstrom  
+Lz:         56.73920  angstrom  
+volume:    5.5804E-20 cm^3      
+mass:      1.5756E-20 grams     
+density:    0.28235   g/cc      
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+Writing in.adding2system_test3_cell_replicate script
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\cell_builder directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 2.1710331439971924
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

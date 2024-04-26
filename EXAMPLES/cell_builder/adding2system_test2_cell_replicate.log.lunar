@@ -1,0 +1,178 @@
+
+
+Running cell_builder v1.7 / 11 April 2024
+Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+Applied shifts {'x': 0, 'y': 0, 'z': -20} to adding2system_test2_Zshift=-20_VMD_graphite_typed_IFF.data
+Applied shifts {'x': 0, 'y': 0, 'z': 20} to adding2system_test2_Zshift=20_VMD_graphite_typed_IFF.data
+
+
+
+----------------------------------------------
+              Subcell info
+----------------------------------------------
+Total number of subcells required:  60
+Lattice spacing for subcells     : 11.531655716922765 angstrom
+
+
+2 LAMMPS datafiles were found to have a qty of ZERO. Using these files to define a system to add molecules to.
+  Added adding2system_test2_Zshift=-20_VMD_graphite_typed_IFF.data to system.
+  Added adding2system_test2_Zshift=20_VMD_graphite_typed_IFF.data to system.
+  After adding files with qty's of ZERO's, the simulation domain has been established as:
+    x-dimensions: -25.6744666670   25.6745333330   xlo  xhi    (lx: 51.349, x-lattice-span: 46.127)
+    y-dimensions: -26.0240000000   24.6060000000   ylo  yhi    (ly: 50.63, y-lattice-span: 46.127)
+    z-dimensions: -95.0000000000   70.0000000000   zlo  zhi    (lz: 165.0, z-lattice-span: 161.443)
+  Resulting in the creation of a domain of 4x4x14
+  While generating lattice points 32 from domain 4x4x14 could not be generated as
+  they would result in placing a molecule to be overlapped with the existing system
+
+
+Created 60 of 60 molecules from EXAMPLES/cell_builder/adding2system_test2_detda_typed_IFF.data
+
+
+Generating new simulation cell ....
+
+
+Finding energy coeffs ....
+
+
+
+-----------------------------------------------------
+   Cell building and randomization parameters used
+-----------------------------------------------------
+unwrap atoms by iflags:                  True
+locally group atoms:                    False
+offset coeff types:                      True
+distance scale:                           1.2
+duplicate:                                 60
+max rotations:             {'x': 360.0, 'y': 360.0, 'z': 360.0}
+seed:                                   12345
+domain:                                 cubic
+System files used:        
+   EXAMPLES/cell_builder/adding2system_test2_detda_typed_IFF.data qty: 1
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+   EXAMPLES/cell_builder/adding2system_test2_Zshift=-20_VMD_graphite_typed_IFF.data qty: 0
+       atom TypeIDs offset      6
+       bond TypeIDs offset      9
+       angle TypeIDs offset     14
+       dihedral TypeIDs offset  14
+       improper TypeIDs offset  11
+   EXAMPLES/cell_builder/adding2system_test2_Zshift=20_VMD_graphite_typed_IFF.data qty: 0
+       atom TypeIDs offset      7
+       bond TypeIDs offset      10
+       angle TypeIDs offset     15
+       dihedral TypeIDs offset  15
+       improper TypeIDs offset  12
+
+
+Finding new molids ....
+-----------------------------------------------------------------------------Cluster Analysis----------------------------------------------------------------------
+molID     Size       Mass      X-center   Y-center   Z-center        phi (°)      theta (°)        psi (°)   Molecule Formula           Filename         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  1        31       178.28        17.30       5.06      27.86          55.70           0.80         276.90      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  2        31       178.28         5.77      16.59     -75.92         327.30         211.60         219.50      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  3        31       178.28       -17.30       5.06     -87.46         323.10           4.70         316.30      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  4        31       178.28       -17.30      -6.47       4.80          75.40          11.10         152.70      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  5        31       178.28         5.77     -18.01       4.80         315.90         274.80         327.00      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  6        31       178.28       -17.30       5.06     -29.80         307.70         188.70         170.60      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  7        31       178.28         5.77       5.06      27.86         158.90         327.30          73.50      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  8        31       178.28         5.77      16.59     -41.33         123.40         354.10         340.80      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  9        31       178.28        17.30     -18.01     -41.33         249.80         172.30         225.20      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  10       31       178.28       -17.30      16.59      39.39          82.60         306.80          55.30      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  11       31       178.28         5.77      -6.47     -29.80         220.00          37.10         212.80      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  12       31       178.28       -17.30       5.06      39.39         235.10          44.00         257.70      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  13       31       178.28       -17.30      -6.47     -75.92         284.90           1.30          60.00      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  14       31       178.28        17.30      -6.47       4.80          72.80          72.90         234.10      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  15       31       178.28         5.77       5.06      50.92         174.80          18.00         149.00      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  16       31       178.28         5.77      16.59     -29.80         152.00         290.20         260.00      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  17       31       178.28         5.77      16.59      -6.73         143.20         220.80         140.00      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  18       31       178.28       -17.30     -18.01      39.39         202.70          67.50         137.40      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  19       31       178.28        -5.77     -18.01       4.80         241.00         177.60         212.20      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  20       31       178.28         5.77      -6.47      -6.73         271.50         286.10          48.80      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  21       31       178.28       -17.30      -6.47     -52.86          75.70         342.10         248.80      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  22       31       178.28        17.30       5.06      62.46          20.60         108.50         182.50      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  23       31       178.28        -5.77      -6.47     -87.46         232.50         119.70          51.30      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  24       31       178.28         5.77     -18.01      -6.73           1.30         269.30         203.10      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  25       31       178.28        17.30      -6.47     -75.92         164.50         125.80         183.90      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  26       31       178.28        -5.77      -6.47      62.46          12.00          89.90         141.30      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  27       31       178.28         5.77     -18.01      27.86         101.90         169.20         210.20      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  28       31       178.28        -5.77       5.06      -6.73          24.20         106.40         318.30      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  29       31       178.28       -17.30      -6.47     -87.46           5.20          20.20          24.90      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  30       31       178.28        17.30     -18.01     -29.80         256.20         329.50          34.00      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  31       31       178.28         5.77      -6.47      39.39         108.20         206.90         307.20      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  32       31       178.28         5.77      16.59      50.92         220.40         209.00         284.00      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  33       31       178.28        -5.77     -18.01     -87.46          25.20           5.60         256.40      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  34       31       178.28        17.30       5.06      -6.73         181.80         280.90         151.00      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  35       31       178.28       -17.30      16.59     -52.86           3.80          61.50          93.80      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  36       31       178.28        -5.77     -18.01      50.92         291.50         182.30          32.10      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  37       31       178.28       -17.30     -18.01     -75.92          49.70         196.90         254.70      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  38       31       178.28         5.77      16.59     -52.86         291.70         150.60          88.20      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  39       31       178.28       -17.30     -18.01     -64.39          82.50         149.20         314.90      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  40       31       178.28        -5.77      16.59      27.86          74.50          99.60         359.80      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  41       31       178.28       -17.30       5.06      50.92         283.30         171.00         133.10      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  42       31       178.28        17.30      16.59       4.80         278.50         337.20         212.20      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  43       31       178.28         5.77      -6.47      62.46         166.30          27.00         323.70      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  44       31       178.28       -17.30      16.59     -64.39         257.20         254.40         233.90      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  45       31       178.28        17.30      -6.47      39.39         201.40         133.40         316.20      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  46       31       178.28        -5.77       5.06     -87.46         301.90         201.70         196.70      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  47       31       178.28        17.30      16.59     -87.46          66.60         118.00          61.40      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  48       31       178.28        -5.77     -18.01      39.39         217.40          95.50         135.20      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  49       31       178.28        17.30     -18.01      39.39         227.90          61.30          32.70      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  50       31       178.28        17.30      16.59     -75.92          49.20          27.70         263.60      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  51       31       178.28        -5.77     -18.01     -64.39          64.20         158.10         132.60      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  52      1008     12107.24        0.00       0.00       0.00           0.00           0.00           0.00        C1008         adding2system_test2_Zshift=20_VMD_graphite_typed_IFF.data
+  53       31       178.28        17.30       5.06     -29.80          94.40          83.20          66.90      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  54      1008     12107.24        0.00       0.00       0.00           0.00           0.00           0.00        C1008         adding2system_test2_Zshift=20_VMD_graphite_typed_IFF.data
+  55      1008     12107.24        0.00       0.00       0.00           0.00           0.00           0.00        C1008         adding2system_test2_Zshift=-20_VMD_graphite_typed_IFF.data
+  56       31       178.28        17.30      16.59      50.92          14.40         112.60         305.60      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  57       31       178.28       -17.30      16.59      50.92         188.60         304.50          79.80      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  58       31       178.28         5.77       5.06     -87.46          53.10          17.00          67.20      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  59       31       178.28        17.30     -18.01     -87.46         310.80          27.80          63.90      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  60      1008     12107.24        0.00       0.00       0.00           0.00           0.00           0.00        C1008         adding2system_test2_Zshift=-20_VMD_graphite_typed_IFF.data
+  61       31       178.28        17.30      16.59     -41.33         327.00         348.40          39.20      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  62       31       178.28        17.30      -6.47      50.92         250.00         108.20         127.70      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  63       31       178.28        17.30      -6.47     -29.80         135.30          72.00         161.60      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+  64       31       178.28       -17.30       5.06      -6.73         277.90         209.90         311.80      C11-H18-N2      adding2system_test2_detda_typed_IFF.data
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:            5892 
+nbonds:            7908 
+nangles:           15336
+ndihedrals:        28272
+nimpropers:        5712 
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         51.34900  angstrom  
+Ly:         50.63000  angstrom  
+Lz:        165.00000  angstrom  
+volume:    4.2897E-19 cm^3      
+mass:      9.8181E-20 grams     
+density:    0.22888   g/cc      
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+Writing in.adding2system_test2_cell_replicate script
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\cell_builder directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.8170034885406494
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

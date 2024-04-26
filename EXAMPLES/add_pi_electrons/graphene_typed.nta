@@ -1,0 +1,62 @@
+New type assignment file for graphene_typed.data > atom_typing v1.9 / 5 January 2024 w/PCFF-IFF atom-types
+style id
+1      cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+2      cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+3      cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+4      cp              #  Correctly found
+5      cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+6      cp              #  Correctly found
+7      cp              #  Correctly found
+8      cp              #  Correctly found
+9      cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+10     cp              #  Correctly found
+11     cp              #  Correctly found
+12     cp              #  Correctly found
+13     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+14     cp              #  Correctly found
+15     cp              #  Correctly found
+16     cp              #  Correctly found
+17     ct              #  Correctly found
+18     cp              #  Correctly found
+19     cp              #  Correctly found
+20     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+21     cp              #  Correctly found
+22     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+23     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+24     cp              #  Correctly found
+25     cp              #  Correctly found
+26     cp              #  Correctly found
+27     cp              #  Correctly found
+28     cp              #  Correctly found
+29     cp              #  Correctly found
+30     cp              #  Correctly found
+31     cp              #  Correctly found
+32     cp              #  Correctly found
+33     cp              #  Correctly found
+34     cp              #  Correctly found
+35     cp              #  Correctly found
+36     cp              #  Correctly found
+37     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+38     cp              #  Correctly found
+39     cp              #  Correctly found
+40     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+41     cp              #  Correctly found
+42     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+43     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+44     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+45     cp              #  Correctly found
+46     cp              #  Correctly found
+47     cp              #  Correctly found
+48     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+49     cp              #  Correctly found
+50     cp              #  Correctly found
+51     cp              #  Correctly found
+52     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+53     cp              #  Correctly found
+54     cp              #  Correctly found
+55     cp              #  Correctly found
+56     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+57     cp              #  User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)
+58     cp              #  Correctly found
+59     cp              #  Correctly found
+60     ct              #  Correctly found

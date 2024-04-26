@@ -1,0 +1,139 @@
+
+
+Running cell_builder v1.7 / 11 April 2024
+Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+The qty associated with filename EXAMPLES/cell_builder/system1_detda_dgebf_grouping_example.script is ZERO. Using file to group atoms.
+Read-in EXAMPLES/cell_builder/system1_detda_dgebf_grouping_example.script
+Grouping file EXAMPLES/cell_builder/system1_detda_dgebf_grouping_example.script generated 9 groups:
+ - detda_amine
+ - detda_aromatic
+ - detda_methyl_group
+ - detda_methylene_bridge
+ - dgebf_aromatic
+ - dgebf_epoxide
+ - dgebf_epoxide_sp3_oxygen
+ - dgebf_methylene_bridge
+ - unassigned
+Total number of subcells required: 30
+3-Dimensional span of each subcell: 21
+
+
+Generating new simulation cell ....
+
+
+Finding energy coeffs ....
+
+
+
+-----------------------------------------------------
+   Cell building and randomization parameters used
+-----------------------------------------------------
+unwrap atoms by iflags:                  True
+locally group atoms:                    False
+offset coeff types:                     False
+distance scale:                           1.2
+duplicate:                                 10
+max rotations:             {'x': 360.0, 'y': 360.0, 'z': 360.0}
+seed:                                   12345
+domain:                                 cubic
+System files used:        
+   EXAMPLES/cell_builder/system1_detda_typed_IFF_merged_qty=1.data qty: 1
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+   EXAMPLES/cell_builder/system1_dgebf_typed_IFF_merged_qty=2.data qty: 2
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+   EXAMPLES/cell_builder/system1_detda_dgebf_grouping_example.script qty: 0
+
+
+
+----------------------------------------------
+              Subcell info
+----------------------------------------------
+Total number of subcells required:  30
+Lattice spacing for subcells     : 21 angstrom
+
+
+Finding new molids ....
+-----------------------------------------------------------------------------Cluster Analysis----------------------------------------------------------------------
+molID     Size       Mass      X-center   Y-center   Z-center        phi (°)      theta (°)        psi (°)   Molecule Formula           Filename         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  1        43       312.37         0.00     -42.00      21.00         301.70         153.60          95.20      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  2        43       312.37       -42.00       0.00     -21.00          32.10         158.90         327.30      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  3        31       178.28        42.00      21.00      21.00         168.80         239.60         206.40      C11-H18-N2      system1_detda_typed_IFF_merged_qty=1.data
+  4        43       312.37        42.00     -21.00     -42.00         301.90         328.40         309.60      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  5        31       178.28        21.00       0.00      42.00          68.20          60.60          84.20      C11-H18-N2      system1_detda_typed_IFF_merged_qty=1.data
+  6        43       312.37         0.00      21.00      42.00         132.60           5.20          20.20      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  7        43       312.37         0.00       0.00      42.00          93.80         143.20         220.80      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  8        43       312.37       -21.00      42.00     -21.00          73.50         323.10           4.70      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  9        43       312.37        21.00     -21.00       0.00         279.10         236.70          74.40      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  10       43       312.37       -21.00     -21.00       0.00         214.40         244.10         290.50      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  11       31       178.28         0.00     -21.00       0.00         342.80         139.90         131.90      C11-H18-N2      system1_detda_typed_IFF_merged_qty=1.data
+  12       43       312.37        21.00      21.00     -42.00         316.30         291.70         150.60      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  13       43       312.37        21.00      42.00       0.00          67.20         123.40         354.10      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  14       31       178.28        21.00     -21.00      21.00         294.40          31.80          77.80      C11-H18-N2      system1_detda_typed_IFF_merged_qty=1.data
+  15       31       178.28       -42.00     -42.00     -21.00          11.00         209.10         282.90      C11-H18-N2      system1_detda_typed_IFF_merged_qty=1.data
+  16       31       178.28        42.00     -21.00     -21.00         304.90         170.10           1.40      C11-H18-N2      system1_detda_typed_IFF_merged_qty=1.data
+  17       43       312.37       -21.00      42.00     -42.00         340.80           3.80          61.50      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  18       43       312.37        42.00      42.00      21.00          24.90         291.50         182.30      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  19       43       312.37       -21.00       0.00      21.00         227.30         274.30          76.10      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  20       43       312.37        21.00      21.00      21.00         105.50         241.00         177.60      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  21       31       178.28       -21.00      42.00      21.00          67.00         315.70         237.60      C11-H18-N2      system1_detda_typed_IFF_merged_qty=1.data
+  22       43       312.37        42.00     -42.00     -42.00         267.20         169.70          43.30      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  23       43       312.37       -42.00       0.00       0.00         212.20          53.10          17.00      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  24       43       312.37       -42.00      21.00     -42.00         140.00          64.20         158.10      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  25       43       312.37        42.00     -42.00      42.00         337.80         135.10         330.50      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  26       31       178.28       -21.00     -42.00     -42.00           9.60         187.90         139.00      C11-H18-N2      system1_detda_typed_IFF_merged_qty=1.data
+  27       43       312.37        21.00      21.00      42.00          16.40          95.10          49.00      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  28       43       312.37        21.00     -42.00     -21.00         357.60         204.40          88.60      C19-H20-O4      system1_dgebf_typed_IFF_merged_qty=2.data
+  29       31       178.28        42.00      42.00       0.00          73.20         117.30          40.70      C11-H18-N2      system1_detda_typed_IFF_merged_qty=1.data
+  30       31       178.28       -42.00      21.00       0.00           2.70         271.90         356.60      C11-H18-N2      system1_detda_typed_IFF_merged_qty=1.data
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:            1170 
+nbonds:            1230 
+nangles:           2180 
+ndihedrals:        2920 
+nimpropers:        1080 
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:        105.00000  angstrom  
+Ly:        105.00000  angstrom  
+Lz:        105.00000  angstrom  
+volume:    1.1576E-18 cm^3      
+mass:      1.3334E-20 grams     
+density:    0.01152   g/cc      
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+Writing in.system1_cell_replicate script
+
+
+Writing include.system1_cell_replicate_groups.script script
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\cell_builder directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.09502458572387695
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

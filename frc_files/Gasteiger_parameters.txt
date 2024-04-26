@@ -1,0 +1,54 @@
+! This file contains the parameters for the Gasteiger algorithm. The file comment's character is the "!" character
+! for which everything following "!" character will be ignored. The "#parameters" tag/header will be used to find
+! roughly where the parameters are in this file.
+!
+! The parameters will have "Element", "Hybridization", "a", "b", and "c" columns to specify the parameters and what
+! type of atom the parameters are for. The "Element" column is just the element symbol. The "a", "b", and "c" columns
+! are for specifying what the Gasteiger parameters are for the atom type. The Hybridiztion column is the most unqiue
+! column and will be used to map directly onto data structures in the atom_typing.py code ("Elements" column as well
+! but this is intuitive to have the value set properly). The following are available hybridization tags that 
+! atom_typing.py sets/maintains (Uppercase and Lowercase matter):
+!   unknown   which is how each atom hybridization is initialzed and if cannot be characterized will be left as is
+!   Sp1       which applies for Sp1 type geometries/connectivty (IE bond-angle ~180 degrees nb==2)
+!   Sp2       which applies for Sp2 type geometries/connectivty (IE bond-angle ~120 degrees nb>=2 and nb<4)
+!   Sp3       which applies for Sp3 type geometries/connectivty (IE bond-angle ~109 degrees nb>=4)
+!   Terminal  which applies for element types that dont fit the Sp1/Sp2/Sp3 category, but acts as terminating element (H, F, ...)
+!
+! Following "Element", "Hybridization", "a", "b", and "c" columns there is a commented out comment section to keep track of
+! the meaning of the parameters. For instance the orginal 1980's Iterative partial equalization of orbital electronegativity—a
+! rapid access to atomic charges paper does not have "a", "b", and "c" parameters for Sp1 O so by default we are currently using
+! Sp2 O parameters. More parameters can be added if developed and the usage of the "unknown" tag maybe set in the info below
+! to enforce arbitrary parameters when the atom_typing.py code can not determine the hybridized state of each atom.
+!
+! *NOTE: atom_typing.py determines the hybridization of each atom by 1st relying on bonded topological information, but then
+! moves to geometric reasonings bond-angle. This means that the hybridized state of each atom CAN BE geometry/atomic-postion
+! dependant and thus the usage of computing Gasteiger charges is somewhat dependant on having reasonable geometries such that
+! the hybridziation is set properly and then conversly that the proper Gasteiger parameters are set properly.
+
+#parameters
+
+!Element   Hybridization      a         b         c      !comments
+!-------   -------------   -------   -------   -------   !------------------------------------
+H          Terminal         7.17      6.24     -0.56     !Gasteiger parameters for Hydrogen         
+C          Sp3              7.98      9.18      1.88     !Gasteiger parameters for Sp3 Carbon
+C          Sp2              8.79      9.32      1.51     !Gasteiger parameters for Sp2 Carbon
+C          Sp1             10.39      9.45      0.73     !Gasteiger parameters for Sp1 Carbon
+N          Sp3             11.54     10.82      1.36     !Gasteiger parameters for Sp3 Nitrogen
+N          Sp2             12.87     11.15      0.85     !Gasteiger parameters for Sp2 Nitrogen
+N          Sp1             15.68     11.7      -0.27     !Gasteiger parameters for Sp2 Nitrogen
+O          Sp3             14.18     12.92      1.39     !Gasteiger parameters for Sp3 Oxygen 
+O          Sp2             17.07     13.79      0.47     !Gasteiger parameters for Sp3 Oxygen
+O          Sp1             17.07     13.79      0.47     !NO parameters exist in the 1980 paper for Sp1 Oxygen so use Sp2 Oxygen paramters
+F          Terminal        14.66     13.85      2.31     !Gasteiger parameters for Flourine  
+Cl         Terminal        11.00      9.69      1.35     !Gasteiger parameters for Clourine
+Br         Terminal        10.08      8.47      1.16     !Gasteiger parameters for Bromine 
+I          Terminal         9.90      7.96      0.96     !Gasteiger parameters for Iodine 
+S          Sp3             10.14      9.13      1.38     !Gasteiger parameters for Sulfur   
+
+
+
+
+#reference 1
+@Author J Gasteiger, M Marsili
+@Date Feb-19-2023
+Iterative partial equalization of orbital electronegativity—a rapid access to atomic charges

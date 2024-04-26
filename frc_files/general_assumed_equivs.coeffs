@@ -1,0 +1,88 @@
+# This file is for specifying what assumed coeff to use when coeff can not be found. The code will find the element
+# types in the specified coeff and then use this file for a general mapping of elements in coeff to coeff type. 
+# This mapping as a sort of generalized assumed equivalent mapping. The code will then auto fill these parameters
+# so no manual filling is needed. The asssumed coeff MUST ALREADY be in equivalent or auto equivalent form. 
+
+# Each section of coeffs in this file should be formatted with headers like the coeff headers in a lammps datafile
+# (ie. bond coeff section should start like this 'Bond Coeffs', with 1 white space above and below specifying the
+# assumed coeff). Each line then should have the general elements in the order of the coeff, followed by the 
+# equivalent or auto equivalent types (ie. a bond coeff for C-C bond should look like 'C C c_ c_', where the two first
+# indices are C C representing a C-C bond and the last two indices are c_ c_ representing the auto equivalent bond 
+# type). The elements must be capitolized, while the equivalent or auto equivalent atom types for the coeff must be 
+# what is in the used .frc file.
+
+# The "#" character is used as a comment character and anything following the "#" character will be ignored by the
+# code. This means you can mark up this fill as you wish based on the comment character and also comment out headers
+# to skip using the assumed auto fill option for entire header section or just comment out specific element equiv-pairs.
+
+# Currently this file houses most possible bonding configurations for C, H, O, N, S elements. Adding on other element
+# configurations to this file will automatically be read in and used by the code. The code will search for forward
+# and backwards ordering of each string of elements for coeff type, this means that you DO NOT need to specify both
+# forwards and backwards ordering in this file (just one).
+
+# Assumed auto file option is only built out for Bond , Angle, Dihedral, and Improper coeffs. No cross-terms autofill
+# option is availble yet. If you want to add cross-terms autofill option you will need to add each header and section
+# to this fill and add onto assumed_auto_fill.py to read those sections and then add onto each cross-term function 
+# in fill_in_parameters.py. 
+
+# *NOTE 6/21/2022:
+#	Added the functionality to assumed auto fill coeffs that if any of the coeff types listed below are
+#	not in the read in .frc file, the code will remove them from the read in assumed_auto_fill.coeffs to aviod errors 
+#	later on in the code. The code will then print out which assumed coeff is not in .frc file and delete the coeff type
+#	from the internal data structures. For testing of this functionality I added T's and t's (IE. Bond coeffs: T T t t,
+#	Angle coeffs T T T t t t, Dihedral Coeffs T T T T t t t t, and improper coeffs: T T T T t t t t). You can remove these
+#	test (T's t's) if you would like, but they are here to show the added functionality.*
+
+# *NOTE 12/1/2022:
+#	From simple reaxFF to IFF testing where there are a variety of different standard coeffs (bonds/angles/dihedrals/impropers)
+#	it was found that only using assumed auto fill for Bond Coeffs and Angle Coeffs can produce stabile files. This means for
+#	more standard use of IFF and fix bond/react if all2lmp can not find certain parameters you should only use assumed autofill
+#	for Bond Coeffs or Angle Coeffs. Also so far it seems that just using assumed autofill with Bond Coeffs produces densities
+#	that are slightly closer to what is expected. In light of this is not all parameters can be found by all2lmp it is best just
+# 	to use assumed autofill Bond Coeffs section (which is why the Angle/Dihedral/Improper Headers are currently commented out - 
+#	this will tell all2lmp to skip using assumed autofill on those coeffs - uncomment Dihedrals/Impropers section at your own
+#	risk).
+
+Bond Coeffs # can add commnet character to Bond Coeffs header to skip these assumed autofill options for bond coeffs
+
+C C c_ c_
+H H h_ h_
+O O o_ o_
+N N n_ n_
+S S s_ s_
+C H c_ h_
+C O c o
+C N c_ n_
+C S c_ s_
+T T t t
+
+#Angle Coeffs # can add commnet character to Angle Coeffs header to skip these assumed autofill options for angle coeffs
+
+C C C c_    c'_   c_
+O O O *     o_    *
+N N N *     n_    *
+S S S *     s_    *
+C O C *     o_    *
+C O H *7    o_    c_
+C C O c_    c_    o_
+T T T t     t     t
+
+#Dihedral Coeffs # can add commnet character to Dihedral Coeffs header to skip these assumed autofill options for dihedral coeffs
+
+C C C C *     c=_   c=_   *
+O O O O *     o_    o_    *
+N N N N *     n=_   n=_   *
+S S S S *     s_    s_    *
+C O C C *     cp_   o_    *
+C C O H *     c'_   o_    *
+O C O H *     c'_   o_    *
+T T T T t     t     t     t
+
+#Improper Coeffs # can add commnet character to Improper Coeffs header to skip these assumed autofill options for improper coeffs
+
+C C C C *     c'_   *     *
+O O O O *     o_    *     *
+N N N N *     n_    *     *
+S S S S *     s_    *     *
+C C H H c=    c=    h     h
+T T T T t     t     t     t

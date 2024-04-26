@@ -1,0 +1,49 @@
+# This file supports optional comment characters of "#", where anything following the
+# "#" character is ignored by the code. This file contains a file format that will be
+# read in and parsed into a python dictionary for bond_react_merge.py. The file tags 
+# should follow the same rules that are listed in bond_react_merge.py, where each file
+# tag is unique and each filename is unqiue. The available file tags are:
+#    * data1, data2, ... dataN for an arbitrary amount of starting molecules
+#    * pre1, pre2, ... preN for an arbitrary amount of pre rxns
+#    * post1, post2, ... postN for an arbitrary amount of post rxns
+#    * NOTE: if generate_map_file the N-ID assigned between preN/postN MUST BE CONSISTENT!!!!
+# Example files section:
+# file-tag    filename
+# data1       example_molecule1.data
+# data2       example_molecule2.data
+# pre1        example_pre-rxn1.data
+# post1       example_post-rxn1.data
+# 
+# An optional path keyword maybe set as path=directory-path, where directory path will be appended
+# to the front of the file names. Path examples:
+# path=""     (will not append any path to the filename)
+# path="testing/inputs/"  (the path testing/inputs/ will be appended to all the filenames)
+#
+# *NOTE: the path variable will be able to traverse deeper into a file structure and by 
+# specifing more unqiue path in the path="" quotations, but can also reduce the depth
+# by using ../ characters like the ../ terminal command*
+#
+# An optional parent_directory keyword maybe set to update the parent_directory to
+# variable inside bond_react_merge.py to have the input file set the parent_directory.
+# Examples:
+# parent_directory="" (will not set parent_directory)
+# parent_directory="testing/inputs/merged" (files will be written to testing/inputs/merged directory)
+
+
+
+# Specify a desired path to append to the front of each filename
+# Will append EXAMPLES/bond_react_merge_tests/test1 to the begining of all filenames
+path="EXAMPLES/bond_react_merge_tests/test10" 
+
+# file-tag   filename                       comment  
+  data1      cell_replicate.data            # This datafile will have all coeffs in it
+  pre1       pre_reaction_1_typed_IFF.data  # for rxn1
+  post1      post_reaction_1_typed_IFF.data # for rxn1
+  pre2       pre_reaction_2_typed_IFF.data  # for rxn2
+  post2      post_reaction_2_typed_IFF.data # for rxn2
+
+
+# Specify the parent_directory of where to write results to
+parent_directory = "topofile/run"
+
+ff_class = 2 # testing

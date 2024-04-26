@@ -1,0 +1,34 @@
+
+
+Running bond_react_merge_prep v1.3 / 4 November 2023
+Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+Read in EXAMPLES/bond_react_merge_prep/smp20230330_IFF_rlxd0_testv3_8proc_1ts.data LAMMPS datafile
+Read in EXAMPLES/bond_react_merge_prep/smp20230330_IFF_rlxd0_testv3_8proc_1ts.cta new-type-assignment file
+Adding necessary comments to datafile class
+
+
+Removing any unused CoeffTypeIDs:
+    N-orginal atomTypeIDs,         N-new atomTypeIDs =     7,     7
+    N-orignal bondTypeIDs,         N-new bondTypeIDs =    12,     9
+   N-orignal angleTypeIDs,        N-new angleTypeIDs =    22,    17
+N-orignal dihedralTypeIDs,     N-new dihedralTypeIDs =    27,    16
+N-orignal improperTypeIDs,     N-new improperTypeIDs =    18,    12
+
+
+Using path from topofile to set parent_directory ...
+Coeff Style Hints should be transferred
+Writing LAMMPS datafile
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\bond_react_merge_prep directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.05899977684020996
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

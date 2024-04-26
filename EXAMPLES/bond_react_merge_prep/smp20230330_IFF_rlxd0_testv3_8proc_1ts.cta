@@ -1,0 +1,10 @@
+# Comment type assignment file for smp20230330_IFF_rlxd0_testv3_8proc.data
+
+style type
+1 c2/C
+2 c3/C
+3 c=/C
+4 c=1/C
+5 h/H
+6 hpan/H
+7 si/Si

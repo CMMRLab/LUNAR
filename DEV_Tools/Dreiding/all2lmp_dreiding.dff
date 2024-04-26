@@ -1,0 +1,364 @@
+# This file contains drieding specific force field parameters that read_dreiding_dff.py
+# will read and then write_dreiding_frc.py will write a class1 cvff formated .frc file
+# to be compatable with all2lmp and even possibly Material Studio, however the main
+# purpose is to give all2lmp the ability to assign Dreiding specific force field parameters.
+#
+#
+# Dreiding is a generic force field that and uses some unique chemistry based ideas that
+# is found in other FF's like ReaxFF on setting atom-types solely based on the hybridized
+# state. Some atom types have been added by Josh to accomodate how all2lmp runs such as 
+# any atom type with *Mid ending that is to help facilitate Dreiding torsion rule (j) and 
+# the setting of the specific atom-types with the *Mid ending will have to be performed 
+# manually or via atom_typing.py
+#
+# All paramters set in this paper where found and interpreted by reading ref 1 (the orginal
+# Dreiding paper from 1990) and atom type masses are from ref 2 (appendix B of CRC Handbook
+# of Chemistry and Physics, 95th Edition). 
+#
+# This is an intermediate file to be used to generate a full .frc file. This is because it is
+# easier to manual type the needed info from the Dreiding paper and write some code found in 
+# write_dreiding_frc.py to manipulate all parms that are set directly from the paper into a 
+# class1 cvff format that all2lmp is compatable with. YOU MAY MODIFY THIS FILE AS NEEDED AND THEN
+# RERUN write_dreiding_frc.py TO GENERATE A NEW DREIDING.FRC FILE WITH WHAT EVER MODIFICATIONS
+# OR ADDITIONS THAT WERE PERFORMED IN THIS FILE. Josh tried his best and triple check all parms
+# in this file and the logic in write_dreiding_frc.py to insure that the Dreiding force field
+# is as accurate based on the 1990 paper but it is ultimately the users responsibilty to double
+# check the outputs of all2lmp if using the Dreding .frc file facilitated via this method. It 
+# is also possible you have has to Acrylis proprietary Dreiding force feild file that should 
+# also be compatable with all2lmp, in which case you may use that file. *NOTE: in that case
+# some unique atom-types have been set by Josh here and will be reflected in atom_typing.py,
+# such as the ones ending in *Mid, if you use atom_typing.py and use a different formulation
+# of the Dreiding force field .frc file some atom types may need to be manually updated
+# 
+# Dreiding atom type nameing:
+# [1][2][3][4][5]
+# [1][2]=elemental symbol; if element symbol only has 1-character the _ will fill the empty space
+# [3]=hybridization; 0=terminating, 1=Sp1, 2=Sp2, 3=Sp3, R=aromatice ring resonance
+# [4]=number of implicit hydrogens (valence-nb=gives implicit hydrogen value) Will be added later on
+# [5]=formal oxidation state
+# _HB is a type of hydrogen capable of forming hydrogen bonds 
+# Example: C_R=carbon in aromatic ring; C_1=Sp1 carbon; H_HB
+
+
+#atom_types DREIDING
+
+> Atom type definitions for any variant of DREIDING
+> Masses from CRC 2014/2015 appendix B, using conventional masses.
+
+!Ver Ref  Type       Mass        Element   connection   Comment
+!--- ---  -----      ----------  -------   ----------   ---------------------------
+1.0    1   H_         1.008000   H         1            Generic hydrogen
+1.0    1   H___HB     1.008000   H         1            Hydrogen cabable of forming hydrogen bonds
+1.0    1   H___b      1.008000   H         1            Bridging hydrogen of diborane
+1.0    1   B_3       10.810000   B         3            Sp3 hybridized Boron
+1.0    1   B_2       10.810000   B         2            Sp2 hybridized Boron
+1.0    1   B_2Mid    10.810000   B         2            Sp2 hybridized Boron in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   C_34      16.043000   C         0            Sp3 hybridized Carbon with 4-implicit hydrogens
+1.0    1   C_33      15.035000   C         1            Sp3 hybridized Carbon with 3-implicit hydrogens
+1.0    1   C_32      14.027000   C         2            Sp3 hybridized Carbon with 2-implicit hydrogens
+1.0    1   C_31      13.019000   C         3            Sp3 hybridized Carbon with 1-implicit hydrogens
+1.0    1   C_3       12.011000   C         4            Sp3 hybridized Carbon with 0-implicit hydrogens
+1.0    1   C_R2      14.027000   C         1            Sp2 aromatic Carbon with 2-implicit hydrogens
+1.0    1   C_R1      13.019000   C         2            Sp2 aromatic Carbon with 1-implicit hydrogens
+1.0    1   C_R       12.011000   C         3            Sp2 aromatic Carbon with 0-implicit hydrogens
+1.0    1   C_RB      12.011000   C         3            Sp2 aromatic Carbon with 0-implicit hydrogens "B"ridging bond between two aromatic rings like in propene (will assign torsions differently)
+1.0    1   C_22      14.027000   C         1            Sp2 non-aromatic Carbon with 2-implicit hydrogens
+1.0    1   C_21      13.019000   C         2            Sp2 non-aromatic Carbon with 1-implicit hydrogens
+1.0    1   C_2       12.011000   C         3            Sp2 non-aromatic Carbon with 0-implicit hydrogens
+1.0    1   C_22Mid   14.027000   C         1            Sp2 non-aromatic Carbon with 2-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   C_21Mid   13.019000   C         2            Sp2 non-aromatic Carbon with 1-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   C_2Mid    12.011000   C         3            Sp2 non-aromatic Carbon with 0-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   C_11      13.019000   C         1            Sp1 hybridized Carbon with 1-implicit hydrogens
+1.0    1   C_1       12.011000   C         2            Sp1 hybridized Carbon with 0-implicit hydrogens
+1.0    1   N_33      17.031000   N         1            Sp3 hybridized Nitrogen with 3-implicit hydrogens
+1.0    1   N_32      16.023000   N         2            Sp3 hybridized Nitrogen with 2-implicit hydrogens
+1.0    1   N_31      15.015000   N         3            Sp3 hybridized Nitrogen with 1-implicit hydrogens
+1.0    1   N_3       14.007000   N         4            Sp3 hybridized Nitrogen with 0-implicit hydrogens
+1.0    1   N_R2      16.023000   N         1            Sp2 aromatic Nitrogen with 2-implicit hydrogens
+1.0    1   N_R1      15.015000   N         2            Sp2 aromatic Nitrogen with 1-implicit hydrogens
+1.0    1   N_R       14.007000   N         2            Sp2 aromatic Nitrogen with 0-implicit hydrogens
+1.0    1   N_22      16.023000   N         1            Sp2 non-aromatic Nitrogen with 2-implicit hydrogens
+1.0    1   N_21      15.015000   N         2            Sp2 non-aromatic Nitrogen with 1-implicit hydrogens
+1.0    1   N_2       14.007000   N         3            Sp2 non-aromatic Nitrogen with 0-implicit hydrogens
+1.0    1   N_22Mid   16.023000   N         1            Sp2 non-aromatic Nitrogen with 2-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   N_21Mid   15.015000   N         2            Sp2 non-aromatic Nitrogen with 1-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   N_2Mid    14.007000   N         3            Sp2 non-aromatic Nitrogen with 0-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   N_1       14.007000   N         2            Sp1 hybridized Nitrogen with 0-implicit hydrogens
+1.0    1   O_32      18.015000   O         0            Sp3 hybridized Oxygen with 2-implicit hydrogens           
+1.0    1   O_31      17.007000   O         1            Sp3 hybridized Oxygen with 1-implicit hydrogens 
+1.0    1   O_3       15.999000   O         2            Sp3 hybridized Oxygen with 0-implicit hydrogens 
+1.0    1   O_2       15.999000   O         2            Sp2 non-aromatic Oxygen with 0-implicit hydrogens 
+1.0    1   O_R1      17.007000   O         1            Sp2 aromatic Oxygen with 1-implicit hydrogens 
+1.0    1   O_R       15.999000   O         2            Sp2 aromatic Oxygen with 0-implicit hydrogens 
+1.0    1   O_1       15.999000   O         1            Sp1 hybridized Oxygen with 0-implicit hydrogens 
+1.0    1   F_        18.998400   F         1            Fluorine
+1.0    1   Al3       26.981500   Al        4            Sp3 Aluminium, e.g. in trialkylaluminium compounds
+1.0    1   Si3       28.085000   Si        4            Sp3 Silicon, e.g. in silanes
+1.0    1   P_3       30.973700   P         3            Sp3 Phosphorous, e.g. in phosphanes
+1.0    1   S_3       32.060000   S         2            Sulfur, e.g. in thiols, thioethers
+1.0    1   Cl        35.450000   Cl        1            Chlorine
+1.0    1   Ga3       69.723000   Ga        4            Sp3 Gallium
+1.0    1   Ge3       72.630000   Ge        4            Sp3 Germanium
+1.0    1   As3       74.921000   As        4            Sp3 Arsenic
+1.0    1   Se3       78.971000   Se        4            Sp3 Selenium
+1.0    1   Br        79.904000   Br        1            Bromine
+1.0    1   In3       114.81800   In        4            Sp3 Indium
+1.0    1   Sn3       118.71000   Sn        4            Sp3 Tin
+1.0    1   Sb3       121.76000   Sb        4            Sp3 Antimony
+1.0    1   Te3       121.60000   Te        4            Sp3 Tellurium
+1.0    1   I_        126.90447   I         1            Iodine
+1.0    1   Na        22.989700   Na        4            Sodium(+) ion
+1.0    1   Ca        40.078000   Ca        1            Calcium(++) ion
+1.0    1   Fe        55.845000   Fe        1            Iron(++) ion
+1.0    1   Zn        65.380000   Zn        1            Zinc(++) ion
+
+
+
+
+
+#harmonic_bond	DREIDING 
+
+> E  = 0.5*n*Ke*(R-Re)^2
+> n  = bond-order (1=single;2=double;3-triple;1.5=aromatic)
+> Re = Ri + Rj - delta
+> Ke = 700 ! kcal/mol (modify Ke as needed; write_dreiding_frc.py will use this value to set the bond energy)
+> delta = 0.01 ! angstrom (modify as needed; write_dreiding_frc.py will use this delta value to find Re)
+
+#morse_bond	DREIDING
+
+> E = De * (exp(-a*n*(R - Re)) - 1)^2
+> a = (Ke/2*De)^0.5 ! alpha formula
+> n  = bond-order (1=single;2=double;3-triple;1.5=aromatic)
+> Re = Ri + Rj - delta
+> De =  70 ! kcal/mol (modify De as needed; write_dreiding_frc.py will use this value to set the bond energy)
+> Ke = 700 ! kcal/mol (modify Ke as needed; write_dreiding_frc.py will use this value to set the bond energy)
+> delta = 0.01 ! angstrom (modify as needed; write_dreiding_frc.py will use this delta value to find Re)
+
+!Ver  Ref    Type     Ri       n      !                  comments
+!---- ---    ---      ------   -----  ! ---------------------------------------------------
+1.0   1      H_       0.330    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      H___HB   0.330    1      ! Table 1: Geometric Valence Parameters for DREIDING 
+1.0   1      H___b    0.510    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      B_3      0.880    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      B_2      0.790    2      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      C_3      0.770    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      C_R      0.700    1.5    ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      C_2      0.670    2      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      C_1      0.602    3      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      N_3      0.702    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      N_R      0.650    1.5    ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      N_2      0.615    2      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      N_1      0.556    3      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      O_3      0.660    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      O_R      0.660    1.5    ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      O_2      0.560    2      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      O_1      0.528    3      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      F_       0.611    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Al3      1.047    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Si3      0.937    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      P_3      0.890    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      S_3      1.040    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Cl       0.997    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Ga3      1.210    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Ge3      1.210    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      As3      1.210    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Se3      1.210    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Br       1.167    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      In3      1.390    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Sn3      1.373    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Sb3      1.432    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Te3      1.280    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      I_       1.360    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Na       1.860    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Ca       1.940    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Fe       1.285    1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Zn       1.330    1      ! Table 1: Geometric Valence Parameters for DREIDING
+
+
+#harmonic_angle DREIDING
+
+> E    = 0.5*Kijk(Thetaijk-Theta0)^2
+> Kijk = 100 ! (kcal/mol)/rad^2 (modify De as needed; write_dreiding_frc.py will use this value to set the angle energy)
+
+!Ver  Ref    Type     Theta0    !                  comments
+!---- ---    ---      -------   ! ---------------------------------------------------
+1.0   1      H_       180.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      H___HB   180.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      H___b    90.0      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      B_3      109.471   ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      B_2      120.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      C_3      109.471   ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      C_R      120.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      C_2      120.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      C_1      180.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      N_3      106.7     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      N_R      120.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      N_2      120.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      N_1      180.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      O_3      104.51    ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      O_R      120.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      O_2      120.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      O_1      180.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      F_       180.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Al3      109.471   ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Si3      109.471   ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      P_3      93.3      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      S_3      92.1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Cl       180.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Ga3      109.471   ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Ge3      109.471   ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      As3      92.1      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Se3      90.6      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Br       180.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      In3      109.471   ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Sn3      109.471   ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Sb3      91.6      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Te3      90.3      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      I_       180.0     ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Na       90.0      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Ca       90.0      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Fe       90.0      ! Table 1: Geometric Valence Parameters for DREIDING
+1.0   1      Zn       109.471   ! Table 1: Geometric Valence Parameters for DREIDING
+
+
+#torsion DREIDING
+
+> E = 0.5*Vjk(1 - cos[njk(phi - phi0jk)])
+> Vjk in Kcal/mol
+> njk an integer value
+> phi0jk in degrees
+> DREIDING usese hybridization state for torsion parms which reduces this section down substantially
+> SpRB-SpRB center bonds of the torsion are for rule (f) which means that the dihedral is between
+> two different rings and of not the same ring like in biphenyl o-o center bond in this representation
+
+> O will have its own unique eqvuilances due to rule (h) and rule (i). All O combinations will be
+> explicititly set to make sure O atom types get correct torsional parameters.
+
+!Ver  Ref     J          K          Vjk        njk      phi0jk    !  rule(s)   -    rule comments (if applicable)
+!---- ---   -----      -----     --------   --------   --------   ! ------------------------------------------------------------------
+1.0   1     Sp3        Sp3       2.0         3         180.0      !  rule (a) - N/A
+1.0   1     Sp2        Sp3       1.0         6         0.0        !  rule (b) - N/A
+1.0   1     SpR        Sp3       1.0         6         0.0        !  rule (b) - N/A
+1.0   1     Sp2        Sp2       45.0        2         0.0        !  rule (c) - N/A
+1.0   1     SpR        SpR       25.0        2         0.0        !  rule (d) - N/A
+1.0   1     Sp2        SpR       5.0         2         180.0      !  rule (e) - N/A
+1.0   1     SpRB       SpRB      10.0        2         0.0        !  rule (f) an excpetion to rule (e) for "B"ridging bond between rings 
+1.0   1     SpR        SpRB      25.0        2         0.0        !  rule (f) an excpetion to rule (e) for "B"ridging bond between rings 
+1.0   1     Sp1        *         0.0         0         0.0        !  rule (g) - N/A
+1.0   1     OSp3       OSp3      2.0         2         90.0       !  rule (h) - setting up 0-element atom type explicit equivalences
+1.0   1     OSp3       SpR       2.0         2         180.0      !  rule (i) - setting up 0-element atom type explicit equivalences
+1.0   1     OSp2       Sp3       2.0         2         180.0      !  rule (b) - for oxygen OSp2-Sp3
+1.0   1     OSpR       Sp3       2.0         2         180.0      !  rule (b) - for oxygen OSpR-Sp3
+1.0   1     OSpR       SpR       25.0        2         0.0        !  rule (d) - for oxygen OSpR-SpR
+1.0   1     OSp3       Sp3       2.0         3         180.0      !  explicit O Sp3-Sp3 equiv using rule (a)
+1.0   1     OSp2       OSp3      1.0         6         0.0        !  explicit O Sp2-Sp3 equiv using rule (b)
+1.0   1     OSp2       OSp2      45.0        2         0.0        !  explicit O Sp2-Sp2 equiv using rule (c)
+1.0   1     OSpR       OSpR      25.0        2         0.0        !  explicit O Sp2-SpR equiv using rule (d)
+1.0   1     OSp2       SpR       2.0         2         180.0      !  explicit O Sp2-SpR equiv using rule (e)
+1.0   1     OSp1       *         0.0         0         0.0        !  explicit O Sp1-*   equiv using rule (g)
+1.0   1     Sp2Mid     Sp3       2.0         3         180.0      !  rule (j) - Sp2 IS in the "middle" of molecule like in propene
+1.0   1     Sp2Mid     Sp2       45.0        2         0.0        !  explicit Sp2Mid-Sp2  equiv using (c)
+1.0   1     Sp2Mid     SpR       5.0         2         180.0      !  explicit Sp2Mid-Sp2  equiv using (e)
+!1.0  1     Sp0        *         0.0         0         0.0        !  Josh's rule to avoid "Unable to" print outs in all2lmp if this situation where to arrise, set all as zeros 
+
+
+#out_of_plane DREIDING
+
+> Computed with LAMMPS: improper_style umbrella
+> E = Kl*(1 - cos(phi)); if phi0==0
+> E = 0.5*Kl*[(1/sin(phi0)^2]*[(cos(phi) - cos(phi0))^2]; if phi0!=0
+
+!Ver  Ref     L          Kl        phi0     !                  comments
+!---- ---   -----      -----     --------   ! ---------------------------------------------------
+1.0   1     Planar     40.0      0.0        ! Equation (29) Kl = 40 (Kcal/mol)/rad^2 
+1.0   1     NonPlanar  0.0       0.0        ! DREDING sets Nonplanar as zeros
+
+
+#nonbond DREIDING
+
+@type A-B
+@combination geometric
+
+> E = D0*(rho^-12 - 2*rho^-6)
+> where rho = r/r0
+
+!Ver  Ref     I          r0            d0       !                                comments
+!---- ---    ----    -----------   -----------  ! -------------------------------------------------------------------------
+1.0   1      H_      3.1950        0.01520      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      H___b   3.1950        0.01520      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      H___HB  3.1950        0.00010      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      B_3     4.02          0.09500      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      B_2     4.02          0.09500      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_34    4.2370        0.30160      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_33    4.1524        0.25000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_32    4.0677        0.19840      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_31    3.9830        0.14670      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_3     3.8983        0.09510      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_R2    4.0800        0.21500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      C_R1    4.2300        0.13560      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_R     3.8983        0.09510      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_22    4.0800        0.21500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      C_21    3.9800        0.14500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
+1.0   1      C_2     3.8983        0.09510      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING      
+1.0   1      C_11    3.9800        0.14500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
+1.0   1      C_1     3.8983        0.09510      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      N_33    3.9950        0.41500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      N_32    3.8950        0.30500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      N_31    3.7950        0.21500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      N_3     3.6621        0.07740      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      N_R2    3.8950        0.30500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      N_R1    3.7950        0.21500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      N_R     3.6621        0.07740      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      N_22    3.8650        0.30500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      N_21    3.7970        0.21500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a  
+1.0   1      N_2     3.6621        0.07740      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
+1.0   1      N_1     3.6621        0.07740      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
+1.0   1      O_32    3.7100        0.41500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
+1.0   1      O_31    3.6100        0.30500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
+1.0   1      O_3     3.4046        0.09570      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
+1.0   1      O_2     3.4046        0.09570      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING   
+1.0   1      O_R1    3.6100        0.21500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
+1.0   1      O_R     3.4046        0.09570      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
+1.0   1      O_1     3.4046        0.09570      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
+1.0   1      F_      4.5400        0.05500      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Al3     4.3900        0.31000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Si3     4.2700        0.31000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      P_3     4.1500        0.32000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      S_3     4.0300        0.34400      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Cl      3.9503        0.28330      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Ga3     4.3900        0.40000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Ge3     4.2700        0.40000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      As3     4.1500        0.41000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Se3     4.0300        0.43000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Br      3.9500        0.37000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      In3     4.5900        0.55000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Sn3     4.4700        0.55000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Sb3     4.3500        0.55000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Te3     4.2300        0.57000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      I_      4.1500        0.51000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Na      3.1440        0.50000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Ca      3.4720        0.05000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Fe      4.5400        0.05500      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
+1.0   1      Zn      4.5400        0.05500      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+#reference 1
+@Author Stephen L. Mayo, Barry D. Olafson, and William A. Goddard III*’1
+@Date Jan-28-2023
+DREIDING: A Generic Force Field for Molecular Simulations
+
+
+#reference 2
+@Author tester
+@Date Jan-28-2023
+CRC Handbook of Chemistry and Physics, 95th Edition
+

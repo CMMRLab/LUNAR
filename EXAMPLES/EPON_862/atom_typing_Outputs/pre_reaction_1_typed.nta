@@ -1,0 +1,33 @@
+New type assignment file for pre_reaction_1_typed.nta.data > atom_typing v1.0 / 16 Jan 2023
+style id
+1      cp                   #  EDGE UPDATE
+2      cp                   #  NEAR-EDGE UPDATE
+3      cp                   #  EDGE UPDATE
+4      oc                   #  Correctly found
+5      c2                   #  Correctly found
+6      c3h                  #  Correctly found
+7      c3h                  #  Correctly found
+8      o3e                  #  Correctly found
+9      hc                   #  Correctly found
+10     hc                   #  Correctly found
+11     hc                   #  Correctly found
+12     hc                   #  Correctly found
+13     hc                   #  Correctly found
+14     nn                   #  Correctly found
+15     cp                   #  NEAR-EDGE UPDATE
+16     cp                   #  NEAR-EDGE UPDATE
+17     cp                   #  NEAR-EDGE UPDATE
+18     cp                   #  EDGE UPDATE
+19     cp                   #  EDGE UPDATE
+20     c3                   #  EDGE UPDATE
+21     c2                   #  EDGE UPDATE
+22     hn                   #  Correctly found
+23     hn                   #  Correctly found
+
+edge id
+1      cp hc  
+3      cp hc   
+18     cp nn
+19     cp hc  
+20     hc hc hc   
+21     c3 hc hc   

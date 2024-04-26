@@ -1,0 +1,49 @@
+#
+#    author:	Pieter J. in 't Veld
+#    date:	January 14, 2021, August 9, 2023
+#    purpose:	Collection of Morse potentials for LAMMPS
+#    version:	LAMMPS 2 AUG 2023
+#
+
+active
+------
+
+Holds tested additional pieces of code for the abovementioned version of
+LAMMPS.
+
+20210114	- Creation date
+		- Addition of pair_style lj, lj/morse, and lj/morse/coul/long
+
+PJV, 20210114
+
+
+Installing package
+------------------
+
+  make yes-user-morse
+  make machine
+
+where machine stands for the target machine.
+
+
+Added functionality
+-------------------
+
+Pair styles:
+
+pair_style	lj	cutoff
+pair_coeff	i	j	A	B	[cutoff]
+
+pair_style	lj/morse	cutoff
+pair_coeff	i	j	A	B	d0	alpha	r0	[cutoff]
+
+pair_style	lj/morse/coul/long
+pair_coeff	i	j	A	B	d0	alpha	r0	[cutoff]
+
+where
+
+E_LJ		= A/r^12 - B/r^6
+E_Morse		= d0 * ((exp(-alpha*(r-r0)) - 1.0)^2.0 - 1.0)
+
+Please note, that all interaction coefficients need to be provided due to absence of mixing rules.  Only pair_style lj/morse/coul/long supports RESPA.
+

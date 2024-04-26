@@ -1,0 +1,114 @@
+
+
+Running cell_builder v1.7 / 11 April 2024
+Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+2 LAMMPS datafiles were found to have a qty of ZERO. Using files to define system to add molecules two
+Total number of subcells required: 10
+3-Dimensional span of each subcell: 12
+
+
+Generating new simulation cell ....
+
+
+Finding energy coeffs ....
+
+
+
+-----------------------------------------------------
+   Cell building and randomization parameters used
+-----------------------------------------------------
+unwrap atoms by iflags:                  True
+locally group atoms:                    False
+offset coeff types:                      True
+distance scale:                           1.2
+duplicate:                                 10
+max rotations:             {'x': 360.0, 'y': 360.0, 'z': 360.0}
+seed:                                   12345
+domain:                                 cubic
+System files used:        
+   EXAMPLES/cell_builder/adding2system_detda_typed_IFF.data qty: 1
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+   EXAMPLES/cell_builder/adding2system_fullerene-C60_IFF.data qty: 0
+       atom TypeIDs offset      6
+       bond TypeIDs offset      9
+       angle TypeIDs offset     14
+       dihedral TypeIDs offset  14
+       improper TypeIDs offset  11
+   EXAMPLES/cell_builder/adding2system_VMD_graphite_typed_IFF.data qty: 0
+       atom TypeIDs offset      7
+       bond TypeIDs offset      10
+       angle TypeIDs offset     15
+       dihedral TypeIDs offset  15
+       improper TypeIDs offset  12
+
+
+
+----------------------------------------------
+              Subcell info
+----------------------------------------------
+Total number of subcells required:  10
+Lattice spacing for subcells     : 12 angstrom
+
+
+Finding new molids ....
+-----------------------------------------------------------------------------Cluster Analysis----------------------------------------------------------------------
+molID     Size       Mass      X-center   Y-center   Z-center        phi (°)      theta (°)        psi (°)   Molecule Formula           Filename         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  1        60       720.67         0.00       0.00       0.00           0.00           0.00           0.00         C60          adding2system_fullerene-C60_IFF.data
+  2       1008     12107.24        0.00       0.00       0.00           0.00           0.00           0.00        C1008         adding2system_VMD_graphite_typed_IFF.data
+  3        31       178.28       -12.00       0.00       0.00         177.30         106.90         230.20      C11-H18-N2      adding2system_detda_typed_IFF.data
+  4        31       178.28        12.00      12.00     -12.00          60.60          84.20         294.40      C11-H18-N2      adding2system_detda_typed_IFF.data
+  5        31       178.28         0.00       0.00       0.00          31.80          77.80         342.80      C11-H18-N2      adding2system_detda_typed_IFF.data
+  6        31       178.28         0.00     -12.00       0.00         152.80          50.80         358.00      C11-H18-N2      adding2system_detda_typed_IFF.data
+  7        31       178.28        12.00       0.00     -12.00         239.60         206.40          68.20      C11-H18-N2      adding2system_detda_typed_IFF.data
+  8        31       178.28         0.00     -12.00     -12.00         256.90          71.40         250.50      C11-H18-N2      adding2system_detda_typed_IFF.data
+  9       1008     12107.24        0.00       0.00       0.00           0.00           0.00           0.00        C1008         adding2system_VMD_graphite_typed_IFF.data
+  10       31       178.28        12.00     -12.00     -12.00         139.90         131.90           9.60      C11-H18-N2      adding2system_detda_typed_IFF.data
+  11       31       178.28       -12.00     -12.00      12.00         302.30         300.10          37.30      C11-H18-N2      adding2system_detda_typed_IFF.data
+  12       31       178.28        12.00      12.00       0.00         226.50          76.50         145.30      C11-H18-N2      adding2system_detda_typed_IFF.data
+  13       31       178.28         0.00       0.00       0.00           0.00           0.00           0.00      C11-H18-N2      adding2system_detda_typed_IFF.data
+  14       31       178.28         0.00       0.00     -12.00         217.50         301.20         168.80      C11-H18-N2      adding2system_detda_typed_IFF.data
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:            2417 
+nbonds:            3455 
+nangles:           6822 
+ndihedrals:        13204
+nimpropers:        2384 
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         36.00000  angstrom  
+Ly:         36.00000  angstrom  
+Lz:         36.00000  angstrom  
+volume:    4.6656E-20 cm^3      
+mass:      4.4662E-20 grams     
+density:    0.95727   g/cc      
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+Writing in.adding2system_cell_replicate script
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\cell_builder directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.23999309539794922
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

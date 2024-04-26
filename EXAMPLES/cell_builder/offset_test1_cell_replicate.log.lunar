@@ -1,0 +1,403 @@
+
+
+Running cell_builder v1.7 / 11 April 2024
+Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+Total number of subcells required: 310
+3-Dimensional span of each subcell: 11
+
+
+Generating new simulation cell ....
+
+
+Finding energy coeffs ....
+
+
+
+-----------------------------------------------------
+   Cell building and randomization parameters used
+-----------------------------------------------------
+unwrap atoms by iflags:                  True
+locally group atoms:                    False
+offset coeff types:                      True
+distance scale:                           1.2
+duplicate:                                 10
+max rotations:             {'x': 360.0, 'y': 360.0, 'z': 360.0}
+seed:                                   12345
+domain:                                 cubic
+System files used:        
+   EXAMPLES\cell_builder\offset_test1_Fullerene-C60_PCFF-IFF.data qty: 1
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+   EXAMPLES\cell_builder\offset_test1_water_PCFF-IFF.data qty: 30
+       atom TypeIDs offset      3
+       bond TypeIDs offset      2
+       angle TypeIDs offset     3
+       dihedral TypeIDs offset  1
+       improper TypeIDs offset  1
+
+
+
+----------------------------------------------
+              Subcell info
+----------------------------------------------
+Total number of subcells required:  310
+Lattice spacing for subcells     : 11 angstrom
+
+
+Finding new molids ....
+-----------------------------------------------------------------------------Cluster Analysis----------------------------------------------------------------------
+molID     Size       Mass      X-center   Y-center   Z-center        phi (°)      theta (°)        psi (°)   Molecule Formula           Filename         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  1        3        18.02          0.00     -11.00     -33.00         330.00         303.90          72.20        H2-O1         offset_test1_water_PCFF-IFF.data
+  2        3        18.02         22.00     -22.00     -22.00          41.70          52.80           5.80        H2-O1         offset_test1_water_PCFF-IFF.data
+  3        3        18.02        -11.00     -33.00       0.00         234.70         127.10         142.00        H2-O1         offset_test1_water_PCFF-IFF.data
+  4        3        18.02          0.00     -11.00     -22.00         104.50         146.80          19.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  5        3        18.02          0.00      11.00     -33.00         157.50          10.00         182.00        H2-O1         offset_test1_water_PCFF-IFF.data
+  6        3        18.02        -33.00      11.00      11.00         260.90          40.10         174.80        H2-O1         offset_test1_water_PCFF-IFF.data
+  7        3        18.02          0.00     -33.00       0.00         266.50         184.50         354.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  8        3        18.02         11.00      33.00       0.00         288.10          40.20         300.10        H2-O1         offset_test1_water_PCFF-IFF.data
+  9        3        18.02          0.00     -11.00      22.00          76.00         218.60          18.90        H2-O1         offset_test1_water_PCFF-IFF.data
+  10       3        18.02          0.00       0.00     -11.00          32.60         287.20          57.80        H2-O1         offset_test1_water_PCFF-IFF.data
+  11       3        18.02         11.00      33.00     -11.00         150.30          88.20         229.80        H2-O1         offset_test1_water_PCFF-IFF.data
+  12       3        18.02         11.00     -33.00     -11.00         268.70         291.80         293.40        H2-O1         offset_test1_water_PCFF-IFF.data
+  13       3        18.02         22.00     -11.00      11.00         263.80         112.60          58.40        H2-O1         offset_test1_water_PCFF-IFF.data
+  14       3        18.02        -11.00       0.00     -11.00         132.90         211.80         340.60        H2-O1         offset_test1_water_PCFF-IFF.data
+  15       3        18.02         22.00       0.00      11.00         167.10          22.00          75.60        H2-O1         offset_test1_water_PCFF-IFF.data
+  16       3        18.02        -33.00     -33.00      22.00         138.60         110.10         222.70        H2-O1         offset_test1_water_PCFF-IFF.data
+  17      180       720.67       -33.00     -33.00     -33.00          90.10          90.90         134.90       C60-H120       offset_test1_Fullerene-C60_PCFF-IFF.data
+  18       3        18.02        -33.00     -22.00     -33.00          40.30          64.90          54.90        H2-O1         offset_test1_water_PCFF-IFF.data
+  19       3        18.02         22.00       0.00       0.00         191.90         135.00          67.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  20       3        18.02        -22.00      33.00      33.00         164.80         268.50         132.40        H2-O1         offset_test1_water_PCFF-IFF.data
+  21       3        18.02         11.00     -33.00      11.00          35.00          67.70         332.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  22       3        18.02         33.00      22.00     -11.00          42.90         145.90         306.20        H2-O1         offset_test1_water_PCFF-IFF.data
+  23       3        18.02         33.00     -11.00     -33.00         234.30         219.40          36.40        H2-O1         offset_test1_water_PCFF-IFF.data
+  24       3        18.02         11.00     -33.00     -22.00         269.60         229.80          10.60        H2-O1         offset_test1_water_PCFF-IFF.data
+  25       3        18.02         11.00      22.00      22.00         278.00         110.50          59.10        H2-O1         offset_test1_water_PCFF-IFF.data
+  26       3        18.02          0.00     -22.00      22.00           5.30         197.20         249.10        H2-O1         offset_test1_water_PCFF-IFF.data
+  27       3        18.02         11.00      11.00       0.00         341.60         232.50         338.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  28       3        18.02        -22.00      33.00       0.00         129.00         160.40           8.70        H2-O1         offset_test1_water_PCFF-IFF.data
+  29       3        18.02        -22.00      33.00     -22.00          70.10          89.20         298.40        H2-O1         offset_test1_water_PCFF-IFF.data
+  30      180       720.67       -11.00     -22.00      33.00          39.40         251.80          71.30       C60-H120       offset_test1_Fullerene-C60_PCFF-IFF.data
+  31       3        18.02         11.00     -11.00      33.00         339.90          48.80         109.10        H2-O1         offset_test1_water_PCFF-IFF.data
+  32       3        18.02         22.00     -22.00     -33.00         299.90         186.50         347.80        H2-O1         offset_test1_water_PCFF-IFF.data
+  33       3        18.02         33.00      11.00       0.00         152.80         239.60         349.00        H2-O1         offset_test1_water_PCFF-IFF.data
+  34       3        18.02         33.00      33.00     -33.00         211.90         231.20         150.90        H2-O1         offset_test1_water_PCFF-IFF.data
+  35       3        18.02        -11.00     -33.00     -22.00          74.60          98.20         307.00        H2-O1         offset_test1_water_PCFF-IFF.data
+  36       3        18.02        -11.00      33.00      22.00         252.60         208.10         139.20        H2-O1         offset_test1_water_PCFF-IFF.data
+  37       3        18.02         22.00       0.00     -11.00         291.60         235.20          83.50        H2-O1         offset_test1_water_PCFF-IFF.data
+  38       3        18.02         22.00     -33.00     -22.00          72.00         227.80         152.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  39       3        18.02        -22.00       0.00     -33.00         207.70          77.60          89.60        H2-O1         offset_test1_water_PCFF-IFF.data
+  40       3        18.02         11.00     -11.00       0.00         101.70         168.20         350.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  41       3        18.02        -33.00      22.00      11.00         171.60         151.50         315.00        H2-O1         offset_test1_water_PCFF-IFF.data
+  42       3        18.02        -11.00      11.00      22.00         337.40          57.00           8.00        H2-O1         offset_test1_water_PCFF-IFF.data
+  43       3        18.02         33.00     -22.00     -33.00         228.40         202.50         265.70        H2-O1         offset_test1_water_PCFF-IFF.data
+  44       3        18.02         22.00     -33.00      22.00         323.50         184.60         299.80        H2-O1         offset_test1_water_PCFF-IFF.data
+  45       3        18.02        -33.00      33.00      33.00         325.20          79.10         191.20        H2-O1         offset_test1_water_PCFF-IFF.data
+  46       3        18.02         22.00      33.00     -33.00         168.80          62.20         310.60        H2-O1         offset_test1_water_PCFF-IFF.data
+  47       3        18.02          0.00      11.00       0.00         161.10         279.40         237.90        H2-O1         offset_test1_water_PCFF-IFF.data
+  48       3        18.02        -11.00     -22.00      22.00         252.60         157.60         107.40        H2-O1         offset_test1_water_PCFF-IFF.data
+  49       3        18.02        -11.00      11.00     -22.00         123.60         102.20         176.00        H2-O1         offset_test1_water_PCFF-IFF.data
+  50       3        18.02          0.00     -22.00     -33.00         109.80          86.40         349.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  51       3        18.02         33.00       0.00       0.00         119.70         183.70         189.50        H2-O1         offset_test1_water_PCFF-IFF.data
+  52       3        18.02        -33.00     -33.00     -11.00          64.90         172.80          19.40        H2-O1         offset_test1_water_PCFF-IFF.data
+  53       3        18.02         33.00     -22.00       0.00         215.10          39.80         322.40        H2-O1         offset_test1_water_PCFF-IFF.data
+  54       3        18.02         33.00     -11.00     -22.00         103.50         283.20         104.70        H2-O1         offset_test1_water_PCFF-IFF.data
+  55       3        18.02         33.00     -11.00      22.00         228.60         323.80         303.10        H2-O1         offset_test1_water_PCFF-IFF.data
+  56       3        18.02         33.00       0.00     -33.00         309.20         150.50          94.50        H2-O1         offset_test1_water_PCFF-IFF.data
+  57       3        18.02        -22.00      22.00      33.00         159.60         172.10         111.70        H2-O1         offset_test1_water_PCFF-IFF.data
+  58       3        18.02         33.00      33.00       0.00          26.20          82.00         269.90        H2-O1         offset_test1_water_PCFF-IFF.data
+  59       3        18.02          0.00     -22.00     -22.00          14.60          58.90         154.80        H2-O1         offset_test1_water_PCFF-IFF.data
+  60       3        18.02        -33.00      11.00      22.00         128.60         271.80         162.20        H2-O1         offset_test1_water_PCFF-IFF.data
+  61       3        18.02        -22.00     -33.00      22.00          61.90         230.70         238.40        H2-O1         offset_test1_water_PCFF-IFF.data
+  62       3        18.02          0.00      33.00     -11.00         245.90         353.40         187.50        H2-O1         offset_test1_water_PCFF-IFF.data
+  63       3        18.02         22.00     -22.00       0.00         343.10         191.00          56.80        H2-O1         offset_test1_water_PCFF-IFF.data
+  64       3        18.02          0.00     -22.00     -11.00         235.20         225.70         262.00        H2-O1         offset_test1_water_PCFF-IFF.data
+  65       3        18.02        -33.00      22.00      33.00         285.90         195.70         337.00        H2-O1         offset_test1_water_PCFF-IFF.data
+  66       3        18.02         33.00     -33.00     -11.00         223.30         335.20         268.60        H2-O1         offset_test1_water_PCFF-IFF.data
+  67       3        18.02        -11.00      11.00     -33.00          11.50         297.80         162.80        H2-O1         offset_test1_water_PCFF-IFF.data
+  68       3        18.02         33.00     -33.00      11.00         108.10         260.10         132.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  69       3        18.02        -33.00     -11.00     -22.00         243.20          70.50         314.70        H2-O1         offset_test1_water_PCFF-IFF.data
+  70       3        18.02         33.00      22.00     -22.00         227.30         354.30          82.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  71       3        18.02         33.00      33.00     -22.00          40.70          70.10         280.50        H2-O1         offset_test1_water_PCFF-IFF.data
+  72       3        18.02        -33.00     -11.00      33.00          20.00         189.00         271.10        H2-O1         offset_test1_water_PCFF-IFF.data
+  73       3        18.02         22.00      22.00      11.00         332.00          10.60         119.10        H2-O1         offset_test1_water_PCFF-IFF.data
+  74       3        18.02          0.00     -33.00      22.00         230.30         114.60         205.60        H2-O1         offset_test1_water_PCFF-IFF.data
+  75       3        18.02         33.00      11.00      11.00         291.40         290.50         251.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  76       3        18.02        -22.00       0.00       0.00         263.10          49.60         302.80        H2-O1         offset_test1_water_PCFF-IFF.data
+  77       3        18.02         11.00      11.00     -22.00         167.70         193.20          92.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  78       3        18.02        -33.00      22.00     -11.00         147.80         140.10          86.70        H2-O1         offset_test1_water_PCFF-IFF.data
+  79       3        18.02         11.00       0.00      22.00         330.80          50.00          38.60        H2-O1         offset_test1_water_PCFF-IFF.data
+  80       3        18.02        -33.00      22.00      22.00          97.80         163.70         202.00        H2-O1         offset_test1_water_PCFF-IFF.data
+  81       3        18.02        -33.00      22.00     -22.00         323.20         321.50          54.60        H2-O1         offset_test1_water_PCFF-IFF.data
+  82       3        18.02        -33.00     -11.00      11.00         212.10         183.00         177.90        H2-O1         offset_test1_water_PCFF-IFF.data
+  83       3        18.02        -22.00      33.00      11.00         348.40         145.10          54.10        H2-O1         offset_test1_water_PCFF-IFF.data
+  84       3        18.02        -33.00      33.00       0.00         262.30         298.10         270.50        H2-O1         offset_test1_water_PCFF-IFF.data
+  85       3        18.02         22.00      22.00      33.00         129.50         176.00          16.00        H2-O1         offset_test1_water_PCFF-IFF.data
+  86       3        18.02         11.00      11.00      22.00         150.70          49.00         249.20        H2-O1         offset_test1_water_PCFF-IFF.data
+  87       3        18.02          0.00      22.00     -11.00          69.50         190.00         328.90        H2-O1         offset_test1_water_PCFF-IFF.data
+  88       3        18.02        -11.00     -11.00     -22.00         299.00         305.60         335.80        H2-O1         offset_test1_water_PCFF-IFF.data
+  89       3        18.02         11.00      11.00      33.00         144.60         188.10         130.90        H2-O1         offset_test1_water_PCFF-IFF.data
+  90       3        18.02         11.00     -33.00      33.00         181.60         301.60          72.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  91       3        18.02        -11.00     -11.00     -33.00         136.00         317.90         267.60        H2-O1         offset_test1_water_PCFF-IFF.data
+  92       3        18.02          0.00      22.00      11.00          89.60         148.20         298.20        H2-O1         offset_test1_water_PCFF-IFF.data
+  93       3        18.02        -11.00      33.00     -11.00          60.30          49.80          69.90        H2-O1         offset_test1_water_PCFF-IFF.data
+  94       3        18.02        -11.00      33.00       0.00         341.80         140.60         169.20        H2-O1         offset_test1_water_PCFF-IFF.data
+  95       3        18.02         11.00      33.00     -22.00         228.30         293.10          54.00        H2-O1         offset_test1_water_PCFF-IFF.data
+  96       3        18.02          0.00      22.00       0.00         277.70         162.30         205.30        H2-O1         offset_test1_water_PCFF-IFF.data
+  97       3        18.02        -33.00      11.00     -22.00         295.10         113.10           9.70        H2-O1         offset_test1_water_PCFF-IFF.data
+  98       3        18.02         33.00     -11.00      11.00          40.80         126.60         181.70        H2-O1         offset_test1_water_PCFF-IFF.data
+  99       3        18.02         33.00     -22.00     -11.00         158.50          51.20         151.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 100       3        18.02         33.00      11.00     -33.00          45.70         328.70          50.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 101       3        18.02        -33.00     -11.00     -33.00           3.90         248.30         139.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 102       3        18.02        -33.00      11.00      33.00         212.20          12.30         210.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 103       3        18.02         11.00      22.00       0.00         229.20           2.30           6.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 104       3        18.02        -33.00     -11.00       0.00         271.20         342.30         240.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 105       3        18.02        -11.00       0.00     -22.00         309.10          50.30         319.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 106       3        18.02          0.00     -22.00      33.00          79.30         307.70         351.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 107       3        18.02        -33.00       0.00     -22.00           4.70         125.90         314.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 108       3        18.02         22.00     -22.00      33.00         238.50         262.40         209.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 109       3        18.02        -22.00     -22.00      11.00         178.40         335.20         166.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 110       3        18.02        -22.00     -11.00      22.00         207.30         350.60         232.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 111       3        18.02         22.00      22.00     -33.00          72.60          54.00          71.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 112       3        18.02         33.00      22.00      22.00         189.10         140.80          48.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 113       3        18.02        -33.00     -22.00      11.00         153.20         353.80         282.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 114       3        18.02         22.00      22.00     -11.00         156.20          95.60          44.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 115       3        18.02          0.00     -33.00     -33.00         193.50         226.10          69.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 116       3        18.02         11.00     -22.00      11.00         214.60         213.40          92.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 117       3        18.02         22.00     -33.00      33.00         131.10         329.80         320.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 118       3        18.02          0.00       0.00     -33.00          10.00          70.90          63.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 119       3        18.02          0.00      22.00     -33.00           2.90         307.60         187.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 120       3        18.02         11.00     -11.00      11.00         221.20         278.80         150.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 121       3        18.02        -22.00      11.00      22.00         299.80         160.70         195.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 122       3        18.02          0.00      33.00       0.00         130.00         341.30         139.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 123       3        18.02        -33.00      11.00     -11.00         306.90         327.50         207.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 124       3        18.02         11.00       0.00      33.00         351.50         177.60         188.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 125       3        18.02          0.00       0.00     -22.00          82.80         154.30          41.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 126       3        18.02        -33.00     -33.00       0.00          93.00         131.90          12.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 127       3        18.02        -22.00      22.00      11.00         173.90         231.90          51.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 128       3        18.02         33.00       0.00      22.00          11.80          86.00         175.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 129       3        18.02         11.00      33.00      22.00         243.70          93.60         170.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 130       3        18.02        -11.00     -33.00      11.00         262.90           1.90         339.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 131       3        18.02         11.00      33.00      33.00         252.10         113.40         251.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 132       3        18.02        -33.00      33.00     -33.00          59.00         201.40         335.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 133       3        18.02        -22.00     -22.00     -22.00          87.60          65.20         275.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 134       3        18.02        -11.00     -33.00     -11.00         125.50         208.90         117.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 135       3        18.02          0.00     -22.00       0.00         109.80         175.10          10.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 136       3        18.02        -11.00     -22.00       0.00         260.60          49.50         165.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 137       3        18.02         11.00      22.00     -11.00         172.90         333.10         100.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 138       3        18.02        -11.00     -11.00       0.00         322.30         212.10          28.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 139       3        18.02        -11.00     -22.00     -22.00          58.80         259.50         339.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 140       3        18.02        -11.00       0.00      22.00         205.70         135.60         230.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 141       3        18.02        -11.00     -22.00      11.00         315.50         280.00          63.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 142       3        18.02        -22.00     -11.00     -33.00         330.20          53.80          17.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 143       3        18.02        -33.00       0.00     -33.00          47.80          65.30         262.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 144       3        18.02         11.00     -11.00     -22.00          18.80         143.40          71.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 145       3        18.02          0.00      33.00     -33.00         145.70          65.50         344.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 146       3        18.02         33.00     -11.00     -11.00         130.90          39.90          61.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 147       3        18.02        -22.00      22.00     -22.00         282.20         182.90         271.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 148       3        18.02        -11.00     -33.00      33.00         135.80          66.50         102.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 149       3        18.02          0.00      22.00      33.00         203.80         151.60         300.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 150       3        18.02         33.00       0.00      33.00         323.70         256.20         123.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 151       3        18.02        -11.00     -11.00      11.00         160.60         203.90          56.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 152       3        18.02        -33.00     -11.00     -11.00           6.40         240.90          44.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 153       3        18.02          0.00      11.00     -11.00         197.40         299.50         312.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 154       3        18.02        -22.00     -11.00       0.00         272.60         144.40         251.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 155       3        18.02        -33.00     -22.00      22.00         329.20          49.00         274.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 156       3        18.02        -33.00       0.00      33.00         122.30         344.60         333.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 157       3        18.02         22.00      22.00     -22.00         230.40         231.50          37.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 158       3        18.02          0.00      11.00      22.00         179.40         180.30         262.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 159       3        18.02        -11.00     -22.00     -33.00         214.40         153.70         349.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 160       3        18.02         11.00       0.00     -11.00         320.60         101.80         200.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 161       3        18.02         22.00     -11.00     -11.00         347.00         311.30           9.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 162      180       720.67       -11.00      22.00      11.00          39.50         188.50         204.40       C60-H120       offset_test1_Fullerene-C60_PCFF-IFF.data
+ 163       3        18.02         33.00      22.00      11.00         291.50          18.20         331.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 164       3        18.02          0.00      11.00     -22.00         227.50         300.80         245.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 165       3        18.02        -33.00     -33.00     -22.00          44.60         326.30          44.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 166       3        18.02         11.00       0.00      11.00          42.50         332.40         311.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 167      180       720.67       -33.00     -33.00      33.00         192.10          24.10         173.40       C60-H120       offset_test1_Fullerene-C60_PCFF-IFF.data
+ 168       3        18.02        -22.00      33.00      22.00         313.10         195.80         307.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 169       3        18.02        -22.00     -11.00      11.00         190.60          45.40         134.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 170      180       720.67        11.00     -33.00      22.00         305.20         321.30          66.40       C60-H120       offset_test1_Fullerene-C60_PCFF-IFF.data
+ 171       3        18.02         33.00     -33.00      22.00         343.00         249.60         255.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 172       3        18.02         11.00     -22.00     -11.00         326.30         126.90         282.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 173       3        18.02         22.00     -33.00     -33.00         287.50         197.60         265.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 174       3        18.02        -22.00      11.00      33.00         248.60         314.30         313.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 175       3        18.02         33.00      33.00      11.00         243.80         178.00         237.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 176       3        18.02        -11.00      22.00     -33.00         183.00         309.60         291.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 177       3        18.02         22.00     -11.00     -22.00         291.00          49.20         134.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 178       3        18.02        -22.00       0.00     -22.00          49.90         339.50         218.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 179       3        18.02        -22.00     -22.00     -33.00          82.90          10.70          42.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 180       3        18.02        -33.00     -22.00     -22.00         283.40           4.50         190.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 181       3        18.02         22.00     -22.00      11.00         129.20          96.50         104.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 182       3        18.02         11.00      22.00      33.00         326.80          72.00         257.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 183       3        18.02         33.00      33.00      33.00          37.90         159.60         281.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 184       3        18.02          0.00      33.00      11.00          30.50          41.80         187.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 185       3        18.02        -22.00      22.00      22.00         198.80          43.00         194.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 186       3        18.02        -22.00       0.00      33.00         192.30         303.00         269.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 187       3        18.02         22.00     -11.00      22.00         283.50          74.50         138.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 188       3        18.02        -11.00      33.00     -22.00         205.50          75.60          30.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 189       3        18.02         11.00     -22.00      22.00         194.30          90.10         240.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 190       3        18.02        -33.00      11.00       0.00         311.50         289.70         281.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 191       3        18.02          0.00       0.00      22.00         102.00         181.90         124.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 192       3        18.02        -33.00       0.00       0.00         351.40         168.70         133.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 193       3        18.02        -11.00       0.00      11.00         139.50         319.70          91.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 194       3        18.02         22.00      11.00      11.00         329.50         227.10          85.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 195       3        18.02        -22.00     -22.00       0.00           9.00          25.70         291.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 196       3        18.02        -33.00     -22.00       0.00         175.50         298.70         202.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 197       3        18.02         22.00      33.00      22.00         313.30          99.20         334.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 198       3        18.02         33.00       0.00      11.00         105.70         116.90          54.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 199       3        18.02         22.00      11.00     -22.00         331.90         180.20         233.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 200       3        18.02        -33.00      22.00     -33.00         314.50          28.50         229.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 201       3        18.02        -33.00      11.00     -33.00          60.00         104.90          55.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 202       3        18.02         33.00     -33.00     -33.00         122.30         326.20         224.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 203       3        18.02        -33.00      33.00     -11.00         269.10           5.20          76.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 204       3        18.02         33.00       0.00     -11.00         324.70         303.50          95.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 205       3        18.02        -11.00       0.00       0.00         102.50          94.30          37.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 206       3        18.02         22.00      22.00       0.00         132.00         256.90         246.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 207      180       720.67       -33.00      33.00      11.00          13.60          20.90         126.50       C60-H120       offset_test1_Fullerene-C60_PCFF-IFF.data
+ 208       3        18.02        -22.00       0.00      11.00         342.80         206.60          44.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 209       3        18.02        -11.00      11.00     -11.00          92.20         159.80           5.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 210       3        18.02        -22.00     -22.00      22.00         257.00           0.00          79.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 211       3        18.02        -11.00      22.00      33.00         291.40         164.20         226.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 212       3        18.02         22.00       0.00     -33.00          94.90         324.90         348.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 213       3        18.02        -11.00      11.00      33.00         342.90         146.20         288.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 214      180       720.67         0.00     -11.00      11.00          73.80          85.30         226.70       C60-H120       offset_test1_Fullerene-C60_PCFF-IFF.data
+ 215       3        18.02         11.00      22.00      11.00          39.70         150.00         181.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 216       3        18.02         11.00       0.00     -33.00         101.90         267.20         220.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 217       3        18.02         22.00      33.00     -22.00         275.50         208.90         211.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 218       3        18.02        -33.00      33.00     -22.00         306.80         149.80         249.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 219       3        18.02        -33.00      33.00      22.00         272.80          15.40          58.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 220       3        18.02         33.00     -22.00     -22.00         356.60          50.20         317.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 221       3        18.02         33.00       0.00     -22.00         241.20         321.90         107.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 222       3        18.02          0.00       0.00      33.00         271.70         128.90         169.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 223       3        18.02          0.00     -33.00     -11.00         310.80           5.90         266.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 224       3        18.02        -11.00      33.00      33.00         325.10          83.50         102.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 225       3        18.02         11.00     -11.00     -33.00         157.90          35.20         174.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 226       3        18.02        -22.00      33.00     -11.00          13.10          15.00         278.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 227       3        18.02        -22.00     -33.00     -22.00         239.80         355.40         289.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 228       3        18.02         33.00      11.00     -11.00         197.60         141.90         225.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 229       3        18.02         33.00      22.00      33.00         282.60         356.50         135.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 230      180       720.67        22.00      11.00      22.00         342.00          88.60         215.00       C60-H120       offset_test1_Fullerene-C60_PCFF-IFF.data
+ 231       3        18.02         33.00     -22.00      33.00          87.40         153.00         159.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 232       3        18.02         33.00     -11.00       0.00           5.30         265.10         168.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 233       3        18.02         22.00      11.00     -11.00           0.10         134.30         354.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 234       3        18.02         33.00     -33.00     -22.00          63.70         256.70           5.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 235       3        18.02         11.00     -11.00      22.00         204.90          52.70          57.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 236       3        18.02         22.00      11.00     -33.00         260.40          38.10          10.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 237       3        18.02         22.00     -11.00     -33.00          63.30         179.70         232.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 238       3        18.02         11.00     -22.00       0.00         118.70         275.30          24.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 239       3        18.02         11.00     -22.00      33.00         135.70         166.20          28.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 240       3        18.02          0.00     -11.00       0.00         307.60          31.50         325.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 241       3        18.02        -33.00     -33.00      11.00         233.60         260.60         318.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 242       3        18.02        -33.00       0.00      11.00         115.60         220.00          29.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 243       3        18.02        -22.00       0.00      22.00         239.40          92.00         138.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 244       3        18.02          0.00      33.00      33.00         120.60          80.20         221.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 245       3        18.02        -11.00      33.00     -33.00          79.80          29.90         321.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 246       3        18.02        -11.00      22.00       0.00         350.50          75.20         222.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 247       3        18.02        -22.00      33.00     -33.00          10.00         291.20         144.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 248       3        18.02         11.00       0.00       0.00          55.60         190.90         211.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 249       3        18.02        -22.00      11.00     -22.00          80.90         182.00          84.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 250       3        18.02        -22.00      22.00     -11.00          34.40         101.10         169.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 251       3        18.02         22.00      22.00      22.00         165.20         230.20         102.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 252       3        18.02         33.00      22.00     -33.00         173.60          32.60          73.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 253       3        18.02        -33.00     -22.00     -11.00         126.80           2.10         119.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 254       3        18.02          0.00     -11.00      33.00         201.30         121.00         338.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 255       3        18.02         11.00     -22.00     -22.00         216.10          80.60         287.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 256       3        18.02        -11.00      22.00      22.00         254.10         284.70         123.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 257       3        18.02        -11.00      33.00      11.00         284.10         258.50          82.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 258       3        18.02        -22.00      11.00      11.00         309.60          16.70         289.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 259       3        18.02          0.00     -33.00      33.00          59.00         177.10         280.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 260       3        18.02         11.00     -11.00     -11.00          10.90         142.00         274.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 261       3        18.02         22.00     -33.00     -11.00         138.00         106.80         240.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 262       3        18.02        -22.00      11.00     -11.00         118.70         287.70           0.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 263       3        18.02        -22.00       0.00     -11.00         179.50          11.20         130.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 264       3        18.02         22.00     -22.00     -11.00         280.50          33.70         172.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 265       3        18.02         22.00       0.00     -22.00         294.50          18.60         183.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 266       3        18.02        -11.00      11.00      11.00         238.70         332.70         353.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 267       3        18.02        -11.00     -11.00     -11.00         330.20         196.30         136.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 268       3        18.02          0.00       0.00      11.00         269.60         195.40         348.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 269       3        18.02        -33.00       0.00      22.00          88.00           0.40          39.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 270       3        18.02        -11.00       0.00      33.00         299.10         279.60         179.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 271       3        18.02        -22.00     -11.00     -22.00         199.50         136.20         331.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 272       3        18.02        -22.00     -33.00       0.00         310.10          24.00         107.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 273       3        18.02         11.00      11.00      11.00         111.90          31.00         215.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 274       3        18.02          0.00      33.00     -22.00          54.10         204.30         184.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 275       3        18.02         33.00      22.00       0.00          30.60         303.70          63.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 276       3        18.02          0.00     -33.00     -22.00         241.10         183.00         172.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 277       3        18.02        -22.00      11.00     -33.00          60.30         114.00          99.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 278       3        18.02         22.00      33.00     -11.00         208.10         142.90          86.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 279       3        18.02         22.00      11.00      33.00          12.00         108.60         113.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 280       3        18.02        -33.00      22.00       0.00          56.10          54.70         172.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 281       3        18.02        -11.00     -22.00     -11.00         350.50         217.70         144.60        H2-O1         offset_test1_water_PCFF-IFF.data
+ 282       3        18.02          0.00      22.00      22.00         134.50          87.30          52.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 283       3        18.02          0.00     -11.00     -11.00         173.80         237.30         172.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 284       3        18.02         22.00      33.00      11.00         176.40          94.10         254.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 285       3        18.02        -11.00     -11.00      22.00         290.40         314.60          99.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 286       3        18.02         11.00      33.00     -33.00           2.20         211.50         299.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 287      180       720.67        11.00      11.00     -11.00          98.90         280.90         193.10       C60-H120       offset_test1_Fullerene-C60_PCFF-IFF.data
+ 288       3        18.02          0.00      11.00      11.00         237.90          49.50         241.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 289       3        18.02         33.00     -33.00       0.00           9.10          29.40         330.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 290       3        18.02          0.00      22.00     -22.00         164.40         323.90         264.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 291       3        18.02         11.00     -33.00       0.00         229.90         223.90         200.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 292       3        18.02         33.00     -22.00      22.00         264.80          73.80          82.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 293      180       720.67        22.00      33.00       0.00         156.90         240.90         222.50       C60-H120       offset_test1_Fullerene-C60_PCFF-IFF.data
+ 294       3        18.02        -33.00     -11.00      22.00          28.60          30.00         157.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 295       3        18.02         33.00      33.00      22.00          77.10         297.90         167.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 296       3        18.02         22.00     -11.00      33.00          87.40         113.70          92.20        H2-O1         offset_test1_water_PCFF-IFF.data
+ 297       3        18.02        -22.00     -33.00      33.00         177.40         184.60         171.40        H2-O1         offset_test1_water_PCFF-IFF.data
+ 298       3        18.02         22.00       0.00      22.00          63.80         184.80         134.30        H2-O1         offset_test1_water_PCFF-IFF.data
+ 299       3        18.02        -22.00     -33.00     -11.00         158.60          65.60         127.70        H2-O1         offset_test1_water_PCFF-IFF.data
+ 300       3        18.02         22.00     -11.00       0.00         108.60         232.10          96.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 301       3        18.02        -22.00      22.00     -33.00         174.90          91.40         281.00        H2-O1         offset_test1_water_PCFF-IFF.data
+ 302       3        18.02        -33.00       0.00     -11.00          93.60         238.70         344.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 303       3        18.02        -22.00     -11.00     -11.00         242.50         174.30         328.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 304       3        18.02        -11.00     -11.00      33.00          53.90         146.80          92.10        H2-O1         offset_test1_water_PCFF-IFF.data
+ 305       3        18.02        -22.00     -11.00      33.00         145.00         100.40         282.90        H2-O1         offset_test1_water_PCFF-IFF.data
+ 306       3        18.02         11.00      33.00      11.00         341.00           0.90          95.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 307       3        18.02         22.00      11.00       0.00         321.00         131.30          89.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 308       3        18.02          0.00     -33.00      11.00         297.70         112.60         198.50        H2-O1         offset_test1_water_PCFF-IFF.data
+ 309       3        18.02         11.00     -33.00     -33.00          44.60         262.20         220.80        H2-O1         offset_test1_water_PCFF-IFF.data
+ 310       3        18.02        -22.00      22.00       0.00         328.10         272.90          99.40        H2-O1         offset_test1_water_PCFF-IFF.data
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:            2700 
+nbonds:            2700 
+nangles:           6300 
+ndihedrals:        3600 
+nimpropers:         600 
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         77.00000  angstrom  
+Ly:         77.00000  angstrom  
+Lz:         77.00000  angstrom  
+volume:    4.5653E-19 cm^3      
+mass:      2.0942E-20 grams     
+density:    0.04587   g/cc      
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+Writing in.offset_test1_cell_replicate script
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\cell_builder directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.12599563598632812
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

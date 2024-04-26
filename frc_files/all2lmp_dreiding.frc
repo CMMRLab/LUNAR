@@ -1,0 +1,1741 @@
+! all2lmp Drieding specific forcefield with cvff class1 format except for inversion terms and energy definitons to be compatable
+! with all2lmp ff_class=d. The "!" character still acts as a comment character and all2lmp will disregard any information after
+! the "!" character
+
+! Implementation of energy coeffs comes from:
+! Mayo, S. L., Olafson, B. D., & Goddard, W. A. (1990). DREIDING: a generic force field
+! for molecular simulations. The Journal of Physical Chemistry, 94(26), 8897–8909.
+
+#version all2lmp_dreiding.frc     1.0     May-24-2023
+#define all2lmp DRIEDING .frc file
+#atom_types cvff
+
+> Atom type definitions for any variant of cvff
+> Masses from CRC 2014/2015 appendix B, using conventional masses.
+
+!Ver Ref   Type         Mass      Element   Connection   Comment
+!--- ---   -----      ----------  -------   ----------   ---------------------------
+1.0    1   H_           1.008000   H         1            Generic hydrogen
+1.0    1   H___HB       1.008000   H         1            Hydrogen cabable of forming hydrogen bonds
+1.0    1   H___b        1.008000   H         1            Bridging hydrogen of diborane
+1.0    1   B_3         10.810000   B         3            Sp3 hybridized Boron
+1.0    1   B_2         10.810000   B         2            Sp2 hybridized Boron
+1.0    1   B_2Mid      10.810000   B         2            Sp2 hybridized Boron in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   C_34        16.043000   C         0            Sp3 hybridized Carbon with 4-implicit hydrogens
+1.0    1   C_33        15.035000   C         1            Sp3 hybridized Carbon with 3-implicit hydrogens
+1.0    1   C_32        14.027000   C         2            Sp3 hybridized Carbon with 2-implicit hydrogens
+1.0    1   C_31        13.019000   C         3            Sp3 hybridized Carbon with 1-implicit hydrogens
+1.0    1   C_3         12.011000   C         4            Sp3 hybridized Carbon with 0-implicit hydrogens
+1.0    1   C_R2        14.027000   C         1            Sp2 aromatic Carbon with 2-implicit hydrogens
+1.0    1   C_R1        13.019000   C         2            Sp2 aromatic Carbon with 1-implicit hydrogens
+1.0    1   C_R         12.011000   C         3            Sp2 aromatic Carbon with 0-implicit hydrogens
+1.0    1   C_RB        12.011000   C         3            Sp2 aromatic Carbon with 0-implicit hydrogens "B"ridging bond between two aromatic rings like in propene (will assign torsions differently)
+1.0    1   C_22        14.027000   C         1            Sp2 non-aromatic Carbon with 2-implicit hydrogens
+1.0    1   C_21        13.019000   C         2            Sp2 non-aromatic Carbon with 1-implicit hydrogens
+1.0    1   C_2         12.011000   C         3            Sp2 non-aromatic Carbon with 0-implicit hydrogens
+1.0    1   C_22Mid     14.027000   C         1            Sp2 non-aromatic Carbon with 2-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   C_21Mid     13.019000   C         2            Sp2 non-aromatic Carbon with 1-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   C_2Mid      12.011000   C         3            Sp2 non-aromatic Carbon with 0-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   C_11        13.019000   C         1            Sp1 hybridized Carbon with 1-implicit hydrogens
+1.0    1   C_1         12.011000   C         2            Sp1 hybridized Carbon with 0-implicit hydrogens
+1.0    1   N_33        17.031000   N         1            Sp3 hybridized Nitrogen with 3-implicit hydrogens
+1.0    1   N_32        16.023000   N         2            Sp3 hybridized Nitrogen with 2-implicit hydrogens
+1.0    1   N_31        15.015000   N         3            Sp3 hybridized Nitrogen with 1-implicit hydrogens
+1.0    1   N_3         14.007000   N         4            Sp3 hybridized Nitrogen with 0-implicit hydrogens
+1.0    1   N_R2        16.023000   N         1            Sp2 aromatic Nitrogen with 2-implicit hydrogens
+1.0    1   N_R1        15.015000   N         2            Sp2 aromatic Nitrogen with 1-implicit hydrogens
+1.0    1   N_R         14.007000   N         2            Sp2 aromatic Nitrogen with 0-implicit hydrogens
+1.0    1   N_22        16.023000   N         1            Sp2 non-aromatic Nitrogen with 2-implicit hydrogens
+1.0    1   N_21        15.015000   N         2            Sp2 non-aromatic Nitrogen with 1-implicit hydrogens
+1.0    1   N_2         14.007000   N         3            Sp2 non-aromatic Nitrogen with 0-implicit hydrogens
+1.0    1   N_22Mid     16.023000   N         1            Sp2 non-aromatic Nitrogen with 2-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   N_21Mid     15.015000   N         2            Sp2 non-aromatic Nitrogen with 1-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   N_2Mid      14.007000   N         3            Sp2 non-aromatic Nitrogen with 0-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
+1.0    1   N_1         14.007000   N         2            Sp1 hybridized Nitrogen with 0-implicit hydrogens
+1.0    1   O_32        18.015000   O         0            Sp3 hybridized Oxygen with 2-implicit hydrogens
+1.0    1   O_31        17.007000   O         1            Sp3 hybridized Oxygen with 1-implicit hydrogens
+1.0    1   O_3         15.999000   O         2            Sp3 hybridized Oxygen with 0-implicit hydrogens
+1.0    1   O_2         15.999000   O         2            Sp2 non-aromatic Oxygen with 0-implicit hydrogens
+1.0    1   O_R1        17.007000   O         1            Sp2 aromatic Oxygen with 1-implicit hydrogens
+1.0    1   O_R         15.999000   O         2            Sp2 aromatic Oxygen with 0-implicit hydrogens
+1.0    1   O_1         15.999000   O         1            Sp1 hybridized Oxygen with 0-implicit hydrogens
+1.0    1   F_          18.998400   F         1            Fluorine
+1.0    1   Al3         26.981500   Al        4            Sp3 Aluminium, e.g. in trialkylaluminium compounds
+1.0    1   Si3         28.085000   Si        4            Sp3 Silicon, e.g. in silanes
+1.0    1   P_3         30.973700   P         3            Sp3 Phosphorous, e.g. in phosphanes
+1.0    1   S_3         32.060000   S         2            Sulfur, e.g. in thiols, thioethers
+1.0    1   Cl          35.450000   Cl        1            Chlorine
+1.0    1   Ga3         69.723000   Ga        4            Sp3 Gallium
+1.0    1   Ge3         72.630000   Ge        4            Sp3 Germanium
+1.0    1   As3         74.921000   As        4            Sp3 Arsenic
+1.0    1   Se3         78.971000   Se        4            Sp3 Selenium
+1.0    1   Br          79.904000   Br        1            Bromine
+1.0    1   In3         114.818000  In        4            Sp3 Indium
+1.0    1   Sn3         118.710000  Sn        4            Sp3 Tin
+1.0    1   Sb3         121.760000  Sb        4            Sp3 Antimony
+1.0    1   Te3         121.600000  Te        4            Sp3 Tellurium
+1.0    1   I_          126.904470  I         1            Iodine
+1.0    1   Na          22.989700   Na        4            Sodium(+) ion
+1.0    1   Ca          40.078000   Ca        1            Calcium(++) ion
+1.0    1   Fe          55.845000   Fe        1            Iron(++) ion
+1.0    1   Zn          65.380000   Zn        1            Zinc(++) ion
+
+
+
+#equivalence cvff
+
+> Equivalence table for any variant of cvff
+
+!		         	                     Equivalences
+!                 -------------------------------------------------------
+!Ver  Ref    Type       NonB       Bond       Angle      Torsion      OOP
+!---- ---    ----       ----       ----       -----      -------     -----
+1.0    1     H_         H_         H_         H_         Sp0         NonPlanar
+1.0    1     H___HB     H___HB     H___HB     H___HB     Sp0         NonPlanar
+1.0    1     H___b      H___b      H___b      H___b      Sp0         NonPlanar
+1.0    1     B_3        B_3        B_3        B_3        Sp3         NonPlanar
+1.0    1     B_2        B_2        B_2        B_2        Sp2         Planar  
+1.0    1     B_2Mid     B_2        B_2        B_2        Sp2Mid      Planar  
+1.0    1     C_34       C_3        C_3        C_3        Sp3         NonPlanar
+1.0    1     C_33       C_3        C_3        C_3        Sp3         NonPlanar
+1.0    1     C_32       C_3        C_3        C_3        Sp3         NonPlanar
+1.0    1     C_31       C_3        C_3        C_3        Sp3         NonPlanar
+1.0    1     C_3        C_3        C_3        C_3        Sp3         NonPlanar
+1.0    1     C_R2       C_R        C_R        C_R        SpR         Planar  
+1.0    1     C_R1       C_R        C_R        C_R        SpR         Planar  
+1.0    1     C_R        C_R        C_R        C_R        SpR         Planar  
+1.0    1     C_RB       C_R        C_R        C_R        SpRB        Planar  
+1.0    1     C_22       C_2        C_2        C_2        Sp2         Planar  
+1.0    1     C_21       C_2        C_2        C_2        Sp2         Planar  
+1.0    1     C_2        C_2        C_2        C_2        Sp2         Planar  
+1.0    1     C_22Mid    C_2        C_2        C_2        Sp2Mid      Planar  
+1.0    1     C_21Mid    C_2        C_2        C_2        Sp2Mid      Planar  
+1.0    1     C_2Mid     C_2        C_2        C_2        Sp2Mid      Planar  
+1.0    1     C_11       C_1        C_1        C_1        Sp1         NonPlanar
+1.0    1     C_1        C_1        C_1        C_1        Sp1         NonPlanar
+1.0    1     N_33       N_3        N_3        N_3        Sp3         NonPlanar
+1.0    1     N_32       N_3        N_3        N_3        Sp3         NonPlanar
+1.0    1     N_31       N_3        N_3        N_3        Sp3         NonPlanar
+1.0    1     N_3        N_3        N_3        N_3        Sp3         NonPlanar
+1.0    1     N_R2       N_R        N_R        N_R        SpR         Planar  
+1.0    1     N_R1       N_R        N_R        N_R        SpR         Planar  
+1.0    1     N_R        N_R        N_R        N_R        SpR         Planar  
+1.0    1     N_22       N_2        N_2        N_2        Sp2         Planar  
+1.0    1     N_21       N_2        N_2        N_2        Sp2         Planar  
+1.0    1     N_2        N_2        N_2        N_2        Sp2         Planar  
+1.0    1     N_22Mid    N_2        N_2        N_2        Sp2Mid      Planar  
+1.0    1     N_21Mid    N_2        N_2        N_2        Sp2Mid      Planar  
+1.0    1     N_2Mid     N_2        N_2        N_2        Sp2Mid      Planar  
+1.0    1     N_1        N_1        N_1        N_1        Sp1         NonPlanar
+1.0    1     O_32       O_3        O_3        O_3        OSp3        NonPlanar
+1.0    1     O_31       O_3        O_3        O_3        OSp3        NonPlanar
+1.0    1     O_3        O_3        O_3        O_3        OSp3        NonPlanar
+1.0    1     O_2        O_2        O_2        O_2        OSp2        Planar  
+1.0    1     O_R1       O_R        O_R        O_R        OSpR        Planar  
+1.0    1     O_R        O_R        O_R        O_R        OSpR        Planar  
+1.0    1     O_1        O_1        O_1        O_1        OSp1        NonPlanar
+1.0    1     F_         F_         F_         F_         Sp0         NonPlanar
+1.0    1     Al3        Al3        Al3        Al3        Sp3         NonPlanar
+1.0    1     Si3        Si3        Si3        Si3        Sp3         NonPlanar
+1.0    1     P_3        P_3        P_3        P_3        Sp3         NonPlanar
+1.0    1     S_3        S_3        S_3        S_3        Sp3         NonPlanar
+1.0    1     Cl         Cl         Cl         Cl         Sp0         NonPlanar
+1.0    1     Ga3        Ga3        Ga3        Ga3        Sp3         NonPlanar
+1.0    1     Ge3        Ge3        Ge3        Ge3        Sp3         NonPlanar
+1.0    1     As3        As3        As3        As3        Sp3         NonPlanar
+1.0    1     Se3        Se3        Se3        Se3        Sp3         NonPlanar
+1.0    1     Br         Br         Br         Br         Sp0         NonPlanar
+1.0    1     In3        In3        In3        In3        Sp3         NonPlanar
+1.0    1     Sn3        Sn3        Sn3        Sn3        Sp3         NonPlanar
+1.0    1     Sb3        Sb3        Sb3        Sb3        Sp3         NonPlanar
+1.0    1     Te3        Te3        Te3        Te3        Sp3         NonPlanar
+1.0    1     I_         I_         I_         I_         Sp0         NonPlanar
+1.0    1     Na         Na         Na         Na         Sp0         NonPlanar
+1.0    1     Ca         Ca         Ca         Ca         Sp0         NonPlanar
+1.0    1     Fe         Fe         Fe         Fe         Sp0         NonPlanar
+1.0    1     Zn         Zn         Zn         Zn         Sp0         NonPlanar
+1.0    1     X          X          X          X          X           X       
+
+
+
+#quadratic_bond cvff
+
+> Computed with LAMMPS: bond_style harmonic
+> E = K2 * (R - R0)^2
+
+!Ver  Ref     I          J          R0         K2
+!---- ---   -----      -----     --------   --------
+1.0    1    H_         H_         0.6500    350.0000 
+1.0    1    H_         H___HB     0.6500    350.0000 
+1.0    1    H_         H___b      0.8300    350.0000 
+1.0    1    H_         B_3        1.2000    350.0000 
+1.0    1    H_         B_2        1.1100    350.0000 
+1.0    1    H_         C_3        1.0900    350.0000 
+1.0    1    H_         C_R        1.0200    350.0000 
+1.0    1    H_         C_2        0.9900    350.0000 
+1.0    1    H_         C_1        0.9220    350.0000 
+1.0    1    H_         N_3        1.0220    350.0000 
+1.0    1    H_         N_R        0.9700    350.0000 
+1.0    1    H_         N_2        0.9350    350.0000 
+1.0    1    H_         N_1        0.8760    350.0000 
+1.0    1    H_         O_3        0.9800    350.0000 
+1.0    1    H_         O_R        0.9800    350.0000 
+1.0    1    H_         O_2        0.8800    350.0000 
+1.0    1    H_         O_1        0.8480    350.0000 
+1.0    1    H_         F_         0.9310    350.0000 
+1.0    1    H_         Al3        1.3670    350.0000 
+1.0    1    H_         Si3        1.2570    350.0000 
+1.0    1    H_         P_3        1.2100    350.0000 
+1.0    1    H_         S_3        1.3600    350.0000 
+1.0    1    H_         Cl         1.3170    350.0000 
+1.0    1    H_         Ga3        1.5300    350.0000 
+1.0    1    H_         Ge3        1.5300    350.0000 
+1.0    1    H_         As3        1.5300    350.0000 
+1.0    1    H_         Se3        1.5300    350.0000 
+1.0    1    H_         Br         1.4870    350.0000 
+1.0    1    H_         In3        1.7100    350.0000 
+1.0    1    H_         Sn3        1.6930    350.0000 
+1.0    1    H_         Sb3        1.7520    350.0000 
+1.0    1    H_         Te3        1.6000    350.0000 
+1.0    1    H_         I_         1.6800    350.0000 
+1.0    1    H_         Na         2.1800    350.0000 
+1.0    1    H_         Ca         2.2600    350.0000 
+1.0    1    H_         Fe         1.6050    350.0000 
+1.0    1    H_         Zn         1.6500    350.0000 
+1.0    1    H___HB     H___HB     0.6500    350.0000 
+1.0    1    H___HB     H___b      0.8300    350.0000 
+1.0    1    H___HB     B_3        1.2000    350.0000 
+1.0    1    H___HB     B_2        1.1100    350.0000 
+1.0    1    H___HB     C_3        1.0900    350.0000 
+1.0    1    H___HB     C_R        1.0200    350.0000 
+1.0    1    H___HB     C_2        0.9900    350.0000 
+1.0    1    H___HB     C_1        0.9220    350.0000 
+1.0    1    H___HB     N_3        1.0220    350.0000 
+1.0    1    H___HB     N_R        0.9700    350.0000 
+1.0    1    H___HB     N_2        0.9350    350.0000 
+1.0    1    H___HB     N_1        0.8760    350.0000 
+1.0    1    H___HB     O_3        0.9800    350.0000 
+1.0    1    H___HB     O_R        0.9800    350.0000 
+1.0    1    H___HB     O_2        0.8800    350.0000 
+1.0    1    H___HB     O_1        0.8480    350.0000 
+1.0    1    H___HB     F_         0.9310    350.0000 
+1.0    1    H___HB     Al3        1.3670    350.0000 
+1.0    1    H___HB     Si3        1.2570    350.0000 
+1.0    1    H___HB     P_3        1.2100    350.0000 
+1.0    1    H___HB     S_3        1.3600    350.0000 
+1.0    1    H___HB     Cl         1.3170    350.0000 
+1.0    1    H___HB     Ga3        1.5300    350.0000 
+1.0    1    H___HB     Ge3        1.5300    350.0000 
+1.0    1    H___HB     As3        1.5300    350.0000 
+1.0    1    H___HB     Se3        1.5300    350.0000 
+1.0    1    H___HB     Br         1.4870    350.0000 
+1.0    1    H___HB     In3        1.7100    350.0000 
+1.0    1    H___HB     Sn3        1.6930    350.0000 
+1.0    1    H___HB     Sb3        1.7520    350.0000 
+1.0    1    H___HB     Te3        1.6000    350.0000 
+1.0    1    H___HB     I_         1.6800    350.0000 
+1.0    1    H___HB     Na         2.1800    350.0000 
+1.0    1    H___HB     Ca         2.2600    350.0000 
+1.0    1    H___HB     Fe         1.6050    350.0000 
+1.0    1    H___HB     Zn         1.6500    350.0000 
+1.0    1    H___b      H___b      1.0100    350.0000 
+1.0    1    H___b      B_3        1.3800    350.0000 
+1.0    1    H___b      B_2        1.2900    350.0000 
+1.0    1    H___b      C_3        1.2700    350.0000 
+1.0    1    H___b      C_R        1.2000    350.0000 
+1.0    1    H___b      C_2        1.1700    350.0000 
+1.0    1    H___b      C_1        1.1020    350.0000 
+1.0    1    H___b      N_3        1.2020    350.0000 
+1.0    1    H___b      N_R        1.1500    350.0000 
+1.0    1    H___b      N_2        1.1150    350.0000 
+1.0    1    H___b      N_1        1.0560    350.0000 
+1.0    1    H___b      O_3        1.1600    350.0000 
+1.0    1    H___b      O_R        1.1600    350.0000 
+1.0    1    H___b      O_2        1.0600    350.0000 
+1.0    1    H___b      O_1        1.0280    350.0000 
+1.0    1    H___b      F_         1.1110    350.0000 
+1.0    1    H___b      Al3        1.5470    350.0000 
+1.0    1    H___b      Si3        1.4370    350.0000 
+1.0    1    H___b      P_3        1.3900    350.0000 
+1.0    1    H___b      S_3        1.5400    350.0000 
+1.0    1    H___b      Cl         1.4970    350.0000 
+1.0    1    H___b      Ga3        1.7100    350.0000 
+1.0    1    H___b      Ge3        1.7100    350.0000 
+1.0    1    H___b      As3        1.7100    350.0000 
+1.0    1    H___b      Se3        1.7100    350.0000 
+1.0    1    H___b      Br         1.6670    350.0000 
+1.0    1    H___b      In3        1.8900    350.0000 
+1.0    1    H___b      Sn3        1.8730    350.0000 
+1.0    1    H___b      Sb3        1.9320    350.0000 
+1.0    1    H___b      Te3        1.7800    350.0000 
+1.0    1    H___b      I_         1.8600    350.0000 
+1.0    1    H___b      Na         2.3600    350.0000 
+1.0    1    H___b      Ca         2.4400    350.0000 
+1.0    1    H___b      Fe         1.7850    350.0000 
+1.0    1    H___b      Zn         1.8300    350.0000 
+1.0    1    B_3        B_3        1.7500    350.0000 
+1.0    1    B_3        B_2        1.6600    350.0000 
+1.0    1    B_3        C_3        1.6400    350.0000 
+1.0    1    B_3        C_R        1.5700    350.0000 
+1.0    1    B_3        C_2        1.5400    350.0000 
+1.0    1    B_3        C_1        1.4720    350.0000 
+1.0    1    B_3        N_3        1.5720    350.0000 
+1.0    1    B_3        N_R        1.5200    350.0000 
+1.0    1    B_3        N_2        1.4850    350.0000 
+1.0    1    B_3        N_1        1.4260    350.0000 
+1.0    1    B_3        O_3        1.5300    350.0000 
+1.0    1    B_3        O_R        1.5300    350.0000 
+1.0    1    B_3        O_2        1.4300    350.0000 
+1.0    1    B_3        O_1        1.3980    350.0000 
+1.0    1    B_3        F_         1.4810    350.0000 
+1.0    1    B_3        Al3        1.9170    350.0000 
+1.0    1    B_3        Si3        1.8070    350.0000 
+1.0    1    B_3        P_3        1.7600    350.0000 
+1.0    1    B_3        S_3        1.9100    350.0000 
+1.0    1    B_3        Cl         1.8670    350.0000 
+1.0    1    B_3        Ga3        2.0800    350.0000 
+1.0    1    B_3        Ge3        2.0800    350.0000 
+1.0    1    B_3        As3        2.0800    350.0000 
+1.0    1    B_3        Se3        2.0800    350.0000 
+1.0    1    B_3        Br         2.0370    350.0000 
+1.0    1    B_3        In3        2.2600    350.0000 
+1.0    1    B_3        Sn3        2.2430    350.0000 
+1.0    1    B_3        Sb3        2.3020    350.0000 
+1.0    1    B_3        Te3        2.1500    350.0000 
+1.0    1    B_3        I_         2.2300    350.0000 
+1.0    1    B_3        Na         2.7300    350.0000 
+1.0    1    B_3        Ca         2.8100    350.0000 
+1.0    1    B_3        Fe         2.1550    350.0000 
+1.0    1    B_3        Zn         2.2000    350.0000 
+1.0    1    B_2        B_2        1.5700    700.0000 
+1.0    1    B_2        C_3        1.5500    350.0000 
+1.0    1    B_2        C_R        1.4800    525.0000 
+1.0    1    B_2        C_2        1.4500    700.0000 
+1.0    1    B_2        C_1        1.3820    700.0000 
+1.0    1    B_2        N_3        1.4820    350.0000 
+1.0    1    B_2        N_R        1.4300    525.0000 
+1.0    1    B_2        N_2        1.3950    700.0000 
+1.0    1    B_2        N_1        1.3360    700.0000 
+1.0    1    B_2        O_3        1.4400    350.0000 
+1.0    1    B_2        O_R        1.4400    525.0000 
+1.0    1    B_2        O_2        1.3400    700.0000 
+1.0    1    B_2        O_1        1.3080    700.0000 
+1.0    1    B_2        F_         1.3910    350.0000 
+1.0    1    B_2        Al3        1.8270    350.0000 
+1.0    1    B_2        Si3        1.7170    350.0000 
+1.0    1    B_2        P_3        1.6700    350.0000 
+1.0    1    B_2        S_3        1.8200    350.0000 
+1.0    1    B_2        Cl         1.7770    350.0000 
+1.0    1    B_2        Ga3        1.9900    350.0000 
+1.0    1    B_2        Ge3        1.9900    350.0000 
+1.0    1    B_2        As3        1.9900    350.0000 
+1.0    1    B_2        Se3        1.9900    350.0000 
+1.0    1    B_2        Br         1.9470    350.0000 
+1.0    1    B_2        In3        2.1700    350.0000 
+1.0    1    B_2        Sn3        2.1530    350.0000 
+1.0    1    B_2        Sb3        2.2120    350.0000 
+1.0    1    B_2        Te3        2.0600    350.0000 
+1.0    1    B_2        I_         2.1400    350.0000 
+1.0    1    B_2        Na         2.6400    350.0000 
+1.0    1    B_2        Ca         2.7200    350.0000 
+1.0    1    B_2        Fe         2.0650    350.0000 
+1.0    1    B_2        Zn         2.1100    350.0000 
+1.0    1    C_3        C_3        1.5300    350.0000 
+1.0    1    C_3        C_R        1.4600    350.0000 
+1.0    1    C_3        C_2        1.4300    350.0000 
+1.0    1    C_3        C_1        1.3620    350.0000 
+1.0    1    C_3        N_3        1.4620    350.0000 
+1.0    1    C_3        N_R        1.4100    350.0000 
+1.0    1    C_3        N_2        1.3750    350.0000 
+1.0    1    C_3        N_1        1.3160    350.0000 
+1.0    1    C_3        O_3        1.4200    350.0000 
+1.0    1    C_3        O_R        1.4200    350.0000 
+1.0    1    C_3        O_2        1.3200    350.0000 
+1.0    1    C_3        O_1        1.2880    350.0000 
+1.0    1    C_3        F_         1.3710    350.0000 
+1.0    1    C_3        Al3        1.8070    350.0000 
+1.0    1    C_3        Si3        1.6970    350.0000 
+1.0    1    C_3        P_3        1.6500    350.0000 
+1.0    1    C_3        S_3        1.8000    350.0000 
+1.0    1    C_3        Cl         1.7570    350.0000 
+1.0    1    C_3        Ga3        1.9700    350.0000 
+1.0    1    C_3        Ge3        1.9700    350.0000 
+1.0    1    C_3        As3        1.9700    350.0000 
+1.0    1    C_3        Se3        1.9700    350.0000 
+1.0    1    C_3        Br         1.9270    350.0000 
+1.0    1    C_3        In3        2.1500    350.0000 
+1.0    1    C_3        Sn3        2.1330    350.0000 
+1.0    1    C_3        Sb3        2.1920    350.0000 
+1.0    1    C_3        Te3        2.0400    350.0000 
+1.0    1    C_3        I_         2.1200    350.0000 
+1.0    1    C_3        Na         2.6200    350.0000 
+1.0    1    C_3        Ca         2.7000    350.0000 
+1.0    1    C_3        Fe         2.0450    350.0000 
+1.0    1    C_3        Zn         2.0900    350.0000 
+1.0    1    C_R        C_R        1.3900    525.0000 
+1.0    1    C_R        C_2        1.3600    525.0000 
+1.0    1    C_R        C_1        1.2920    525.0000 
+1.0    1    C_R        N_3        1.3920    350.0000 
+1.0    1    C_R        N_R        1.3400    525.0000 
+1.0    1    C_R        N_2        1.3050    525.0000 
+1.0    1    C_R        N_1        1.2460    525.0000 
+1.0    1    C_R        O_3        1.3500    350.0000 
+1.0    1    C_R        O_R        1.3500    525.0000 
+1.0    1    C_R        O_2        1.2500    525.0000 
+1.0    1    C_R        O_1        1.2180    525.0000 
+1.0    1    C_R        F_         1.3010    350.0000 
+1.0    1    C_R        Al3        1.7370    350.0000 
+1.0    1    C_R        Si3        1.6270    350.0000 
+1.0    1    C_R        P_3        1.5800    350.0000 
+1.0    1    C_R        S_3        1.7300    350.0000 
+1.0    1    C_R        Cl         1.6870    350.0000 
+1.0    1    C_R        Ga3        1.9000    350.0000 
+1.0    1    C_R        Ge3        1.9000    350.0000 
+1.0    1    C_R        As3        1.9000    350.0000 
+1.0    1    C_R        Se3        1.9000    350.0000 
+1.0    1    C_R        Br         1.8570    350.0000 
+1.0    1    C_R        In3        2.0800    350.0000 
+1.0    1    C_R        Sn3        2.0630    350.0000 
+1.0    1    C_R        Sb3        2.1220    350.0000 
+1.0    1    C_R        Te3        1.9700    350.0000 
+1.0    1    C_R        I_         2.0500    350.0000 
+1.0    1    C_R        Na         2.5500    350.0000 
+1.0    1    C_R        Ca         2.6300    350.0000 
+1.0    1    C_R        Fe         1.9750    350.0000 
+1.0    1    C_R        Zn         2.0200    350.0000 
+1.0    1    C_2        C_2        1.3300    700.0000 
+1.0    1    C_2        C_1        1.2620    700.0000 
+1.0    1    C_2        N_3        1.3620    350.0000 
+1.0    1    C_2        N_R        1.3100    525.0000 
+1.0    1    C_2        N_2        1.2750    700.0000 
+1.0    1    C_2        N_1        1.2160    700.0000 
+1.0    1    C_2        O_3        1.3200    350.0000 
+1.0    1    C_2        O_R        1.3200    525.0000 
+1.0    1    C_2        O_2        1.2200    700.0000 
+1.0    1    C_2        O_1        1.1880    700.0000 
+1.0    1    C_2        F_         1.2710    350.0000 
+1.0    1    C_2        Al3        1.7070    350.0000 
+1.0    1    C_2        Si3        1.5970    350.0000 
+1.0    1    C_2        P_3        1.5500    350.0000 
+1.0    1    C_2        S_3        1.7000    350.0000 
+1.0    1    C_2        Cl         1.6570    350.0000 
+1.0    1    C_2        Ga3        1.8700    350.0000 
+1.0    1    C_2        Ge3        1.8700    350.0000 
+1.0    1    C_2        As3        1.8700    350.0000 
+1.0    1    C_2        Se3        1.8700    350.0000 
+1.0    1    C_2        Br         1.8270    350.0000 
+1.0    1    C_2        In3        2.0500    350.0000 
+1.0    1    C_2        Sn3        2.0330    350.0000 
+1.0    1    C_2        Sb3        2.0920    350.0000 
+1.0    1    C_2        Te3        1.9400    350.0000 
+1.0    1    C_2        I_         2.0200    350.0000 
+1.0    1    C_2        Na         2.5200    350.0000 
+1.0    1    C_2        Ca         2.6000    350.0000 
+1.0    1    C_2        Fe         1.9450    350.0000 
+1.0    1    C_2        Zn         1.9900    350.0000 
+1.0    1    C_1        C_1        1.1940   1050.0000 
+1.0    1    C_1        N_3        1.2940    350.0000 
+1.0    1    C_1        N_R        1.2420    525.0000 
+1.0    1    C_1        N_2        1.2070    700.0000 
+1.0    1    C_1        N_1        1.1480   1050.0000 
+1.0    1    C_1        O_3        1.2520    350.0000 
+1.0    1    C_1        O_R        1.2520    525.0000 
+1.0    1    C_1        O_2        1.1520    700.0000 
+1.0    1    C_1        O_1        1.1200   1050.0000 
+1.0    1    C_1        F_         1.2030    350.0000 
+1.0    1    C_1        Al3        1.6390    350.0000 
+1.0    1    C_1        Si3        1.5290    350.0000 
+1.0    1    C_1        P_3        1.4820    350.0000 
+1.0    1    C_1        S_3        1.6320    350.0000 
+1.0    1    C_1        Cl         1.5890    350.0000 
+1.0    1    C_1        Ga3        1.8020    350.0000 
+1.0    1    C_1        Ge3        1.8020    350.0000 
+1.0    1    C_1        As3        1.8020    350.0000 
+1.0    1    C_1        Se3        1.8020    350.0000 
+1.0    1    C_1        Br         1.7590    350.0000 
+1.0    1    C_1        In3        1.9820    350.0000 
+1.0    1    C_1        Sn3        1.9650    350.0000 
+1.0    1    C_1        Sb3        2.0240    350.0000 
+1.0    1    C_1        Te3        1.8720    350.0000 
+1.0    1    C_1        I_         1.9520    350.0000 
+1.0    1    C_1        Na         2.4520    350.0000 
+1.0    1    C_1        Ca         2.5320    350.0000 
+1.0    1    C_1        Fe         1.8770    350.0000 
+1.0    1    C_1        Zn         1.9220    350.0000 
+1.0    1    N_3        N_3        1.3940    350.0000 
+1.0    1    N_3        N_R        1.3420    350.0000 
+1.0    1    N_3        N_2        1.3070    350.0000 
+1.0    1    N_3        N_1        1.2480    350.0000 
+1.0    1    N_3        O_3        1.3520    350.0000 
+1.0    1    N_3        O_R        1.3520    350.0000 
+1.0    1    N_3        O_2        1.2520    350.0000 
+1.0    1    N_3        O_1        1.2200    350.0000 
+1.0    1    N_3        F_         1.3030    350.0000 
+1.0    1    N_3        Al3        1.7390    350.0000 
+1.0    1    N_3        Si3        1.6290    350.0000 
+1.0    1    N_3        P_3        1.5820    350.0000 
+1.0    1    N_3        S_3        1.7320    350.0000 
+1.0    1    N_3        Cl         1.6890    350.0000 
+1.0    1    N_3        Ga3        1.9020    350.0000 
+1.0    1    N_3        Ge3        1.9020    350.0000 
+1.0    1    N_3        As3        1.9020    350.0000 
+1.0    1    N_3        Se3        1.9020    350.0000 
+1.0    1    N_3        Br         1.8590    350.0000 
+1.0    1    N_3        In3        2.0820    350.0000 
+1.0    1    N_3        Sn3        2.0650    350.0000 
+1.0    1    N_3        Sb3        2.1240    350.0000 
+1.0    1    N_3        Te3        1.9720    350.0000 
+1.0    1    N_3        I_         2.0520    350.0000 
+1.0    1    N_3        Na         2.5520    350.0000 
+1.0    1    N_3        Ca         2.6320    350.0000 
+1.0    1    N_3        Fe         1.9770    350.0000 
+1.0    1    N_3        Zn         2.0220    350.0000 
+1.0    1    N_R        N_R        1.2900    525.0000 
+1.0    1    N_R        N_2        1.2550    525.0000 
+1.0    1    N_R        N_1        1.1960    525.0000 
+1.0    1    N_R        O_3        1.3000    350.0000 
+1.0    1    N_R        O_R        1.3000    525.0000 
+1.0    1    N_R        O_2        1.2000    525.0000 
+1.0    1    N_R        O_1        1.1680    525.0000 
+1.0    1    N_R        F_         1.2510    350.0000 
+1.0    1    N_R        Al3        1.6870    350.0000 
+1.0    1    N_R        Si3        1.5770    350.0000 
+1.0    1    N_R        P_3        1.5300    350.0000 
+1.0    1    N_R        S_3        1.6800    350.0000 
+1.0    1    N_R        Cl         1.6370    350.0000 
+1.0    1    N_R        Ga3        1.8500    350.0000 
+1.0    1    N_R        Ge3        1.8500    350.0000 
+1.0    1    N_R        As3        1.8500    350.0000 
+1.0    1    N_R        Se3        1.8500    350.0000 
+1.0    1    N_R        Br         1.8070    350.0000 
+1.0    1    N_R        In3        2.0300    350.0000 
+1.0    1    N_R        Sn3        2.0130    350.0000 
+1.0    1    N_R        Sb3        2.0720    350.0000 
+1.0    1    N_R        Te3        1.9200    350.0000 
+1.0    1    N_R        I_         2.0000    350.0000 
+1.0    1    N_R        Na         2.5000    350.0000 
+1.0    1    N_R        Ca         2.5800    350.0000 
+1.0    1    N_R        Fe         1.9250    350.0000 
+1.0    1    N_R        Zn         1.9700    350.0000 
+1.0    1    N_2        N_2        1.2200    700.0000 
+1.0    1    N_2        N_1        1.1610    700.0000 
+1.0    1    N_2        O_3        1.2650    350.0000 
+1.0    1    N_2        O_R        1.2650    525.0000 
+1.0    1    N_2        O_2        1.1650    700.0000 
+1.0    1    N_2        O_1        1.1330    700.0000 
+1.0    1    N_2        F_         1.2160    350.0000 
+1.0    1    N_2        Al3        1.6520    350.0000 
+1.0    1    N_2        Si3        1.5420    350.0000 
+1.0    1    N_2        P_3        1.4950    350.0000 
+1.0    1    N_2        S_3        1.6450    350.0000 
+1.0    1    N_2        Cl         1.6020    350.0000 
+1.0    1    N_2        Ga3        1.8150    350.0000 
+1.0    1    N_2        Ge3        1.8150    350.0000 
+1.0    1    N_2        As3        1.8150    350.0000 
+1.0    1    N_2        Se3        1.8150    350.0000 
+1.0    1    N_2        Br         1.7720    350.0000 
+1.0    1    N_2        In3        1.9950    350.0000 
+1.0    1    N_2        Sn3        1.9780    350.0000 
+1.0    1    N_2        Sb3        2.0370    350.0000 
+1.0    1    N_2        Te3        1.8850    350.0000 
+1.0    1    N_2        I_         1.9650    350.0000 
+1.0    1    N_2        Na         2.4650    350.0000 
+1.0    1    N_2        Ca         2.5450    350.0000 
+1.0    1    N_2        Fe         1.8900    350.0000 
+1.0    1    N_2        Zn         1.9350    350.0000 
+1.0    1    N_1        N_1        1.1020   1050.0000 
+1.0    1    N_1        O_3        1.2060    350.0000 
+1.0    1    N_1        O_R        1.2060    525.0000 
+1.0    1    N_1        O_2        1.1060    700.0000 
+1.0    1    N_1        O_1        1.0740   1050.0000 
+1.0    1    N_1        F_         1.1570    350.0000 
+1.0    1    N_1        Al3        1.5930    350.0000 
+1.0    1    N_1        Si3        1.4830    350.0000 
+1.0    1    N_1        P_3        1.4360    350.0000 
+1.0    1    N_1        S_3        1.5860    350.0000 
+1.0    1    N_1        Cl         1.5430    350.0000 
+1.0    1    N_1        Ga3        1.7560    350.0000 
+1.0    1    N_1        Ge3        1.7560    350.0000 
+1.0    1    N_1        As3        1.7560    350.0000 
+1.0    1    N_1        Se3        1.7560    350.0000 
+1.0    1    N_1        Br         1.7130    350.0000 
+1.0    1    N_1        In3        1.9360    350.0000 
+1.0    1    N_1        Sn3        1.9190    350.0000 
+1.0    1    N_1        Sb3        1.9780    350.0000 
+1.0    1    N_1        Te3        1.8260    350.0000 
+1.0    1    N_1        I_         1.9060    350.0000 
+1.0    1    N_1        Na         2.4060    350.0000 
+1.0    1    N_1        Ca         2.4860    350.0000 
+1.0    1    N_1        Fe         1.8310    350.0000 
+1.0    1    N_1        Zn         1.8760    350.0000 
+1.0    1    O_3        O_3        1.3100    350.0000 
+1.0    1    O_3        O_R        1.3100    350.0000 
+1.0    1    O_3        O_2        1.2100    350.0000 
+1.0    1    O_3        O_1        1.1780    350.0000 
+1.0    1    O_3        F_         1.2610    350.0000 
+1.0    1    O_3        Al3        1.6970    350.0000 
+1.0    1    O_3        Si3        1.5870    350.0000 
+1.0    1    O_3        P_3        1.5400    350.0000 
+1.0    1    O_3        S_3        1.6900    350.0000 
+1.0    1    O_3        Cl         1.6470    350.0000 
+1.0    1    O_3        Ga3        1.8600    350.0000 
+1.0    1    O_3        Ge3        1.8600    350.0000 
+1.0    1    O_3        As3        1.8600    350.0000 
+1.0    1    O_3        Se3        1.8600    350.0000 
+1.0    1    O_3        Br         1.8170    350.0000 
+1.0    1    O_3        In3        2.0400    350.0000 
+1.0    1    O_3        Sn3        2.0230    350.0000 
+1.0    1    O_3        Sb3        2.0820    350.0000 
+1.0    1    O_3        Te3        1.9300    350.0000 
+1.0    1    O_3        I_         2.0100    350.0000 
+1.0    1    O_3        Na         2.5100    350.0000 
+1.0    1    O_3        Ca         2.5900    350.0000 
+1.0    1    O_3        Fe         1.9350    350.0000 
+1.0    1    O_3        Zn         1.9800    350.0000 
+1.0    1    O_R        O_R        1.3100    525.0000 
+1.0    1    O_R        O_2        1.2100    525.0000 
+1.0    1    O_R        O_1        1.1780    525.0000 
+1.0    1    O_R        F_         1.2610    350.0000 
+1.0    1    O_R        Al3        1.6970    350.0000 
+1.0    1    O_R        Si3        1.5870    350.0000 
+1.0    1    O_R        P_3        1.5400    350.0000 
+1.0    1    O_R        S_3        1.6900    350.0000 
+1.0    1    O_R        Cl         1.6470    350.0000 
+1.0    1    O_R        Ga3        1.8600    350.0000 
+1.0    1    O_R        Ge3        1.8600    350.0000 
+1.0    1    O_R        As3        1.8600    350.0000 
+1.0    1    O_R        Se3        1.8600    350.0000 
+1.0    1    O_R        Br         1.8170    350.0000 
+1.0    1    O_R        In3        2.0400    350.0000 
+1.0    1    O_R        Sn3        2.0230    350.0000 
+1.0    1    O_R        Sb3        2.0820    350.0000 
+1.0    1    O_R        Te3        1.9300    350.0000 
+1.0    1    O_R        I_         2.0100    350.0000 
+1.0    1    O_R        Na         2.5100    350.0000 
+1.0    1    O_R        Ca         2.5900    350.0000 
+1.0    1    O_R        Fe         1.9350    350.0000 
+1.0    1    O_R        Zn         1.9800    350.0000 
+1.0    1    O_2        O_2        1.1100    700.0000 
+1.0    1    O_2        O_1        1.0780    700.0000 
+1.0    1    O_2        F_         1.1610    350.0000 
+1.0    1    O_2        Al3        1.5970    350.0000 
+1.0    1    O_2        Si3        1.4870    350.0000 
+1.0    1    O_2        P_3        1.4400    350.0000 
+1.0    1    O_2        S_3        1.5900    350.0000 
+1.0    1    O_2        Cl         1.5470    350.0000 
+1.0    1    O_2        Ga3        1.7600    350.0000 
+1.0    1    O_2        Ge3        1.7600    350.0000 
+1.0    1    O_2        As3        1.7600    350.0000 
+1.0    1    O_2        Se3        1.7600    350.0000 
+1.0    1    O_2        Br         1.7170    350.0000 
+1.0    1    O_2        In3        1.9400    350.0000 
+1.0    1    O_2        Sn3        1.9230    350.0000 
+1.0    1    O_2        Sb3        1.9820    350.0000 
+1.0    1    O_2        Te3        1.8300    350.0000 
+1.0    1    O_2        I_         1.9100    350.0000 
+1.0    1    O_2        Na         2.4100    350.0000 
+1.0    1    O_2        Ca         2.4900    350.0000 
+1.0    1    O_2        Fe         1.8350    350.0000 
+1.0    1    O_2        Zn         1.8800    350.0000 
+1.0    1    O_1        O_1        1.0460   1050.0000 
+1.0    1    O_1        F_         1.1290    350.0000 
+1.0    1    O_1        Al3        1.5650    350.0000 
+1.0    1    O_1        Si3        1.4550    350.0000 
+1.0    1    O_1        P_3        1.4080    350.0000 
+1.0    1    O_1        S_3        1.5580    350.0000 
+1.0    1    O_1        Cl         1.5150    350.0000 
+1.0    1    O_1        Ga3        1.7280    350.0000 
+1.0    1    O_1        Ge3        1.7280    350.0000 
+1.0    1    O_1        As3        1.7280    350.0000 
+1.0    1    O_1        Se3        1.7280    350.0000 
+1.0    1    O_1        Br         1.6850    350.0000 
+1.0    1    O_1        In3        1.9080    350.0000 
+1.0    1    O_1        Sn3        1.8910    350.0000 
+1.0    1    O_1        Sb3        1.9500    350.0000 
+1.0    1    O_1        Te3        1.7980    350.0000 
+1.0    1    O_1        I_         1.8780    350.0000 
+1.0    1    O_1        Na         2.3780    350.0000 
+1.0    1    O_1        Ca         2.4580    350.0000 
+1.0    1    O_1        Fe         1.8030    350.0000 
+1.0    1    O_1        Zn         1.8480    350.0000 
+1.0    1    F_         F_         1.2120    350.0000 
+1.0    1    F_         Al3        1.6480    350.0000 
+1.0    1    F_         Si3        1.5380    350.0000 
+1.0    1    F_         P_3        1.4910    350.0000 
+1.0    1    F_         S_3        1.6410    350.0000 
+1.0    1    F_         Cl         1.5980    350.0000 
+1.0    1    F_         Ga3        1.8110    350.0000 
+1.0    1    F_         Ge3        1.8110    350.0000 
+1.0    1    F_         As3        1.8110    350.0000 
+1.0    1    F_         Se3        1.8110    350.0000 
+1.0    1    F_         Br         1.7680    350.0000 
+1.0    1    F_         In3        1.9910    350.0000 
+1.0    1    F_         Sn3        1.9740    350.0000 
+1.0    1    F_         Sb3        2.0330    350.0000 
+1.0    1    F_         Te3        1.8810    350.0000 
+1.0    1    F_         I_         1.9610    350.0000 
+1.0    1    F_         Na         2.4610    350.0000 
+1.0    1    F_         Ca         2.5410    350.0000 
+1.0    1    F_         Fe         1.8860    350.0000 
+1.0    1    F_         Zn         1.9310    350.0000 
+1.0    1    Al3        Al3        2.0840    350.0000 
+1.0    1    Al3        Si3        1.9740    350.0000 
+1.0    1    Al3        P_3        1.9270    350.0000 
+1.0    1    Al3        S_3        2.0770    350.0000 
+1.0    1    Al3        Cl         2.0340    350.0000 
+1.0    1    Al3        Ga3        2.2470    350.0000 
+1.0    1    Al3        Ge3        2.2470    350.0000 
+1.0    1    Al3        As3        2.2470    350.0000 
+1.0    1    Al3        Se3        2.2470    350.0000 
+1.0    1    Al3        Br         2.2040    350.0000 
+1.0    1    Al3        In3        2.4270    350.0000 
+1.0    1    Al3        Sn3        2.4100    350.0000 
+1.0    1    Al3        Sb3        2.4690    350.0000 
+1.0    1    Al3        Te3        2.3170    350.0000 
+1.0    1    Al3        I_         2.3970    350.0000 
+1.0    1    Al3        Na         2.8970    350.0000 
+1.0    1    Al3        Ca         2.9770    350.0000 
+1.0    1    Al3        Fe         2.3220    350.0000 
+1.0    1    Al3        Zn         2.3670    350.0000 
+1.0    1    Si3        Si3        1.8640    350.0000 
+1.0    1    Si3        P_3        1.8170    350.0000 
+1.0    1    Si3        S_3        1.9670    350.0000 
+1.0    1    Si3        Cl         1.9240    350.0000 
+1.0    1    Si3        Ga3        2.1370    350.0000 
+1.0    1    Si3        Ge3        2.1370    350.0000 
+1.0    1    Si3        As3        2.1370    350.0000 
+1.0    1    Si3        Se3        2.1370    350.0000 
+1.0    1    Si3        Br         2.0940    350.0000 
+1.0    1    Si3        In3        2.3170    350.0000 
+1.0    1    Si3        Sn3        2.3000    350.0000 
+1.0    1    Si3        Sb3        2.3590    350.0000 
+1.0    1    Si3        Te3        2.2070    350.0000 
+1.0    1    Si3        I_         2.2870    350.0000 
+1.0    1    Si3        Na         2.7870    350.0000 
+1.0    1    Si3        Ca         2.8670    350.0000 
+1.0    1    Si3        Fe         2.2120    350.0000 
+1.0    1    Si3        Zn         2.2570    350.0000 
+1.0    1    P_3        P_3        1.7700    350.0000 
+1.0    1    P_3        S_3        1.9200    350.0000 
+1.0    1    P_3        Cl         1.8770    350.0000 
+1.0    1    P_3        Ga3        2.0900    350.0000 
+1.0    1    P_3        Ge3        2.0900    350.0000 
+1.0    1    P_3        As3        2.0900    350.0000 
+1.0    1    P_3        Se3        2.0900    350.0000 
+1.0    1    P_3        Br         2.0470    350.0000 
+1.0    1    P_3        In3        2.2700    350.0000 
+1.0    1    P_3        Sn3        2.2530    350.0000 
+1.0    1    P_3        Sb3        2.3120    350.0000 
+1.0    1    P_3        Te3        2.1600    350.0000 
+1.0    1    P_3        I_         2.2400    350.0000 
+1.0    1    P_3        Na         2.7400    350.0000 
+1.0    1    P_3        Ca         2.8200    350.0000 
+1.0    1    P_3        Fe         2.1650    350.0000 
+1.0    1    P_3        Zn         2.2100    350.0000 
+1.0    1    S_3        S_3        2.0700    350.0000 
+1.0    1    S_3        Cl         2.0270    350.0000 
+1.0    1    S_3        Ga3        2.2400    350.0000 
+1.0    1    S_3        Ge3        2.2400    350.0000 
+1.0    1    S_3        As3        2.2400    350.0000 
+1.0    1    S_3        Se3        2.2400    350.0000 
+1.0    1    S_3        Br         2.1970    350.0000 
+1.0    1    S_3        In3        2.4200    350.0000 
+1.0    1    S_3        Sn3        2.4030    350.0000 
+1.0    1    S_3        Sb3        2.4620    350.0000 
+1.0    1    S_3        Te3        2.3100    350.0000 
+1.0    1    S_3        I_         2.3900    350.0000 
+1.0    1    S_3        Na         2.8900    350.0000 
+1.0    1    S_3        Ca         2.9700    350.0000 
+1.0    1    S_3        Fe         2.3150    350.0000 
+1.0    1    S_3        Zn         2.3600    350.0000 
+1.0    1    Cl         Cl         1.9840    350.0000 
+1.0    1    Cl         Ga3        2.1970    350.0000 
+1.0    1    Cl         Ge3        2.1970    350.0000 
+1.0    1    Cl         As3        2.1970    350.0000 
+1.0    1    Cl         Se3        2.1970    350.0000 
+1.0    1    Cl         Br         2.1540    350.0000 
+1.0    1    Cl         In3        2.3770    350.0000 
+1.0    1    Cl         Sn3        2.3600    350.0000 
+1.0    1    Cl         Sb3        2.4190    350.0000 
+1.0    1    Cl         Te3        2.2670    350.0000 
+1.0    1    Cl         I_         2.3470    350.0000 
+1.0    1    Cl         Na         2.8470    350.0000 
+1.0    1    Cl         Ca         2.9270    350.0000 
+1.0    1    Cl         Fe         2.2720    350.0000 
+1.0    1    Cl         Zn         2.3170    350.0000 
+1.0    1    Ga3        Ga3        2.4100    350.0000 
+1.0    1    Ga3        Ge3        2.4100    350.0000 
+1.0    1    Ga3        As3        2.4100    350.0000 
+1.0    1    Ga3        Se3        2.4100    350.0000 
+1.0    1    Ga3        Br         2.3670    350.0000 
+1.0    1    Ga3        In3        2.5900    350.0000 
+1.0    1    Ga3        Sn3        2.5730    350.0000 
+1.0    1    Ga3        Sb3        2.6320    350.0000 
+1.0    1    Ga3        Te3        2.4800    350.0000 
+1.0    1    Ga3        I_         2.5600    350.0000 
+1.0    1    Ga3        Na         3.0600    350.0000 
+1.0    1    Ga3        Ca         3.1400    350.0000 
+1.0    1    Ga3        Fe         2.4850    350.0000 
+1.0    1    Ga3        Zn         2.5300    350.0000 
+1.0    1    Ge3        Ge3        2.4100    350.0000 
+1.0    1    Ge3        As3        2.4100    350.0000 
+1.0    1    Ge3        Se3        2.4100    350.0000 
+1.0    1    Ge3        Br         2.3670    350.0000 
+1.0    1    Ge3        In3        2.5900    350.0000 
+1.0    1    Ge3        Sn3        2.5730    350.0000 
+1.0    1    Ge3        Sb3        2.6320    350.0000 
+1.0    1    Ge3        Te3        2.4800    350.0000 
+1.0    1    Ge3        I_         2.5600    350.0000 
+1.0    1    Ge3        Na         3.0600    350.0000 
+1.0    1    Ge3        Ca         3.1400    350.0000 
+1.0    1    Ge3        Fe         2.4850    350.0000 
+1.0    1    Ge3        Zn         2.5300    350.0000 
+1.0    1    As3        As3        2.4100    350.0000 
+1.0    1    As3        Se3        2.4100    350.0000 
+1.0    1    As3        Br         2.3670    350.0000 
+1.0    1    As3        In3        2.5900    350.0000 
+1.0    1    As3        Sn3        2.5730    350.0000 
+1.0    1    As3        Sb3        2.6320    350.0000 
+1.0    1    As3        Te3        2.4800    350.0000 
+1.0    1    As3        I_         2.5600    350.0000 
+1.0    1    As3        Na         3.0600    350.0000 
+1.0    1    As3        Ca         3.1400    350.0000 
+1.0    1    As3        Fe         2.4850    350.0000 
+1.0    1    As3        Zn         2.5300    350.0000 
+1.0    1    Se3        Se3        2.4100    350.0000 
+1.0    1    Se3        Br         2.3670    350.0000 
+1.0    1    Se3        In3        2.5900    350.0000 
+1.0    1    Se3        Sn3        2.5730    350.0000 
+1.0    1    Se3        Sb3        2.6320    350.0000 
+1.0    1    Se3        Te3        2.4800    350.0000 
+1.0    1    Se3        I_         2.5600    350.0000 
+1.0    1    Se3        Na         3.0600    350.0000 
+1.0    1    Se3        Ca         3.1400    350.0000 
+1.0    1    Se3        Fe         2.4850    350.0000 
+1.0    1    Se3        Zn         2.5300    350.0000 
+1.0    1    Br         Br         2.3240    350.0000 
+1.0    1    Br         In3        2.5470    350.0000 
+1.0    1    Br         Sn3        2.5300    350.0000 
+1.0    1    Br         Sb3        2.5890    350.0000 
+1.0    1    Br         Te3        2.4370    350.0000 
+1.0    1    Br         I_         2.5170    350.0000 
+1.0    1    Br         Na         3.0170    350.0000 
+1.0    1    Br         Ca         3.0970    350.0000 
+1.0    1    Br         Fe         2.4420    350.0000 
+1.0    1    Br         Zn         2.4870    350.0000 
+1.0    1    In3        In3        2.7700    350.0000 
+1.0    1    In3        Sn3        2.7530    350.0000 
+1.0    1    In3        Sb3        2.8120    350.0000 
+1.0    1    In3        Te3        2.6600    350.0000 
+1.0    1    In3        I_         2.7400    350.0000 
+1.0    1    In3        Na         3.2400    350.0000 
+1.0    1    In3        Ca         3.3200    350.0000 
+1.0    1    In3        Fe         2.6650    350.0000 
+1.0    1    In3        Zn         2.7100    350.0000 
+1.0    1    Sn3        Sn3        2.7360    350.0000 
+1.0    1    Sn3        Sb3        2.7950    350.0000 
+1.0    1    Sn3        Te3        2.6430    350.0000 
+1.0    1    Sn3        I_         2.7230    350.0000 
+1.0    1    Sn3        Na         3.2230    350.0000 
+1.0    1    Sn3        Ca         3.3030    350.0000 
+1.0    1    Sn3        Fe         2.6480    350.0000 
+1.0    1    Sn3        Zn         2.6930    350.0000 
+1.0    1    Sb3        Sb3        2.8540    350.0000 
+1.0    1    Sb3        Te3        2.7020    350.0000 
+1.0    1    Sb3        I_         2.7820    350.0000 
+1.0    1    Sb3        Na         3.2820    350.0000 
+1.0    1    Sb3        Ca         3.3620    350.0000 
+1.0    1    Sb3        Fe         2.7070    350.0000 
+1.0    1    Sb3        Zn         2.7520    350.0000 
+1.0    1    Te3        Te3        2.5500    350.0000 
+1.0    1    Te3        I_         2.6300    350.0000 
+1.0    1    Te3        Na         3.1300    350.0000 
+1.0    1    Te3        Ca         3.2100    350.0000 
+1.0    1    Te3        Fe         2.5550    350.0000 
+1.0    1    Te3        Zn         2.6000    350.0000 
+1.0    1    I_         I_         2.7100    350.0000 
+1.0    1    I_         Na         3.2100    350.0000 
+1.0    1    I_         Ca         3.2900    350.0000 
+1.0    1    I_         Fe         2.6350    350.0000 
+1.0    1    I_         Zn         2.6800    350.0000 
+1.0    1    Na         Na         3.7100    350.0000 
+1.0    1    Na         Ca         3.7900    350.0000 
+1.0    1    Na         Fe         3.1350    350.0000 
+1.0    1    Na         Zn         3.1800    350.0000 
+1.0    1    Ca         Ca         3.8700    350.0000 
+1.0    1    Ca         Fe         3.2150    350.0000 
+1.0    1    Ca         Zn         3.2600    350.0000 
+1.0    1    Fe         Fe         2.5600    350.0000 
+1.0    1    Fe         Zn         2.6050    350.0000 
+1.0    1    Zn         Zn         2.6500    350.0000 
+
+
+
+#morse_bond cvff
+
+> Computed with LAMMPS: bond_style morse
+> E = D * (1 - exp(-ALPHA*(R - R0)))^2
+
+!Ver  Ref     I          J          R0         D         ALPHA
+!---- ---   -----      -----     --------   --------    -------
+1.0    1    H_         H_         0.6500    70.0000     2.2361  
+1.0    1    H_         H___HB     0.6500    70.0000     2.2361  
+1.0    1    H_         H___b      0.8300    70.0000     2.2361  
+1.0    1    H_         B_3        1.2000    70.0000     2.2361  
+1.0    1    H_         B_2        1.1100    70.0000     2.2361  
+1.0    1    H_         C_3        1.0900    70.0000     2.2361  
+1.0    1    H_         C_R        1.0200    70.0000     2.2361  
+1.0    1    H_         C_2        0.9900    70.0000     2.2361  
+1.0    1    H_         C_1        0.9220    70.0000     2.2361  
+1.0    1    H_         N_3        1.0220    70.0000     2.2361  
+1.0    1    H_         N_R        0.9700    70.0000     2.2361  
+1.0    1    H_         N_2        0.9350    70.0000     2.2361  
+1.0    1    H_         N_1        0.8760    70.0000     2.2361  
+1.0    1    H_         O_3        0.9800    70.0000     2.2361  
+1.0    1    H_         O_R        0.9800    70.0000     2.2361  
+1.0    1    H_         O_2        0.8800    70.0000     2.2361  
+1.0    1    H_         O_1        0.8480    70.0000     2.2361  
+1.0    1    H_         F_         0.9310    70.0000     2.2361  
+1.0    1    H_         Al3        1.3670    70.0000     2.2361  
+1.0    1    H_         Si3        1.2570    70.0000     2.2361  
+1.0    1    H_         P_3        1.2100    70.0000     2.2361  
+1.0    1    H_         S_3        1.3600    70.0000     2.2361  
+1.0    1    H_         Cl         1.3170    70.0000     2.2361  
+1.0    1    H_         Ga3        1.5300    70.0000     2.2361  
+1.0    1    H_         Ge3        1.5300    70.0000     2.2361  
+1.0    1    H_         As3        1.5300    70.0000     2.2361  
+1.0    1    H_         Se3        1.5300    70.0000     2.2361  
+1.0    1    H_         Br         1.4870    70.0000     2.2361  
+1.0    1    H_         In3        1.7100    70.0000     2.2361  
+1.0    1    H_         Sn3        1.6930    70.0000     2.2361  
+1.0    1    H_         Sb3        1.7520    70.0000     2.2361  
+1.0    1    H_         Te3        1.6000    70.0000     2.2361  
+1.0    1    H_         I_         1.6800    70.0000     2.2361  
+1.0    1    H_         Na         2.1800    70.0000     2.2361  
+1.0    1    H_         Ca         2.2600    70.0000     2.2361  
+1.0    1    H_         Fe         1.6050    70.0000     2.2361  
+1.0    1    H_         Zn         1.6500    70.0000     2.2361  
+1.0    1    H___HB     H___HB     0.6500    70.0000     2.2361  
+1.0    1    H___HB     H___b      0.8300    70.0000     2.2361  
+1.0    1    H___HB     B_3        1.2000    70.0000     2.2361  
+1.0    1    H___HB     B_2        1.1100    70.0000     2.2361  
+1.0    1    H___HB     C_3        1.0900    70.0000     2.2361  
+1.0    1    H___HB     C_R        1.0200    70.0000     2.2361  
+1.0    1    H___HB     C_2        0.9900    70.0000     2.2361  
+1.0    1    H___HB     C_1        0.9220    70.0000     2.2361  
+1.0    1    H___HB     N_3        1.0220    70.0000     2.2361  
+1.0    1    H___HB     N_R        0.9700    70.0000     2.2361  
+1.0    1    H___HB     N_2        0.9350    70.0000     2.2361  
+1.0    1    H___HB     N_1        0.8760    70.0000     2.2361  
+1.0    1    H___HB     O_3        0.9800    70.0000     2.2361  
+1.0    1    H___HB     O_R        0.9800    70.0000     2.2361  
+1.0    1    H___HB     O_2        0.8800    70.0000     2.2361  
+1.0    1    H___HB     O_1        0.8480    70.0000     2.2361  
+1.0    1    H___HB     F_         0.9310    70.0000     2.2361  
+1.0    1    H___HB     Al3        1.3670    70.0000     2.2361  
+1.0    1    H___HB     Si3        1.2570    70.0000     2.2361  
+1.0    1    H___HB     P_3        1.2100    70.0000     2.2361  
+1.0    1    H___HB     S_3        1.3600    70.0000     2.2361  
+1.0    1    H___HB     Cl         1.3170    70.0000     2.2361  
+1.0    1    H___HB     Ga3        1.5300    70.0000     2.2361  
+1.0    1    H___HB     Ge3        1.5300    70.0000     2.2361  
+1.0    1    H___HB     As3        1.5300    70.0000     2.2361  
+1.0    1    H___HB     Se3        1.5300    70.0000     2.2361  
+1.0    1    H___HB     Br         1.4870    70.0000     2.2361  
+1.0    1    H___HB     In3        1.7100    70.0000     2.2361  
+1.0    1    H___HB     Sn3        1.6930    70.0000     2.2361  
+1.0    1    H___HB     Sb3        1.7520    70.0000     2.2361  
+1.0    1    H___HB     Te3        1.6000    70.0000     2.2361  
+1.0    1    H___HB     I_         1.6800    70.0000     2.2361  
+1.0    1    H___HB     Na         2.1800    70.0000     2.2361  
+1.0    1    H___HB     Ca         2.2600    70.0000     2.2361  
+1.0    1    H___HB     Fe         1.6050    70.0000     2.2361  
+1.0    1    H___HB     Zn         1.6500    70.0000     2.2361  
+1.0    1    H___b      H___b      1.0100    70.0000     2.2361  
+1.0    1    H___b      B_3        1.3800    70.0000     2.2361  
+1.0    1    H___b      B_2        1.2900    70.0000     2.2361  
+1.0    1    H___b      C_3        1.2700    70.0000     2.2361  
+1.0    1    H___b      C_R        1.2000    70.0000     2.2361  
+1.0    1    H___b      C_2        1.1700    70.0000     2.2361  
+1.0    1    H___b      C_1        1.1020    70.0000     2.2361  
+1.0    1    H___b      N_3        1.2020    70.0000     2.2361  
+1.0    1    H___b      N_R        1.1500    70.0000     2.2361  
+1.0    1    H___b      N_2        1.1150    70.0000     2.2361  
+1.0    1    H___b      N_1        1.0560    70.0000     2.2361  
+1.0    1    H___b      O_3        1.1600    70.0000     2.2361  
+1.0    1    H___b      O_R        1.1600    70.0000     2.2361  
+1.0    1    H___b      O_2        1.0600    70.0000     2.2361  
+1.0    1    H___b      O_1        1.0280    70.0000     2.2361  
+1.0    1    H___b      F_         1.1110    70.0000     2.2361  
+1.0    1    H___b      Al3        1.5470    70.0000     2.2361  
+1.0    1    H___b      Si3        1.4370    70.0000     2.2361  
+1.0    1    H___b      P_3        1.3900    70.0000     2.2361  
+1.0    1    H___b      S_3        1.5400    70.0000     2.2361  
+1.0    1    H___b      Cl         1.4970    70.0000     2.2361  
+1.0    1    H___b      Ga3        1.7100    70.0000     2.2361  
+1.0    1    H___b      Ge3        1.7100    70.0000     2.2361  
+1.0    1    H___b      As3        1.7100    70.0000     2.2361  
+1.0    1    H___b      Se3        1.7100    70.0000     2.2361  
+1.0    1    H___b      Br         1.6670    70.0000     2.2361  
+1.0    1    H___b      In3        1.8900    70.0000     2.2361  
+1.0    1    H___b      Sn3        1.8730    70.0000     2.2361  
+1.0    1    H___b      Sb3        1.9320    70.0000     2.2361  
+1.0    1    H___b      Te3        1.7800    70.0000     2.2361  
+1.0    1    H___b      I_         1.8600    70.0000     2.2361  
+1.0    1    H___b      Na         2.3600    70.0000     2.2361  
+1.0    1    H___b      Ca         2.4400    70.0000     2.2361  
+1.0    1    H___b      Fe         1.7850    70.0000     2.2361  
+1.0    1    H___b      Zn         1.8300    70.0000     2.2361  
+1.0    1    B_3        B_3        1.7500    70.0000     2.2361  
+1.0    1    B_3        B_2        1.6600    70.0000     2.2361  
+1.0    1    B_3        C_3        1.6400    70.0000     2.2361  
+1.0    1    B_3        C_R        1.5700    70.0000     2.2361  
+1.0    1    B_3        C_2        1.5400    70.0000     2.2361  
+1.0    1    B_3        C_1        1.4720    70.0000     2.2361  
+1.0    1    B_3        N_3        1.5720    70.0000     2.2361  
+1.0    1    B_3        N_R        1.5200    70.0000     2.2361  
+1.0    1    B_3        N_2        1.4850    70.0000     2.2361  
+1.0    1    B_3        N_1        1.4260    70.0000     2.2361  
+1.0    1    B_3        O_3        1.5300    70.0000     2.2361  
+1.0    1    B_3        O_R        1.5300    70.0000     2.2361  
+1.0    1    B_3        O_2        1.4300    70.0000     2.2361  
+1.0    1    B_3        O_1        1.3980    70.0000     2.2361  
+1.0    1    B_3        F_         1.4810    70.0000     2.2361  
+1.0    1    B_3        Al3        1.9170    70.0000     2.2361  
+1.0    1    B_3        Si3        1.8070    70.0000     2.2361  
+1.0    1    B_3        P_3        1.7600    70.0000     2.2361  
+1.0    1    B_3        S_3        1.9100    70.0000     2.2361  
+1.0    1    B_3        Cl         1.8670    70.0000     2.2361  
+1.0    1    B_3        Ga3        2.0800    70.0000     2.2361  
+1.0    1    B_3        Ge3        2.0800    70.0000     2.2361  
+1.0    1    B_3        As3        2.0800    70.0000     2.2361  
+1.0    1    B_3        Se3        2.0800    70.0000     2.2361  
+1.0    1    B_3        Br         2.0370    70.0000     2.2361  
+1.0    1    B_3        In3        2.2600    70.0000     2.2361  
+1.0    1    B_3        Sn3        2.2430    70.0000     2.2361  
+1.0    1    B_3        Sb3        2.3020    70.0000     2.2361  
+1.0    1    B_3        Te3        2.1500    70.0000     2.2361  
+1.0    1    B_3        I_         2.2300    70.0000     2.2361  
+1.0    1    B_3        Na         2.7300    70.0000     2.2361  
+1.0    1    B_3        Ca         2.8100    70.0000     2.2361  
+1.0    1    B_3        Fe         2.1550    70.0000     2.2361  
+1.0    1    B_3        Zn         2.2000    70.0000     2.2361  
+1.0    1    B_2        B_2        1.5700    140.0000    3.1623  
+1.0    1    B_2        C_3        1.5500    70.0000     2.2361  
+1.0    1    B_2        C_R        1.4800    105.0000    2.7386  
+1.0    1    B_2        C_2        1.4500    140.0000    3.1623  
+1.0    1    B_2        C_1        1.3820    140.0000    3.1623  
+1.0    1    B_2        N_3        1.4820    70.0000     2.2361  
+1.0    1    B_2        N_R        1.4300    105.0000    2.7386  
+1.0    1    B_2        N_2        1.3950    140.0000    3.1623  
+1.0    1    B_2        N_1        1.3360    140.0000    3.1623  
+1.0    1    B_2        O_3        1.4400    70.0000     2.2361  
+1.0    1    B_2        O_R        1.4400    105.0000    2.7386  
+1.0    1    B_2        O_2        1.3400    140.0000    3.1623  
+1.0    1    B_2        O_1        1.3080    140.0000    3.1623  
+1.0    1    B_2        F_         1.3910    70.0000     2.2361  
+1.0    1    B_2        Al3        1.8270    70.0000     2.2361  
+1.0    1    B_2        Si3        1.7170    70.0000     2.2361  
+1.0    1    B_2        P_3        1.6700    70.0000     2.2361  
+1.0    1    B_2        S_3        1.8200    70.0000     2.2361  
+1.0    1    B_2        Cl         1.7770    70.0000     2.2361  
+1.0    1    B_2        Ga3        1.9900    70.0000     2.2361  
+1.0    1    B_2        Ge3        1.9900    70.0000     2.2361  
+1.0    1    B_2        As3        1.9900    70.0000     2.2361  
+1.0    1    B_2        Se3        1.9900    70.0000     2.2361  
+1.0    1    B_2        Br         1.9470    70.0000     2.2361  
+1.0    1    B_2        In3        2.1700    70.0000     2.2361  
+1.0    1    B_2        Sn3        2.1530    70.0000     2.2361  
+1.0    1    B_2        Sb3        2.2120    70.0000     2.2361  
+1.0    1    B_2        Te3        2.0600    70.0000     2.2361  
+1.0    1    B_2        I_         2.1400    70.0000     2.2361  
+1.0    1    B_2        Na         2.6400    70.0000     2.2361  
+1.0    1    B_2        Ca         2.7200    70.0000     2.2361  
+1.0    1    B_2        Fe         2.0650    70.0000     2.2361  
+1.0    1    B_2        Zn         2.1100    70.0000     2.2361  
+1.0    1    C_3        C_3        1.5300    70.0000     2.2361  
+1.0    1    C_3        C_R        1.4600    70.0000     2.2361  
+1.0    1    C_3        C_2        1.4300    70.0000     2.2361  
+1.0    1    C_3        C_1        1.3620    70.0000     2.2361  
+1.0    1    C_3        N_3        1.4620    70.0000     2.2361  
+1.0    1    C_3        N_R        1.4100    70.0000     2.2361  
+1.0    1    C_3        N_2        1.3750    70.0000     2.2361  
+1.0    1    C_3        N_1        1.3160    70.0000     2.2361  
+1.0    1    C_3        O_3        1.4200    70.0000     2.2361  
+1.0    1    C_3        O_R        1.4200    70.0000     2.2361  
+1.0    1    C_3        O_2        1.3200    70.0000     2.2361  
+1.0    1    C_3        O_1        1.2880    70.0000     2.2361  
+1.0    1    C_3        F_         1.3710    70.0000     2.2361  
+1.0    1    C_3        Al3        1.8070    70.0000     2.2361  
+1.0    1    C_3        Si3        1.6970    70.0000     2.2361  
+1.0    1    C_3        P_3        1.6500    70.0000     2.2361  
+1.0    1    C_3        S_3        1.8000    70.0000     2.2361  
+1.0    1    C_3        Cl         1.7570    70.0000     2.2361  
+1.0    1    C_3        Ga3        1.9700    70.0000     2.2361  
+1.0    1    C_3        Ge3        1.9700    70.0000     2.2361  
+1.0    1    C_3        As3        1.9700    70.0000     2.2361  
+1.0    1    C_3        Se3        1.9700    70.0000     2.2361  
+1.0    1    C_3        Br         1.9270    70.0000     2.2361  
+1.0    1    C_3        In3        2.1500    70.0000     2.2361  
+1.0    1    C_3        Sn3        2.1330    70.0000     2.2361  
+1.0    1    C_3        Sb3        2.1920    70.0000     2.2361  
+1.0    1    C_3        Te3        2.0400    70.0000     2.2361  
+1.0    1    C_3        I_         2.1200    70.0000     2.2361  
+1.0    1    C_3        Na         2.6200    70.0000     2.2361  
+1.0    1    C_3        Ca         2.7000    70.0000     2.2361  
+1.0    1    C_3        Fe         2.0450    70.0000     2.2361  
+1.0    1    C_3        Zn         2.0900    70.0000     2.2361  
+1.0    1    C_R        C_R        1.3900    105.0000    2.7386  
+1.0    1    C_R        C_2        1.3600    105.0000    2.7386  
+1.0    1    C_R        C_1        1.2920    105.0000    2.7386  
+1.0    1    C_R        N_3        1.3920    70.0000     2.2361  
+1.0    1    C_R        N_R        1.3400    105.0000    2.7386  
+1.0    1    C_R        N_2        1.3050    105.0000    2.7386  
+1.0    1    C_R        N_1        1.2460    105.0000    2.7386  
+1.0    1    C_R        O_3        1.3500    70.0000     2.2361  
+1.0    1    C_R        O_R        1.3500    105.0000    2.7386  
+1.0    1    C_R        O_2        1.2500    105.0000    2.7386  
+1.0    1    C_R        O_1        1.2180    105.0000    2.7386  
+1.0    1    C_R        F_         1.3010    70.0000     2.2361  
+1.0    1    C_R        Al3        1.7370    70.0000     2.2361  
+1.0    1    C_R        Si3        1.6270    70.0000     2.2361  
+1.0    1    C_R        P_3        1.5800    70.0000     2.2361  
+1.0    1    C_R        S_3        1.7300    70.0000     2.2361  
+1.0    1    C_R        Cl         1.6870    70.0000     2.2361  
+1.0    1    C_R        Ga3        1.9000    70.0000     2.2361  
+1.0    1    C_R        Ge3        1.9000    70.0000     2.2361  
+1.0    1    C_R        As3        1.9000    70.0000     2.2361  
+1.0    1    C_R        Se3        1.9000    70.0000     2.2361  
+1.0    1    C_R        Br         1.8570    70.0000     2.2361  
+1.0    1    C_R        In3        2.0800    70.0000     2.2361  
+1.0    1    C_R        Sn3        2.0630    70.0000     2.2361  
+1.0    1    C_R        Sb3        2.1220    70.0000     2.2361  
+1.0    1    C_R        Te3        1.9700    70.0000     2.2361  
+1.0    1    C_R        I_         2.0500    70.0000     2.2361  
+1.0    1    C_R        Na         2.5500    70.0000     2.2361  
+1.0    1    C_R        Ca         2.6300    70.0000     2.2361  
+1.0    1    C_R        Fe         1.9750    70.0000     2.2361  
+1.0    1    C_R        Zn         2.0200    70.0000     2.2361  
+1.0    1    C_2        C_2        1.3300    140.0000    3.1623  
+1.0    1    C_2        C_1        1.2620    140.0000    3.1623  
+1.0    1    C_2        N_3        1.3620    70.0000     2.2361  
+1.0    1    C_2        N_R        1.3100    105.0000    2.7386  
+1.0    1    C_2        N_2        1.2750    140.0000    3.1623  
+1.0    1    C_2        N_1        1.2160    140.0000    3.1623  
+1.0    1    C_2        O_3        1.3200    70.0000     2.2361  
+1.0    1    C_2        O_R        1.3200    105.0000    2.7386  
+1.0    1    C_2        O_2        1.2200    140.0000    3.1623  
+1.0    1    C_2        O_1        1.1880    140.0000    3.1623  
+1.0    1    C_2        F_         1.2710    70.0000     2.2361  
+1.0    1    C_2        Al3        1.7070    70.0000     2.2361  
+1.0    1    C_2        Si3        1.5970    70.0000     2.2361  
+1.0    1    C_2        P_3        1.5500    70.0000     2.2361  
+1.0    1    C_2        S_3        1.7000    70.0000     2.2361  
+1.0    1    C_2        Cl         1.6570    70.0000     2.2361  
+1.0    1    C_2        Ga3        1.8700    70.0000     2.2361  
+1.0    1    C_2        Ge3        1.8700    70.0000     2.2361  
+1.0    1    C_2        As3        1.8700    70.0000     2.2361  
+1.0    1    C_2        Se3        1.8700    70.0000     2.2361  
+1.0    1    C_2        Br         1.8270    70.0000     2.2361  
+1.0    1    C_2        In3        2.0500    70.0000     2.2361  
+1.0    1    C_2        Sn3        2.0330    70.0000     2.2361  
+1.0    1    C_2        Sb3        2.0920    70.0000     2.2361  
+1.0    1    C_2        Te3        1.9400    70.0000     2.2361  
+1.0    1    C_2        I_         2.0200    70.0000     2.2361  
+1.0    1    C_2        Na         2.5200    70.0000     2.2361  
+1.0    1    C_2        Ca         2.6000    70.0000     2.2361  
+1.0    1    C_2        Fe         1.9450    70.0000     2.2361  
+1.0    1    C_2        Zn         1.9900    70.0000     2.2361  
+1.0    1    C_1        C_1        1.1940    210.0000    3.8730  
+1.0    1    C_1        N_3        1.2940    70.0000     2.2361  
+1.0    1    C_1        N_R        1.2420    105.0000    2.7386  
+1.0    1    C_1        N_2        1.2070    140.0000    3.1623  
+1.0    1    C_1        N_1        1.1480    210.0000    3.8730  
+1.0    1    C_1        O_3        1.2520    70.0000     2.2361  
+1.0    1    C_1        O_R        1.2520    105.0000    2.7386  
+1.0    1    C_1        O_2        1.1520    140.0000    3.1623  
+1.0    1    C_1        O_1        1.1200    210.0000    3.8730  
+1.0    1    C_1        F_         1.2030    70.0000     2.2361  
+1.0    1    C_1        Al3        1.6390    70.0000     2.2361  
+1.0    1    C_1        Si3        1.5290    70.0000     2.2361  
+1.0    1    C_1        P_3        1.4820    70.0000     2.2361  
+1.0    1    C_1        S_3        1.6320    70.0000     2.2361  
+1.0    1    C_1        Cl         1.5890    70.0000     2.2361  
+1.0    1    C_1        Ga3        1.8020    70.0000     2.2361  
+1.0    1    C_1        Ge3        1.8020    70.0000     2.2361  
+1.0    1    C_1        As3        1.8020    70.0000     2.2361  
+1.0    1    C_1        Se3        1.8020    70.0000     2.2361  
+1.0    1    C_1        Br         1.7590    70.0000     2.2361  
+1.0    1    C_1        In3        1.9820    70.0000     2.2361  
+1.0    1    C_1        Sn3        1.9650    70.0000     2.2361  
+1.0    1    C_1        Sb3        2.0240    70.0000     2.2361  
+1.0    1    C_1        Te3        1.8720    70.0000     2.2361  
+1.0    1    C_1        I_         1.9520    70.0000     2.2361  
+1.0    1    C_1        Na         2.4520    70.0000     2.2361  
+1.0    1    C_1        Ca         2.5320    70.0000     2.2361  
+1.0    1    C_1        Fe         1.8770    70.0000     2.2361  
+1.0    1    C_1        Zn         1.9220    70.0000     2.2361  
+1.0    1    N_3        N_3        1.3940    70.0000     2.2361  
+1.0    1    N_3        N_R        1.3420    70.0000     2.2361  
+1.0    1    N_3        N_2        1.3070    70.0000     2.2361  
+1.0    1    N_3        N_1        1.2480    70.0000     2.2361  
+1.0    1    N_3        O_3        1.3520    70.0000     2.2361  
+1.0    1    N_3        O_R        1.3520    70.0000     2.2361  
+1.0    1    N_3        O_2        1.2520    70.0000     2.2361  
+1.0    1    N_3        O_1        1.2200    70.0000     2.2361  
+1.0    1    N_3        F_         1.3030    70.0000     2.2361  
+1.0    1    N_3        Al3        1.7390    70.0000     2.2361  
+1.0    1    N_3        Si3        1.6290    70.0000     2.2361  
+1.0    1    N_3        P_3        1.5820    70.0000     2.2361  
+1.0    1    N_3        S_3        1.7320    70.0000     2.2361  
+1.0    1    N_3        Cl         1.6890    70.0000     2.2361  
+1.0    1    N_3        Ga3        1.9020    70.0000     2.2361  
+1.0    1    N_3        Ge3        1.9020    70.0000     2.2361  
+1.0    1    N_3        As3        1.9020    70.0000     2.2361  
+1.0    1    N_3        Se3        1.9020    70.0000     2.2361  
+1.0    1    N_3        Br         1.8590    70.0000     2.2361  
+1.0    1    N_3        In3        2.0820    70.0000     2.2361  
+1.0    1    N_3        Sn3        2.0650    70.0000     2.2361  
+1.0    1    N_3        Sb3        2.1240    70.0000     2.2361  
+1.0    1    N_3        Te3        1.9720    70.0000     2.2361  
+1.0    1    N_3        I_         2.0520    70.0000     2.2361  
+1.0    1    N_3        Na         2.5520    70.0000     2.2361  
+1.0    1    N_3        Ca         2.6320    70.0000     2.2361  
+1.0    1    N_3        Fe         1.9770    70.0000     2.2361  
+1.0    1    N_3        Zn         2.0220    70.0000     2.2361  
+1.0    1    N_R        N_R        1.2900    105.0000    2.7386  
+1.0    1    N_R        N_2        1.2550    105.0000    2.7386  
+1.0    1    N_R        N_1        1.1960    105.0000    2.7386  
+1.0    1    N_R        O_3        1.3000    70.0000     2.2361  
+1.0    1    N_R        O_R        1.3000    105.0000    2.7386  
+1.0    1    N_R        O_2        1.2000    105.0000    2.7386  
+1.0    1    N_R        O_1        1.1680    105.0000    2.7386  
+1.0    1    N_R        F_         1.2510    70.0000     2.2361  
+1.0    1    N_R        Al3        1.6870    70.0000     2.2361  
+1.0    1    N_R        Si3        1.5770    70.0000     2.2361  
+1.0    1    N_R        P_3        1.5300    70.0000     2.2361  
+1.0    1    N_R        S_3        1.6800    70.0000     2.2361  
+1.0    1    N_R        Cl         1.6370    70.0000     2.2361  
+1.0    1    N_R        Ga3        1.8500    70.0000     2.2361  
+1.0    1    N_R        Ge3        1.8500    70.0000     2.2361  
+1.0    1    N_R        As3        1.8500    70.0000     2.2361  
+1.0    1    N_R        Se3        1.8500    70.0000     2.2361  
+1.0    1    N_R        Br         1.8070    70.0000     2.2361  
+1.0    1    N_R        In3        2.0300    70.0000     2.2361  
+1.0    1    N_R        Sn3        2.0130    70.0000     2.2361  
+1.0    1    N_R        Sb3        2.0720    70.0000     2.2361  
+1.0    1    N_R        Te3        1.9200    70.0000     2.2361  
+1.0    1    N_R        I_         2.0000    70.0000     2.2361  
+1.0    1    N_R        Na         2.5000    70.0000     2.2361  
+1.0    1    N_R        Ca         2.5800    70.0000     2.2361  
+1.0    1    N_R        Fe         1.9250    70.0000     2.2361  
+1.0    1    N_R        Zn         1.9700    70.0000     2.2361  
+1.0    1    N_2        N_2        1.2200    140.0000    3.1623  
+1.0    1    N_2        N_1        1.1610    140.0000    3.1623  
+1.0    1    N_2        O_3        1.2650    70.0000     2.2361  
+1.0    1    N_2        O_R        1.2650    105.0000    2.7386  
+1.0    1    N_2        O_2        1.1650    140.0000    3.1623  
+1.0    1    N_2        O_1        1.1330    140.0000    3.1623  
+1.0    1    N_2        F_         1.2160    70.0000     2.2361  
+1.0    1    N_2        Al3        1.6520    70.0000     2.2361  
+1.0    1    N_2        Si3        1.5420    70.0000     2.2361  
+1.0    1    N_2        P_3        1.4950    70.0000     2.2361  
+1.0    1    N_2        S_3        1.6450    70.0000     2.2361  
+1.0    1    N_2        Cl         1.6020    70.0000     2.2361  
+1.0    1    N_2        Ga3        1.8150    70.0000     2.2361  
+1.0    1    N_2        Ge3        1.8150    70.0000     2.2361  
+1.0    1    N_2        As3        1.8150    70.0000     2.2361  
+1.0    1    N_2        Se3        1.8150    70.0000     2.2361  
+1.0    1    N_2        Br         1.7720    70.0000     2.2361  
+1.0    1    N_2        In3        1.9950    70.0000     2.2361  
+1.0    1    N_2        Sn3        1.9780    70.0000     2.2361  
+1.0    1    N_2        Sb3        2.0370    70.0000     2.2361  
+1.0    1    N_2        Te3        1.8850    70.0000     2.2361  
+1.0    1    N_2        I_         1.9650    70.0000     2.2361  
+1.0    1    N_2        Na         2.4650    70.0000     2.2361  
+1.0    1    N_2        Ca         2.5450    70.0000     2.2361  
+1.0    1    N_2        Fe         1.8900    70.0000     2.2361  
+1.0    1    N_2        Zn         1.9350    70.0000     2.2361  
+1.0    1    N_1        N_1        1.1020    210.0000    3.8730  
+1.0    1    N_1        O_3        1.2060    70.0000     2.2361  
+1.0    1    N_1        O_R        1.2060    105.0000    2.7386  
+1.0    1    N_1        O_2        1.1060    140.0000    3.1623  
+1.0    1    N_1        O_1        1.0740    210.0000    3.8730  
+1.0    1    N_1        F_         1.1570    70.0000     2.2361  
+1.0    1    N_1        Al3        1.5930    70.0000     2.2361  
+1.0    1    N_1        Si3        1.4830    70.0000     2.2361  
+1.0    1    N_1        P_3        1.4360    70.0000     2.2361  
+1.0    1    N_1        S_3        1.5860    70.0000     2.2361  
+1.0    1    N_1        Cl         1.5430    70.0000     2.2361  
+1.0    1    N_1        Ga3        1.7560    70.0000     2.2361  
+1.0    1    N_1        Ge3        1.7560    70.0000     2.2361  
+1.0    1    N_1        As3        1.7560    70.0000     2.2361  
+1.0    1    N_1        Se3        1.7560    70.0000     2.2361  
+1.0    1    N_1        Br         1.7130    70.0000     2.2361  
+1.0    1    N_1        In3        1.9360    70.0000     2.2361  
+1.0    1    N_1        Sn3        1.9190    70.0000     2.2361  
+1.0    1    N_1        Sb3        1.9780    70.0000     2.2361  
+1.0    1    N_1        Te3        1.8260    70.0000     2.2361  
+1.0    1    N_1        I_         1.9060    70.0000     2.2361  
+1.0    1    N_1        Na         2.4060    70.0000     2.2361  
+1.0    1    N_1        Ca         2.4860    70.0000     2.2361  
+1.0    1    N_1        Fe         1.8310    70.0000     2.2361  
+1.0    1    N_1        Zn         1.8760    70.0000     2.2361  
+1.0    1    O_3        O_3        1.3100    70.0000     2.2361  
+1.0    1    O_3        O_R        1.3100    70.0000     2.2361  
+1.0    1    O_3        O_2        1.2100    70.0000     2.2361  
+1.0    1    O_3        O_1        1.1780    70.0000     2.2361  
+1.0    1    O_3        F_         1.2610    70.0000     2.2361  
+1.0    1    O_3        Al3        1.6970    70.0000     2.2361  
+1.0    1    O_3        Si3        1.5870    70.0000     2.2361  
+1.0    1    O_3        P_3        1.5400    70.0000     2.2361  
+1.0    1    O_3        S_3        1.6900    70.0000     2.2361  
+1.0    1    O_3        Cl         1.6470    70.0000     2.2361  
+1.0    1    O_3        Ga3        1.8600    70.0000     2.2361  
+1.0    1    O_3        Ge3        1.8600    70.0000     2.2361  
+1.0    1    O_3        As3        1.8600    70.0000     2.2361  
+1.0    1    O_3        Se3        1.8600    70.0000     2.2361  
+1.0    1    O_3        Br         1.8170    70.0000     2.2361  
+1.0    1    O_3        In3        2.0400    70.0000     2.2361  
+1.0    1    O_3        Sn3        2.0230    70.0000     2.2361  
+1.0    1    O_3        Sb3        2.0820    70.0000     2.2361  
+1.0    1    O_3        Te3        1.9300    70.0000     2.2361  
+1.0    1    O_3        I_         2.0100    70.0000     2.2361  
+1.0    1    O_3        Na         2.5100    70.0000     2.2361  
+1.0    1    O_3        Ca         2.5900    70.0000     2.2361  
+1.0    1    O_3        Fe         1.9350    70.0000     2.2361  
+1.0    1    O_3        Zn         1.9800    70.0000     2.2361  
+1.0    1    O_R        O_R        1.3100    105.0000    2.7386  
+1.0    1    O_R        O_2        1.2100    105.0000    2.7386  
+1.0    1    O_R        O_1        1.1780    105.0000    2.7386  
+1.0    1    O_R        F_         1.2610    70.0000     2.2361  
+1.0    1    O_R        Al3        1.6970    70.0000     2.2361  
+1.0    1    O_R        Si3        1.5870    70.0000     2.2361  
+1.0    1    O_R        P_3        1.5400    70.0000     2.2361  
+1.0    1    O_R        S_3        1.6900    70.0000     2.2361  
+1.0    1    O_R        Cl         1.6470    70.0000     2.2361  
+1.0    1    O_R        Ga3        1.8600    70.0000     2.2361  
+1.0    1    O_R        Ge3        1.8600    70.0000     2.2361  
+1.0    1    O_R        As3        1.8600    70.0000     2.2361  
+1.0    1    O_R        Se3        1.8600    70.0000     2.2361  
+1.0    1    O_R        Br         1.8170    70.0000     2.2361  
+1.0    1    O_R        In3        2.0400    70.0000     2.2361  
+1.0    1    O_R        Sn3        2.0230    70.0000     2.2361  
+1.0    1    O_R        Sb3        2.0820    70.0000     2.2361  
+1.0    1    O_R        Te3        1.9300    70.0000     2.2361  
+1.0    1    O_R        I_         2.0100    70.0000     2.2361  
+1.0    1    O_R        Na         2.5100    70.0000     2.2361  
+1.0    1    O_R        Ca         2.5900    70.0000     2.2361  
+1.0    1    O_R        Fe         1.9350    70.0000     2.2361  
+1.0    1    O_R        Zn         1.9800    70.0000     2.2361  
+1.0    1    O_2        O_2        1.1100    140.0000    3.1623  
+1.0    1    O_2        O_1        1.0780    140.0000    3.1623  
+1.0    1    O_2        F_         1.1610    70.0000     2.2361  
+1.0    1    O_2        Al3        1.5970    70.0000     2.2361  
+1.0    1    O_2        Si3        1.4870    70.0000     2.2361  
+1.0    1    O_2        P_3        1.4400    70.0000     2.2361  
+1.0    1    O_2        S_3        1.5900    70.0000     2.2361  
+1.0    1    O_2        Cl         1.5470    70.0000     2.2361  
+1.0    1    O_2        Ga3        1.7600    70.0000     2.2361  
+1.0    1    O_2        Ge3        1.7600    70.0000     2.2361  
+1.0    1    O_2        As3        1.7600    70.0000     2.2361  
+1.0    1    O_2        Se3        1.7600    70.0000     2.2361  
+1.0    1    O_2        Br         1.7170    70.0000     2.2361  
+1.0    1    O_2        In3        1.9400    70.0000     2.2361  
+1.0    1    O_2        Sn3        1.9230    70.0000     2.2361  
+1.0    1    O_2        Sb3        1.9820    70.0000     2.2361  
+1.0    1    O_2        Te3        1.8300    70.0000     2.2361  
+1.0    1    O_2        I_         1.9100    70.0000     2.2361  
+1.0    1    O_2        Na         2.4100    70.0000     2.2361  
+1.0    1    O_2        Ca         2.4900    70.0000     2.2361  
+1.0    1    O_2        Fe         1.8350    70.0000     2.2361  
+1.0    1    O_2        Zn         1.8800    70.0000     2.2361  
+1.0    1    O_1        O_1        1.0460    210.0000    3.8730  
+1.0    1    O_1        F_         1.1290    70.0000     2.2361  
+1.0    1    O_1        Al3        1.5650    70.0000     2.2361  
+1.0    1    O_1        Si3        1.4550    70.0000     2.2361  
+1.0    1    O_1        P_3        1.4080    70.0000     2.2361  
+1.0    1    O_1        S_3        1.5580    70.0000     2.2361  
+1.0    1    O_1        Cl         1.5150    70.0000     2.2361  
+1.0    1    O_1        Ga3        1.7280    70.0000     2.2361  
+1.0    1    O_1        Ge3        1.7280    70.0000     2.2361  
+1.0    1    O_1        As3        1.7280    70.0000     2.2361  
+1.0    1    O_1        Se3        1.7280    70.0000     2.2361  
+1.0    1    O_1        Br         1.6850    70.0000     2.2361  
+1.0    1    O_1        In3        1.9080    70.0000     2.2361  
+1.0    1    O_1        Sn3        1.8910    70.0000     2.2361  
+1.0    1    O_1        Sb3        1.9500    70.0000     2.2361  
+1.0    1    O_1        Te3        1.7980    70.0000     2.2361  
+1.0    1    O_1        I_         1.8780    70.0000     2.2361  
+1.0    1    O_1        Na         2.3780    70.0000     2.2361  
+1.0    1    O_1        Ca         2.4580    70.0000     2.2361  
+1.0    1    O_1        Fe         1.8030    70.0000     2.2361  
+1.0    1    O_1        Zn         1.8480    70.0000     2.2361  
+1.0    1    F_         F_         1.2120    70.0000     2.2361  
+1.0    1    F_         Al3        1.6480    70.0000     2.2361  
+1.0    1    F_         Si3        1.5380    70.0000     2.2361  
+1.0    1    F_         P_3        1.4910    70.0000     2.2361  
+1.0    1    F_         S_3        1.6410    70.0000     2.2361  
+1.0    1    F_         Cl         1.5980    70.0000     2.2361  
+1.0    1    F_         Ga3        1.8110    70.0000     2.2361  
+1.0    1    F_         Ge3        1.8110    70.0000     2.2361  
+1.0    1    F_         As3        1.8110    70.0000     2.2361  
+1.0    1    F_         Se3        1.8110    70.0000     2.2361  
+1.0    1    F_         Br         1.7680    70.0000     2.2361  
+1.0    1    F_         In3        1.9910    70.0000     2.2361  
+1.0    1    F_         Sn3        1.9740    70.0000     2.2361  
+1.0    1    F_         Sb3        2.0330    70.0000     2.2361  
+1.0    1    F_         Te3        1.8810    70.0000     2.2361  
+1.0    1    F_         I_         1.9610    70.0000     2.2361  
+1.0    1    F_         Na         2.4610    70.0000     2.2361  
+1.0    1    F_         Ca         2.5410    70.0000     2.2361  
+1.0    1    F_         Fe         1.8860    70.0000     2.2361  
+1.0    1    F_         Zn         1.9310    70.0000     2.2361  
+1.0    1    Al3        Al3        2.0840    70.0000     2.2361  
+1.0    1    Al3        Si3        1.9740    70.0000     2.2361  
+1.0    1    Al3        P_3        1.9270    70.0000     2.2361  
+1.0    1    Al3        S_3        2.0770    70.0000     2.2361  
+1.0    1    Al3        Cl         2.0340    70.0000     2.2361  
+1.0    1    Al3        Ga3        2.2470    70.0000     2.2361  
+1.0    1    Al3        Ge3        2.2470    70.0000     2.2361  
+1.0    1    Al3        As3        2.2470    70.0000     2.2361  
+1.0    1    Al3        Se3        2.2470    70.0000     2.2361  
+1.0    1    Al3        Br         2.2040    70.0000     2.2361  
+1.0    1    Al3        In3        2.4270    70.0000     2.2361  
+1.0    1    Al3        Sn3        2.4100    70.0000     2.2361  
+1.0    1    Al3        Sb3        2.4690    70.0000     2.2361  
+1.0    1    Al3        Te3        2.3170    70.0000     2.2361  
+1.0    1    Al3        I_         2.3970    70.0000     2.2361  
+1.0    1    Al3        Na         2.8970    70.0000     2.2361  
+1.0    1    Al3        Ca         2.9770    70.0000     2.2361  
+1.0    1    Al3        Fe         2.3220    70.0000     2.2361  
+1.0    1    Al3        Zn         2.3670    70.0000     2.2361  
+1.0    1    Si3        Si3        1.8640    70.0000     2.2361  
+1.0    1    Si3        P_3        1.8170    70.0000     2.2361  
+1.0    1    Si3        S_3        1.9670    70.0000     2.2361  
+1.0    1    Si3        Cl         1.9240    70.0000     2.2361  
+1.0    1    Si3        Ga3        2.1370    70.0000     2.2361  
+1.0    1    Si3        Ge3        2.1370    70.0000     2.2361  
+1.0    1    Si3        As3        2.1370    70.0000     2.2361  
+1.0    1    Si3        Se3        2.1370    70.0000     2.2361  
+1.0    1    Si3        Br         2.0940    70.0000     2.2361  
+1.0    1    Si3        In3        2.3170    70.0000     2.2361  
+1.0    1    Si3        Sn3        2.3000    70.0000     2.2361  
+1.0    1    Si3        Sb3        2.3590    70.0000     2.2361  
+1.0    1    Si3        Te3        2.2070    70.0000     2.2361  
+1.0    1    Si3        I_         2.2870    70.0000     2.2361  
+1.0    1    Si3        Na         2.7870    70.0000     2.2361  
+1.0    1    Si3        Ca         2.8670    70.0000     2.2361  
+1.0    1    Si3        Fe         2.2120    70.0000     2.2361  
+1.0    1    Si3        Zn         2.2570    70.0000     2.2361  
+1.0    1    P_3        P_3        1.7700    70.0000     2.2361  
+1.0    1    P_3        S_3        1.9200    70.0000     2.2361  
+1.0    1    P_3        Cl         1.8770    70.0000     2.2361  
+1.0    1    P_3        Ga3        2.0900    70.0000     2.2361  
+1.0    1    P_3        Ge3        2.0900    70.0000     2.2361  
+1.0    1    P_3        As3        2.0900    70.0000     2.2361  
+1.0    1    P_3        Se3        2.0900    70.0000     2.2361  
+1.0    1    P_3        Br         2.0470    70.0000     2.2361  
+1.0    1    P_3        In3        2.2700    70.0000     2.2361  
+1.0    1    P_3        Sn3        2.2530    70.0000     2.2361  
+1.0    1    P_3        Sb3        2.3120    70.0000     2.2361  
+1.0    1    P_3        Te3        2.1600    70.0000     2.2361  
+1.0    1    P_3        I_         2.2400    70.0000     2.2361  
+1.0    1    P_3        Na         2.7400    70.0000     2.2361  
+1.0    1    P_3        Ca         2.8200    70.0000     2.2361  
+1.0    1    P_3        Fe         2.1650    70.0000     2.2361  
+1.0    1    P_3        Zn         2.2100    70.0000     2.2361  
+1.0    1    S_3        S_3        2.0700    70.0000     2.2361  
+1.0    1    S_3        Cl         2.0270    70.0000     2.2361  
+1.0    1    S_3        Ga3        2.2400    70.0000     2.2361  
+1.0    1    S_3        Ge3        2.2400    70.0000     2.2361  
+1.0    1    S_3        As3        2.2400    70.0000     2.2361  
+1.0    1    S_3        Se3        2.2400    70.0000     2.2361  
+1.0    1    S_3        Br         2.1970    70.0000     2.2361  
+1.0    1    S_3        In3        2.4200    70.0000     2.2361  
+1.0    1    S_3        Sn3        2.4030    70.0000     2.2361  
+1.0    1    S_3        Sb3        2.4620    70.0000     2.2361  
+1.0    1    S_3        Te3        2.3100    70.0000     2.2361  
+1.0    1    S_3        I_         2.3900    70.0000     2.2361  
+1.0    1    S_3        Na         2.8900    70.0000     2.2361  
+1.0    1    S_3        Ca         2.9700    70.0000     2.2361  
+1.0    1    S_3        Fe         2.3150    70.0000     2.2361  
+1.0    1    S_3        Zn         2.3600    70.0000     2.2361  
+1.0    1    Cl         Cl         1.9840    70.0000     2.2361  
+1.0    1    Cl         Ga3        2.1970    70.0000     2.2361  
+1.0    1    Cl         Ge3        2.1970    70.0000     2.2361  
+1.0    1    Cl         As3        2.1970    70.0000     2.2361  
+1.0    1    Cl         Se3        2.1970    70.0000     2.2361  
+1.0    1    Cl         Br         2.1540    70.0000     2.2361  
+1.0    1    Cl         In3        2.3770    70.0000     2.2361  
+1.0    1    Cl         Sn3        2.3600    70.0000     2.2361  
+1.0    1    Cl         Sb3        2.4190    70.0000     2.2361  
+1.0    1    Cl         Te3        2.2670    70.0000     2.2361  
+1.0    1    Cl         I_         2.3470    70.0000     2.2361  
+1.0    1    Cl         Na         2.8470    70.0000     2.2361  
+1.0    1    Cl         Ca         2.9270    70.0000     2.2361  
+1.0    1    Cl         Fe         2.2720    70.0000     2.2361  
+1.0    1    Cl         Zn         2.3170    70.0000     2.2361  
+1.0    1    Ga3        Ga3        2.4100    70.0000     2.2361  
+1.0    1    Ga3        Ge3        2.4100    70.0000     2.2361  
+1.0    1    Ga3        As3        2.4100    70.0000     2.2361  
+1.0    1    Ga3        Se3        2.4100    70.0000     2.2361  
+1.0    1    Ga3        Br         2.3670    70.0000     2.2361  
+1.0    1    Ga3        In3        2.5900    70.0000     2.2361  
+1.0    1    Ga3        Sn3        2.5730    70.0000     2.2361  
+1.0    1    Ga3        Sb3        2.6320    70.0000     2.2361  
+1.0    1    Ga3        Te3        2.4800    70.0000     2.2361  
+1.0    1    Ga3        I_         2.5600    70.0000     2.2361  
+1.0    1    Ga3        Na         3.0600    70.0000     2.2361  
+1.0    1    Ga3        Ca         3.1400    70.0000     2.2361  
+1.0    1    Ga3        Fe         2.4850    70.0000     2.2361  
+1.0    1    Ga3        Zn         2.5300    70.0000     2.2361  
+1.0    1    Ge3        Ge3        2.4100    70.0000     2.2361  
+1.0    1    Ge3        As3        2.4100    70.0000     2.2361  
+1.0    1    Ge3        Se3        2.4100    70.0000     2.2361  
+1.0    1    Ge3        Br         2.3670    70.0000     2.2361  
+1.0    1    Ge3        In3        2.5900    70.0000     2.2361  
+1.0    1    Ge3        Sn3        2.5730    70.0000     2.2361  
+1.0    1    Ge3        Sb3        2.6320    70.0000     2.2361  
+1.0    1    Ge3        Te3        2.4800    70.0000     2.2361  
+1.0    1    Ge3        I_         2.5600    70.0000     2.2361  
+1.0    1    Ge3        Na         3.0600    70.0000     2.2361  
+1.0    1    Ge3        Ca         3.1400    70.0000     2.2361  
+1.0    1    Ge3        Fe         2.4850    70.0000     2.2361  
+1.0    1    Ge3        Zn         2.5300    70.0000     2.2361  
+1.0    1    As3        As3        2.4100    70.0000     2.2361  
+1.0    1    As3        Se3        2.4100    70.0000     2.2361  
+1.0    1    As3        Br         2.3670    70.0000     2.2361  
+1.0    1    As3        In3        2.5900    70.0000     2.2361  
+1.0    1    As3        Sn3        2.5730    70.0000     2.2361  
+1.0    1    As3        Sb3        2.6320    70.0000     2.2361  
+1.0    1    As3        Te3        2.4800    70.0000     2.2361  
+1.0    1    As3        I_         2.5600    70.0000     2.2361  
+1.0    1    As3        Na         3.0600    70.0000     2.2361  
+1.0    1    As3        Ca         3.1400    70.0000     2.2361  
+1.0    1    As3        Fe         2.4850    70.0000     2.2361  
+1.0    1    As3        Zn         2.5300    70.0000     2.2361  
+1.0    1    Se3        Se3        2.4100    70.0000     2.2361  
+1.0    1    Se3        Br         2.3670    70.0000     2.2361  
+1.0    1    Se3        In3        2.5900    70.0000     2.2361  
+1.0    1    Se3        Sn3        2.5730    70.0000     2.2361  
+1.0    1    Se3        Sb3        2.6320    70.0000     2.2361  
+1.0    1    Se3        Te3        2.4800    70.0000     2.2361  
+1.0    1    Se3        I_         2.5600    70.0000     2.2361  
+1.0    1    Se3        Na         3.0600    70.0000     2.2361  
+1.0    1    Se3        Ca         3.1400    70.0000     2.2361  
+1.0    1    Se3        Fe         2.4850    70.0000     2.2361  
+1.0    1    Se3        Zn         2.5300    70.0000     2.2361  
+1.0    1    Br         Br         2.3240    70.0000     2.2361  
+1.0    1    Br         In3        2.5470    70.0000     2.2361  
+1.0    1    Br         Sn3        2.5300    70.0000     2.2361  
+1.0    1    Br         Sb3        2.5890    70.0000     2.2361  
+1.0    1    Br         Te3        2.4370    70.0000     2.2361  
+1.0    1    Br         I_         2.5170    70.0000     2.2361  
+1.0    1    Br         Na         3.0170    70.0000     2.2361  
+1.0    1    Br         Ca         3.0970    70.0000     2.2361  
+1.0    1    Br         Fe         2.4420    70.0000     2.2361  
+1.0    1    Br         Zn         2.4870    70.0000     2.2361  
+1.0    1    In3        In3        2.7700    70.0000     2.2361  
+1.0    1    In3        Sn3        2.7530    70.0000     2.2361  
+1.0    1    In3        Sb3        2.8120    70.0000     2.2361  
+1.0    1    In3        Te3        2.6600    70.0000     2.2361  
+1.0    1    In3        I_         2.7400    70.0000     2.2361  
+1.0    1    In3        Na         3.2400    70.0000     2.2361  
+1.0    1    In3        Ca         3.3200    70.0000     2.2361  
+1.0    1    In3        Fe         2.6650    70.0000     2.2361  
+1.0    1    In3        Zn         2.7100    70.0000     2.2361  
+1.0    1    Sn3        Sn3        2.7360    70.0000     2.2361  
+1.0    1    Sn3        Sb3        2.7950    70.0000     2.2361  
+1.0    1    Sn3        Te3        2.6430    70.0000     2.2361  
+1.0    1    Sn3        I_         2.7230    70.0000     2.2361  
+1.0    1    Sn3        Na         3.2230    70.0000     2.2361  
+1.0    1    Sn3        Ca         3.3030    70.0000     2.2361  
+1.0    1    Sn3        Fe         2.6480    70.0000     2.2361  
+1.0    1    Sn3        Zn         2.6930    70.0000     2.2361  
+1.0    1    Sb3        Sb3        2.8540    70.0000     2.2361  
+1.0    1    Sb3        Te3        2.7020    70.0000     2.2361  
+1.0    1    Sb3        I_         2.7820    70.0000     2.2361  
+1.0    1    Sb3        Na         3.2820    70.0000     2.2361  
+1.0    1    Sb3        Ca         3.3620    70.0000     2.2361  
+1.0    1    Sb3        Fe         2.7070    70.0000     2.2361  
+1.0    1    Sb3        Zn         2.7520    70.0000     2.2361  
+1.0    1    Te3        Te3        2.5500    70.0000     2.2361  
+1.0    1    Te3        I_         2.6300    70.0000     2.2361  
+1.0    1    Te3        Na         3.1300    70.0000     2.2361  
+1.0    1    Te3        Ca         3.2100    70.0000     2.2361  
+1.0    1    Te3        Fe         2.5550    70.0000     2.2361  
+1.0    1    Te3        Zn         2.6000    70.0000     2.2361  
+1.0    1    I_         I_         2.7100    70.0000     2.2361  
+1.0    1    I_         Na         3.2100    70.0000     2.2361  
+1.0    1    I_         Ca         3.2900    70.0000     2.2361  
+1.0    1    I_         Fe         2.6350    70.0000     2.2361  
+1.0    1    I_         Zn         2.6800    70.0000     2.2361  
+1.0    1    Na         Na         3.7100    70.0000     2.2361  
+1.0    1    Na         Ca         3.7900    70.0000     2.2361  
+1.0    1    Na         Fe         3.1350    70.0000     2.2361  
+1.0    1    Na         Zn         3.1800    70.0000     2.2361  
+1.0    1    Ca         Ca         3.8700    70.0000     2.2361  
+1.0    1    Ca         Fe         3.2150    70.0000     2.2361  
+1.0    1    Ca         Zn         3.2600    70.0000     2.2361  
+1.0    1    Fe         Fe         2.5600    70.0000     2.2361  
+1.0    1    Fe         Zn         2.6050    70.0000     2.2361  
+1.0    1    Zn         Zn         2.6500    70.0000     2.2361  
+
+
+
+#quadratic_angle cvff
+
+> Computed with LAMMPS: angle_style harmonic
+> E = K2 * (Theta - Theta0)^2
+
+!Ver  Ref     I          J          K          Theta0         K2
+!---- ---   -----      -----      -----       --------     -------
+1.0    1    *           H_          *         180.0000     50.0000  
+1.0    1    *           H___HB      *         180.0000     50.0000  
+1.0    1    *           H___b       *         90.0000      50.0000  
+1.0    1    *           B_3         *         109.4710     50.0000  
+1.0    1    *           B_2         *         120.0000     50.0000  
+1.0    1    *           C_3         *         109.4710     50.0000  
+1.0    1    *           C_R         *         120.0000     50.0000  
+1.0    1    *           C_2         *         120.0000     50.0000  
+1.0    1    *           C_1         *         180.0000     50.0000  
+1.0    1    *           N_3         *         106.7000     50.0000  
+1.0    1    *           N_R         *         120.0000     50.0000  
+1.0    1    *           N_2         *         120.0000     50.0000  
+1.0    1    *           N_1         *         180.0000     50.0000  
+1.0    1    *           O_3         *         104.5100     50.0000  
+1.0    1    *           O_R         *         120.0000     50.0000  
+1.0    1    *           O_2         *         120.0000     50.0000  
+1.0    1    *           O_1         *         180.0000     50.0000  
+1.0    1    *           F_          *         180.0000     50.0000  
+1.0    1    *           Al3         *         109.4710     50.0000  
+1.0    1    *           Si3         *         109.4710     50.0000  
+1.0    1    *           P_3         *         93.3000      50.0000  
+1.0    1    *           S_3         *         92.1000      50.0000  
+1.0    1    *           Cl          *         180.0000     50.0000  
+1.0    1    *           Ga3         *         109.4710     50.0000  
+1.0    1    *           Ge3         *         109.4710     50.0000  
+1.0    1    *           As3         *         92.1000      50.0000  
+1.0    1    *           Se3         *         90.6000      50.0000  
+1.0    1    *           Br          *         180.0000     50.0000  
+1.0    1    *           In3         *         109.4710     50.0000  
+1.0    1    *           Sn3         *         109.4710     50.0000  
+1.0    1    *           Sb3         *         91.6000      50.0000  
+1.0    1    *           Te3         *         90.3000      50.0000  
+1.0    1    *           I_          *         180.0000     50.0000  
+1.0    1    *           Na          *         90.0000      50.0000  
+1.0    1    *           Ca          *         90.0000      50.0000  
+1.0    1    *           Fe          *         90.0000      50.0000  
+1.0    1    *           Zn          *         109.4710     50.0000  
+
+
+
+#torsion_1 cvff
+
+> Computed with LAMMPS: dihedral_style harmonic
+> E = Kphi * [ 1 + cos(n*Phi - Phi0) ]
+
+!Ver  Ref    I        J       K       L          Kphi        n            Phi0
+!---- ---   ----     ----    ----    ----        -------     ------      -------
+1.0    1    *        Sp3      Sp3      *         1.0000      3           0.0000    
+1.0    1    *        Sp2      Sp3      *         0.5000      6           180.0000  
+1.0    1    *        SpR      Sp3      *         0.5000      6           180.0000  
+1.0    1    *        Sp2      Sp2      *         22.5000     2           180.0000  
+1.0    1    *        SpR      SpR      *         12.5000     2           180.0000  
+1.0    1    *        Sp2      SpR      *         2.5000      2           0.0000    
+1.0    1    *        SpRB     SpRB     *         5.0000      2           180.0000  
+1.0    1    *        SpR      SpRB     *         12.5000     2           180.0000  
+1.0    1    *        Sp1      *        *         0.0000      0           180.0000  
+1.0    1    *        OSp3     OSp3     *         1.0000      2           180.0000  
+1.0    1    *        OSp3     SpR      *         1.0000      2           0.0000    
+1.0    1    *        OSp2     Sp3      *         1.0000      2           0.0000    
+1.0    1    *        OSpR     Sp3      *         1.0000      2           0.0000    
+1.0    1    *        OSpR     SpR      *         12.5000     2           180.0000  
+1.0    1    *        OSp3     Sp3      *         1.0000      3           0.0000    
+1.0    1    *        OSp2     OSp3     *         0.5000      6           180.0000  
+1.0    1    *        OSp2     OSp2     *         22.5000     2           180.0000  
+1.0    1    *        OSpR     OSpR     *         12.5000     2           180.0000  
+1.0    1    *        OSp2     SpR      *         1.0000      2           0.0000    
+1.0    1    *        OSp1     *        *         0.0000      0           180.0000  
+1.0    1    *        Sp2Mid   Sp3      *         1.0000      3           0.0000    
+1.0    1    *        Sp2Mid   Sp2      *         22.5000     2           180.0000  
+1.0    1    *        Sp2Mid   SpR      *         2.5000      2           0.0000    
+
+
+
+#out_of_plane DREIDING
+
+> Computed with LAMMPS: improper_style umbrella
+> E = Kl*(1 - cos(phi)); if phi0==0
+> E = 0.5*Kl*[(1/sin(phi0)^2]*[(cos(phi) - cos(phi0))^2]; if phi0!=0
+
+!Ver  Ref    I        J          K       L           Kl         phi0
+!---- ---   ----     ----        ----    ----        -----      --------
+1.0    1    *        Planar       *        *         40.0000     0.0000    
+1.0    1    *        NonPlanar    *        *         0.0000      0.0000    
+
+
+
+#nonbond(12-6)	cvff 
+
+>@type A-B
+>@combination geometric
+
+> Computed with LAMMPS: pair_Style lj/cut/coul/long
+> E = Aij/r^12 - Bij/r^6
+> where  Aij = sqrt( Ai * Aj )
+>        Bij = sqrt( Bi * Bj )
+
+!Ver  Ref    I               A                B 
+!---- ---   ----        -----------      -----------
+1.0    1    H_          17198.633343        32.336928       
+1.0    1    H___b       17198.633343        32.336928       
+1.0    1    H___HB      113.148904          0.212743        
+1.0    1    B_3         1692139.807346      801.880993      
+1.0    1    B_2         1692139.807346      801.880993      
+1.0    1    C_3         1171341.719564      667.516584      
+1.0    1    C_R         1171341.719564      667.516584      
+1.0    1    C_2         1171341.719564      667.516584      
+1.0    1    C_1         1171341.719564      667.516584      
+1.0    1    N_3         450301.457022       373.380946      
+1.0    1    N_R         450301.457022       373.380946      
+1.0    1    N_2         450301.457022       373.380946      
+1.0    1    N_1         450301.457022       373.380946      
+1.0    1    O_3         232115.998739       298.083888      
+1.0    1    O_2         232115.998739       298.083888      
+1.0    1    O_R         232115.998739       298.083888      
+1.0    1    O_1         232115.998739       298.083888      
+1.0    1    F_          4217284.733696      963.225125      
+1.0    1    Al3         15883124.375888     4437.913274     
+1.0    1    Si3         11389278.010329     3758.018724     
+1.0    1    P_3         8350781.854583      3269.403734     
+1.0    1    S_3         6312755.897074      2947.261799     
+1.0    1    Cl          4090793.146663      2153.064512     
+1.0    1    Ga3         20494354.033404     5726.339708     
+1.0    1    Ge3         14695842.593973     4849.056419     
+1.0    1    As3         10699439.251184     4188.923534     
+1.0    1    Se3         7890944.871342      3684.077249     
+1.0    1    Br          5337856.221123      2810.698704     
+1.0    1    In3         48096659.717107     10286.527664    
+1.0    1    Sn3         34998784.936466     8774.812070     
+1.0    1    Sb3         25248394.826861     7452.950330     
+1.0    1    Te3         18705066.828975     6530.509350     
+1.0    1    I_          13309058.580742     5210.612201     
+1.0    1    Na          466402.052270       965.817842      
+1.0    1    Ca          153435.764793       175.177490      
+1.0    1    Fe          4217284.733696      963.225125      
+1.0    1    Zn          4217284.733696      963.225125      
+
+
+
+
+#reference 1
+@Author Stephen L. Mayo, Barry D. Olafson, and William A. Goddard III*’1
+@Date Jan-28-2023
+DREIDING: A Generic Force Field for Molecular Simulations
+
+#reference 2
+@Author tester
+@Date Jan-28-2023
+CRC Handbook of Chemistry and Physics, 95th Edition

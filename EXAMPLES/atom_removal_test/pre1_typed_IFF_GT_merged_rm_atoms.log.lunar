@@ -1,0 +1,26 @@
+
+
+Running atom_removal v1.3 / 1 April 2023
+Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+Read in EXAMPLES/atom_removal_test/pre1_typed_IFF_GT_merged.data LAMMPS datafile
+    Identifying atoms based on atomIDs
+    Original number of atoms: 40    new number of atoms: 36
+    Original number of bonds: 41    new number of bonds: 37
+    Original number of angles: 70    new number of angles: 65
+    Original number of dihedrals: 94    new number of dihedrals: 86
+    Original number of impropers: 34    new number of impropers: 33
+Using path from topofile to set parent_directory ...
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\atom_removal_test directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.015034914016723633
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

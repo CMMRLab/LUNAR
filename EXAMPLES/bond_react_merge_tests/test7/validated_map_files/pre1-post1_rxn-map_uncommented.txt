@@ -1,0 +1,32 @@
+Map file: bond_react_merge: v1.8 / 4 July 2023 auto-generated mapfile for pre1_create_atoms_IFF_typed_FF_assigned.data  ->  post1_create_atoms_IFF_typed_FF_assigned.data    rxnid: 1
+
+1 edgeIDs
+11 equivalences
+1 createIDs
+
+InitiatorIDs
+
+1
+12
+
+EdgeIDs
+
+ 7
+
+CreateIDs
+
+10   #   user input  hpan
+
+Equivalences
+
+ 1        1       
+ 2        2       
+ 3        3       
+ 4        4       
+ 5        5       
+ 6        6       
+ 7        7       
+ 8        8       
+ 9        9       
+10       11       
+11       12       

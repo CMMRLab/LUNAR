@@ -1,0 +1,50 @@
+New type assignment file for post_reaction_2_typed.data > atom_typing v1.2 / 20 Mar 2023 w/PCFF-IFF atom-types
+style id
+1      cp                   #  EDGE
+2      cp                   #  NEAR EDGE
+3      cp                   #  EDGE
+4      oc                   #  Correctly found
+5      c2                   #  Correctly found
+6      c1                   #  Correctly found
+7      c2                   #  Correctly found
+8      oh                   #  Correctly found
+9      nn                   #  Correctly found
+10     cp                   #  NEAR EDGE
+11     cp                   #  NEAR EDGE
+12     cp                   #  NEAR EDGE
+13     cp                   #  EDGE
+14     cp                   #  EDGE
+15     c3                   #  EDGE
+16     c2                   #  EDGE
+17     oh                   #  Correctly found
+18     c2                   #  Correctly found
+19     c1                   #  Correctly found
+20     c2                   #  Correctly found
+21     oc                   #  Correctly found
+22     cp                   #  EDGE
+23     cp                   #  NEAR EDGE
+24     cp                   #  EDGE
+25     hc                   #  Correctly found
+26     hc                   #  Correctly found
+27     hc                   #  Correctly found
+28     hc                   #  Correctly found
+29     hc                   #  Correctly found
+30     ho2                  #  Correctly found
+31     ho2                  #  Correctly found
+32     hc                   #  Correctly found
+33     hc                   #  Correctly found
+34     hc                   #  Correctly found
+35     hc                   #  Correctly found
+36     hc                   #  Correctly found
+
+edge id
+1  cp hc  
+3  cp hc  
+13 cp nn
+14 cp hc  
+15 hc hc hc   
+16 c3 hc hc  
+22 cp hc  
+24 cp hc  
+
+

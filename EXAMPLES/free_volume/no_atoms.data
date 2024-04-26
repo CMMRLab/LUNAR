@@ -1,0 +1,17 @@
+nchmark/propanal_typed > all2lmp: v1.10 / 12 September 2023  Class: 2 > cell_builder version: v1.1 / 4 July 2023 > atom_typing v1.6 / 12 September 2023 w/PCFF-IFF atom-types > all2lmp: v1.10 / 12 September 2023  Class: 2
+
+100 atoms
+90 bonds
+150 angles
+150 dihedrals
+90 impropers
+
+5 atom types
+6 bond types
+9 angle types
+6 dihedral types
+6 improper types
+
+-9.000000000 9.000000000 xlo xhi
+-9.000000000 9.000000000 ylo yhi
+-9.000000000 9.000000000 zlo zhi

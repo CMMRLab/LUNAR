@@ -1,0 +1,32 @@
+New type assignment file for detda_non_contiguous_atomIDs_typed.data > atom_typing v1.9 / 5 January 2024 w/PCFF-IFF atom-types
+style id
+2      ct              #  Correctly found
+3      c=2             #  Correctly found
+4      c=2             #  Correctly found
+5      c=2             #  Correctly found
+6      ct              #  Correctly found
+7      c2              #  Correctly found
+8      c3              #  Correctly found
+9      c2              #  Correctly found
+10     c3              #  Correctly found
+11     c=2             #  Correctly found
+12     na              #  Correctly found
+13     na              #  Correctly found
+14     hpan            #  Correctly found
+15     hpan            #  Correctly found
+16     hpan            #  Correctly found
+17     hpan            #  Correctly found
+18     hpan            #  Correctly found
+19     hpan            #  Correctly found
+20     hpan            #  Correctly found
+21     hpan            #  Correctly found
+22     hpan            #  Correctly found
+23     hpan            #  Correctly found
+24     hpan            #  Correctly found
+25     hpan            #  Correctly found
+26     hpan            #  Correctly found
+27     hpan            #  Correctly found
+28     hn2             #  Correctly found
+29     hn2             #  Correctly found
+30     hn2             #  Correctly found
+31     hn2             #  Correctly found

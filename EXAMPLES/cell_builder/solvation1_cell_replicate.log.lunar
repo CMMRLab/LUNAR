@@ -1,0 +1,124 @@
+
+
+Running cell_builder v1.7 / 11 April 2024
+Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+Total number of subcells required: 31
+3-Dimensional span of each subcell: 11
+
+
+Generating new simulation cell ....
+
+
+Finding energy coeffs ....
+
+
+
+-----------------------------------------------------
+   Cell building and randomization parameters used
+-----------------------------------------------------
+unwrap atoms by iflags:                  True
+locally group atoms:                    False
+offset coeff types:                      True
+distance scale:                           1.2
+duplicate:                                  1
+max rotations:             {'x': 360.0, 'y': 360.0, 'z': 360.0}
+seed:                                   12345
+domain:                                 cubic
+System files used:        
+   EXAMPLES\cell_builder\solvation1_fullerene-C60_merged.data qty: 1
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+   EXAMPLES\cell_builder\solvation1_water_merged.data qty: 30
+       atom TypeIDs offset      5
+       bond TypeIDs offset      3
+       angle TypeIDs offset     4
+       dihedral TypeIDs offset  1
+       improper TypeIDs offset  1
+
+
+
+----------------------------------------------
+              Subcell info
+----------------------------------------------
+Total number of subcells required:  31
+Lattice spacing for subcells     : 11 angstrom
+
+
+Finding new molids ....
+-----------------------------------------------------------------------------Cluster Analysis----------------------------------------------------------------------
+molID     Size       Mass      X-center   Y-center   Z-center        phi (°)      theta (°)        psi (°)   Molecule Formula           Filename         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  1        3        18.02        -22.00     -22.00     -11.00         209.10         282.90         304.90        H2-O1         solvation1_water_merged.data
+  2        3        18.02          0.00     -22.00      11.00         153.60          95.20         214.40        H2-O1         solvation1_water_merged.data
+  3        3        18.02         22.00     -22.00     -11.00         169.70          43.30         279.10        H2-O1         solvation1_water_merged.data
+  4        3        18.02         22.00     -11.00     -11.00         328.40         309.60         227.30        H2-O1         solvation1_water_merged.data
+  5        3        18.02          0.00     -11.00       0.00         139.90         131.90           9.60        H2-O1         solvation1_water_merged.data
+  6        3        18.02         22.00       0.00       0.00         315.70         237.60          73.20        H2-O1         solvation1_water_merged.data
+  7        3        18.02        -22.00      22.00       0.00          95.10          49.00         357.60        H2-O1         solvation1_water_merged.data
+  8        3        18.02        -11.00      22.00     -22.00           3.80          61.50          93.80        H2-O1         solvation1_water_merged.data
+  9       180       720.67         0.00       0.00       0.00           7.40          12.90           4.20       C60-H120       solvation1_fullerene-C60_merged.data
+  10       3        18.02         11.00     -22.00     -11.00         204.40          88.60         301.90        H2-O1         solvation1_water_merged.data
+  11       3        18.02          0.00     -22.00      22.00         244.10         290.50         337.80        H2-O1         solvation1_water_merged.data
+  12       3        18.02        -22.00       0.00      22.00         170.10           1.40           2.70        H2-O1         solvation1_water_merged.data
+  13       3        18.02         11.00     -11.00       0.00         236.70          74.40         301.70        H2-O1         solvation1_water_merged.data
+  14       3        18.02        -11.00       0.00      11.00         274.30          76.10         105.50        H2-O1         solvation1_water_merged.data
+  15       3        18.02          0.00      11.00      22.00           5.20          20.20          24.90        H2-O1         solvation1_water_merged.data
+  16       3        18.02         11.00       0.00      22.00          60.60          84.20         294.40        H2-O1         solvation1_water_merged.data
+  17       3        18.02        -22.00       0.00       0.00         117.30          40.70         267.20        H2-O1         solvation1_water_merged.data
+  18       3        18.02          0.00       0.00      11.00         277.90         209.90         311.80        H2-O1         solvation1_water_merged.data
+  19       3        18.02        -11.00     -22.00     -22.00         187.90         139.00          11.00        H2-O1         solvation1_water_merged.data
+  20       3        18.02        -11.00      22.00     -11.00         323.10           4.70         316.30        H2-O1         solvation1_water_merged.data
+  21       3        18.02         11.00     -11.00      11.00          31.80          77.80         342.80        H2-O1         solvation1_water_merged.data
+  22       3        18.02         22.00     -22.00      22.00         135.10         330.50          16.40        H2-O1         solvation1_water_merged.data
+  23       3        18.02         11.00      22.00       0.00         123.40         354.10         340.80        H2-O1         solvation1_water_merged.data
+  24       3        18.02         22.00      22.00      11.00         291.50         182.30          32.10        H2-O1         solvation1_water_merged.data
+  25       3        18.02         11.00      11.00      11.00         241.00         177.60         212.20        H2-O1         solvation1_water_merged.data
+  26       3        18.02        -22.00      11.00       0.00         271.90         356.60          67.00        H2-O1         solvation1_water_merged.data
+  27       3        18.02        -11.00       0.00       0.00          53.10          17.00          67.20        H2-O1         solvation1_water_merged.data
+  28       3        18.02        -22.00       0.00     -11.00         158.90         327.30          73.50        H2-O1         solvation1_water_merged.data
+  29       3        18.02        -22.00      11.00     -22.00          64.20         158.10         132.60        H2-O1         solvation1_water_merged.data
+  30       3        18.02         11.00      11.00     -22.00         291.70         150.60          88.20        H2-O1         solvation1_water_merged.data
+  31       3        18.02        -22.00     -22.00      22.00         143.20         220.80         140.00        H2-O1         solvation1_water_merged.data
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:             270 
+nbonds:             270 
+nangles:            630 
+ndihedrals:         360 
+nimpropers:         60  
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         55.00000  angstrom  
+Ly:         55.00000  angstrom  
+Lz:         55.00000  angstrom  
+volume:    1.6637E-19 cm^3      
+mass:      2.0942E-21 grams     
+density:    0.01259   g/cc      
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+Writing in.solvation1_cell_replicate script
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\cell_builder directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.02865886688232422
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

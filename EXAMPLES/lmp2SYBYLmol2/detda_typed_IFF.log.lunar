@@ -1,0 +1,19 @@
+
+
+Running lmp2SYBYLmol2 v1.1 / 4 November 2023
+Using Python version 3.11.5 (tags/v3.11.5:cce6ba9, Aug 24 2023, 14:38:34) [MSC v.1936 64 bit (AMD64)]
+Read in EXAMPLES/lmp2SYBYLmol2/detda_typed_IFF.data LAMMPS datafile
+Using path from topofile to set parent_directory ...
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\lmp2SYBYLmol2 directory
+
+
+Normal program termination
+
+
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

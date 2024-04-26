@@ -1,0 +1,11 @@
+#-----------------------------------------------------------------------------#
+# Water test by setting "atom name" columns 13-16 as PCFF/PCFF-IFF atom types #
+#-----------------------------------------------------------------------------#
+tolerance 2.0
+filetype pdb
+output water_packmol_atom_name_as_atom_typeID.pdb
+
+structure water.pdb
+  number 10
+  inside box -5. -5. -5. 5. 5. 5.
+end structure

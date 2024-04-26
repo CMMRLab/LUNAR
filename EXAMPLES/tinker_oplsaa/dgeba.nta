@@ -1,0 +1,55 @@
+# New type assignment file for testing all2lmp.py with all2lmp_oplsaa_tinker.frc file
+style id
+1      OS_507  # O in 3M Ring [Furan O (partial charge: -0.7)]                   
+2      CT_81   # C in 3M ring [Alkane -CH2- (partial charge: 0.0)]                   
+3      CT_81   # C in 3M ring [Alkane -CH2- (partial charge: 0.0)]                   
+4      CT_81   # C between 6M ring and 3M ring [Alkane -CH2- (partial charge: 0.0)]             
+5      OS_507  # O ester [Furan O (partial charge: -0.7)]         
+6      CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)]                   
+7      CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)]                   
+8      CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)]                   
+9      CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)]                   
+10     CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)]                 
+11     CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)]                 
+12     CT_81   # C between 6M ring and 6M ring                  
+13     CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)]                   
+14     CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)]                   
+15     CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)]                   
+16     CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)]                   
+17     CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)]                   
+18     CA_90   # C in benzene ring [Aromatic C (partial charge: 0.248)]                 
+19     OS_507  # O ester [Furan O (partial charge: -0.7)]                  
+20     CT_81   # C between 6M ring and 3M ring [Alkane -CH2- (partial charge: 0.0)]                 
+21     CT_81   # C in 3M ring [Alkane -CH2- (partial charge: 0.0)]                   
+22     CT_81   # C in 3M ring [Alkane -CH2- (partial charge: 0.0)]                   
+23     OS_507  # O in 3M Ring [Furan O (partial charge: -0.7)]                  
+24     HC_85   # H-C [Alkane H-C (partial charge: 0.42)]                 
+25     HC_85   # H-C [Alkane H-C (partial charge: 0.42)]                 
+26     HC_85   # H-C [Alkane H-C (partial charge: 0.42)]                 
+27     HC_85   # H-C [Alkane H-C (partial charge: 0.42)]                 
+28     HC_85   # H-C [Alkane H-C (partial charge: 0.42)]                 
+29     HA_91   # H-C in 6M ring [Aromatic H-C (partial charge: -0.062)]                 
+30     HA_91   # H-C in 6M ring [Aromatic H-C (partial charge: -0.062)]                 
+31     HA_91   # H-C in 6M ring [Aromatic H-C (partial charge: -0.062)]                 
+32     HA_91   # H-C in 6M ring [Aromatic H-C (partial charge: -0.062)]                 
+33     HC_85   # H-C [Alkane H-C (partial charge: 0.42)]                 
+34     HC_85   # H-C [Alkane H-C (partial charge: 0.42)]                 
+35     HA_91   # H-C in 6M ring [Aromatic H-C (partial charge: -0.062)]                  
+36     HA_91   # H-C in 6M ring [Aromatic H-C (partial charge: -0.062)]                  
+37     HA_91   # H-C in 6M ring [Aromatic H-C (partial charge: -0.062)]                 
+38     HA_91   # H-C in 6M ring [Aromatic H-C (partial charge: -0.062)]                  
+39     HC_85   # H-C [Alkane H-C (partial charge: 0.42)]                 
+40     HC_85   # H-C [Alkane H-C (partial charge: 0.42)]                 
+41     HC_85   # H-C [Alkane H-C (partial charge: 0.42)]                 
+42     HC_85   # H-C [Alkane H-C (partial charge: 0.42)]                 
+43     HC_85   # H-C [Alkane H-C (partial charge: 0.42)]                 
+
+charge nta
+CA_90    0.248
+C!_460   0.0
+CT_81    0.0
+HC_85    0.42
+HA_91   -0.062
+OS_507  -0.7
+
+neutralize system charge all

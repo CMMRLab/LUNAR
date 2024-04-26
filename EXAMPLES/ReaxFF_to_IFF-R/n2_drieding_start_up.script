@@ -1,0 +1,68 @@
+# LAMMPS script to equilibrate the model
+#
+# The purpose of this simulation is to relax and minimize the system in Drieding FF.
+# 
+#---------initialization---------
+
+units 		real
+dimension	3
+boundary	p p p 
+newton		on
+atom_style	full
+
+#--------force-field------------
+
+bond_style      harmonic
+angle_style     harmonic
+dihedral_style  harmonic
+improper_style  umbrella
+kspace_style    pppm 1e-4
+pair_modify     mix arithmetic
+
+pair_style      lj/cut/coul/long 8.5  11.5
+special_bonds   lj/coul 0 0 1
+
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes one 5000 page 50000
+
+read_data       PFA_carb_2300K_2GPa_2000ps_typed_DRIEDING_GT.data
+
+
+
+#-----------settings------------
+
+timestep        0.5
+variable        replicate equal 4
+variable        myid string PFA_reax2drieding_char_test_${replicate}
+variable        hrate equal 10 # heating rate 10 K/ps
+
+
+#------------Thermo settings------------
+thermo          20000 #every 10 picosecond
+thermo_style    custom step temp pe ke etotal ebond eangle edihed evdwl vol density press
+restart         20000 rst1.a.${myid} rst2.a.${myid} #every 10 picosecond
+log             relaxed_${myid}.log.lammps
+
+#-----------0K minimizartion----------------------------------------------------
+min_style       fire
+minimize        1.0e-4 1.0e-6 1000 100000
+run             0
+
+#-----------Increasing Temperature------------------  
+fix             1 all nvt temp 0.1 300 $(100*dt) 
+variable        steps equal (1000/dt)*(300-0.1)/v_hrate
+
+variable        fsteps equal round(v_steps)
+run             ${fsteps}
+
+write_data      ${myid}_300K.data
+unfix           1 
+
+#------------Room temperature relaxation--------------
+fix             2 all npt temp 300 300 $(100*dt) aniso 1.0 1.0 $(100*dt) #x 1.0 1.0 100 y 1.0 1.0 100 z 1.0 1.0 100 couple none
+
+# run for 4 nanoseconds
+run             8000000
+
+write_data      ${myid}.data
+write_restart   ${myid}.restart

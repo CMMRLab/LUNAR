@@ -1,0 +1,20 @@
+Joshs NOTES on the .frc files:
+    Note that some of the .frc files in this folder have come from
+	msi2lmp that is found in the tools folder of the LAMMPS distribution.
+	However, Josh has also added to following .frc files:
+		- all2lmp_dreiding.frc (built by Josh from the DREIDING paper)
+		- all2lmp_reaxff.frc (built by Josh for all2lmp.py ReaxFF files)
+		- all2lmp_oplsaa_tinker (built by Josh from Tinker opls-aa parameters)
+		- pcff_interface_v1_5.frc (from IFF website - still need permission)
+		- cvff_interface_v1_5.frc (from IFF website - still need permission)
+    Additionally, there is a "general_assumed_equivs.coeffs" file, which is
+	an example file on using the assumed auto fill option found in all2lmp.py,
+	where "general_assumed_equivs.coeffs" is compatable with PCFF/PCFF-IFF.
+	
+LAMMPS NOTES on the .frc files:
+    Note that LAMMPS does not distribute Accelrys (or old BioSym)
+    force field files, since they are proprietary.  All the
+    files in this directory that are part of the LAMMPS distribution
+    are openly available files that are in the public domain.
+
+

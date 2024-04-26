@@ -1,0 +1,154 @@
+
+
+Running cell_builder v1.7 / 11 April 2024
+Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+Total number of subcells required: 61
+3-Dimensional span of each subcell: 22
+
+
+Generating new simulation cell ....
+
+
+Finding energy coeffs ....
+
+
+
+-----------------------------------------------------
+   Cell building and randomization parameters used
+-----------------------------------------------------
+unwrap atoms by iflags:                  True
+locally group atoms:                    False
+offset coeff types:                     False
+distance scale:                           1.2
+duplicate:                                  1
+max rotations:             {'x': 360.0, 'y': 360.0, 'z': 360.0}
+seed:                                   12345
+domain:                                 cubic
+System files used:        
+   EXAMPLES\cell_builder\solvation2_CNT_merged.data qty: 1
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+   EXAMPLES\cell_builder\solvation2_dgebf_merged.data qty: 60
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+
+
+
+----------------------------------------------
+              Subcell info
+----------------------------------------------
+Total number of subcells required:  61
+Lattice spacing for subcells     : 22 angstrom
+
+
+Finding new molids ....
+-----------------------------------------------------------------------------Cluster Analysis----------------------------------------------------------------------
+molID     Size       Mass      X-center   Y-center   Z-center        phi (°)      theta (°)        psi (°)   Molecule Formula           Filename         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  1        43       312.37       -44.00      22.00     -22.00         201.70         196.70          20.60      C19-H20-O4      solvation2_dgebf_merged.data
+  2        43       312.37       -22.00     -22.00       0.00         327.30          73.50         323.10      C19-H20-O4      solvation2_dgebf_merged.data
+  3        43       312.37       -44.00      22.00       0.00         354.10         340.80           3.80      C19-H20-O4      solvation2_dgebf_merged.data
+  4        43       312.37       -22.00      22.00     -44.00         337.20         212.20         101.90      C19-H20-O4      solvation2_dgebf_merged.data
+  5        43       312.37       -44.00       0.00     -44.00         108.20         127.70         301.90      C19-H20-O4      solvation2_dgebf_merged.data
+  6        43       312.37        44.00     -44.00      22.00         119.70          51.30         220.40      C19-H20-O4      solvation2_dgebf_merged.data
+  7        43       312.37        44.00      22.00      22.00           4.70         316.30         291.70      C19-H20-O4      solvation2_dgebf_merged.data
+  8        43       312.37        44.00      44.00      22.00         118.00          61.40         220.00      C19-H20-O4      solvation2_dgebf_merged.data
+  9        43       312.37        44.00       0.00      44.00          67.50         137.40          94.40      C19-H20-O4      solvation2_dgebf_merged.data
+  10       43       312.37        44.00     -44.00     -44.00         158.10         132.60           5.20      C19-H20-O4      solvation2_dgebf_merged.data
+  11       43       312.37        44.00      44.00     -22.00          11.10         152.70         135.30      C19-H20-O4      solvation2_dgebf_merged.data
+  12       43       312.37         0.00     -44.00      44.00         188.70         170.60          74.50      C19-H20-O4      solvation2_dgebf_merged.data
+  13       43       312.37         0.00     -22.00      22.00          18.00         149.00         327.30      C19-H20-O4      solvation2_dgebf_merged.data
+  14       43       312.37       -22.00      44.00      44.00         304.50          79.80         257.20      C19-H20-O4      solvation2_dgebf_merged.data
+  15       43       312.37         0.00      22.00      22.00          27.80          63.90         152.00      C19-H20-O4      solvation2_dgebf_merged.data
+  16       43       312.37         0.00     -44.00     -44.00          44.00         257.70         310.80      C19-H20-O4      solvation2_dgebf_merged.data
+  17       43       312.37        22.00      22.00      44.00         150.60          88.20         277.90      C19-H20-O4      solvation2_dgebf_merged.data
+  18       43       312.37       -22.00       0.00      22.00         286.10          48.80         227.90      C19-H20-O4      solvation2_dgebf_merged.data
+  19       43       312.37        22.00     -22.00     -22.00         342.10         248.80         327.00      C19-H20-O4      solvation2_dgebf_merged.data
+  20       43       312.37       -22.00      44.00       0.00         274.80         327.00          24.20      C19-H20-O4      solvation2_dgebf_merged.data
+  21       43       312.37       -44.00       0.00     -22.00          37.10         212.80         284.90      C19-H20-O4      solvation2_dgebf_merged.data
+  22       43       312.37        22.00      22.00     -44.00         269.30         203.10          75.70      C19-H20-O4      solvation2_dgebf_merged.data
+  23       43       312.37        44.00     -44.00       0.00         290.20         260.00          14.40      C19-H20-O4      solvation2_dgebf_merged.data
+  24       43       312.37        44.00      22.00     -22.00         112.60         305.60         181.80      C19-H20-O4      solvation2_dgebf_merged.data
+  25       43       312.37       -44.00      44.00     -22.00           5.60         256.40         201.40      C19-H20-O4      solvation2_dgebf_merged.data
+  26       43       312.37       -44.00     -44.00     -22.00         177.60         212.20          53.10      C19-H20-O4      solvation2_dgebf_merged.data
+  27       43       312.37        44.00     -22.00     -44.00         196.90         254.70          25.20      C19-H20-O4      solvation2_dgebf_merged.data
+  28       43       312.37        22.00     -44.00     -44.00         209.90         311.80          49.70      C19-H20-O4      solvation2_dgebf_merged.data
+  29       43       312.37        44.00      44.00      44.00          99.60         359.80          75.40      C19-H20-O4      solvation2_dgebf_merged.data
+  30       43       312.37         0.00       0.00     -44.00         254.40         233.90          82.60      C19-H20-O4      solvation2_dgebf_merged.data
+  31       43       312.37        44.00     -22.00      44.00         280.90         151.00         164.50      C19-H20-O4      solvation2_dgebf_merged.data
+  32       43       312.37         0.00       0.00      44.00          61.30          32.70         202.70      C19-H20-O4      solvation2_dgebf_merged.data
+  33       43       312.37         0.00      44.00       0.00         171.00         133.10          49.20      C19-H20-O4      solvation2_dgebf_merged.data
+  34       43       312.37        22.00     -22.00       0.00         125.80         183.90         250.00      C19-H20-O4      solvation2_dgebf_merged.data
+  35       43       312.37       -22.00      22.00      22.00          72.00         161.60          72.80      C19-H20-O4      solvation2_dgebf_merged.data
+  36       43       312.37        44.00     -22.00     -22.00          17.00          67.20         123.40      C19-H20-O4      solvation2_dgebf_merged.data
+  37       43       312.37        22.00     -44.00      22.00          95.50         135.20         232.50      C19-H20-O4      solvation2_dgebf_merged.data
+  38       43       312.37       -44.00      44.00      44.00         169.20         210.20         283.30      C19-H20-O4      solvation2_dgebf_merged.data
+  39       43       312.37         0.00      22.00      44.00          83.20          66.90          66.60      C19-H20-O4      solvation2_dgebf_merged.data
+  40       43       312.37       -44.00       0.00      22.00         206.90         307.20         166.30      C19-H20-O4      solvation2_dgebf_merged.data
+  41       43       312.37       -22.00     -44.00     -44.00          76.10         105.50         241.00      C19-H20-O4      solvation2_dgebf_merged.data
+  42       43       312.37       -22.00      44.00      22.00          61.50          93.80         143.20      C19-H20-O4      solvation2_dgebf_merged.data
+  43      160      1921.78        22.00       0.00       0.00           0.00           0.00           0.00         C160         solvation2_CNT_merged.data
+  44       43       312.37       -44.00       0.00       0.00         172.30         225.20          82.50      C19-H20-O4      solvation2_dgebf_merged.data
+  45       43       312.37         0.00     -22.00       0.00         309.60         227.30         274.30      C19-H20-O4      solvation2_dgebf_merged.data
+  46       43       312.37        22.00     -44.00       0.00          20.20          24.90         291.50      C19-H20-O4      solvation2_dgebf_merged.data
+  47       43       312.37        22.00      22.00      22.00         133.40         316.20         249.80      C19-H20-O4      solvation2_dgebf_merged.data
+  48       43       312.37         0.00      22.00       0.00          72.90         234.10         278.50      C19-H20-O4      solvation2_dgebf_merged.data
+  49       43       312.37         0.00      44.00      22.00         106.40         318.30         174.80      C19-H20-O4      solvation2_dgebf_merged.data
+  50       43       312.37         0.00     -22.00     -44.00         348.40          39.20         108.20      C19-H20-O4      solvation2_dgebf_merged.data
+  51       43       312.37        22.00      44.00       0.00         149.20         314.90         271.50      C19-H20-O4      solvation2_dgebf_merged.data
+  52       43       312.37        22.00     -22.00     -44.00          27.70         263.60         188.60      C19-H20-O4      solvation2_dgebf_merged.data
+  53       43       312.37       -22.00       0.00       0.00          27.00         323.70         307.70      C19-H20-O4      solvation2_dgebf_merged.data
+  54       43       312.37        22.00      44.00     -22.00         306.80          55.30         217.40      C19-H20-O4      solvation2_dgebf_merged.data
+  55       43       312.37        44.00      44.00       0.00         220.80         140.00          64.20      C19-H20-O4      solvation2_dgebf_merged.data
+  56       43       312.37        44.00     -44.00     -22.00         209.00         284.00         315.90      C19-H20-O4      solvation2_dgebf_merged.data
+  57       43       312.37        22.00       0.00      44.00          49.00         357.60         204.40      C19-H20-O4      solvation2_dgebf_merged.data
+  58       43       312.37        22.00     -22.00      22.00          88.60         301.90         328.40      C19-H20-O4      solvation2_dgebf_merged.data
+  59       43       312.37       -22.00      44.00     -44.00           1.30          60.00           1.30      C19-H20-O4      solvation2_dgebf_merged.data
+  60       43       312.37       -22.00      22.00     -22.00         182.30          32.10         158.90      C19-H20-O4      solvation2_dgebf_merged.data
+  61       43       312.37       -22.00     -44.00       0.00         211.60         219.50         235.10      C19-H20-O4      solvation2_dgebf_merged.data
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:            2740 
+nbonds:            2990 
+nangles:           5360 
+ndihedrals:        7560 
+nimpropers:        2540 
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:        110.00000  angstrom  
+Ly:        110.00000  angstrom  
+Lz:        110.00000  angstrom  
+volume:    1.3310E-18 cm^3      
+mass:      3.4313E-20 grams     
+density:    0.02578   g/cc      
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+Writing in.solvation2_cell_replicate script
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\cell_builder directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.13302898406982422
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

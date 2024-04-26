@@ -1,0 +1,10 @@
+This is a blank file with the name 'PCFF-IFF' to 
+click on when using the nta_file button of all2lmp.py
+to automatically load in the name 'PCFF-IFF' into
+all2lmp.py to enforce usage of 'PCFF-IFF' atom types
+by calling atom_typing with the ff_name set as
+'PCFF-IFF'.
+
+NOTE that the all2lmp.py GUI will load this 
+file with a path. The path will be stripped
+by all2lmp.py to get the filename only.

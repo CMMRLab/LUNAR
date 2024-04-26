@@ -1,0 +1,17 @@
+#----------Initialize Simulation----------
+units        real
+dimension    2 
+boundary     p p p
+atom_style   charge
+
+#----------Create Atoms---------- 
+lattice      hex 0.85
+region	     box block 0 1 0 1 0 1 units lattice
+create_box   1 box
+
+mass         1 1.008 # Background atoms
+create_atoms 1 box
+replicate    34 7 1
+
+
+write_data   lattice.data

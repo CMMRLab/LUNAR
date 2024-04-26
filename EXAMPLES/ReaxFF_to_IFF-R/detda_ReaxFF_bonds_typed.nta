@@ -1,0 +1,33 @@
+New type assignment file for detda_ReaxFF_bonds_typed.data > atom_typing v1.9 / 5 January 2024 w/PCFF-IFF atom-types
+style id
+1      hn              #  Correctly found
+2      nn              #  Correctly found
+3      hn              #  Correctly found
+4      hc              #  Correctly found
+5      hc              #  Correctly found
+6      c3              #  Correctly found
+7      c2              #  Correctly found
+8      hc              #  Correctly found
+9      hc              #  Correctly found
+10     hc              #  Correctly found
+11     hc              #  Correctly found
+12     c3              #  Correctly found
+13     cp              #  Correctly found
+14     cp              #  Correctly found
+15     cp              #  Correctly found
+16     cp              #  Correctly found
+17     hc              #  Correctly found
+18     hc              #  Correctly found
+19     hc              #  Correctly found
+20     hn              #  Correctly found
+21     nn              #  Correctly found
+22     hn              #  Correctly found
+23     cp              #  Correctly found
+24     cp              #  Correctly found
+25     hc              #  Correctly found
+26     hc              #  Correctly found
+27     c2              #  Correctly found
+28     c3              #  Correctly found
+29     hc              #  Correctly found
+30     hc              #  Correctly found
+31     hc              #  Correctly found

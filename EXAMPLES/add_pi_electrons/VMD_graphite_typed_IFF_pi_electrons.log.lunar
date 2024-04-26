@@ -1,0 +1,30 @@
+
+
+Running add_pi_electrons v1.5 / 1 April 2024
+Using Python version 3.11.5 (tags/v3.11.5:cce6ba9, Aug 24 2023, 14:38:34) [MSC v.1936 64 bit (AMD64)]
+Read in EXAMPLES\add_pi_electrons\VMD_graphite_typed_IFF.data LAMMPS datafile
+cp in types2convert was found to be a string, and maps to atomTypeID 1 in VMD_graphite_typed_IFF_pi_electrons.data
+add_pi_electrons and reset_charge were both True. Setting reset_charge = False, since add_pi_electrons will adjust charge.
+Converting coeffs to cg1.
+Adding pi electrons and updating coeffs/charges. Created:
+      4032 atoms
+      4032 bonds
+     14112 angles
+Resetting simulation cell dimensions after adding pi-electrons.
+Zeroing system net charge by adding a fixed value to atoms that DO NOT belong to the following types: 1 2 3.
+WARNING net_zero_charge could not be enforced since all atoms are defined by the atom types in types2convert = 1 2 3. System charge = 0.0
+Using path from topofile to set parent_directory ...
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\add_pi_electrons directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.23928141593933105
+
+
+Number of WARNING(s) and ERROR(s)
+  1 WARNING(s)
+  0 ERROR(s)

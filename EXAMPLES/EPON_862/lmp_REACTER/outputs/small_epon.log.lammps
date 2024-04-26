@@ -1,0 +1,177 @@
+restart         2000 rst1.a.${myid} rst2.a.${myid}
+restart         2000 rst1.a.small_epon rst2.a.${myid}
+restart         2000 rst1.a.small_epon rst2.a.small_epon
+
+
+#------------Run------------
+run             50000
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Your simulation uses code contributions which should be cited:
+
+- fix bond/react: reacter.org
+
+@Article{Gissinger17,
+ author = {J. R. Gissinger, B. D. Jensen, K. E. Wise},
+ title = {Modeling chemical reactions in classical molecular dynamics simulations},
+ journal = {Polymer},
+ year =    2017,
+ volume =  128,
+ pages =   {211--217}
+}
+
+@Article{Gissinger20,
+ author = {J. R. Gissinger, B. D. Jensen, K. E. Wise},
+ title = {REACTER: A Heuristic Method for Reactive Molecular Dynamics},
+ journal = {Macromolecules},
+ year =    2020,
+ volume =  53,
+ pages =   {9953--9961}
+}
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+PPPM initialization ...
+  using 12-bit tables for long-range coulomb (../kspace.cpp:340)
+  G vector (1/distance) = 0.10292283
+  grid = 10 10 10
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.034051434
+  estimated relative force accuracy = 0.00010254488
+  using double precision KISS FFT
+  3d grid and FFT values/proc = 1000 200
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 5000, page size: 100000
+  master list distance cutoff = 14
+  ghost atom cutoff = 14
+  binsize = 7, bins = 15 15 15
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair lj/class2/coul/long, perpetual
+      attributes: half, newton on
+      pair build: half/bin/newton
+      stencil: half/bin/3d
+      bin: standard
+  (2) fix bond/react, occasional, copy from (1)
+      attributes: half, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 44.81 | 44.99 | 45.50 Mbytes
+Step Temp Press Density KinEng PotEng TotEng E_vdwl E_coul E_pair E_bond E_angle E_dihed E_impro v_rxn1 v_rxn2 
+       0          500    682.78436  0.011518768    1742.2835    6231.5495     7973.833    653.40958     317.5586    561.80678    1672.0243    4675.4254   -630.30653   -47.400493            0            0 
+    2000    510.11415    108.31872  0.011518768    1777.5269      6488.41    8265.9369      518.036    310.15412    419.48751    772.42347    5475.5703   -190.97201    11.900754            0            0 
+    4000     521.8477    41.038718  0.011518768    1818.4133    6529.4724    8347.8856    473.39571    314.14522     378.8199    788.22251    5488.8181   -146.93281    20.544646            0            0 
+    6000    483.96663   -11.597941  0.011518768    1686.4141    6386.0315    8072.4456    461.59447    322.57225    375.60513    743.19719    5349.6382   -102.97822    20.569213            1            0 
+    8000    477.75698   -5.3789338  0.011518768    1664.7762    6313.9677    7978.7439    477.53694     315.8981    384.76357    709.56352    5286.6111   -99.929367    32.958882            1            0 
+   10000    514.69379   -10.051208  0.011518768     1793.485    6305.5768    8099.0618    467.44464    315.20278    373.98068    711.15723    5252.7695   -54.444925    22.114313            1            0 
+   12000    502.85758    -38.40019  0.011518768    1752.2409    6098.1892    7850.4301    464.88858      336.953    393.46578    790.88147    5004.3452   -110.14499    19.641753            4            0 
+   14000    498.91809    12.158366  0.011518768    1738.5135    5876.2129    7614.7264    482.08526    345.76253     419.2777    696.52059    4863.9353   -130.64469    27.124014            5            0 
+   16000    492.45654    79.628069  0.011518768    1715.9978    5843.7155    7559.7133     531.8016    334.93434     458.1303    761.87505    4751.5181   -147.14677    19.338824            5            1 
+   18000    526.77008    22.341022  0.011518768    1835.5656    5772.9259    7608.4915    500.53118     338.6677     430.7064    748.38161    4681.2211   -108.43068    21.047412            5            1 
+   20000     499.0048    56.750837  0.011518768    1738.8156    5726.8419    7465.6575    477.18267    330.81313    399.44323    706.34245    4735.3831    -135.1465    20.819628            5            1 
+   22000    507.89784  -0.45637054  0.011518768     1769.804    5858.6154    7628.4195    490.58553    331.21137    413.13061    770.40194    4732.1479   -80.908821    23.843784            5            1 
+   24000    505.99022    7.2872738  0.011518768    1763.1568    5789.6124    7552.7692    502.61586    330.43487     424.6362    755.05816    4727.7186   -132.16404    14.363449            5            1 
+   26000     499.7508    8.6553798  0.011518768    1741.4151     5635.995    7377.4101    514.94569    336.33688    442.63265     740.9484    4456.5761    -26.73075    22.568548            7            1 
+   28000    494.75663    16.754839  0.011518768    1724.0126    5628.4583    7352.4709    455.40593    349.02465     395.9686    721.75663     4487.584   -10.551508    33.700556            7            1 
+   30000    515.80523   -21.117476  0.011518768    1797.3579    5570.4471    7367.8049    494.30489    338.50418    424.22426    765.40925    4396.5548   -40.469328    24.728127            8            1 
+   32000    507.65937    14.278965  0.011518768     1768.973    5518.1752    7287.1483    475.06483    343.78212    410.49598    755.52463    4402.8875   -77.415788    26.682846            8            1 
+   34000    478.03987   -44.314594  0.011518768    1665.7619    5489.2785    7155.0404    467.88397    346.80148    406.29904    711.17058    4386.1338   -40.352281    26.027293            8            1 
+   36000     502.3195    25.901417  0.011518768    1750.3659    5384.7203    7135.0862    471.86029    361.02919    424.46981    724.24374    4262.5892   -52.306257     25.72378            9            1 
+   38000    496.12864    10.552092  0.011518768    1728.7935    5443.2414    7172.0348    496.71668    349.25424     437.3812    733.91628     4284.895   -36.518385    23.567231            9            1 
+   40000    472.62181   -19.283569  0.011518768    1646.8823    5394.9058    7041.7881    469.05683    350.04195    410.41047    728.67221    4246.9075    -18.17839     27.09399            9            1 
+   42000     509.4432   -8.6805537  0.011518768    1775.1889    5414.3458    7189.5347    501.17498    353.29781    445.97333    740.26067    4301.7038   -96.789547    23.197534            9            1 
+   44000    494.08868   -4.7750281  0.011518768    1721.6851    5460.4613    7182.1464    472.17301    350.53173    414.19215    776.34767    4292.7798   -47.926661    25.068347            9            1 
+   46000    499.80524    69.288414  0.011518768    1741.6048    5382.9125    7124.5173    491.71598    356.03324    439.29535    745.42235    4263.8653   -98.528742    32.858204            9            1 
+   48000    519.31998    -31.51541  0.011518768    1809.6052    5320.7346    7130.3398     458.7979    355.07794    405.24677    753.51127    4193.0915   -59.257388    28.142422           10            1 
+   50000    515.58128    38.380551  0.011518768    1796.5775    5287.3154    7083.8929    513.81155    353.85918    459.14579    788.37529    4134.5969   -117.84461    23.042071           10            1 
+Loop time of 55.2372 on 8 procs for 50000 steps with 1170 atoms
+
+Performance: 39.104 ns/day, 0.614 hours/ns, 905.186 timesteps/s
+99.8% CPU use with 8 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.0581     | 5.0952     | 9.9032     | 114.7 |  9.22
+Bond    | 5.0379     | 17.681     | 29.403     | 163.3 | 32.01
+Kspace  | 12.11      | 27.307     | 42.524     | 165.1 | 49.43
+Neigh   | 0.41707    | 0.42024    | 0.42469    |   0.3 |  0.76
+Comm    | 1.1904     | 2.5075     | 3.9303     |  48.8 |  4.54
+Output  | 0.58858    | 0.58886    | 0.59073    |   0.1 |  1.07
+Modify  | 1.4137     | 1.4552     | 1.4868     |   2.2 |  2.63
+Other   |            | 0.1832     |            |       |  0.33
+
+Nlocal:        146.250 ave         252 max          54 min
+Histogram: 2 0 2 0 0 1 0 1 1 1
+Nghost:        347.375 ave         444 max         275 min
+Histogram: 1 1 1 2 0 0 1 1 0 1
+Neighs:        4943.62 ave       10338 max        1229 min
+Histogram: 3 1 0 0 0 1 1 0 1 1
+
+Total # of neighbors = 39549
+Ave neighs/atom = 33.802564
+Ave special neighs/atom = 6.4188034
+Neighbor list builds = 1205
+Dangerous builds = 0
+write_data      ${myid}.data
+write_data      small_epon.data
+System init for write_data ...
+PPPM initialization ...
+  using 12-bit tables for long-range coulomb (../kspace.cpp:340)
+  G vector (1/distance) = 0.10292082
+  grid = 10 10 10
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.031459002
+  estimated relative force accuracy = 9.4737849e-05
+  using double precision KISS FFT
+  3d grid and FFT values/proc = 1000 200
+
+
+#------------Generalized Method to write LAMMPS datafiles as a function of crosslink density------------
+# Caclulate crosslink density
+#variable      rxn1 equal f_myrxn[1]
+#variable      rxn2 equal f_myrxn[2]
+
+#variable      trxn equal v_rxn1+v_rxn2 # Sum all rxns
+#variable      pxld equal 100*(v_trxn/250) # Assume 250 is max count of the sum of rxn1 and rxn2
+
+# Set run flags to "turn on" and "shut off" after writing a file
+#variable      pxld10 equal 0 # 10% fileflag
+#variable      pxld20 equal 0 # 20% fileflag
+#variable      pxld30 equal 0 # 30% fileflag
+#variable      pxld40 equal 0 # 40% fileflag
+#variable      pxld50 equal 0 # 50% fileflag
+#variable      pxld60 equal 0 # 60% fileflag
+#variable      pxld70 equal 0 # 70% fileflag
+#variable      pxld80 equal 0 # 80% fileflag
+#variable      pxld90 equal 0 # 90% fileflag
+
+# Set check frequency (every N-timesteps check if v_pxld is eligable to be written)
+#variable      check equal 100   # check every N-timesteps (if to small check may not occur as quick as the reactions are progressing)
+#variable      Run   equal 2     # run time in ns
+#variable      i     equal (v_Run*1000000/dt)/v_check # calculate number of for loop iterations
+
+# Run simulation using LAMMPS for loop
+#label loop
+#variable a loop $i
+#run ${check}
+
+# crosslink density percent check
+#if "${pxld}>=9   && ${pxld}<=13 && ${pxld10}==0" then "write_data ${myid}_pxld_${pxld}.data" "variable      xld10 equal 1" # 10%
+#if "${pxld}>=19  && ${pxld}<=23 && ${pxld20}==0" then "write_data ${myid}_pxld_${pxld}.data" "variable      xld20 equal 1" # 20%
+#if "${pxld}>=29  && ${pxld}<=33 && ${pxld30}==0" then "write_data ${myid}_pxld_${pxld}.data" "variable      xld30 equal 1" # 30%
+#if "${pxld}>=39  && ${pxld}<=43 && ${pxld40}==0" then "write_data ${myid}_pxld_${pxld}.data" "variable      xld40 equal 1" # 40%
+#if "${pxld}>=49  && ${pxld}<=53 && ${pxld50}==0" then "write_data ${myid}_pxld_${pxld}.data" "variable      xld50 equal 1" # 50%
+#if "${pxld}>=59  && ${pxld}<=63 && ${pxld60}==0" then "write_data ${myid}_pxld_${pxld}.data" "variable      xld60 equal 1" # 60%
+#if "${pxld}>=69  && ${pxld}<=73 && ${pxld70}==0" then "write_data ${myid}_pxld_${pxld}.data" "variable      xld70 equal 1" # 70%
+#if "${pxld}>=79  && ${pxld}<=83 && ${pxld80}==0" then "write_data ${myid}_pxld_${pxld}.data" "variable      xld80 equal 1" # 80%
+#if "${pxld}>=89  && ${pxld}<=93 && ${pxld90}==0" then "write_data ${myid}_pxld_${pxld}.data" "variable      xld90 equal 1" # 90%
+
+#next a
+#jump SELF loop
+#label break
+#print "***ALL DONE***"
+#write_data  ${myid}_pxld_${pxld}_end_of_loop.data
+Total wall time: 0:00:55

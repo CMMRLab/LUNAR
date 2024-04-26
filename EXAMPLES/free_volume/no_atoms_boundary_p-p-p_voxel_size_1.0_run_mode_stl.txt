@@ -1,0 +1,60 @@
+This is a saved .txt file for the print outs that appear when running free_volume.py v1.5 / 30 November 2023
+Running in stl mode
+
+
+
+Elements found in system:
+
+
+System Unit cell, volume, mass, density
+Lx:             18.00000  angstrom  
+Ly:             18.00000  angstrom  
+Lz:             18.00000  angstrom  
+volume:        5.8320E-21 cm^3       (assumes orthogonality)
+mass:          0.0000E+00 grams     
+density:        0.00000   g/cm^3     (assumes orthogonality)
+
+
+Voxel information:
+max_voxel_size = 1.0
+Number of x-voxels, x-voxel dimension = 18, 1.0
+Number of y-voxels, y-voxel dimension = 18, 1.0
+Number of z-voxels, z-voxel dimension = 18, 1.0
+Number of voxels created 5832
+
+
+PBC information:
+System periodic boundary flags                        : p p p
+Count of atoms that are near cell edge (possibly PBC) : 0
+Total Count of periodically determined occupied voxels: 0
+
+
+Free volume analysis results:
+Simulation cell volume: 5832.0 A^3
+Atom volume           : 0.0 A^3
+Free volume           : 5832.0 A^3
+Percent Free volume   : 100.0 %
+
+
+Fractional Free Volume for polymers (FFV = Vf/Vsp; where Vf = Vsp - Voc & Voc = 1.3*Vw) results:
+Van der Waals Volume (Vw)        : 0.0 cm^3
+Occupied Volume (Voc)            : 0 cm^3/g
+Specfic Volume (Vsp)             : 0 cm^3/g
+Fractional Free volume (100*FFV) : 0 (%)
+
+  If you are using this metric it should be for polymers ONLY and FFV should be positive. If FFV is negative
+  you should use the "Percent Free Volume" instead. Addtionally you should cite the following:
+
+    Yampolskii, Y. (2016). Fractional Free Volume (FFV). In: Drioli, E., Giorno, L. (eds) Encyclopedia of
+    Membranes. Springer, Berlin, Heidelberg. https://doi.org/10.1007/978-3-662-44324-8_243
+
+    Wenqing Zhang, Yang Qing, Weihong Zhong, Gang Sui, Xiaoping Yang (2017). In: Reactive and Functional Polymers,
+    Vol 111, pages 60-67, Mechanism of modulus improvement for epoxy resin matrices: A molecular dynamics simulation
+    https://doi.org/10.1016/j.reactfunctpolym.2016.12.014
+
+  It is also recommend to read up on the FFV definiton, its limitations/critiques. A link is provided to get
+  started in your search (https://link.springer.com/referenceworkentry/10.1007/978-3-662-44324-8_243#citeas).
+  Typical FFV for polymers is in the range of 10-25%, however some polymers such as polytrimethylsilyl propyne
+  may have FFV as large as 35%.
+
+Execution time in seconds:    0.017000198364257812

@@ -1,0 +1,216 @@
+New type assignment file for Fullerene-C60_pi_electrons_typed.data > atom_typing v1.7 / 4 November 2023 w/PCFF-IFF atom-types
+#----------------------#
+# NEW *-remove options #
+#----------------------#
+#angle-remove id
+61     1     5
+*      2     *
+
+#angle-remove nta
+cg1 cg1 cge
+*   cg1 *
+
+dihedral-remove nta
+cg1 cg1 cg1 cg1
+*   cg1 cg1 *
+
+improper-remove nta
+cg1 cg1 cg1 cg1 nb!=3
+*   cg1 *   *   nb!=3
+
+angle-remove zero
+dihedral-remove zero
+improper-remove zero
+
+#---------------#
+# Charge system #
+#---------------#
+charge nta
+cg1  0.250
+cge -0.125
+neutralize system charge all
+
+#---------------------------------#
+# Set atom types based  on atomID #
+#---------------------------------#
+style id
+1      cg1              #  Correctly found
+2      cg1              #  Correctly found
+3      cg1              #  Correctly found
+4      cg1              #  Correctly found
+5      cg1              #  Correctly found
+6      cg1              #  Correctly found
+7      cg1              #  Correctly found
+8      cg1              #  Correctly found
+9      cg1              #  Correctly found
+10     cg1              #  Correctly found
+11     cg1              #  Correctly found
+12     cg1              #  Correctly found
+13     cg1              #  Correctly found
+14     cg1              #  Correctly found
+15     cg1              #  Correctly found
+16     cg1              #  Correctly found
+17     cg1              #  Correctly found
+18     cg1              #  Correctly found
+19     cg1              #  Correctly found
+20     cg1              #  Correctly found
+21     cg1              #  Correctly found
+22     cg1              #  Correctly found
+23     cg1              #  Correctly found
+24     cg1              #  Correctly found
+25     cg1              #  Correctly found
+26     cg1              #  Correctly found
+27     cg1              #  Correctly found
+28     cg1              #  Correctly found
+29     cg1              #  Correctly found
+30     cg1              #  Correctly found
+31     cg1              #  Correctly found
+32     cg1              #  Correctly found
+33     cg1              #  Correctly found
+34     cg1              #  Correctly found
+35     cg1              #  Correctly found
+36     cg1              #  Correctly found
+37     cg1              #  Correctly found
+38     cg1              #  Correctly found
+39     cg1              #  Correctly found
+40     cg1              #  Correctly found
+41     cg1              #  Correctly found
+42     cg1              #  Correctly found
+43     cg1              #  Correctly found
+44     cg1              #  Correctly found
+45     cg1              #  Correctly found
+46     cg1              #  Correctly found
+47     cg1              #  Correctly found
+48     cg1              #  Correctly found
+49     cg1              #  Correctly found
+50     cg1              #  Correctly found
+51     cg1              #  Correctly found
+52     cg1              #  Correctly found
+53     cg1              #  Correctly found
+54     cg1              #  Correctly found
+55     cg1              #  Correctly found
+56     cg1              #  Correctly found
+57     cg1              #  Correctly found
+58     cg1              #  Correctly found
+59     cg1              #  Correctly found
+60     cg1              #  Correctly found
+61     cge            #  Correctly found
+62     cge            #  Correctly found
+63     cge            #  Correctly found
+64     cge            #  Correctly found
+65     cge            #  Correctly found
+66     cge            #  Correctly found
+67     cge            #  Correctly found
+68     cge            #  Correctly found
+69     cge            #  Correctly found
+70     cge            #  Correctly found
+71     cge            #  Correctly found
+72     cge            #  Correctly found
+73     cge            #  Correctly found
+74     cge            #  Correctly found
+75     cge            #  Correctly found
+76     cge            #  Correctly found
+77     cge            #  Correctly found
+78     cge            #  Correctly found
+79     cge            #  Correctly found
+80     cge            #  Correctly found
+81     cge            #  Correctly found
+82     cge            #  Correctly found
+83     cge            #  Correctly found
+84     cge            #  Correctly found
+85     cge            #  Correctly found
+86     cge            #  Correctly found
+87     cge            #  Correctly found
+88     cge            #  Correctly found
+89     cge            #  Correctly found
+90     cge            #  Correctly found
+91     cge            #  Correctly found
+92     cge            #  Correctly found
+93     cge            #  Correctly found
+94     cge            #  Correctly found
+95     cge            #  Correctly found
+96     cge            #  Correctly found
+97     cge            #  Correctly found
+98     cge            #  Correctly found
+99     cge            #  Correctly found
+100    cge            #  Correctly found
+101    cge            #  Correctly found
+102    cge            #  Correctly found
+103    cge            #  Correctly found
+104    cge            #  Correctly found
+105    cge            #  Correctly found
+106    cge            #  Correctly found
+107    cge            #  Correctly found
+108    cge            #  Correctly found
+109    cge            #  Correctly found
+110    cge            #  Correctly found
+111    cge            #  Correctly found
+112    cge            #  Correctly found
+113    cge            #  Correctly found
+114    cge            #  Correctly found
+115    cge            #  Correctly found
+116    cge            #  Correctly found
+117    cge            #  Correctly found
+118    cge            #  Correctly found
+119    cge            #  Correctly found
+120    cge            #  Correctly found
+121    cge            #  Correctly found
+122    cge            #  Correctly found
+123    cge            #  Correctly found
+124    cge            #  Correctly found
+125    cge            #  Correctly found
+126    cge            #  Correctly found
+127    cge            #  Correctly found
+128    cge            #  Correctly found
+129    cge            #  Correctly found
+130    cge            #  Correctly found
+131    cge            #  Correctly found
+132    cge            #  Correctly found
+133    cge            #  Correctly found
+134    cge            #  Correctly found
+135    cge            #  Correctly found
+136    cge            #  Correctly found
+137    cge            #  Correctly found
+138    cge            #  Correctly found
+139    cge            #  Correctly found
+140    cge            #  Correctly found
+141    cge            #  Correctly found
+142    cge            #  Correctly found
+143    cge            #  Correctly found
+144    cge            #  Correctly found
+145    cge            #  Correctly found
+146    cge            #  Correctly found
+147    cge            #  Correctly found
+148    cge            #  Correctly found
+149    cge            #  Correctly found
+150    cge            #  Correctly found
+151    cge            #  Correctly found
+152    cge            #  Correctly found
+153    cge            #  Correctly found
+154    cge            #  Correctly found
+155    cge            #  Correctly found
+156    cge            #  Correctly found
+157    cge            #  Correctly found
+158    cge            #  Correctly found
+159    cge            #  Correctly found
+160    cge            #  Correctly found
+161    cge            #  Correctly found
+162    cge            #  Correctly found
+163    cge            #  Correctly found
+164    cge            #  Correctly found
+165    cge            #  Correctly found
+166    cge            #  Correctly found
+167    cge            #  Correctly found
+168    cge            #  Correctly found
+169    cge            #  Correctly found
+170    cge            #  Correctly found
+171    cge            #  Correctly found
+172    cge            #  Correctly found
+173    cge            #  Correctly found
+174    cge            #  Correctly found
+175    cge            #  Correctly found
+176    cge            #  Correctly found
+177    cge            #  Correctly found
+178    cge            #  Correctly found
+179    cge            #  Correctly found
+180    cge            #  Correctly found
