@@ -134,6 +134,46 @@ def update_TypeIDs(m, new, log):
     m.bondbond13_coeffs = new.bondbond13_coeffs
     m.angletorsion_coeffs = new.angletorsion_coeffs
     m.angleangle_coeffs = new.angleangle_coeffs
+    
+    # Update typelabels (if they exists)
+    m.atom_type_labels_forward = {}  # {atom type : atom type label}
+    m.atom_type_labels_reverse = {}  # {atom type label: atom type}
+    for i in new.masses:
+        mass = new.masses[i]
+        m.atom_type_labels_forward[mass.type] = i
+        m.atom_type_labels_reverse[i] = mass.type
+        
+    m.bond_type_labels_forward = {}  # {bond type: bond type label}
+    m.bond_type_labels_reverse = {}  # {bond type label: bond type}
+    for i in m.bond_coeffs:
+        coeff = m.bond_coeffs[i]
+        typelabel = '-'.join(coeff.type.split())
+        m.bond_type_labels_forward[typelabel] = i
+        m.bond_type_labels_reverse[i] = typelabel
+        
+    m.angle_type_labels_forward = {}  # {angle type: angle type label}
+    m.angle_type_labels_reverse = {}  # {angle type label: angle type}
+    for i in m.angle_coeffs:
+        coeff = m.angle_coeffs[i]
+        typelabel = '-'.join(coeff.type.split())
+        m.angle_type_labels_forward[typelabel] = i
+        m.angle_type_labels_reverse[i] = typelabel
+        
+    m.dihedral_type_labels_forward = {}  # {dihedral type: dihedral type label}
+    m.dihedral_type_labels_reverse = {}  # {dihedral type label: dihedral type}
+    for i in m.dihedral_coeffs:
+        coeff = m.dihedral_coeffs[i]
+        typelabel = '-'.join(coeff.type.split())
+        m.dihedral_type_labels_forward[typelabel] = i
+        m.dihedral_type_labels_reverse[i] = typelabel
+        
+    m.improper_type_labels_forward = {}  # {improper type: improper type label}
+    m.improper_type_labels_reverse = {}  # {improper type label: improper type}
+    for i in m.improper_coeffs:
+        coeff = m.improper_coeffs[i]
+        typelabel = '-'.join(coeff.type.split())
+        m.improper_type_labels_forward[typelabel] = i
+        m.improper_type_labels_reverse[i] = typelabel
     return m
 
 

@@ -1,0 +1,157 @@
+
+
+Running all2lmp v1.17 / 19 April 2024
+Using Python version 3.11.5 | packaged by Anaconda, Inc. | (main, Sep 11 2023, 13:26:23) [MSC v.1916 64 bit (AMD64)]
+Trying Atom Equivalences if needed
+Trying Atom Auto-Equivalences if needed
+Trying to find atom charge based on bond-incs
+Resetting molecule-ids based on cluster analysis
+
+
+Using higher version of parameters for #equivalences N a version: 2.10 
+Using higher version of parameters for #bond_increments c_1 cp version: 2.10 
+Using higher version of parameters for #bond_increments cp si version: 2.20 
+Using higher version of parameters for #bond_increments c si version: 2.20 
+Using higher version of parameters for #bond_increments si si version: 2.20 
+Using higher version of parameters for #bond_increments h si version: 2.20 
+Using higher version of parameters for #quartic_bonds c_1 o_1 version: 2.10 
+Using higher version of parameters for #quartic_bonds c= c=1 version: 3.10 
+Using higher version of parameters for #quartic_bonds cp h version: 2.10 
+Using higher version of parameters for #quartic_bonds c o_2 version: 2.20 
+Using higher version of parameters for #quartic_bonds c h version: 2.10 
+Using higher version of parameters for #quartic_bonds cp cp version: 2.10 
+Using higher version of parameters for #quartic_bonds c c version: 2.10 
+Using higher version of parameters for #torsion_3 h c cp cp version: 2.00 
+Using higher version of parameters for #torsion_3 c c c c version: 2.10 
+Using higher version of parameters for #torsion_3 h c c h version: 2.10 
+Using higher version of parameters for #torsion_3 c c c h version: 2.10 
+Using higher version of parameters for #wilson_out_of_plane c cp cp cp version: 2.00 
+Using higher version of parameters for #wilson_out_of_plane cp cp cp h version: 3.10 
+Using higher version of parameters for #pair_coeffs_9_6 n = version: 3.10 
+Using higher version of parameters for #pair_coeffs_9_6 n z version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 c = version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 s i version: 2.20 
+Using higher version of parameters for #pair_coeffs_9_6 h o 2 version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 s ' version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 o _ 1 version: 2.10 
+Using higher version of parameters for #bondbond13 cp cp cp cp version: 2.10 
+Using higher version of parameters for #middlebondtorsion o_1 c_1 o_2 c version: 2.10 
+
+Read in frc_files/pcff.frc forcefeild file
+Read in EXAMPLES\all2lmp_car_mdf\cnt-hexagonal-class2b.car_+_EXAMPLES\all2lmp_car_mdf\cnt-hexagonal-class2b.mdf material studio file
+nta dictionary came from msi EXAMPLES\all2lmp_car_mdf\cnt-hexagonal-class2b.car file
+
+
+
+Getting force field parameters for the read in system
+
+Checking for atom-type assignment consistency with atom-types in .frc file
+
+
+Finding molecules to reset molids....
+-----------------Cluster Analysis-----------------
+  molID    Size of Fragment     %Size of Fragment    
+--------------------------------------------------
+    1             604               100.00          
+
+
+
+
+Atoms information has been found
+  EXAMPLES\all2lmp_car_mdf\cnt-hexagonal-class2b.car_+_EXAMPLES\all2lmp_car_mdf\cnt-hexagonal-class2b.mdf has some non-zero image flags
+  There are 604 atoms in 1 molecules in this file
+  The total charge in the system is 0.0000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         13.01330  angstrom  
+Ly:         11.26985  angstrom  
+Lz:         52.59840  angstrom  
+volume:    7.7140E-21 cm^3      
+mass:      1.2047E-20 grams     
+density:    1.56168   g/cm^3    
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:             604 
+nbonds:             906 
+nangles:           1812 
+ndihedrals:        3624 
+nimpropers:         604 
+- oop:              604 
+- angleangle:        0  
+
+--------------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers Types
+--------------------------------------------
+natomtypes:          1  
+nbondtypes:          1  
+nangletypes:         1  
+ndihedraltypes:      1  
+nimpropertypes:      1  
+- oop:               1  
+- angleangle:        0  
+
+-------------------------------------
+Parameterization percentage breakdown
+-------------------------------------
+Masses:                      100.00 %
+Pair Coeffs:                 100.00 %
+Bond Coeffs:                 100.00 %
+Angle Coeffs:                100.00 %
+Dihedral Coeffs:             100.00 %
+Improper Coeffs:             100.00 %
+Average MPBADI Coeffs:       100.00 %
+BondBond Coeffs:             100.00 %
+BondAngle Coeffs:            100.00 %
+AngleAngleTorsion Coeffs:    100.00 %
+EndBondTorsion Coeffs:       100.00 %
+MiddleBondTorsion Coeffs:    100.00 %
+BondBond13 Coeffs:           100.00 %
+AngleTorsion Coeffs:         100.00 %
+AngleAngle Coeffs:           100.00 %
+Average (without Bond-incs): 100.00 %
+Bond-incs:                   100.00 %
+
+
+Using path from topofile to set parent_directory ...
+
+
+Writing LAMMPS datafile
+Writing verbose comment file
+
+
+All outputs can be found in C:\Users\jdkem\OneDrive\Desktop\LUNAR-26April2024\EXAMPLES\all2lmp_car_mdf directory
+
+
+Each energy coeff Header in the written datafile contains style hint flags for
+applying proper settings in LAMMPS to be consistent with the energy definitions
+and ordering of the energy parameters.
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.6167402267456055
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

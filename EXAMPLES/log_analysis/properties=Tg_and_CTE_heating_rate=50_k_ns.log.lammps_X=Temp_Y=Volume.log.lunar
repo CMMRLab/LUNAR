@@ -1,0 +1,50 @@
+
+
+--------------------------------------------------------------------------------------
+                              Inputs and Data2load sections
+--------------------------------------------------------------------------------------
+  logfile=EXAMPLES\log_analysis\properties=Tg_and_CTE_heating_rate=50_k_ns.log.lammps
+  keywords=Step,Temp
+  sections=all
+  xdata=Temp
+  ydata=Volume
+  xscale=
+  yscale=
+  xlabel=Temperature (K)
+  xlabel=Volume (A$^3$)
+WARNING name was left empty, imposing analysis-3
+
+
+--------------------------------------------------------------------------------------
+method=average; xlo=290.0; xhi=310.0; misc=; name="room temp volume average (A$^3$)"
+--------------------------------------------------------------------------------------
+  room temp volume average (A$^3$) (average = 190277.039112)
+
+
+--------------------------------------------------------------------------------------
+method=moving average; xlo=100.0; xhi=800.0; misc=window=100; name="moving average"
+--------------------------------------------------------------------------------------
+  moving average (window=100)
+
+
+--------------------------------------------------------------------------------------
+method=piecewise-regression; xlo=100.0; xhi=800.0; misc=n=1; name="Segmented piecewise-regression"
+--------------------------------------------------------------------------------------
+  Segmented piecewise-regression (n-breakpoints=1)
+  Segmented piecewise-regression slopes and points: 
+   slope between (p0, p1) = 32.01030105248045
+    p0 = (100.0, 184133.6526834149)
+    p1 = (525.647618924646, 197758.7611074643)
+   slope between (p1, p2) = 85.3269892007802
+    p1 = (525.647618924646, 197758.7611074643)
+    p2 = (778.98936, 219375.64911230787)
+
+
+
+--------------------------------------------------------------------------------------
+method=hyperbola; xlo=100.0; xhi=800.0; misc=p=.9; name="analysis-3"
+--------------------------------------------------------------------------------------
+  analysis-3 - slopes (lower-slope=32.06410620239487; upper-slope=85.47262136622196)
+  analysis-3 center (x=526.3780; y=197797.6105)
+  analysis-3 transition region (P=0.9; xlo=526.3780; xhi=526.3780)
+Execution time in seconds: 10.35647201538086

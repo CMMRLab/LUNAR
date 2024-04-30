@@ -132,6 +132,7 @@ class forcefield_file:
 # Function to generate nta file for reaxFF conversions                     
 def generate_nta(m, frc, reset_charges, log):
     nta = {} # { atomid : new atom type}
+    name = {} # {atomid : nta:NAME}
     edge = {} # return empty since reaxff does not use this option
     charges = {} # return empty since reaxff does not use this option
     neutralize = {'all': False, 'bond-inc': False, 'user-defined': False, 'zero': False} # Set as False since ReaxFF wont use this option
@@ -166,6 +167,7 @@ def generate_nta(m, frc, reset_charges, log):
 
         # Add element as nta
         nta[i] = element
+        name[i] = element
         
         # Save x, y, and z data for box scaling
         x.append(atom.x); y.append(atom.y); z.append(atom.z);
@@ -231,4 +233,4 @@ def generate_nta(m, frc, reset_charges, log):
         m.xbox_line = '{:^15.10f} {:^15.10f} {:^5} {:5}'.format(xlo, xhi, 'xlo', 'xhi')
         m.ybox_line = '{:^15.10f} {:^15.10f} {:^5} {:5}'.format(ylo, yhi, 'ylo', 'yhi')
         m.zbox_line = '{:^15.10f} {:^15.10f} {:^5} {:5}'.format(zlo, zhi, 'zlo', 'zhi')
-    return nta, edge, charges, neutralize, remove
+    return nta, name, edge, charges, neutralize, remove

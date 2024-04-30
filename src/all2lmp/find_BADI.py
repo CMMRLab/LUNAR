@@ -21,7 +21,7 @@ of the improper type.
 # Class to access all sub routine functions #
 #############################################
 class BADI:
-    def __init__(self, m, nta, ff_class, log):
+    def __init__(self, m, nta, name, ff_class, log):
         
         # Find info of ff_class for class 1 or 2 or 'd' or 's1' or 's2'
         if ff_class in [0, 1, 2, 'd', 's1', 's2']:            
@@ -35,7 +35,7 @@ class BADI:
             reduce_DREIDING_ADI_types = True
                        
             # Find unique types in list and dictionary format
-            self.atom_types_lst, self.atom_types_dict = atom_types(nta)
+            self.atom_types_lst, self.atom_types_dict = atom_types(nta, name)
             self.bond_types_lst, self.bond_types_dict = bond_types(self.bonds, nta)
             self.angle_types_lst, self.angle_types_dict = angle_types(self.angles, nta, ff_class, reduce_DREIDING_ADI_types, log)
             self.dihedral_types_lst, self.dihedral_types_dict = dihedral_types(self.dihedrals, nta, ff_class, reduce_DREIDING_ADI_types, log)
@@ -48,7 +48,7 @@ class BADI:
                 
         # If ff_class is reaxFF find atom types only
         if ff_class == 'r':
-            self.atom_types_lst, self.atom_types_dict = atom_types(nta)
+            self.atom_types_lst, self.atom_types_dict = atom_types(nta, name)
         
         
 ##############################
@@ -185,13 +185,13 @@ def GTdihedrals_impropers_angleangle(graph, angles):
 ###################################
 # Function for finding atom types #
 ###################################
-def atom_types(nta):
+def atom_types(nta, name):
     # Set to add atom types to
     atom_types_set = set([]); atom_types_dict = {} # { atom type letters : atom type number(s) }
     
     # Find unique atom types
-    for i in nta:
-        atom_types_set.add(nta[i])   
+    for i in name:
+        atom_types_set.add(name[i])   
         
     # Sort atom types
     atom_types_lst = list(atom_types_set)

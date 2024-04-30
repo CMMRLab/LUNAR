@@ -1,0 +1,50 @@
+
+
+Running bond_react_merge v1.15 / 3 April 2024
+Using Python version 3.11.5 | packaged by Anaconda, Inc. | (main, Sep 11 2023, 13:26:23) [MSC v.1916 64 bit (AMD64)]
+
+
+---------------------------------------------------------------------------------------------
+|                read in files key to value dictionary map to organize files                |
+---------------------------------------------------------------------------------------------
+|      key to      |                          value to dictionary                           |
+|    dictionary    |                                filename                                |
+---------------------------------------------------------------------------------------------
+|      data1       |                          detda_typed_IFF.data                          |
+---------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                                filename                                |   natom    |   nbond    |   nangle   | ndihedral  |  improper  |
+|                      (Truncated to 70 characters)                      |   types    |   types    |   types    |   types    |   types    |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                          detda_typed_IFF.data                          |     6      |     9      |     14     |     14     |     11     |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                          Total possible sum:                           |     6      |     9      |     14     |     14     |     11     |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                           Total unique sum:                            |     6      |     9      |     14     |     14     |     11     |
+-------------------------------------------------------------------------------------------------------------------------------------------
+Internally determined force field is class2
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+Writing in.create_atoms.script
+
+
+************************************************************************************************  
+*** Only modification to molecule template is to update charges on edge atoms if not updated *** 
+************************************************************************************************ 
+
+
+All outputs can be found in C:\Users\jdkem\OneDrive\Desktop\LUNAR-26April2024\EXAMPLES\all2lmp_atom_naming\bond_react_merge directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.046866416931152344
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

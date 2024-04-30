@@ -258,7 +258,7 @@ def datafile(doc_title, atom_style, parameters, ff_class, version, include_type_
         f.write(f'\nAtoms # {atom_style}\n\n')            
         for i in parameters.atoms:
             atom = parameters.atoms[i]; atomtype = '{t:<{s}}'.format(t=atom.type, s=3)
-            if include_type_labels: atomtype = '{t:<{s}}'.format(t=atom.symbol, s=5)
+            #if include_type_labels: atomtype = '{t:<{s}}'.format(t=atom.name, s=5)
             comment = '{:^2} {}/{}'.format('#', atom.symbol, atom.element)
             
             # write charge atom style
@@ -309,7 +309,7 @@ def datafile(doc_title, atom_style, parameters, ff_class, version, include_type_
             f.write("\nBonds\n\n")
             for i in parameters.bonds:
                 bond = parameters.bonds[i]; bondtype = '{t:<{s}}'.format(t=str(bond.type), s=3)
-                if include_type_labels: bondtype = '{t:<{s}}'.format(t=string_type_labels(bond.symbol), s=10)
+                #if include_type_labels: bondtype = '{t:<{s}}'.format(t=string_type_labels(bond.symbol), s=10)
                 id1, id2 = bond.atomids
                 f.write('{:^5} {} {:^5} {:^5}\n'.format(i, bondtype, id1, id2))
             
@@ -318,7 +318,7 @@ def datafile(doc_title, atom_style, parameters, ff_class, version, include_type_
             f.write("\nAngles\n\n")
             for i in parameters.angles:
                 angle = parameters.angles[i]; angletype = '{t:<{s}}'.format(t=str(angle.type), s=3)
-                if include_type_labels: angletype = '{t:<{s}}'.format(t=string_type_labels(angle.symbol), s=15)
+                #if include_type_labels: angletype = '{t:<{s}}'.format(t=string_type_labels(angle.symbol), s=15)
                 id1, id2, id3 = angle.atomids
                 f.write('{:^5} {} {:^5} {:^5} {:^5}\n'.format(i, angletype, id1, id2, id3))
             
@@ -327,7 +327,7 @@ def datafile(doc_title, atom_style, parameters, ff_class, version, include_type_
             f.write("\nDihedrals\n\n")
             for i in parameters.dihedrals:
                 dihedral = parameters.dihedrals[i]; dihedraltype = '{t:<{s}}'.format(t=str(dihedral.type), s=3)
-                if include_type_labels: dihedraltype = '{t:<{s}}'.format(t=string_type_labels(dihedral.symbol), s=20)
+                #if include_type_labels: dihedraltype = '{t:<{s}}'.format(t=string_type_labels(dihedral.symbol), s=20)
                 id1, id2, id3, id4 = dihedral.atomids
                 f.write('{:^5} {} {:^5} {:^5} {:^5} {:^5}\n'.format(i, dihedraltype, id1, id2, id3, id4))
                     
@@ -336,7 +336,7 @@ def datafile(doc_title, atom_style, parameters, ff_class, version, include_type_
             f.write("\nImpropers\n\n")
             for i in parameters.impropers:
                 improper = parameters.impropers[i]; impropertype = '{t:<{s}}'.format(t=str(improper.type), s=3)
-                if include_type_labels: impropertype = '{t:<{s}}'.format(t=string_type_labels(list(improper.symbol) + [improper.nb]), s=25)
+                #if include_type_labels: impropertype = '{t:<{s}}'.format(t=string_type_labels(list(improper.symbol) + [improper.nb]), s=25)
                 id1, id2, id3, id4 = improper.atomids
                 f.write('{:^5} {} {:^5} {:^5} {:^5} {:^5}\n'.format(i, impropertype, id1, id2, id3, id4))
             

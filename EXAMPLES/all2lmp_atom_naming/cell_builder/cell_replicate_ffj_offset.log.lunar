@@ -1,0 +1,140 @@
+
+
+Running cell_builder v1.7 / 11 April 2024
+Using Python version 3.11.5 | packaged by Anaconda, Inc. | (main, Sep 11 2023, 13:26:23) [MSC v.1916 64 bit (AMD64)]
+
+
+
+----------------------------------------------
+              Subcell info
+----------------------------------------------
+Total number of subcells required:  30
+Lattice spacing for subcells     : 20.659408507410877 angstrom
+
+
+Generating new simulation cell ....
+
+
+Finding energy coeffs ....
+
+
+
+-----------------------------------------------------
+   Cell building and randomization parameters used
+-----------------------------------------------------
+unwrap atoms by iflags:                  True
+locally group atoms:                    False
+force field joining:                   offset
+distance scale:                           1.2
+duplicate:                                 10
+max rotations:             {'x': 360.0, 'y': 360.0, 'z': 360.0}
+seed:                                   12345
+domain:                                 cubic
+System files used:        
+   EXAMPLES/all2lmp_atom_naming/detda_typed_IFF.data qty: 1
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+   EXAMPLES/all2lmp_atom_naming/dgebf_typed_IFF.data qty: 2
+       atom TypeIDs offset      6
+       bond TypeIDs offset      9
+       angle TypeIDs offset     14
+       dihedral TypeIDs offset  14
+       improper TypeIDs offset  11
+
+
+Finding new molids ....
+--------------------------------------------------------------------------Cluster Analysis-------------------------------------------------------------------
+molID     Size       Mass      X-center   Y-center   Z-center        phi (°)      theta (°)        psi (°)         Filename         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+  1        43       312.37         0.00     -41.32      20.66         301.70         153.60          95.20       dgebf_typed_IFF.data
+  2        43       312.37       -41.32       0.00     -20.66          32.10         158.90         327.30       dgebf_typed_IFF.data
+  3        31       178.28        41.32      20.66      20.66         168.80         239.60         206.40       detda_typed_IFF.data
+  4        43       312.37        41.32     -20.66     -41.32         301.90         328.40         309.60       dgebf_typed_IFF.data
+  5        31       178.28        20.66       0.00      41.32          68.20          60.60          84.20       detda_typed_IFF.data
+  6        43       312.37         0.00      20.66      41.32         132.60           5.20          20.20       dgebf_typed_IFF.data
+  7        43       312.37         0.00       0.00      41.32          93.80         143.20         220.80       dgebf_typed_IFF.data
+  8        43       312.37       -20.66      41.32     -20.66          73.50         323.10           4.70       dgebf_typed_IFF.data
+  9        43       312.37        20.66     -20.66       0.00         279.10         236.70          74.40       dgebf_typed_IFF.data
+  10       43       312.37       -20.66     -20.66       0.00         214.40         244.10         290.50       dgebf_typed_IFF.data
+  11       31       178.28         0.00     -20.66       0.00         342.80         139.90         131.90       detda_typed_IFF.data
+  12       43       312.37        20.66      20.66     -41.32         316.30         291.70         150.60       dgebf_typed_IFF.data
+  13       43       312.37        20.66      41.32       0.00          67.20         123.40         354.10       dgebf_typed_IFF.data
+  14       31       178.28        20.66     -20.66      20.66         294.40          31.80          77.80       detda_typed_IFF.data
+  15       31       178.28       -41.32     -41.32     -20.66          11.00         209.10         282.90       detda_typed_IFF.data
+  16       31       178.28        41.32     -20.66     -20.66         304.90         170.10           1.40       detda_typed_IFF.data
+  17       43       312.37       -20.66      41.32     -41.32         340.80           3.80          61.50       dgebf_typed_IFF.data
+  18       43       312.37        41.32      41.32      20.66          24.90         291.50         182.30       dgebf_typed_IFF.data
+  19       43       312.37       -20.66       0.00      20.66         227.30         274.30          76.10       dgebf_typed_IFF.data
+  20       43       312.37        20.66      20.66      20.66         105.50         241.00         177.60       dgebf_typed_IFF.data
+  21       31       178.28       -20.66      41.32      20.66          67.00         315.70         237.60       detda_typed_IFF.data
+  22       43       312.37        41.32     -41.32     -41.32         267.20         169.70          43.30       dgebf_typed_IFF.data
+  23       43       312.37       -41.32       0.00       0.00         212.20          53.10          17.00       dgebf_typed_IFF.data
+  24       43       312.37       -41.32      20.66     -41.32         140.00          64.20         158.10       dgebf_typed_IFF.data
+  25       43       312.37        41.32     -41.32      41.32         337.80         135.10         330.50       dgebf_typed_IFF.data
+  26       31       178.28       -20.66     -41.32     -41.32           9.60         187.90         139.00       detda_typed_IFF.data
+  27       43       312.37        20.66      20.66      41.32          16.40          95.10          49.00       dgebf_typed_IFF.data
+  28       43       312.37        20.66     -41.32     -20.66         357.60         204.40          88.60       dgebf_typed_IFF.data
+  29       31       178.28        41.32      41.32       0.00          73.20         117.30          40.70       detda_typed_IFF.data
+  30       31       178.28       -41.32      20.66       0.00           2.70         271.90         356.60       detda_typed_IFF.data
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:            1170 
+nbonds:            1230 
+nangles:           2180 
+ndihedrals:        2920 
+nimpropers:        1080 
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:        103.29704  angstrom  
+Ly:        103.29704  angstrom  
+Lz:        103.29704  angstrom  
+volume:    1.1022E-18 cm^3      
+mass:      1.3334E-20 grams     
+density:    0.01210   g/cc      
+Using path from 1st file in files dictionary to set parent_directory ...
+WARNING Atom Type Label: c2 has been defined multiple times.
+WARNING Atom Type Label: hc has been defined multiple times.
+WARNING Bond Type Label: c2-cp has been defined multiple times.
+WARNING Bond Type Label: c2-hc has been defined multiple times.
+WARNING Bond Type Label: cp-cp has been defined multiple times.
+WARNING Bond Type Label: cp-hc has been defined multiple times.
+WARNING Angle Type Label: c2-cp-cp has been defined multiple times.
+WARNING Angle Type Label: cp-c2-hc has been defined multiple times.
+WARNING Angle Type Label: cp-cp-cp has been defined multiple times.
+WARNING Angle Type Label: cp-cp-hc has been defined multiple times.
+WARNING Angle Type Label: hc-c2-hc has been defined multiple times.
+WARNING Dihedral Type Label: hc-c2-cp-cp has been defined multiple times.
+WARNING Dihedral Type Label: c2-cp-cp-cp has been defined multiple times.
+WARNING Dihedral Type Label: cp-cp-cp-cp has been defined multiple times.
+WARNING Dihedral Type Label: c2-cp-cp-hc has been defined multiple times.
+WARNING Dihedral Type Label: cp-cp-cp-hc has been defined multiple times.
+WARNING Improper Type Label: c2-cp-cp-cp-nb==3 has been defined multiple times.
+WARNING Improper Type Label: cp-cp-cp-hc-nb==3 has been defined multiple times.
+WARNING Improper Type Label: cp-c2-hc-hc-nb!=3 has been defined multiple times.
+
+
+Writing in.cell_replicate_ffj_offset script
+
+
+All outputs can be found in C:\Users\jdkem\OneDrive\Desktop\LUNAR-26April2024\EXAMPLES\all2lmp_atom_naming\cell_builder directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.1410822868347168
+
+
+Number of WARNING(s) and ERROR(s)
+  19 WARNING(s)
+  0 ERROR(s)

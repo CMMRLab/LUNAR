@@ -15,6 +15,7 @@ def atoms(nta_file, m, log):
     ####################################
     with open(nta_file, 'r') as f:
         nta = {} # { atomid : new atom type } (For style id)
+        name = {} # {atomid : nta:NAME}
         types = {} # { atomtype : new atom type } (For style type)
         edge = {} # { atomid : [lst of edge atoms] }
         charges = {} # { atomid : charge } (For charge OPT were OPT=id or type or nta)
@@ -117,7 +118,10 @@ def atoms(nta_file, m, log):
                     try: atomid = int(line_split[0])
                     except: atomid = line_split[0]
                     atom_type = line_split[1]
-                    nta[atomid] = atom_type
+                    if ':' in atom_type:
+                        nta[atomid] = atom_type[:atom_type.rfind(':')] # strip any ':NAME ending'
+                    else: nta[atomid] = atom_type
+                    name[atomid] = atom_type
                 
                 # Set nta based on style type
                 elif style == 'type':
@@ -241,7 +245,10 @@ def atoms(nta_file, m, log):
                 # Find type based on type in m.atoms and type in types
                 atom = m.atoms[atomid]
                 atom_type = types[atom.type]
-                nta[atomid] = atom_type
+                if ':' in atom_type:
+                    nta[atomid] = atom_type[:atom_type.rfind(':')] # strip any ':NAME ending'
+                else: nta[atomid] = atom_type
+                name[atomid] = atom_type
                 
         #####################################
         # use type_equivs to map atom types #
@@ -317,4 +324,4 @@ def atoms(nta_file, m, log):
         neutralize_booleans = [neutralize[i] for i in neutralize]
         if neutralize_booleans.count(True) > 1:
             log.error(f'ERROR can only defined one "neutralize system charge" method in the {nta_file}. Currently {neutralize_booleans.count(True)} are defined.')
-    return nta, edge, charges, neutralize, remove
+    return nta, name, edge, charges, neutralize, remove

@@ -70,52 +70,72 @@ def file(m, filename, header, atom_style, include_type_labels, log, force_field_
         # Write Atom Type Labels if user wants
         if include_type_labels:
             f.write('\nAtom Type Labels\n\n')
+            used = set()
             for i in m.masses:
                 mass = m.masses[i]
                 if i in m.atom_type_labels_reverse: typelabel = m.atom_type_labels_reverse[i]
                 elif mass.type != 'N/A': typelabel = mass.type
                 else: log.error('\nERROR datafile(s) do NOT have all2lmp style comments for Masses or Type Labels are not defined')
                 f.write('{:^3} {:^2}\n'.format(i, typelabel))
+                if typelabel in used:
+                    log.warn('WARNING Atom Type Label: {} has been defined multiple times.'.format(typelabel))
+                used.add(typelabel)
                 
         # Write Bond Type Labels if user wants
         if include_type_labels and m.bond_coeffs:
             f.write('\nBond Type Labels\n\n')
+            used = set()
             for i in m.bond_coeffs:
                 bond = m.bond_coeffs[i]
                 if i in m.bond_type_labels_reverse: typelabel = m.bond_type_labels_reverse[i]
                 elif bond.type != 'N/A' and len(split_coeff(bond.type)) == 2: typelabel = string_type_labels( split_coeff(bond.type) )
                 else: log.error('\nERROR datafile(s) do NOT have all2lmp style comments for Bond Coeffs or Type Labels are not defined')
                 f.write('{:^3} {:^2}\n'.format(i, typelabel))
+                if typelabel in used:
+                    log.warn('WARNING Bond Type Label: {} has been defined multiple times.'.format(typelabel))
+                used.add(typelabel)
                 
         # Write Angle Type Labels if user wants
         if include_type_labels and m.angle_coeffs:
             f.write('\nAngle Type Labels\n\n')
+            used = set()
             for i in m.angle_coeffs:
                 angle = m.angle_coeffs[i]
                 if i in m.angle_type_labels_reverse: typelabel = m.angle_type_labels_reverse[i]
                 elif angle.type != 'N/A' and len(split_coeff(angle.type)) == 3: typelabel = string_type_labels( split_coeff(angle.type) )
                 else: log.error('\nERROR datafile(s) do NOT have all2lmp style comments for Angle Coeffs or Type Labels are not defined')
                 f.write('{:^3} {:^2}\n'.format(i, typelabel))
+                if typelabel in used:
+                    log.warn('WARNING Angle Type Label: {} has been defined multiple times.'.format(typelabel))
+                used.add(typelabel)
                 
         # Write Dihedral Type Labels if user wants
         if include_type_labels and m.dihedral_coeffs:
             f.write('\nDihedral Type Labels\n\n')
+            used = set()
             for i in m.dihedral_coeffs:
                 dihedral = m.dihedral_coeffs[i]
                 if i in m.dihedral_type_labels_reverse: typelabel = m.dihedral_type_labels_reverse[i]
                 elif dihedral.type != 'N/A' and len(split_coeff(dihedral.type)) == 4: typelabel = string_type_labels( split_coeff(dihedral.type) )
                 else: log.error('\nERROR datafile(s) do NOT have all2lmp style comments for Dihedral Coeffs or Type Labels are not defined')
                 f.write('{:^3} {:^2}\n'.format(i, typelabel))
+                if typelabel in used:
+                    log.warn('WARNING Dihedral Type Label: {} has been defined multiple times.'.format(typelabel))
+                used.add(typelabel)
                 
         # Write Improper Type Labels if user wants
         if include_type_labels and m.improper_coeffs:
             f.write('\nImproper Type Labels\n\n')
+            used = set()
             for i in m.improper_coeffs:
                 improper = m.improper_coeffs[i]
                 if i in m.improper_type_labels_reverse: typelabel = m.improper_type_labels_reverse[i]
                 elif improper.type != 'N/A' and len(split_coeff(improper.type)) == 5: typelabel = string_type_labels( split_coeff(improper.type) )
                 else: log.error('\nERROR datafile(s) do NOT have all2lmp style comments for Improper Coeffs or Type Labels are not defined')
                 f.write('{:^3} {:^2}\n'.format(i, typelabel))
+                if typelabel in used:
+                    log.warn('WARNING Improper Type Label: {} has been defined multiple times.'.format(typelabel))
+                used.add(typelabel)
 
         # Write massses
         #f.write(f'Masses  # {m.mass_coeffs_style_hint}\n\n')

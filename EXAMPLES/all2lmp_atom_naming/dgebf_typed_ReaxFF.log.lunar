@@ -1,0 +1,94 @@
+
+
+Running all2lmp v1.17 / 19 April 2024
+Using Python version 3.11.5 | packaged by Anaconda, Inc. | (main, Sep 11 2023, 13:26:23) [MSC v.1916 64 bit (AMD64)]
+Trying Atom Equivalences if needed
+Trying Atom Auto-Equivalences if needed
+Trying to find atom charge based on bond-incs
+Resetting molecule-ids based on cluster analysis
+
+
+Read in frc_files/all2lmp_reaxff.frc forcefield file
+Read in EXAMPLES/all2lmp_atom_naming/dgebf_typed.data LAMMPS datafile
+
+
+
+Getting force field parameters for the read in system
+
+Checking for atom-type assignment consistency with atom-types in .frc file
+
+
+Finding molecules to reset molids....
+-----------------Cluster Analysis-----------------
+  molID    Size of Fragment     %Size of Fragment    
+--------------------------------------------------
+    1              43               100.00          
+
+
+
+
+Atoms information has been found
+  EXAMPLES/all2lmp_atom_naming/dgebf_typed.data has all image flags set to zero
+  There are 43 atoms in 1 molecules in this file
+  The total charge in the system is 0.0000
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         13.83320  angstrom  
+Ly:         12.52380  angstrom  
+Lz:         6.79180   angstrom  
+volume:    1.1766E-21 cm^3      
+mass:      5.1835E-22 grams     
+density:    0.44053   g/cm^3    
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:             43  
+nbonds:              0  
+nangles:             0  
+ndihedrals:          0  
+nimpropers:          0  
+
+--------------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers Types
+--------------------------------------------
+natomtypes:          3  
+nbondtypes:          0  
+nangletypes:         0  
+ndihedraltypes:      0  
+nimpropertypes:      0  
+
+-------------------------------------
+Parameterization percentage breakdown
+-------------------------------------
+
+
+Using path from topofile to set parent_directory ...
+
+
+Writing LAMMPS datafile
+Writing verbose comment file
+
+
+All outputs can be found in C:\Users\jdkem\OneDrive\Desktop\LUNAR-26April2024\EXAMPLES\all2lmp_atom_naming directory
+
+
+Each energy coeff Header in the written datafile contains style hint flags for
+applying proper settings in LAMMPS to be consistent with the energy definitions
+and ordering of the energy parameters.
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.007989883422851562
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

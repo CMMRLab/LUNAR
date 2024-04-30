@@ -1,0 +1,111 @@
+
+
+Running cell_builder v1.7 / 11 April 2024
+Using Python version 3.11.5 | packaged by Anaconda, Inc. | (main, Sep 11 2023, 13:26:23) [MSC v.1916 64 bit (AMD64)]
+
+
+
+----------------------------------------------
+              Subcell info
+----------------------------------------------
+Total number of subcells required:  20
+Lattice spacing for subcells     : 20.659408507410877 angstrom
+
+
+Generating new simulation cell ....
+
+
+Finding energy coeffs ....
+
+
+
+-----------------------------------------------------
+   Cell building and randomization parameters used
+-----------------------------------------------------
+unwrap atoms by iflags:                  True
+locally group atoms:                    False
+force field joining:                     none
+distance scale:                           1.2
+duplicate:                                 10
+max rotations:             {'x': 360.0, 'y': 360.0, 'z': 360.0}
+seed:                                   12345
+domain:                                 cubic
+System files used:        
+   EXAMPLES\cell_builder\merging_with_type_labels\detda_typed_IFF_merged.data qty: 1
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+   EXAMPLES\cell_builder\merging_with_type_labels\dgebf_typed_IFF_merged.data qty: 1
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+
+
+Finding new molids ....
+--------------------------------------------------------------------------Cluster Analysis-------------------------------------------------------------------
+molID     Size       Mass      X-center   Y-center   Z-center        phi (°)      theta (°)        psi (°)         Filename         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+  1        43       312.37         0.00      20.66      20.66         267.20         169.70          43.30       dgebf_typed_IFF_merged.data
+  2        31       178.28         0.00     -20.66       0.00         145.30         302.30         300.10       detda_typed_IFF_merged.data
+  3        43       312.37         0.00      20.66       0.00          16.40          95.10          49.00       dgebf_typed_IFF_merged.data
+  4        31       178.28       -20.66       0.00       0.00          37.30         217.50         301.20       detda_typed_IFF_merged.data
+  5        43       312.37       -20.66      20.66      20.66          73.20         117.30          40.70       dgebf_typed_IFF_merged.data
+  6        43       312.37       -20.66     -20.66     -20.66         279.10         236.70          74.40       dgebf_typed_IFF_merged.data
+  7        31       178.28        20.66      20.66       0.00          68.20          60.60          84.20       detda_typed_IFF_merged.data
+  8        31       178.28         0.00     -20.66     -20.66         168.80         239.60         206.40       detda_typed_IFF_merged.data
+  9        31       178.28         0.00       0.00     -20.66         342.80         139.90         131.90       detda_typed_IFF_merged.data
+  10       31       178.28        20.66       0.00     -20.66           9.60         187.90         139.00       detda_typed_IFF_merged.data
+  11       43       312.37         0.00      20.66     -20.66         357.60         204.40          88.60       dgebf_typed_IFF_merged.data
+  12       43       312.37        20.66     -20.66      20.66         301.90         328.40         309.60       dgebf_typed_IFF_merged.data
+  13       31       178.28         0.00       0.00       0.00         304.90         170.10           1.40       detda_typed_IFF_merged.data
+  14       43       312.37       -20.66       0.00     -20.66          67.00         315.70         237.60       dgebf_typed_IFF_merged.data
+  15       43       312.37         0.00       0.00      20.66         301.70         153.60          95.20       dgebf_typed_IFF_merged.data
+  16       31       178.28       -20.66     -20.66      20.66         294.40          31.80          77.80       detda_typed_IFF_merged.data
+  17       43       312.37        20.66       0.00       0.00         214.40         244.10         290.50       dgebf_typed_IFF_merged.data
+  18       43       312.37        20.66      20.66      20.66         337.80         135.10         330.50       dgebf_typed_IFF_merged.data
+  19       31       178.28        20.66     -20.66     -20.66           2.70         271.90         356.60       detda_typed_IFF_merged.data
+  20       31       178.28        20.66      20.66     -20.66          11.00         209.10         282.90       detda_typed_IFF_merged.data
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:             740 
+nbonds:             770 
+nangles:           1360 
+ndihedrals:        1800 
+nimpropers:         680 
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         61.97823  angstrom  
+Ly:         61.97823  angstrom  
+Lz:         61.97823  angstrom  
+volume:    2.3808E-19 cm^3      
+mass:      8.1474E-21 grams     
+density:    0.03422   g/cc      
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+Writing in.system1_cell_replicate script
+
+
+All outputs can be found in C:\Users\jdkem\OneDrive\Desktop\LUNAR-26April2024\EXAMPLES\cell_builder\merging_with_type_labels directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.32907819747924805
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

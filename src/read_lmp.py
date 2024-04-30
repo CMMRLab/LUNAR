@@ -101,18 +101,27 @@ def label_type_mapping(Type, forward_map, reverse_map, method, section):
     
     # Topology section mapping (will convert topology paramters to be consistent with force-feild section str(type-label) -> int(type id) )
     if section == 'topology' and forward_map and reverse_map:
-        if  method == 'forward' and not check_integer(Type): Type = forward_map[Type]
-        if  method == 'reverse': Type = str(Type)
+        if  method == 'forward' and not check_integer(Type):
+            try: Type = forward_map[Type]
+            except: pass
+        if  method == 'reverse':
+            try: Type = str(Type)
+            except: pass
         
     
     # Force-feild section mapping (will convert force-feild paramters to be consistent with topology section int(type id) -> str(type-label) )
     elif section == 'force-feild' and forward_map and reverse_map:
-        if  method == 'forward' and check_integer(Type): Type = int(Type) #reverse_map[int(type)]
-        if  method == 'reverse' and check_integer(Type): Type = reverse_map[int(Type)]
+        if  method == 'forward' and check_integer(Type):
+            try: Type = int(Type) #reverse_map[int(type)]
+            except: pass
+        if  method == 'reverse' and check_integer(Type):
+            try: Type = reverse_map[int(Type)]
+            except: pass
         
     # else set type as integer if forward and revers map dicts are empty it must be a standard lammps datafile
     else:
-        Type = int(Type)
+        try: Type = int(Type)
+        except: pass
         
     # make sure type is int or string
     try: Type = int(Type)
@@ -618,6 +627,7 @@ class Molecule_File:
                 elif 'full' in self.atomstyle:
                     ID = int(line[0]); molid = int(line[1]);
                     Type = label_type_mapping(line[2], self.atom_type_labels_forward, self.atom_type_labels_reverse, method, section='topology')
+                    #print(ID, Type)
                     charge = float(line[3]); x = float(line[4]); y = float(line[5]); z = float(line[6]);
                     if '#' not in whole_line: comment = 'N/A'
                     else: comment = whole_line.split('#')[-1].rstrip().lstrip()
@@ -1215,6 +1225,7 @@ class Molecule_File:
             comments = {self.pair_coeffs[i].type for i in self.pair_coeffs}
             if len(comments) == 1 and 'N/A' in comments:
                 for i in self.pair_coeffs:
+                    print(self.filename, self.pair_coeffs[i].type, self.atom_type_labels_reverse[i])
                     try: self.pair_coeffs[i].type = self.atom_type_labels_reverse[i]
                     except: print(f'WARNING - file pair coeffs have no comments, but has Type Labels, attempted to set pair coeff comment {i}, but failed. Comment left as N/A')
                     

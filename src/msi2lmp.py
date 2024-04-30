@@ -505,6 +505,7 @@ class Molecule_File:
         
         # set nta dictionary
         self.nta = car.nta
+        self.name = {i:self.nta[i] for i in self.nta}
         
         # Set system information
         self.natoms = len(car.atoms) # total atoms in .car file

@@ -65,7 +65,7 @@ class Dihedral: pass  # .type .atomids = [atom1id, atom2id, atom3id, atom4id] .s
 class Improper: pass  # .type .atomids = [atom1,atom2,atom3,atom4] .symbol
 class Type: pass # .coeffs .type .equivalent .comment
 class get:
-    def __init__(self, nta, edge, frc, BADI, m, use_auto_equivalence, use_assumed_auto_fill, aafc, reset_charges, reset_molids, ff_class,
+    def __init__(self, nta, name, edge, frc, BADI, m, use_auto_equivalence, use_assumed_auto_fill, aafc, reset_charges, reset_molids, ff_class,
                  use_morse_bonds, add2box, ignore_missing_parameters, shift, rotate, log):
         
         # Perform an atom types check to warn user if atom-type does not exists if .frc file
@@ -127,7 +127,7 @@ class get:
             self.nangletypes = 0; self.ndihedraltypes = 0; self.nimpropertypes = 0;
             
             # Find atoms info such as setting up atoms charge, molid, x-pos, y-pos, z-pos, and image flags along with the masses and pair_coeffs
-            self.atoms = find_atoms(nta, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_equivalence, ff_class, skip_printouts, log)    
+            self.atoms = find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_equivalence, ff_class, skip_printouts, log)    
             self.masses, self.mass_comment = find_reaxff_atom_parameters(frc, BADI, ff_class, log)
             
         
@@ -154,7 +154,7 @@ class get:
             sort_remap_atomids = True
             
             # Find atoms info such as setting up atoms charge, molid, x-pos, y-pos, z-pos, and image flags along with the masses and pair_coeffs
-            self.atoms = find_atoms(nta, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_equivalence, ff_class, skip_printouts, log)        
+            self.atoms = find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_equivalence, ff_class, skip_printouts, log)        
             self.masses, self.pair_coeffs, self.mass_comment, self.pair_comment = find_atom_parameters(frc, BADI, use_auto_equivalence, ff_class, skip_printouts, log)
             
             # Find bond_coeffs and then find bonds and reorder atomids to match bond coeff using sort_remap_atomids (Reordering is Not Necessary - might as well though for cleanliness)
@@ -248,7 +248,7 @@ def get_box(m, add2box, log):
 ##############################
 # Function for finding atoms #
 ##############################
-def find_atoms(nta, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_equivalence, ff_class, skip_printouts, log):
+def find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_equivalence, ff_class, skip_printouts, log):
     
     # Dictionaries to add info to
     atoms = {}   # {atom number : atom object}
@@ -318,8 +318,9 @@ def find_atoms(nta, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_eq
 
         # Save atom info into class
         a = Atom()
-        a.type = BADI.atom_types_dict[nta[id1]]
-        a.symbol = new_atom_type
+        a.type = BADI.atom_types_dict[name[id1]]
+        a.symbol =  new_atom_type #name[id1] #new_atom_type
+        a.name = name[id1]
         a.comments = additional_comments
         a.element = new_atom_element
         a.molid = molid
@@ -476,9 +477,12 @@ def find_atom_parameters(frc, BADI, use_auto_equivalence, ff_class, skip_printou
     
     # Find pair coeffs
     for i in BADI.atom_types_lst:
+        atom_type = i # set as "fullname" 
+        if ':' in atom_type:
+            i = atom_type[:atom_type.rfind(':')] # strip any ':NAME ending'
         
         # atom number
-        number = BADI.atom_types_dict[i]
+        number = BADI.atom_types_dict[atom_type]
         mass_equiv = ''; pair_equiv = '';
         mass_coeff_comment = ''
         pair_coeff_comment = ''
@@ -638,7 +642,7 @@ def find_atom_parameters(frc, BADI, use_auto_equivalence, ff_class, skip_printou
                         
         # Save mass info into class
         t1 = Type()
-        t1.type = i
+        t1.type = atom_type
         t1.equivalent = mass_equiv
         t1.coeffs = mass
         t1.comments = mass_coeff_comment
@@ -646,7 +650,7 @@ def find_atom_parameters(frc, BADI, use_auto_equivalence, ff_class, skip_printou
         
         # Save pair_coeff info into class
         t2 = Type()
-        t2.type = i
+        t2.type = atom_type
         t2.equivalent = pair_equiv
         t2.coeffs = [one, two]
         t2.comments = pair_coeff_comment

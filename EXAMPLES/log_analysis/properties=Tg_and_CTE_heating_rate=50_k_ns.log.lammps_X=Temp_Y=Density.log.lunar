@@ -1,0 +1,35 @@
+
+
+--------------------------------------------------------------------------------------
+                              Inputs and Data2load sections
+--------------------------------------------------------------------------------------
+  logfile=EXAMPLES\log_analysis\properties=Tg_and_CTE_heating_rate=50_k_ns.log.lammps
+  keywords=Step,Temp
+  sections=all
+  xdata=Temp
+  ydata=Density
+  xscale=
+  yscale=
+  xlabel=Temperature (K)
+  xlabel=Volume (A$^3$)
+
+
+--------------------------------------------------------------------------------------
+method=average; xlo=290.0; xhi=310.0; misc=; name="room temp volume average (A$^3$)"
+--------------------------------------------------------------------------------------
+  room temp volume average (A$^3$) (average = 1.261637)
+
+
+--------------------------------------------------------------------------------------
+method=moving average; xlo=100.0; xhi=800.0; misc=window=100; name="moving average"
+--------------------------------------------------------------------------------------
+  moving average (window=100)
+
+
+--------------------------------------------------------------------------------------
+method=hyperbola; xlo=100.0; xhi=800.0; misc=p=0.9; name="Hyperbola fit"
+--------------------------------------------------------------------------------------
+  Hyperbola fit - slopes (lower-slope=-0.00015113590154821563; upper-slope=-0.0006092608365247166)
+  Hyperbola fit center (x=560.0665; y=1.2378)
+  Hyperbola fit transition region (P=0.9; xlo=304.8441; xhi=815.2888)
+Execution time in seconds: 2.118882656097412

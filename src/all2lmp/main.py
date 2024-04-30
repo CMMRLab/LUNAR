@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.17
-April 19th, 2024
+Revision 1.18
+April 28th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -48,7 +48,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
     log.configure(level='production')
-    #log.configure(level='debug')
+    #log.configure(level='debug', print2console=False)
 
     #########################
     # Command Line Override #
@@ -91,7 +91,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     # Initialize some preliminary information #
     ###########################################
     # set version and print starting information to screen
-    version = 'v1.17 / 19 April 2024'
+    version = 'v1.18 / 28 April 2024'
     log.out(f'\n\nRunning all2lmp {version}')
     log.out(f'Using Python version {sys.version}')
     log.out('Trying Atom Equivalences if needed')
@@ -328,7 +328,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
             # Read nta_file
             else:
                 if os.path.isfile(nta_file):
-                    nta, edge, charges, neutralize, remove = read_nta.atoms(nta_file, m, log)
+                    nta, name, edge, charges, neutralize, remove = read_nta.atoms(nta_file, m, log)
                     log.out(f'Read in {nta_file} new-type-assignment file')
                 else: log.error(f'ERROR .nta file: {nta_file} does not exist')
                 
@@ -336,13 +336,13 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
         elif topofile.endswith('mdf') and nta_file.endswith('car'):
             # Get nta dict from m and set edge dict and charges as empty since and set all neutralization methods as False along with
             # a null remove dict. Since these option are not available for msi files, since the .nta info comes from the .car file.
-            nta = m.nta; edge = {}; charges = {}; neutralize = {'all': False, 'bond-inc': False, 'user-defined': False, 'zero': False}
+            nta = m.nta; name = m.name; edge = {}; charges = {}; neutralize = {'all': False, 'bond-inc': False, 'user-defined': False, 'zero': False}
             remove = {'angle-nta':[], 'dihedral-nta':[], 'improper-nta':[], 'angle-ID':[], 'dihedral-ID':[], 'improper-ID':[], 'zero':{'angle':False, 'dihedral':False, 'improper':False}}
             log.out(f'nta dictionary came from msi {nta_file} file')
             
     # If ff_class is reaxFF build nta dictionary from m class 
     if ff_class == 'r':
-        nta, edge, charges, neutralize, remove = reaxff.generate_nta(m, frc, reset_charges, log)
+        nta, name, edge, charges, neutralize, remove = reaxff.generate_nta(m, frc, reset_charges, log)
     
     # Read asssumed auto fill coeffs (aafc) file
     if use_assumed_auto_fill:
@@ -362,10 +362,10 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     # Finding topology #
     ####################
     # Find bonds, angles, dihedrals, impropers, atom types, bond types, angle types, dihedral types, and improper types
-    BADI = find_BADI.BADI(m, nta, ff_class, log)
+    BADI = find_BADI.BADI(m, nta, name, ff_class, log)
     
     # Fill in parameters for all coeff types in read in system and assign charge to each atom via summing of bond increments of bonded atoms
-    parameters = fill_in_parameters.get(nta, edge, frc, BADI, m, use_auto_equivalence, use_assumed_auto_fill, aafc, reset_charges, reset_molids,
+    parameters = fill_in_parameters.get(nta, name, edge, frc, BADI, m, use_auto_equivalence, use_assumed_auto_fill, aafc, reset_charges, reset_molids,
                                         ff_class, use_morse_bonds, add2box, ignore_missing_parameters, shift, rotate, log)
     
     # If anything from remove dict use remove_things.post_processor to remove certain user-defined topology/parameters from the parameters class
