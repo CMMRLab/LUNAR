@@ -311,7 +311,10 @@ class LUNAR:
     def citation(self):
         cite = Toplevel(self.root)
         cite.title('cite')
-        txt = """LUNAR: Automated Input Generation and Analysis for Reactive LAMMPS Simulations	"""
+        txt = """
+LUNAR: Automated Input Generation and Analysis for Reactive LAMMPS Simulations at
+https://chemrxiv.org/engage/chemrxiv/article-details/662bd85021291e5d1dcc8380
+"""
         tk.Label(cite, text=txt, anchor="w", justify="left").pack(padx=30, pady=30)
         
     # Def about page
