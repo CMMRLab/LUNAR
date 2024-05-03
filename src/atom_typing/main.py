@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.9
-January 5th, 2024
+Revision 1.10
+May 2nd, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -50,8 +50,8 @@ import os
 ### Main function to perform all atom-typing tasks ###
 ######################################################
 def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded, boundary,
-         vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file, chargefile,
-         log=io_functions.LUNAR_logger()):  
+         vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file, 
+         chargefile, include_comments_nta, log=io_functions.LUNAR_logger()):  
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
@@ -66,7 +66,7 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
         # call man page and exit if '-opt' or '-man' is provided at the command line
         command_line.print_man_page(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms,
                                     mass_map, bondorder, maxbonded, boundary, vdw_radius_scale, reset_charges,
-                                    print_options, pdb_file, chargefile)
+                                    print_options, pdb_file, chargefile, include_comments_nta)
         sys.exit()
     
     ###################################################################################
@@ -75,7 +75,8 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
     if '-man' not in commandline_inputs and commandline_inputs:    
         # call inputs for commandline over rides
         over_rides = command_line.inputs(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded,
-                                         boundary, vdw_radius_scale, reset_charges, print_options, pdb_file, chargefile, commandline_inputs)
+                                         boundary, vdw_radius_scale, reset_charges, print_options, pdb_file, chargefile, include_comments_nta,
+                                         commandline_inputs)
         
         # Set new inputs from over_rides class
         topofile = over_rides.topofile
@@ -93,6 +94,7 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
         print_options = over_rides.print_options
         pdb_file = over_rides.pdb_file
         chargefile = over_rides.chargefile
+        include_comments_nta = over_rides.include_comments_nta
     
     
     ######################################################
@@ -107,7 +109,7 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
     # Initialize some preliminary information #
     ###########################################
     # set version and print starting information to screen
-    version = 'v1.9 / 5 January 2024'
+    version = 'v1.10 / 10 May 2024'
     log.out(f'\n\nRunning atom_typing {version}')
     log.out(f'Using Python version {sys.version}')
     log.out(f'Assigning {ff_name} atom-types')
@@ -306,7 +308,7 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
     # Write nta file #
     ##################
     filename  = '{}.nta'.format(basename)
-    write_nta.file(mm, filename, version, ff_name) # Write lmp .data file
+    write_nta.file(mm, filename, version, ff_name, include_comments_nta)
     
     
     ##################

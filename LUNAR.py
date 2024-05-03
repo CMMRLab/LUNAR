@@ -172,7 +172,8 @@ class LUNAR:
         
         # Run all2lmp_GUI
         atom_typing_GUI(at.topofile, at.bondfile, at.parent_directory, at.newfile, at.ff_name, at.delete_atoms, at.mass_map, at.bondorder, at.maxbonded, at.boundary,
-                        at.vdw_radius_scale, at.reset_charges, at.print_options, [], at.bonds_via_distance_override, at.pdb_file, at.chargefile, self.GUI_zoom)  
+                        at.vdw_radius_scale, at.reset_charges, at.print_options, [], at.bonds_via_distance_override, at.pdb_file, at.chargefile, at.include_comments_nta,
+                        self.GUI_zoom)  
         return
     
     # all2lmp GUI Run

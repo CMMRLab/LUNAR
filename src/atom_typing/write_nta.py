@@ -9,7 +9,7 @@ Houghton, MI 49931
 """
 
 # Function to write log file
-def file(mm, name, version, ff_name):
+def file(mm, name, version, ff_name, include_comments_nta):
     
     # write file
     with open(name, 'w') as f:
@@ -35,7 +35,9 @@ def file(mm, name, version, ff_name):
         f.write('style id\n') # Format will be id since every atomid has been given a unqiue atom-type
         for i in mm.atoms:
             atom = mm.atoms[i]
-            comment = '{:^2} {:5}'.format('#', atom.nta_info)
+            if include_comments_nta:
+                comment = '{:^2} {:5}'.format('#', atom.nta_info)
+            else: comment = ''
             if ff_name == 'general:0':
                 f.write('{:<6} {:<20} {}\n'.format(i, atom.nta_type, comment))
             elif ff_name == 'general:1':

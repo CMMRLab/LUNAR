@@ -28,7 +28,7 @@ import os
 class atom_typing_GUI:
     def __init__(self, topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded, boundary,
                        vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file,
-                       chargefile, GUI_zoom):
+                       chargefile, include_comments_nta, GUI_zoom):
         
         # Pass certain inputs as attribute (These will only be able to be adjusted from the python script)
         self.mass_map = mass_map
@@ -83,35 +83,35 @@ class atom_typing_GUI:
         self.inputs_frame.grid(row=0, column=0, columnspan=2, padx=xpadding, pady=ypadding)
         
         # topofile selection button
-        self.topofile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.topofile = tk.Entry(self.inputs_frame, width=int(1.2*maxwidth), font=font_settings)
         self.topofile.insert(0, topofile)
         self.topofile.grid(column=1, row=0)
         self.topofile_button = tk.Button(self.inputs_frame, text='topofile', font=font_settings, command=self.topofile_path)
         self.topofile_button.grid(column=0, row=0)
         
         # bondfile selection button
-        self.bondfile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.bondfile = tk.Entry(self.inputs_frame, width=int(1.2*maxwidth), font=font_settings)
         self.bondfile.insert(0, bondfile)
         self.bondfile.grid(column=1, row=1)
         self.bondfile_button = tk.Button(self.inputs_frame, text='bondfile', font=font_settings, command=self.bondfile_path)
         self.bondfile_button.grid(column=0, row=1)
         
         # chargefile selection button
-        self.chargefile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.chargefile = tk.Entry(self.inputs_frame, width=int(1.2*maxwidth), font=font_settings)
         self.chargefile.insert(0, chargefile)
         self.chargefile.grid(column=1, row=2)
         self.chargefile_button = tk.Button(self.inputs_frame, text='chargefile', font=font_settings, command=self.chargefile_path)
         self.chargefile_button.grid(column=0, row=2)
         
         # parent_directory entry
-        self.parent_directory = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.parent_directory = tk.Entry(self.inputs_frame, width=int(1.2*maxwidth), font=font_settings)
         self.parent_directory.insert(0, parent_directory)
         self.parent_directory.grid(column=1, row=3)
         self.dir_button = tk.Button(self.inputs_frame, text='parent_directory', font=font_settings, command=self.directory_path)
         self.dir_button.grid(column=0, row=3)
         
         # newfile entry
-        self.newfile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.newfile = tk.Entry(self.inputs_frame, width=int(1.2*maxwidth), font=font_settings)
         self.newfile.insert(0, newfile)
         self.newfile.grid(column=1, row=5)
         self.newfile_label = tk.Label(self.inputs_frame, text='newfile', font=font_settings)
@@ -131,7 +131,7 @@ class atom_typing_GUI:
                 
         # ff_class drop down menu
         styles = ['PCFF-IFF', 'PCFF', 'compass', 'CVFF-IFF', 'CVFF', 'Clay-FF', 'DREIDING', 'OPLS-AA', 'general:0', 'general:1', 'general:2', 'general:3', 'general:4']
-        self.ff_name = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/7.5), font=font_settings)
+        self.ff_name = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/10), font=font_settings)
         self.ff_name.current(styles.index(ff_name))
         self.ff_name.grid(column=0, row=1)
         self.ff_name_label = tk.Label(self.options_frame, text='ff_name', font=font_settings)
@@ -139,7 +139,7 @@ class atom_typing_GUI:
         
         # reset_charges drop down menu
         styles = [True, False]
-        self.reset_charges = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/7.5), font=font_settings)
+        self.reset_charges = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/10), font=font_settings)
         self.reset_charges.current(styles.index(reset_charges))
         self.reset_charges.grid(column=1, row=1)
         self.reset_charges_label = tk.Label(self.options_frame, text='reset_charges', font=font_settings)
@@ -162,11 +162,19 @@ class atom_typing_GUI:
         
         # pdb_file method drop down menu
         method = ['skip', 'types', 'typeIDs']
-        self.pdb_file = ttk.Combobox(self.options_frame, values=method, width=int(maxwidth/7.5), font=font_settings)
+        self.pdb_file = ttk.Combobox(self.options_frame, values=method, width=int(maxwidth/12), font=font_settings)
         self.pdb_file.current(method.index(pdb_file))
         self.pdb_file.grid(column=4, row=1)
         self.pdb_file_label = tk.Label(self.options_frame, text='pdb_file', font=font_settings)
         self.pdb_file_label.grid(column=4, row=0)
+
+        # include_comments_nta Boolean drop down menu
+        styles = [True, False]
+        self.include_comments_nta = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/7.5), font=font_settings)
+        self.include_comments_nta.current(styles.index(include_comments_nta))
+        self.include_comments_nta.grid(column=5, row=1)
+        self.include_comments_nta_label = tk.Label(self.options_frame, text='include_comments_nta', font=font_settings)
+        self.include_comments_nta_label.grid(column=5, row=0)
         
         # Add padding to all frames in self.inputs_frame
         for widget in self.options_frame.winfo_children():
@@ -323,11 +331,13 @@ class atom_typing_GUI:
         maxbonded = self.maxbonded
         commandline_inputs = []
         pdb_file = self.pdb_file.get()
+        include_comments_nta = boolean[self.include_comments_nta.get()]
 
         # Run LUNAR/atom_typing
         if valid_inputs:
             try: main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded, boundary,
-                      vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file, chargefile, log=log)
+                      vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file, chargefile,
+                      include_comments_nta, log=log)
             except: pass
         self.popup(log.logged, title='Outputs')
         return 
@@ -361,6 +371,7 @@ class atom_typing_GUI:
         delete_atoms = {'method': self.da_method.get(),
                         'criteria': float(self.da_criteria.get()) }
         pdb_file = self.pdb_file.get()
+        include_comments_nta = boolean[self.include_comments_nta.get()]
         
         # Read current py script and re-write with new settings
         print('Updating settings in: {}, from current GUI settings'.format(self.filename))
@@ -386,6 +397,8 @@ class atom_typing_GUI:
                     line = psm.parse_and_modify(line, ff_name, stringflag=True, splitchar='=')
                 if line.startswith('reset_charges') and inputsflag:
                     line = psm.parse_and_modify(line, reset_charges, stringflag=False, splitchar='=')
+                if line.startswith('include_comments_nta') and inputsflag:
+                    line = psm.parse_and_modify(line, include_comments_nta, stringflag=False, splitchar='=')
                 if line.startswith('vdw_radius_scale') and inputsflag:
                     line = psm.parse_and_modify(line, vdw_radius_scale, stringflag=False, splitchar='=')
                 if line.startswith('boundary') and inputsflag:

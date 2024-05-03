@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.9
-January 5th, 2024
+Revision 1.10
+May 2nd, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -255,6 +255,18 @@ delete_atoms = {'method': 'mass', # 'size' or 'mass'
 
 
 #############################################################################################################################
+# A python Boolean variable (True or False) to either write comments (True) to the new type assignment file or to not write #
+# comments in the new type assignment file (False). During atom typing the code will set comments for each atom (most of    #
+# the time the comments are "Correctly found", but may differ depending on how the atom type was assigned). If you plan to  #
+# manually edit the atom types or add the atomtype:NAME to the atom type the comments can quickly ruin the readability of   #
+# the file. Please refer to the all2lmp.py chapter on the atomtype:NAME option.                                             #
+#                                                                                                                           #
+# Update include_comments_nta as desired.                                                                                   #
+#############################################################################################################################
+include_comments_nta = True
+
+
+#############################################################################################################################
 # Set pdb_file to determine if any additional files will be written by atom_typing.py. These options exist to help with     #
 # interfacing with packmol, but may also be found to be useful outside of interfacing with packmol. Currently supported     #
 # pdb_file options and their meanings (Case matters):                                                                       #
@@ -462,7 +474,8 @@ if __name__ == "__main__":
         from src.atom_typing.GUI import atom_typing_GUI
         print('\n\n\natom_typing is currently running in GUI mode, where all GUI inputs are intialized from atom_typing.\n\n\n')
         atom_typing_GUI(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded, boundary,
-                        vdw_radius_scale, reset_charges, print_options, [], bonds_via_distance_override, pdb_file, chargefile, GUI_zoom)
+                        vdw_radius_scale, reset_charges, print_options, [], bonds_via_distance_override, pdb_file, chargefile,
+                        include_comments_nta, GUI_zoom)
     else:
         # If not commandline_inputs the code is running in IDE/command line mode with out command line inputs
         # this means that all inputs to the code are handled in the Inputs section below this block of code.
@@ -472,4 +485,5 @@ if __name__ == "__main__":
         
         # Run main atom_typing
         main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded, boundary,
-             vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file, chargefile)
+             vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file,
+             chargefile, include_comments_nta)

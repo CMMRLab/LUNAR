@@ -1,0 +1,83 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restricted to 145.
+#
+# Last edited 5/3/2024
+#
+************
+* Overview *
+************
+
+  LUNAR/auto_morse_bond_update.py is meant to convert an IFF parameterized LAMMPS datafile to an IFF-R parameterized file. This is a quick
+  guide to the auto_morse_bond_update.py module. More details can be found in the official manual found in the LUNAR/docs folder. 
+
+**********
+* Inputs *
+**********
+
+  topofile   
+    Button to load in a file defining 
+    
+  parent_directory
+    Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the
+    right of the button as well. The path can be a full path or relative path or be set to the . (dot character) to write files to the location
+    where auto_morse_bond_update.py is currently being run from. Setting parent_directory to "topofile" will use the path of the topofile
+    variable to write the files to that location on your machine. The "topofile" shortcut string should be the default usage for 1st time users.
+
+  newfile
+    An entry to supply a string that will be used to set the output files basename. The following options exist for using the newfile string for
+    setting the output file basename: 
+      
+      if newfile starts with ':' or ends with ':'
+        The output filename(s) will be the same as the input filename(s), but will have a suffix or prefix added to the file basename. The
+        following are examples:
+          Suffix (newfile == ':_typed'  and topofile == 'detda.data')
+            basename = 'detda_typed', where the ':' character acts as a placeholder for the topofile basename.
+          Prefix (newfile == 'typed-:'  and topofile == 'detda.data')
+            basename = 'typed-detda', where the ':' character acts as a placeholder for the topofile basename.
+        Recommended usage: common and safe as this method is safe and output filename(s) carry similar names to input filename(s).
+		
+      if newfile == 'ANYTEXT'
+        The output filename(s) will be set as 'ANYTEXT'. For example:
+          newfile = 'detda_renamed' and topofile = 'detda.data'
+          basename = 'detda_renamed'
+        Recommended usage: occasional and safe as output filename(s) no longer carry similar names as output filename(s), but is safe as output
+        filename(s) will not overwrite input filename(s).
+      
+      if newfile == '':
+        The output filename(s) will be the same as the input filename(s). This can be a dangerous option as you may inadvertently overwrite a
+        file and then may assume the file to contain certain information, but it contains other information. Recommended usage: rare and
+        dangerous as this could lead to using incorrect files if not paying attention very carefully.
+
+***********
+* Options *
+***********
+	
+***********
+* Buttons *
+***********
+
+  Run LUNAR/auto_morse_bond_update.py
+    A button to run the auto_morse_bond_update.py to set the atom types of a molecular system, using all settings defined in the GUI.
+	
+  Save the current GUI settings as the default GUI settings
+    A button to update variables in auto_morse_bond_update.py file. Each time the GUI is launched all GUI settings are loaded from the
+    auto_morse_bond_update.py file. Thus this button creates a method to update the auto_morse_bond_update.py file. The CLI also initializes
+    its defaults from the variables in the auto_morse_bond_update.py, so this button updates the defaults for that run mode as well. Finally,
+    running auto_morse_bond_update.py from an IDE, the defaults for IDE usage are also set by the variables in the auto_morse_bond_update.py
+    file, thus this button will also update the defaults for IDE usage.
+    
+  Quick help
+    A button to create a popup for quick help and guidance.
+
+******************************************************************************
+* Please see the "Code: auto_morse_bond_update.py" chapter in the official   *
+* manual found in the LUNAR/docs folder for further details.                 *
+******************************************************************************

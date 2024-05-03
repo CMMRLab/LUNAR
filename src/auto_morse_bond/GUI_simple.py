@@ -88,7 +88,7 @@ class auto_morse_bond_GUI:
         #--------------#
         # Initalize  inputs frame
         self.inputs_frame = tk.LabelFrame(self.frame1, text='Inputs', font=font_settings)
-        self.inputs_frame.grid(row=0, column=0, padx=xpadding, pady=ypadding)
+        self.inputs_frame.grid(row=0, column=0, columnspan=2, padx=xpadding, pady=ypadding)
         
         # topofile selection button
         self.topofile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
@@ -143,7 +143,7 @@ class auto_morse_bond_GUI:
         #---------------#
         # Initalize  options frame
         self.options_frame = tk.LabelFrame(self.frame2, text='Options', font=font_settings)
-        self.options_frame.grid(row=1, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.options_frame.grid(row=1, column=0, columnspan=2, sticky='news', padx=xpadding, pady=ypadding)
         
         # atom_style drop down
         styles = ['full', 'charge', 'molecular', 'angle', 'bond', 'atomic', 'dipole', 'dpd', 'line']
@@ -208,7 +208,7 @@ class auto_morse_bond_GUI:
         #-------------------#
         # Initalize  plt_options frame
         self.plt_options_frame = tk.LabelFrame(self.frame2, text='Plot/Alphas2check Options', font=font_settings)
-        self.plt_options_frame.grid(row=2, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.plt_options_frame.grid(row=2, column=0, columnspan=2, sticky='news', padx=xpadding, pady=ypadding)
         
         # Radius spec start
         self.rss = tk.Entry(self.plt_options_frame, width=int(maxwidth/6.67), font=font_settings)
@@ -262,7 +262,7 @@ class auto_morse_bond_GUI:
         #--------------------#
         # Initalize  plt_options frame
         self.file_options_frame = tk.LabelFrame(self.frame2, text='Files2write Options', font=font_settings)
-        self.file_options_frame.grid(row=3, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.file_options_frame.grid(row=3, column=0, columnspan=2, sticky='news', padx=xpadding, pady=ypadding)
         
         # 'write_datafile' entry
         styles = [True, False]
@@ -297,13 +297,19 @@ class auto_morse_bond_GUI:
         # Run button #
         #------------#
         self.run = tk.Button(self.frame1, text='Run LUNAR/auto_morse_bond_update.py', font=font_settings, command=self.run_LUNAR)
-        self.run.grid(row=4, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.run.grid(row=4, column=0, columnspan=2, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
         
         #-----------------#
         # update defaults #
         #-----------------#
         self.update = tk.Button(self.frame1, text='Save the current GUI settings as the default GUI settings', font=font_settings, command=self.update_py_script)
-        self.update.grid(row=5, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.update.grid(row=5, column=0, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
+        
+        #------------#
+        # Quick help #
+        #------------#
+        self.quick_help = tk.Button(self.frame1, text='Quick help', font=font_settings, command=self.quickhelp)
+        self.quick_help.grid(row=5, column=1, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
         
         
         #------------------------#
@@ -317,6 +323,25 @@ class auto_morse_bond_GUI:
     #################################
     # Functions to call as commands #
     #################################
+    # Quick help button
+    def quickhelp(self):
+        try: # Try to get text from GUI_help_page.txt file
+            txt = os.path.join(self.pwd, 'src/GUI_quick_help_pages/auto_morse_bond_update.txt')
+            logged = []
+            with open(txt, 'r') as f:
+                for line in f:
+                    if line.startswith('#'): continue
+                    # Strip comment's and split by whitespace
+                    line = line.split('#')[0]
+                    line = line.rstrip()
+                    logged.append(line)
+        except: # except something failed
+            logged.append('FAILED to read LUNAR/src/GUI_quick_help_pages/auto_morse_bond_update.txt document.')
+            logged.append('Most likely cause is the auto_morse_bond_update.txt file was renamed in the')
+            logged.append('LUNAR/src/GUI_quick_help_pages/ directory or directory names were changed.')
+        self.popup(logged, title='Quick help')
+        return
+    
     # Function to get filepath for topofile
     def topofile_path(self):
         ftypes = (('data files', '*.data *.data.gz'), ('all files', '*.*'))

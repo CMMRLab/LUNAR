@@ -20,15 +20,16 @@ import sys
 
 
 def print_man_page(topofile, bondfile, parent_dir, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded,
-                   boundary, vdw_radius_scale, reset_charges, print_options, pdb_file, chargefile):
+                   boundary, vdw_radius_scale, reset_charges, print_options, pdb_file, chargefile, include_comments_nta):
 
     
     # print general command line options
     print('\n\natom_typing has been run with -opt or -man option to show the optional command line overrides available. Command line')
     print('option summary [-tag <tag-input>]:')
     print('python3 atom_typing.py [-topo <topo-filename>] [-bond <bond-filename>] [-dir <new directory name>] [-newfile <string>]')
-    print('                       [-ff <force field name>] [-reset-charges <T|F>] [-charge-file <Gasteiger-filename>] <-gui> <-opt>|<-man>')
-    print(                      ' [*NOTE: Not all options found in atom_typing.py are currently supported via command line overrides.*]')
+    print('                       [-ff <force field name>] [-reset-charges <T|F>] [-charge-file <Gasteiger-filename>]')
+    print('                       [-nta-comments] <T|F> <-gui> <-opt>|<-man> [*NOTE: Not all options found in atom_typing.py are')
+    print('                       currently supported via command line overrides.*]')
 
     print('\n*NOTE: If the command line input options are not used the hard coded inputs in the inputs section of the atom_typing.py')
     print('file will be enforced. The command line inputs option gives more flexibility to the code depending on IDE usage or')
@@ -80,6 +81,16 @@ def print_man_page(topofile, bondfile, parent_dir, newfile, ff_name, delete_atom
     print('    Command line option to set chargefile containing Gasteiger charge parameters that will be used with the Gasteiger')
     print('    charge method if reset_charges is True. Example usage:')
     print('        python3 atom_typing.py -charge-file   frc_files/Gasteiger_parameters.txt')
+
+    # print -nta-comments  option
+    print(f'\n -nta-comments  or -nc <T|F>  atom_typing variable: include_comments_nta    hard coded: {include_comments_nta}')
+    print('    Command line option set the Boolean variable (T for True or F for False) to either write comments (T) to the new')
+    print('    type assignment file or to not write comments in the new type assignment file (F). During atom typing the code will')
+    print('    set comments for each atom (most of the time the comments are "Correctly found", but may differ depending on how the')
+    print('    atom type was assigned). If you plan to manually edit the atom types or add the atomtype:NAME to the atom type the')
+    print('    comments can quickly ruin the readability of the file. Please refer to the all2lmp.py chapter in the manual for the')
+    print('    atomtype:NAME option. Example usage:')
+    print('        python3 atom_typing.py -nta-comments T')
     
     # # print -dir option
     print(f'\n -dir or -d <new directory name>   atom_typing variable: parent_directory    hard coded: {parent_dir}')
@@ -193,7 +204,8 @@ def print_man_page(topofile, bondfile, parent_dir, newfile, ff_name, delete_atom
 # Class to update inputs
 class inputs:
     def __init__(self, topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded,
-                 boundary, vdw_radius_scale, reset_charges, print_options, pdb_file, chargefile, commandline_inputs):
+                 boundary, vdw_radius_scale, reset_charges, print_options, pdb_file, chargefile, include_comments_nta, 
+                 commandline_inputs):
         
         # Give access to inputs (update later on if command line over ride is given)
         self.commandline_inputs = commandline_inputs
@@ -212,6 +224,7 @@ class inputs:
         self.print_options = print_options
         self.pdb_file = pdb_file
         self.chargefile = chargefile
+        self.include_comments_nta = include_comments_nta
 
         
         
@@ -229,16 +242,16 @@ class inputs:
         
         # Check that tag is supported and log if tag from the command line
         # set supported tags
-        supported_tags = ['-topo', '-bond', '-dir', '-newfile', '-ff', '-reset-charges', '-vdw-scale', '-pdb', '-charge-file']
+        supported_tags = ['-topo', '-bond', '-dir', '-newfile', '-ff', '-reset-charges', '-vdw-scale', '-pdb', '-charge-file', '-nta-comments']
         
         # set shortcut_tags mapping
         shortcut_tags = {'-t':'-topo', '-b':'-bond', '-d':'-dir', '-nf':'-newfile', '-f':'-ff', '-rq':'-reset-charges', '-vdw':'-vdw-scale', '-p':'-pdb',
-                         '-qf':'-charge-file'}
+                         '-qf':'-charge-file', '-nc':'-nta-comments'}
         
         # set default variables
         default_variables ={'-topo': self.topofile, '-bond': self.bondfile, '-dir': self.parent_directory, '-ext': self.newfile, '-ff': self.ff_name,
                             '-reset-charges': self.reset_charges, '-vdw-scale': self.vdw_radius_scale, '-pdb':self.pdb_file,
-                            '-charge-file':self.chargefile, '-newfile':self.newfile}
+                            '-charge-file':self.chargefile, '-newfile':self.newfile, '-nta-comments':self.include_comments_nta}
         
         # set tag/tag-input pair as empty string and update
         tags = {i:'' for i in supported_tags}
@@ -319,6 +332,11 @@ class inputs:
         if tags['-reset-charges']:
             self.reset_charges = T_F_string2boolean('-reset-charges', (tags['-reset-charges']))
             print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-reset-charges', self.reset_charges))
+            
+        # set new -nta-comments option and print confirmation
+        if tags['-nta-comments']:
+            self.include_comments_nta = T_F_string2boolean('-nta-comments', (tags['-nta-comments']))
+            print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-nta-comments', self.include_comments_nta))
             
         # set new -vdw-scale option and print confirmation (ERROR checks will occur in the next step so only try float except set as input)
         if tags['-vdw-scale']:

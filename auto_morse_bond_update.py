@@ -274,7 +274,7 @@ if __name__ == "__main__":
     if commandline_inputs and '-gui' not in commandline_inputs: use_GUI = False
     if use_GUI or '-gui' in commandline_inputs:
         from src.auto_morse_bond.GUI import auto_morse_bond_GUI
-        #from src.auto_morse_bond.GUI_simple import auto_morse_bond_GUI
+        from src.auto_morse_bond.GUI_simple import auto_morse_bond_GUI
         print('\n\n\nauto_morse_bond_update is currently running in GUI mode, where all GUI inputs are intialized from auto_morse_bond_update.\n\n\n')
         auto_morse_bond_GUI(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip,
                             radius_specs, alpha_specs, alpha_scale, files2write, atom_style, zero_effected_xterms,

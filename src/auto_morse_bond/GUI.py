@@ -78,56 +78,42 @@ class auto_morse_bond_GUI:
         #--------------#
         # Initalize  inputs frame
         self.inputs_frame = tk.LabelFrame(self.frame, text='Inputs', font=font_settings)
-        self.inputs_frame.grid(row=0, column=0, padx=xpadding, pady=ypadding)
+        self.inputs_frame.grid(row=0, column=0, columnspan=2, padx=xpadding, pady=ypadding)
         
         # topofile selection button
-        self.topofile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.topofile = tk.Entry(self.inputs_frame, width=int(1.15*maxwidth), font=font_settings)
         self.topofile.insert(0, topofile)
         self.topofile.grid(column=1, row=0)
         self.topofile_button = tk.Button(self.inputs_frame, text='topofile', font=font_settings, command=self.topofile_path)
         self.topofile_button.grid(column=0, row=0)
         
         # morsefile selection button
-        self.morsefile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.morsefile = tk.Entry(self.inputs_frame, width=int(1.15*maxwidth), font=font_settings)
         self.morsefile.insert(0, morsefile)
         self.morsefile.grid(column=1, row=1)
         self.morsefile_button = tk.Button(self.inputs_frame, text='morsefile', font=font_settings, command=self.morsefile_path)
         self.morsefile_button.grid(column=0, row=1)
 
         # parent_directory entry
-        self.parent_directory = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.parent_directory = tk.Entry(self.inputs_frame, width=int(1.15*maxwidth), font=font_settings)
         self.parent_directory.insert(0, parent_directory)
         self.parent_directory.grid(column=1, row=2)
         self.dir_button = tk.Button(self.inputs_frame, text='parent_directory', font=font_settings, command=self.directory_path)
         self.dir_button.grid(column=0, row=2)
         
         # newfile entry
-        self.newfile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.newfile = tk.Entry(self.inputs_frame, width=int(1.15*maxwidth), font=font_settings)
         self.newfile.insert(0, newfile)
         self.newfile.grid(column=1, row=3)
         self.newfile_label = tk.Label(self.inputs_frame, text='newfile', font=font_settings)
         self.newfile_label.grid(column=0, row=3)
-                
-        # min_bond_length entry
-        self.min_bond_length = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
-        self.min_bond_length.insert(0, min_bond_length)
-        self.min_bond_length.grid(column=1, row=4)
-        self.min_bond_length_label = tk.Label(self.inputs_frame, text='min_bond_length', font=font_settings)
-        self.min_bond_length_label.grid(column=0, row=4)
         
         # coeffs2skip entry
-        self.coeffs2skip = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.coeffs2skip = tk.Entry(self.inputs_frame, width=int(1.15*maxwidth), font=font_settings)
         self.coeffs2skip.insert(0, ','.join([str(i) for i in coeffs2skip]))
         self.coeffs2skip.grid(column=1, row=5)
         self.coeffs2skip_label = tk.Label(self.inputs_frame, text='Bond CoeffIDs 2 skip\n(comma separated w/no whitespace)', font=font_settings)
         self.coeffs2skip_label.grid(column=0, row=5)
-        
-        # alpha_scale entry
-        self.alpha_scale = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
-        self.alpha_scale.insert(0, alpha_scale)
-        self.alpha_scale.grid(column=1, row=6)
-        self.alpha_scale_label = tk.Label(self.inputs_frame, text='alpha_scale', font=font_settings)
-        self.alpha_scale_label.grid(column=0, row=6)
         
         # Add padding to all frames in self.inputs_frame
         for widget in self.inputs_frame.winfo_children():
@@ -139,7 +125,7 @@ class auto_morse_bond_GUI:
         #---------------#
         # Initalize  options frame
         self.options_frame = tk.LabelFrame(self.frame, text='Options', font=font_settings)
-        self.options_frame.grid(row=1, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.options_frame.grid(row=1, column=0, columnspan=2, sticky='news', padx=xpadding, pady=ypadding)
         
         # ff_class drop down menu
         styles = [1, 2]
@@ -181,12 +167,19 @@ class auto_morse_bond_GUI:
         self.include_rcut_label = tk.Label(self.options_frame, text='include_rcut', font=font_settings)
         self.include_rcut_label.grid(column=4, row=0)
         
+        # min_bond_length entry
+        self.min_bond_length = tk.Entry(self.options_frame, width=int(maxwidth/9), font=font_settings)
+        self.min_bond_length.insert(0, min_bond_length)
+        self.min_bond_length.grid(column=5, row=1)
+        self.min_bond_length_label = tk.Label(self.options_frame, text='min_bond_length', font=font_settings)
+        self.min_bond_length_label.grid(column=5, row=0)
+        
         # bondbreak_scale entry
         self.bondbreak_scale = tk.Entry(self.options_frame, width=int(maxwidth/9), font=font_settings)
         self.bondbreak_scale.insert(0, bondbreak_scale)
-        self.bondbreak_scale.grid(column=5, row=1)
+        self.bondbreak_scale.grid(column=6, row=1)
         self.bondbreak_scale_label = tk.Label(self.options_frame, text='bondbreak_scale', font=font_settings)
-        self.bondbreak_scale_label.grid(column=5, row=0)
+        self.bondbreak_scale_label.grid(column=6, row=0)
 
         
         # Add padding to all frames in self.inputs_frame
@@ -198,49 +191,56 @@ class auto_morse_bond_GUI:
         #-------------------#
         # Initalize  plt_options frame
         self.plt_options_frame = tk.LabelFrame(self.frame, text='Plot/Alphas2check Options', font=font_settings)
-        self.plt_options_frame.grid(row=2, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.plt_options_frame.grid(row=2, column=0, columnspan=2, sticky='news', padx=xpadding, pady=ypadding)
         
         # Radius spec start
-        self.rss = tk.Entry(self.plt_options_frame, width=int(maxwidth/9), font=font_settings)
+        self.rss = tk.Entry(self.plt_options_frame, width=int(maxwidth/7), font=font_settings)
         self.rss.insert(0, radius_specs['start'])
         self.rss.grid(column=0, row=1)
         self.rss_label = tk.Label(self.plt_options_frame, text='plot start radius', font=font_settings)
         self.rss_label.grid(column=0, row=0)
         
         # Radius spec end
-        self.rse = tk.Entry(self.plt_options_frame, width=int(maxwidth/9), font=font_settings)
+        self.rse = tk.Entry(self.plt_options_frame, width=int(maxwidth/7), font=font_settings)
         self.rse.insert(0, radius_specs['end'])
         self.rse.grid(column=1, row=1)
         self.rse_label = tk.Label(self.plt_options_frame, text='plot end radius', font=font_settings)
         self.rse_label.grid(column=1, row=0)
         
         # Radius spec inc
-        self.rsi = tk.Entry(self.plt_options_frame, width=int(maxwidth/9), font=font_settings)
+        self.rsi = tk.Entry(self.plt_options_frame, width=int(maxwidth/7), font=font_settings)
         self.rsi.insert(0, radius_specs['increment'])
         self.rsi.grid(column=2, row=1)
         self.rsi_label = tk.Label(self.plt_options_frame, text='radius increment', font=font_settings)
         self.rsi_label.grid(column=2, row=0)
         
         # Alpha spec start
-        self.ass = tk.Entry(self.plt_options_frame, width=int(maxwidth/9), font=font_settings)
+        self.ass = tk.Entry(self.plt_options_frame, width=int(maxwidth/7), font=font_settings)
         self.ass.insert(0, alpha_specs['start'])
         self.ass.grid(column=3, row=1)
         self.ass_label = tk.Label(self.plt_options_frame, text='smallest alpha', font=font_settings)
         self.ass_label.grid(column=3, row=0)
         
         # Alpha spec end
-        self.ase = tk.Entry(self.plt_options_frame, width=int(maxwidth/9), font=font_settings)
+        self.ase = tk.Entry(self.plt_options_frame, width=int(maxwidth/7), font=font_settings)
         self.ase.insert(0, alpha_specs['end'])
         self.ase.grid(column=4, row=1)
         self.ase_label = tk.Label(self.plt_options_frame, text='largest alpha', font=font_settings)
         self.ase_label.grid(column=4, row=0)
         
         # Alpha spec inc
-        self.asi = tk.Entry(self.plt_options_frame, width=int(maxwidth/9), font=font_settings)
+        self.asi = tk.Entry(self.plt_options_frame, width=int(maxwidth/7), font=font_settings)
         self.asi.insert(0, alpha_specs['increment'])
         self.asi.grid(column=5, row=1)
         self.asi_label = tk.Label(self.plt_options_frame, text='alpha increment', font=font_settings)
         self.asi_label.grid(column=5, row=0)
+        
+        # alpha_scale entry
+        self.alpha_scale = tk.Entry(self.plt_options_frame, width=int(maxwidth/7), font=font_settings)
+        self.alpha_scale.insert(0, alpha_scale)
+        self.alpha_scale.grid(column=6, row=1)
+        self.alpha_scale_label = tk.Label(self.plt_options_frame, text='alpha_scale', font=font_settings)
+        self.alpha_scale_label.grid(column=6, row=0)
         
         # Add padding to all frames in self.inputs_frame
         for widget in self.plt_options_frame.winfo_children():
@@ -252,7 +252,7 @@ class auto_morse_bond_GUI:
         #--------------------#
         # Initalize  plt_options frame
         self.file_options_frame = tk.LabelFrame(self.frame, text='Files2write Options', font=font_settings)
-        self.file_options_frame.grid(row=3, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.file_options_frame.grid(row=3, column=0, columnspan=2, sticky='news', padx=xpadding, pady=ypadding)
         
         # 'write_datafile' entry
         styles = [True, False]
@@ -287,13 +287,19 @@ class auto_morse_bond_GUI:
         # Run button #
         #------------#
         self.run = tk.Button(self.frame, text='Run LUNAR/auto_morse_bond_update.py', font=font_settings, command=self.run_LUNAR)
-        self.run.grid(row=4, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.run.grid(row=4, column=0, columnspan=2, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
         
         #-----------------#
         # update defaults #
         #-----------------#
         self.update = tk.Button(self.frame, text='Save the current GUI settings as the default GUI settings', font=font_settings, command=self.update_py_script)
-        self.update.grid(row=5, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.update.grid(row=5, column=0, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
+        
+        #------------#
+        # Quick help #
+        #------------#
+        self.quick_help = tk.Button(self.frame, text='Quick help', font=font_settings, command=self.quickhelp)
+        self.quick_help.grid(row=5, column=1, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
         
         
         #------------------------#
@@ -307,6 +313,25 @@ class auto_morse_bond_GUI:
     #################################
     # Functions to call as commands #
     #################################
+    # Quick help button
+    def quickhelp(self):
+        try: # Try to get text from GUI_help_page.txt file
+            txt = os.path.join(self.pwd, 'src/GUI_quick_help_pages/auto_morse_bond_update.txt')
+            logged = []
+            with open(txt, 'r') as f:
+                for line in f:
+                    if line.startswith('#'): continue
+                    # Strip comment's and split by whitespace
+                    line = line.split('#')[0]
+                    line = line.rstrip()
+                    logged.append(line)
+        except: # except something failed
+            logged.append('FAILED to read LUNAR/src/GUI_quick_help_pages/auto_morse_bond_update.txt document.')
+            logged.append('Most likely cause is the auto_morse_bond_update.txt file was renamed in the')
+            logged.append('LUNAR/src/GUI_quick_help_pages/ directory or directory names were changed.')
+        self.popup(logged, title='Quick help')
+        return
+    
     # Function to get filepath for topofile
     def topofile_path(self):
         ftypes = (('data files', '*.data *.data.gz'), ('all files', '*.*'))

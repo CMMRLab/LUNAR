@@ -7,9 +7,9 @@
 # scrollable Text widget, it is important to maintain proper spacing.
 # Indentations will use two spaces.
 #
-# The maximum column position should be restriced to 145.
+# The maximum column position should be restricted to 145.
 #
-# Last edited 4/10/2024
+# Last edited 5/2/2024
 #
 ************
 * Overview *
@@ -46,7 +46,14 @@
 
   chargefile	
     Button to load in a file defining the parameters to use for the Gasteiger charging method. You may also directly type the filename in the
-    entry to the right of the button as well. Please note that to use the Gasteiger charging method, reset_charges must be set to True. 
+    entry to the right of the button as well. Please note that to use the Gasteiger charging method, reset_charges must be set to True.
+
+  include_comments_nta
+    A dropdown menu to select a Boolean (True or False) to either write comments (True) to the new type assignment file or to not write comments
+    in the new type assignment file (False). During atom typing the code will set comments for each atom (most of the time the comments are
+    "Correctly found", but may differ depending on how the atom type was assigned). If you plan to manually edit the atom types or add the
+    atomtype:NAME to the atom type the comments can quickly ruin the readability of the file. Please refer to the all2lmp.py chapter in the
+    manual for the atomtype:NAME option. 
 	
   newfile
     An entry to supply a string that will be used to set the output files basename. The following options exist for using the newfile string for

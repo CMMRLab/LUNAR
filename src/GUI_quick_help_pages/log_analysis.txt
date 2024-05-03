@@ -7,7 +7,7 @@
 # scrollable Text widget, it is important to maintain proper spacing.
 # Indentations will use two spaces.
 #
-# The maximum column position should be restriced to 145.
+# The maximum column position should be restricted to 145.
 #
 # Last edited 4/15/2024
 #
