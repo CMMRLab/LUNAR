@@ -143,6 +143,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
         log.out(f'      bonds_via_distance_override = {at.bonds_via_distance_override}')
         log.out(f'      pdb_file = {at.pdb_file}')
         log.out(f'      chargefile = {at.chargefile}')
+        log.out(f'      include_comments_nta = {at.include_comments_nta}')
         
         # Set all2lmp defaults for when calling atom_typing
         at_bondfile = 'n.u.'
@@ -160,12 +161,16 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
         log.out('   Running atom_typing.py from all2lmp.py based on the above atom_typing.py inputs')
         atom_typing(topofile, at_bondfile, parent_directory, at_newfile, at_ff_name, at.delete_atoms, at.mass_map, at.bondorder, at.maxbonded, 
                     at.boundary, at.vdw_radius_scale, gasteiger_charging, False, [], at.bonds_via_distance_override, at.pdb_file, at.chargefile,
-                    log=log)
+                    at.include_comments_nta, log=log)
         
         # Update the topofile, nta_file and reset_charges variables based on the atom_typing.py run
-        if parent_directory == 'topofile':
-            pwd = os.path.dirname(os.path.abspath(topofile))
+        if 'topofile' in parent_directory:
             dummy_parent_directory = ''
+            if parent_directory == 'topofile':
+                pwd = os.path.dirname(os.path.abspath(topofile))
+            else:
+                pwd = io_functions.get_dir_from_topofile(topofile, parent_directory)
+                parent_directory = 'topofile'
         else: 
             pwd = os.getcwd()
             dummy_parent_directory = parent_directory
