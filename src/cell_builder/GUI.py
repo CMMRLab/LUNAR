@@ -39,7 +39,10 @@ def get_file_qty(file, delimiter='qty='):
             qty = int(qty_guess);
             print(f"{file}\nhad *qty=N.data format, where the qty was found to be {qty}\n")
         except: pass
-    except: qty = 0;
+    except: 
+        if file.endswith('data'):
+            qty = 1
+        else: qty = 0
     return qty
 
 
@@ -48,7 +51,8 @@ def get_file_qty(file, delimiter='qty='):
 ##############################
 class cell_builder_GUI:
     def __init__(self, files, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
-                 reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, GUI_zoom, nfiles=6):
+                 reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, GUI_zoom,
+                 nfiles=6, scroll_bar=False):
         
         # Find present working directory
         self.pwd = os.getcwd()
@@ -58,12 +62,33 @@ class cell_builder_GUI:
         # Initialize window
         self.root = tk.Tk()
         self.root.title('LUNAR/cell_builder.py GUI v1.0')
-        self.root.resizable(width=False, height=False)
         #self.root.geometry('600x400')
         
         # Initalize main frame
-        self.frame = tk.Frame(self.root)
-        self.frame.pack()
+        if not scroll_bar:
+            self.root.resizable(width=False, height=False)
+            self.frame = tk.Frame(self.root)
+            self.frame.pack()
+        
+        # Initialize window with a scroll bar
+        else:
+            GUI_SF = GUI_zoom/100
+            height = 25*nfiles + 400
+            width = 1250
+            height = int(math.ceil(GUI_SF*height))
+            width = int(math.ceil(GUI_SF*width))
+            if GUI_SF > 1.0: width += int(math.ceil(width/3.25*GUI_SF))
+            self.root.minsize(width, height)
+            self.frame1 = tk.Frame(self.root)
+            self.frame1.pack(fill=tk.BOTH, expand=1)
+            self.canvas = tk.Canvas(self.frame1)
+            self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
+            self.scrollbar = ttk.Scrollbar(self.frame1, orient=tk.VERTICAL, command=self.canvas.yview)
+            self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            self.canvas.configure(yscrollcommand=self.scrollbar.set)
+            self.canvas.bind('<Configure>', lambda e: self.canvas.configure(scrollregion = self.canvas.bbox('all')))
+            self.frame = tk.Frame(self.canvas)
+            self.canvas.create_window((0,0), window=self.frame, anchor='nw')
         
         #-----------------------------------------------#
         # Set default sizes to use throughout this code #
@@ -330,15 +355,18 @@ class cell_builder_GUI:
                     if qty > 0: # shortcut naming
                         self.qtys[blanks[0]].delete(0, tk.END)
                         self.qtys[blanks[0]].insert(0, str(qty))
-                    elif not path.endswith('data'): # avoid zero for grouping file
-                        self.qtys[blanks[0]].delete(0, tk.END)
-                        self.qtys[blanks[0]].insert(0, '0')
-                    else: # final attempt
+                    elif path.endswith('data'): # avoid zero for grouping file
                         self.qtys[blanks[0]].delete(0, tk.END)
                         self.qtys[blanks[0]].insert(0, '1')
+                    else: # final attempt
+                        self.qtys[blanks[0]].delete(0, tk.END)
+                        self.qtys[blanks[0]].insert(0, '0')
                 except: 
                     print('GUI file limit reached. Attempting to add overloaded file.')
                     try:
+                        qty = 0
+                        if path.endswith('data'):
+                            qty = 1
                         self.overloadfile = path; self.overloadqty = qty;
                         self.add_overloaded_filebox()
                     except: print(f'GUI file limit reached and overload add FAILED. Update maxfiles variable in {os.path.relpath(self.filename)}')

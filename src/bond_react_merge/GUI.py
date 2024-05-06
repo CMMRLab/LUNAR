@@ -107,7 +107,6 @@ class bond_react_merge_GUI:
         # Initialize window
         self.root = tk.Tk()
         self.root.title('LUNAR/bond_react_merge.py GUI v1.0')
-        self.root.resizable(width=False, height=False)
         #self.root.geometry('1000x600') # widthxheight
         
         # Setup GUI log
@@ -117,8 +116,10 @@ class bond_react_merge_GUI:
         
         # Initalize main frame
         if not scroll_bar:
+            self.root.resizable(width=False, height=False)
             self.frame = tk.Frame(self.root)
             self.frame.pack()
+
         
         # Initialize window with a scroll bar
         else:
