@@ -492,7 +492,8 @@ class bond_react_merge_GUI:
             try: main(files, parent_directory, newfile, atom_style, generate_map_file, write_rxn_mol2files, 
                       write_rxn_datafiles, write_moleculefiles, print_options, commandline_inputs, map_near_edge_rxn_charges,
                       molecule_file_options, include_type_labels, log=log)
-            except: pass
+            except Exception as error:
+                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged, title='Outputs')
         return   
     

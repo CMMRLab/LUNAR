@@ -418,7 +418,8 @@ class auto_morse_bond_GUI:
             try: main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip,
                       radius_specs, alpha_specs, alpha_scale, files2write, atom_style, zero_effected_xterms,
                       bondbreak_scale, ff_class, include_type_labels, include_rcut, log=log)
-            except: pass
+            except Exception as error:
+                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged, title='Outputs')
         return     
     

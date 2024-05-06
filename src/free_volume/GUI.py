@@ -337,7 +337,8 @@ class free_volume_GUI:
             try: main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory,
                       compute_free_volume_distributions, files2write, run_mode, probe_diameter,
                       vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, [], log=log)
-            except: pass
+            except Exception as error:
+                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged, title='Outputs')
         return  
     

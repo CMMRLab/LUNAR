@@ -194,7 +194,8 @@ class GUI:
         # Run LUNAR/auto_cluster_analysis
         if valid_inputs:
             try: main(files_directory, N0, fav, txtfile, newfile, log=log)
-            except: pass
+            except Exception as error:
+                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged)
         return   
     

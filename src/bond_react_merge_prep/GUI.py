@@ -199,7 +199,8 @@ class bond_react_merge_prep_GUI:
         # Run LUNAR/bond_react_merge_prep
         if valid_inputs:
             try: main(topofile, cta_file, newfile, atom_style, parent_directory, rm_unused_coeffs, log=log)
-            except: pass
+            except Exception as error:
+                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged, title='Outputs')
         return 
 

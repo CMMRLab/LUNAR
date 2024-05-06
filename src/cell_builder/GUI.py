@@ -462,7 +462,8 @@ class cell_builder_GUI:
         if valid_inputs:
             try: main(files, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
                       reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, log=log)
-            except: pass
+            except Exception as error:
+                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged, title='Outputs', width=200)
         return   
     

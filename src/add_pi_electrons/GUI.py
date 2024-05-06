@@ -270,7 +270,8 @@ class add_pi_electrons_GUI:
             try: 
                 main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
                      parent_directory, newfile, include_type_labels, neighbor_charge_constraint, log=log)
-            except: pass
+            except Exception as error:
+                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged, title='Outputs')
         return   
     

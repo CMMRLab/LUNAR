@@ -215,7 +215,8 @@ class atom_removal_GUI:
         # Run LUNAR/atom_removal
         if valid_inputs:
             try: main(topofile, parent_directory, newfile, atom_style, atoms2remove, include_type_labels, method, log=log)
-            except: pass
+            except Exception as error:
+                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged, title='Outputs')
         return     
     

@@ -338,7 +338,8 @@ class atom_typing_GUI:
             try: main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded, boundary,
                       vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file, chargefile,
                       include_comments_nta, log=log)
-            except: pass
+            except Exception as error:
+                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged, title='Outputs')
         return 
     

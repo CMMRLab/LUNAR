@@ -436,7 +436,8 @@ class all2lmp_GUI:
                       use_auto_equivalence, use_assumed_auto_fill, reset_molids, reset_charges, write_txt_comments,
                       write_bond_react, print_options, use_morse_bonds, include_type_labels, add2box, ignore_missing_parameters,
                       shift, rotate, commandline_inputs, log=log)
-            except: pass
+            except Exception as error:
+                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged, title='Outputs')
         return     
     

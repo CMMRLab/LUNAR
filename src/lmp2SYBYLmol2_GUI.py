@@ -171,7 +171,8 @@ class GUI:
         # Run LUNAR/lmp2SYBYLmol2
         if valid_inputs:
             try: main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=log)
-            except: pass
+            except Exception as error:
+                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged, title='Outputs')
         return  
     

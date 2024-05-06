@@ -188,7 +188,8 @@ class GUI:
         # Run LUNAR/cluster
         if valid_inputs:
             try: clusters.analysis(topofile, N0, txtfile, fav, pflag, log=log)
-            except: pass
+            except Exception as error:
+                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged, title='Outputs')
         return  
    
