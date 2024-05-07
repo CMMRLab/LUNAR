@@ -171,7 +171,7 @@ def file(m, filename, header, atom_style, include_type_labels, log, force_field_
             for i in m.bond_coeffs: 
                 bond = m.bond_coeffs[i]
                 if bond.type != 'N/A':
-                    f.write('{:^3} {} # {}\n'.format(i, string_parameters(bond.coeffs), bond.type))
+                    f.write('{:^3} {:<80} # {}\n'.format(i, string_parameters(bond.coeffs), bond.type))
                 else:
                     f.write('{:^3} {}\n'.format(i, string_parameters(bond.coeffs)))
             

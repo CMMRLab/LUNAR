@@ -210,6 +210,10 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
     if files2write['write_datafile']:
         if zero_effected_xterms and ff_class == 2: m = zero_xterm_r0s.zero(m, log)
         header = '{} > auto_morse_bond version: {}'.format(m.header, version)
+        
+        # update m with new bond_coeffs before writing file
+        for i in m.bond_coeffs:
+            m.bond_coeffs[i].coeffs = m.alpha_parameter.morse_harmonic[i]
         write_lmp.file(m, basename+'.data', header, atom_style, include_type_labels, log)
 
     
