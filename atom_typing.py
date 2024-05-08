@@ -134,7 +134,7 @@ parent_directory = 'topofile'
 #                                                                                                                           #
 # Update parent_directory as desired.                                                                                       #
 #############################################################################################################################
-chargefile = 'frc_files\Gasteiger_parameters.txt'
+chargefile = 'frc_files/Gasteiger_parameters.txt'
 
 
 #############################################################################################################################
