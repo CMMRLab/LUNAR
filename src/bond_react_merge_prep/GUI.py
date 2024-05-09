@@ -218,9 +218,9 @@ class bond_react_merge_prep_GUI:
     def update_py_script(self):
         # Get information from GUI
         boolean = {'False':False, 'True':True}
-        topofile = self.topofile.get()
-        cta_file = self.cta_file.get()
-        parent_directory = self.parent_directory.get() 
+        topofile = io_functions.path_to_string(self.topofile.get())
+        cta_file = io_functions.path_to_string(self.cta_file.get())
+        parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
         atom_style = self.atom_style.get()
         newfile = self.newfile.get()
         rm_unused_coeffs = boolean[self.rm_unused_coeffs.get()]

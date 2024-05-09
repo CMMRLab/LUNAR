@@ -190,8 +190,8 @@ class GUI:
     def update_py_script(self):
         # Get information from GUI
         boolean = {'False':False, 'True':True}
-        topofile = self.topofile.get()
-        parent_directory = self.parent_directory.get() 
+        topofile = io_functions.path_to_string(self.topofile.get())
+        parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
         remove_PBC_bonds = boolean[self.remove_PBC_bonds.get()]
         
         # Read current py script and re-write with new settings

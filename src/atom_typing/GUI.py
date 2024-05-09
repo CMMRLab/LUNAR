@@ -359,10 +359,10 @@ class atom_typing_GUI:
     def update_py_script(self):
         # Get information from GUI
         boolean = {'False':False, 'True':True}
-        topofile = self.topofile.get()
-        bondfile = self.bondfile.get()
-        chargefile = self.chargefile.get()
-        parent_directory = self.parent_directory.get() 
+        topofile = io_functions.path_to_string(self.topofile.get())
+        bondfile = io_functions.path_to_string(self.bondfile.get())
+        chargefile = io_functions.path_to_string(self.chargefile.get())
+        parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
         newfile = self.newfile.get()
         ff_name = self.ff_name.get()
         reset_charges = boolean[self.reset_charges.get()]       

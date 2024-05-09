@@ -515,7 +515,7 @@ class bond_react_merge_GUI:
         # Get information from GUI
         tk2ff = {'0':0, '1':1, '2':2, 'r':'r', 'd':'d', 's1':'s1', 's2':'s2'}
         boolean = {'False':False, 'True':True}
-        parent_directory = self.parent_directory.get() 
+        parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
         newfile = self.newfile.get()
         atom_style = self.atom_style.get()
         generate_map_file = boolean[self.generate_map_file.get()]   

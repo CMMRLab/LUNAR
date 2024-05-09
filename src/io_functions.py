@@ -162,4 +162,14 @@ def get_dir_from_topofile(topofile, parent_directory):
         else: path = os.path.dirname(os.path.abspath(topofile))
     else: path = os.path.dirname(os.path.abspath(topofile))
     return path
+
+###############################################################
+# When python loads a path it may set the directory delimeter #
+# as a '\' however this is not correct for setting in a file  #
+# so this function converts  any '\' to '/' characters        #
+###############################################################
+def path_to_string(path):
+    string = str(path)
+    string = string.replace('\\', '/')
+    return string
     

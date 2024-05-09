@@ -458,11 +458,11 @@ class all2lmp_GUI:
         # Get information from GUI
         tk2ff = {'0':0, '1':1, '2':2, 'r':'r', 'd':'d', 's1':'s1', 's2':'s2'}
         boolean = {'False':False, 'True':True}
-        topofile = self.topofile.get()
-        nta_file = self.nta_file.get()
-        frc_file = self.frc_file.get()
-        assumed = self.assumed.get()
-        parent_directory = self.parent_directory.get() 
+        topofile = io_functions.path_to_string(self.topofile.get())
+        nta_file = io_functions.path_to_string(self.nta_file.get())
+        frc_file = io_functions.path_to_string(self.frc_file.get())
+        assumed = io_functions.path_to_string(self.assumed.get())
+        parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
         atom_style = self.atom_style.get()
         newfile = self.newfile.get()
         ff_class = tk2ff[self.ff_class.get()]

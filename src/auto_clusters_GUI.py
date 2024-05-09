@@ -213,7 +213,7 @@ class GUI:
     def update_py_script(self):
         # Get information from GUI
         boolean = {'False':False, 'True':True}
-        files_directory = self.files_directory.get()
+        files_directory = io_functions.path_to_string(self.files_directory.get())
         newfile = self.newfile.get()
         N0 = int(self.N0.get())
         fav = float(self.fav.get())

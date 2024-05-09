@@ -289,8 +289,8 @@ class add_pi_electrons_GUI:
     def update_py_script(self):
         # Get information from GUI
         boolean = {'False':False, 'True':True}
-        topofile = self.topofile.get()
-        parent_directory = self.parent_directory.get() 
+        topofile = io_functions.path_to_string(self.topofile.get())
+        parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
         newfile = self.newfile.get()
         atom_style = self.atom_style.get()
         try: types2convert = s2s_i2i(self.types2convert.get().split(','))

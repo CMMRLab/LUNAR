@@ -510,7 +510,7 @@ class cell_builder_GUI:
     def update_py_script(self):
         # Get information from GUI
         boolean = {'False':False, 'True':True}        
-        parent_directory = self.parent_directory.get() 
+        parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
         atom_style = self.atom_style.get()   
         include_type_labels = boolean[self.include_type_labels.get()]   
         reset_molids = self.reset_molids.get()

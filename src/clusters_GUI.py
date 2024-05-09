@@ -207,7 +207,7 @@ class GUI:
     def update_py_script(self):
         # Get information from GUI
         boolean = {'False':False, 'True':True}
-        topofile = self.topofile.get()
+        topofile = io_functions.path_to_string(self.topofile.get())
         N0 = int(self.N0.get())
         fav = float(self.fav.get())
         txtfile = boolean[self.txtfile.get()]

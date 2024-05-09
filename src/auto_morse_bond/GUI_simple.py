@@ -448,9 +448,9 @@ class auto_morse_bond_GUI:
         # Get information from GUI
         tk2ff = {'0':0, '1':1, '2':2, 'r':'r', 'd':'d', 's1':'s1', 's2':'s2'}
         boolean = {'False':False, 'True':True}
-        topofile = self.topofile.get()
-        parent_directory = self.parent_directory.get() 
-        morsefile = self.morsefile.get()
+        topofile = io_functions.path_to_string(self.topofile.get())
+        parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
+        morsefile = io_functions.path_to_string(self.morsefile.get())
         newfile = self.newfile.get()
         atom_style = self.atom_style.get()
         ff_class = tk2ff[self.ff_class.get()]

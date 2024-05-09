@@ -358,8 +358,8 @@ class free_volume_GUI:
         # Get information from GUI
         # Get information from GUI
         boolean = {'False':False, 'True':True}
-        topofile = self.topofile.get()
-        parent_directory = self.parent_directory.get() 
+        topofile = io_functions.path_to_string(self.topofile.get())
+        parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
         boundary = self.boundary.get()
         max_voxel_size = float(self.max_voxel_size.get())
         try:
