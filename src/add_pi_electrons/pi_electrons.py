@@ -78,7 +78,7 @@ class Atom: pass # .type .molid .charge .x .y .z .ix. iy .iz .comment
 class Bond: pass  # .type .atomids = (atom1id, atom2id)
 class Angle: pass  # .type .atomids = (atom1id, atom2id, atom3id)
 class Coeff_class: pass  # .type .coeffs = []   
-def add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset_box_dims=True):
+def add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset_simulation_cell):
     #######################################################
     # Exit if neighbor_charge_constraint is not supported #
     #######################################################
@@ -328,8 +328,8 @@ def add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset
             if newdim < box_corner:
                 newdim = dim
         return newdim
-    if reset_box_dims and m.xy == 0 or m.xz == 0 or m.yz == 0:
-        log.out('Resetting simulation cell dimensions after adding pi-electrons.')
+    if reset_simulation_cell and m.xy == 0 and m.xz == 0 and m.yz == 0:
+        log.out('Resetting simulation cell dimensions after adding pi-electrons ...')
         x = []; y = []; z = [];
         for i in m.atoms:
             atom = m.atoms[i]

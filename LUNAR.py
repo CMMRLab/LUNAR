@@ -242,8 +242,8 @@ class LUNAR:
         import add_pi_electrons as a
 
         # Run add_pi_electrons_GUI
-        add_pi_electrons_GUI(a.topofile, a.types2convert, a.atom_style, a.reset_charges, a.net_zero_charge, a.convert2cg1,
-                             a.add_pi_electrons, a.parent_directory, a.newfile, a.include_type_labels, a.neighbor_charge_constraint, self.GUI_zoom)
+        add_pi_electrons_GUI(a.topofile, a.types2convert, a.atom_style, a.reset_charges, a.net_zero_charge, a.convert2cg1, a.add_pi_electrons,
+                             a.parent_directory, a.newfile, a.include_type_labels, a.neighbor_charge_constraint, a.reset_simulation_cell, self.GUI_zoom)
         return
     
     # auto_cluster_analysis GUI Run

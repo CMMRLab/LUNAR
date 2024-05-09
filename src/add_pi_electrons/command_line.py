@@ -25,7 +25,8 @@ python3 add_pi_electrons.py -topo PFA_carb_2300K_2GPa_2000ps_typed_IFF_GT.data -
 import sys
 
 
-def print_man_page(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons, parent_directory, newfile, include_type_labels, neighbor_charge_constraint):
+def print_man_page(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
+                   parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell):
 
     
     # print general command line options
@@ -168,6 +169,20 @@ def print_man_page(topofile, types2convert, atom_style, reset_charges, net_zero_
     print('    in types2convert to "cg1" consistent parameters. T is for True and F is for False. Example usage:')
     print('        python3 add_pi_electrons.py -convert2cg1 T')
     
+    # print -reset-box option
+    print(f'\n -reset-box or -rb <T|F>   add_pi_electrons variable: reset_simulation_cell    hard coded: {reset_simulation_cell}')
+    print('    Command line option to to reset the simulation cell size after adding pi-electrons or to not reset the simulation cell size.')
+    print('    If the Boolean is True, the simulation cell size will be reset and if the Boolean is False, the simulation cell size will not')
+    print('    be reset. This option is useful for when add_pi_electrons is True for some system types. When a pi-electron is added it inherits')
+    print('    the image flag from the carbon atom that it is added to and LAMMPS will rewrap and atoms that are outside of the simulation cell')
+    print('    when reading the file. However, some systems like a graphite system may have a simulation cell size that is too small for adequate')
+    print('    re-wrapping of the pi-electron and it may cause errors. In these cases, it is beneficial to reset the simulation cell size. When')
+    print('    the simulation cell size is reset the span of all atoms is found and 0.5 angstrom buffer is added to the max span of all the atoms.')
+    print('    If the new simulation cell size becomes smaller than the original simulation cell, the original simulation cell size in that')
+    print('    direction will be used instead (i.e. this operation will only ever grow a simulation cell and never shrink the simulation cell).')
+    print('    Example usage:')
+    print('        python3 add_pi_electrons.py -reset-box T')
+    
     # print -pi-electrons option
     print(f'\n -pi-electrons or -pie <T|F>   add_pi_electrons variable: convert2cg1    hard coded: {convert2cg1}')
     print('    Command line option to add pi electrons to atom TypeIDs in types2convert. Usage  will result in the')
@@ -206,7 +221,8 @@ def print_man_page(topofile, types2convert, atom_style, reset_charges, net_zero_
 
 # Class to update inputs
 class inputs:
-    def __init__(self, commandline_inputs, topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons, parent_directory, newfile, include_type_labels, neighbor_charge_constraint):
+    def __init__(self, commandline_inputs, topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
+                 parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell):
         
         # Give access to inputs (update later on if command line over ride is given)
         self.commandline_inputs = commandline_inputs
@@ -221,6 +237,7 @@ class inputs:
         self.add_pi_electrons = add_pi_electrons
         self.include_type_labels = include_type_labels 
         self.neighbor_charge_constraint = neighbor_charge_constraint
+        self.reset_simulation_cell = reset_simulation_cell
         
         
         # Check that the given command line inputs are even for alternating tags/tag-inputs
@@ -237,17 +254,18 @@ class inputs:
         
         # Check that tag is supported and log if tag from the command line
         # set supported tags
-        supported_tags = ['-topo', '-dir', '-newfile', '-atomstyle', '-types', '-reset-charges', '-charge0', '-convert2cg1', '-pi-electrons', '-type-labels', '-neigh_charge']
+        supported_tags = ['-topo', '-dir', '-newfile', '-atomstyle', '-types', '-reset-charges', '-charge0', '-convert2cg1',
+                          '-pi-electrons', '-type-labels', '-neigh_charge', '-reset-box']
         
         # set shortcut_tags mapping
-        shortcut_tags = {'-t':'-topo', '-d':'-dir', '-nf':'-newfile', '-as':'-atomstyle', '-t2c':'-types', '-tl':'-type-labels',
+        shortcut_tags = {'-t':'-topo', '-d':'-dir', '-nf':'-newfile', '-as':'-atomstyle', '-t2c':'-types', '-tl':'-type-labels', '-rb':'-reset-box',
                          '-rq':'-reset-charges', '-q0':'-charge0', '-cg1':'-convert2cg1', '-pie':'-pi-electrons', '-nq':'-neigh_charge'}
         
         # set default variables
         default_variables ={'-topo': self.topofile, '-dir':self.parent_directory, '-newfile': self.newfile, '-atomstyle': self.atom_style,
                             '-types':self.types2convert, '-reset-charges': self.reset_charges, '-charge0':self.net_zero_charge,
                             '-convert2cg1':self.convert2cg1, '-pi-electrons':self.add_pi_electrons, '-type-labels': self.include_type_labels,
-                            '-neigh_charge':self.neighbor_charge_constraint}
+                            '-neigh_charge':self.neighbor_charge_constraint, '-reset-box':self.reset_simulation_cell}
         
         # set tag/tag-input pair as empty string and update
         tags = {i:'' for i in supported_tags}
@@ -354,6 +372,11 @@ class inputs:
         if tags['-type-labels']:
             self.include_type_labels = T_F_string2boolean('-type-labels', (tags['-type-labels']))
             print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-type-labels', self.include_type_labels))
+            
+        # set new -reset-box option and print confirmation
+        if tags['-reset-box']:
+            self.reset_simulation_cell = T_F_string2boolean('-reset-box', (tags['-reset-box']))
+            print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-reset-box', self.reset_simulation_cell))
         
         # print buffer
         print('\n\n')

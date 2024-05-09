@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.5
-April 1st, 2024
+Revision 1.6
+May 9th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -34,8 +34,8 @@ import os
 #############################################################
 ### Main function to perform all adding pi-electrons task ###
 #############################################################
-def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons, parent_directory,
-         newfile, include_type_labels, neighbor_charge_constraint, commandline_inputs=[], log=io_functions.LUNAR_logger()):
+def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons, parent_directory, newfile, 
+         include_type_labels, neighbor_charge_constraint, reset_simulation_cell, commandline_inputs=[], log=io_functions.LUNAR_logger()):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
@@ -48,8 +48,8 @@ def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, co
     # if -opt or -man option is in commandline_inputs print options and stop code execution
     if '-opt' in commandline_inputs or  '-man' in commandline_inputs:
         # call man page and exit if '-opt' or '-man' is provided at the command line
-        command_line.print_man_page(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1,
-                                    add_pi_electrons, parent_directory, newfile, include_type_labels, neighbor_charge_constraint)
+        command_line.print_man_page(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
+                                    parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell)
         sys.exit()
         
     ###################################################################################
@@ -57,8 +57,8 @@ def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, co
     ###################################################################################
     if '-opt' not in commandline_inputs and commandline_inputs:    
         # call inputs for commandline over rides
-        over_rides = command_line.inputs(commandline_inputs, topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1,
-                                         add_pi_electrons, parent_directory, newfile, include_type_labels, neighbor_charge_constraint)
+        over_rides = command_line.inputs(commandline_inputs, topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
+                                         parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell)
         
         # Set new inputs from over_rides class
         topofile = over_rides.topofile
@@ -72,12 +72,13 @@ def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, co
         add_pi_electrons = over_rides.add_pi_electrons
         include_type_labels = over_rides.include_type_labels
         neighbor_charge_constraint = over_rides.neighbor_charge_constraint
+        reset_simulation_cell = over_rides.reset_simulation_cell
     
     ###########################################
     # Initialize some preliminary information #
     ###########################################
     # set version and print starting information to screen
-    version = 'v1.5 / 1 April 2024'
+    version = 'v1.6 / 9 May 2024'
     log.out(f'\n\nRunning add_pi_electrons {version}')
     log.out(f'Using Python version {sys.version}')
     
@@ -167,7 +168,7 @@ def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, co
         if net_zero_charge and neighbor_charge_constraint in ['check-neighbors', 'accumulate-carbon', 'accumulate-pi-electron']:
             log.warn(f'WARNING net_zero_charge is {net_zero_charge} and neighbor_charge_constraint is {neighbor_charge_constraint}. The net_zero_charge should likely be set to False.')
         log.out('Adding pi electrons and updating coeffs/charges. Created:')
-        m = pi_electrons.add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset_box_dims=True)
+        m = pi_electrons.add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset_simulation_cell)
         
         
     #####################################################################################################

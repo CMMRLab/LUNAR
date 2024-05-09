@@ -36,8 +36,8 @@ def s2s_i2i(inlst):
 # LUNAR/add_pi_electrons GUI #
 ##############################
 class add_pi_electrons_GUI:
-    def __init__(self, topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1,
-                 add_pi_electrons, parent_directory, newfile, include_type_labels, neighbor_charge_constraint, GUI_zoom):
+    def __init__(self, topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
+                 parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell, GUI_zoom):
         
         # Find present working directory
         self.pwd = os.getcwd()
@@ -87,21 +87,21 @@ class add_pi_electrons_GUI:
         self.inputs_frame.grid(row=0, column=0, padx=xpadding, pady=ypadding)
         
         # topofile selection button
-        self.topofile = tk.Entry(self.inputs_frame, width=int(1.2*maxwidth), font=font_settings)
+        self.topofile = tk.Entry(self.inputs_frame, width=int(1.4*maxwidth), font=font_settings)
         self.topofile.insert(0, topofile)
         self.topofile.grid(column=1, row=0)
         self.topofile_button = tk.Button(self.inputs_frame, text='topofile', font=font_settings, command=self.topofile_path)
         self.topofile_button.grid(column=0, row=0)
 
         # parent_directory entry
-        self.parent_directory = tk.Entry(self.inputs_frame, width=int(1.2*maxwidth), font=font_settings)
+        self.parent_directory = tk.Entry(self.inputs_frame, width=int(1.4*maxwidth), font=font_settings)
         self.parent_directory.insert(0, parent_directory)
         self.parent_directory.grid(column=1, row=4)
         self.dir_button = tk.Button(self.inputs_frame, text='parent_directory', font=font_settings, command=self.directory_path)
         self.dir_button.grid(column=0, row=4)
         
         # newfile entry
-        self.newfile = tk.Entry(self.inputs_frame, width=int(1.2*maxwidth), font=font_settings)
+        self.newfile = tk.Entry(self.inputs_frame, width=int(1.4*maxwidth), font=font_settings)
         self.newfile.insert(0, newfile)
         self.newfile.grid(column=1, row=5)
         self.newfile_label = tk.Label(self.inputs_frame, text='newfile', font=font_settings)
@@ -163,26 +163,34 @@ class add_pi_electrons_GUI:
         
         # include_type_labels drop down menu
         styles = [True, False]
+        self.reset_simulation_cell = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/8.5), font=font_settings)
+        self.reset_simulation_cell.current(styles.index(reset_simulation_cell))
+        self.reset_simulation_cell.grid(column=5, row=1)
+        self.reset_simulation_cell_label = tk.Label(self.options_frame, text='reset_simulation_cell', font=font_settings)
+        self.reset_simulation_cell_label.grid(column=5, row=0)
+        
+        # include_type_labels drop down menu
+        styles = [True, False]
         self.include_type_labels = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/8.5), font=font_settings)
         self.include_type_labels.current(styles.index(include_type_labels))
-        self.include_type_labels.grid(column=5, row=1)
+        self.include_type_labels.grid(column=0, row=3)
         self.include_type_labels_label = tk.Label(self.options_frame, text='include_type_labels', font=font_settings)
-        self.include_type_labels_label.grid(column=5, row=0)
+        self.include_type_labels_label.grid(column=0, row=2)
         
         # neighbor_charge_constraint drop down menu
         styles = ['check-neighbors', 'accumulate-carbon', 'accumulate-pi-electron', 'accumulate-neighbor', 'none']
-        self.neighbor_charge_constraint = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/4), font=font_settings)
+        self.neighbor_charge_constraint = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/2.75), font=font_settings)
         self.neighbor_charge_constraint.current(styles.index(neighbor_charge_constraint))
-        self.neighbor_charge_constraint.grid(column=0, row=3, columnspan=2)
+        self.neighbor_charge_constraint.grid(column=1, row=3, columnspan=2)
         self.neighbor_charge_constraint_label = tk.Label(self.options_frame, text='neighbor_charge_constraint', font=font_settings)
-        self.neighbor_charge_constraint_label.grid(column=0, row=2, columnspan=2)
+        self.neighbor_charge_constraint_label.grid(column=1, row=2, columnspan=2)
         
         # types2convert entry
         self.types2convert = tk.Entry(self.options_frame, width=int(maxwidth/1.125), font=font_settings)
         self.types2convert.insert(0, ','.join([str(i) for i in types2convert]))
-        self.types2convert.grid(column=2, row=3, columnspan=4)
+        self.types2convert.grid(column=3, row=3, columnspan=4)
         self.types2convert_label = tk.Label(self.options_frame, text='types2convert (comma separated w/no whitespace)', font=font_settings)
-        self.types2convert_label.grid(column=2, row=2, columnspan=4)
+        self.types2convert_label.grid(column=3, row=2, columnspan=4)
         
 
         
@@ -262,6 +270,7 @@ class add_pi_electrons_GUI:
         reset_charges = boolean[self.reset_charges.get()]
         net_zero_charge = boolean[self.net_zero_charge.get()]
         add_pi_electrons = boolean[self.add_pi_electrons.get()]
+        reset_simulation_cell = boolean[self.reset_simulation_cell.get()]
         include_type_labels = boolean[self.include_type_labels.get()]
         neighbor_charge_constraint = self.neighbor_charge_constraint.get()
         
@@ -269,7 +278,7 @@ class add_pi_electrons_GUI:
         if valid_inputs:
             try: 
                 main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
-                     parent_directory, newfile, include_type_labels, neighbor_charge_constraint, log=log)
+                     parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell, log=log)
             except Exception as error:
                 log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
         self.popup(log.logged, title='Outputs')
@@ -299,6 +308,7 @@ class add_pi_electrons_GUI:
         reset_charges = boolean[self.reset_charges.get()]
         net_zero_charge = boolean[self.net_zero_charge.get()]
         add_pi_electrons = boolean[self.add_pi_electrons.get()]
+        reset_simulation_cell = boolean[self.reset_simulation_cell.get()]
         include_type_labels = boolean[self.include_type_labels.get()]
         neighbor_charge_constraint = self.neighbor_charge_constraint.get()
         
@@ -316,6 +326,8 @@ class add_pi_electrons_GUI:
                     line = psm.parse_and_modify(line, parent_directory, stringflag=True, splitchar='=')
                 if line.startswith('include_type_labels') and inputsflag:
                     line = psm.parse_and_modify(line, include_type_labels, stringflag=False, splitchar='=')
+                if line.startswith('reset_simulation_cell') and inputsflag:
+                    line = psm.parse_and_modify(line, reset_simulation_cell, stringflag=False, splitchar='=')
                 if line.startswith('newfile') and inputsflag:
                     line = psm.parse_and_modify(line, newfile, stringflag=True, splitchar='=')
                 if line.startswith('atom_style') and inputsflag:

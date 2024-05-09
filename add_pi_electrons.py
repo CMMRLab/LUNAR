@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.5
-April 1st, 2024
+Revision 1.6
+May 9th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -146,7 +146,7 @@ newfile = ':_pi_electrons'
 #                                                                                                            #
 # Update neighbor_charge_constraint as needed.                                                               #
 ##############################################################################################################
-neighbor_charge_constraint = 'none'
+neighbor_charge_constraint = 'accumulate-neighbor'
 
 
 ##############################################################################################################
@@ -159,7 +159,7 @@ neighbor_charge_constraint = 'none'
 #                                                                                                            #
 # Update convert2cg1 as desired.                                                                             #
 ##############################################################################################################
-convert2cg1 = False
+convert2cg1 = True
 
 
 ##############################################################################################################
@@ -203,7 +203,7 @@ reset_charges = False
 #                                                                                                            #
 # Update net_zero_charge as desired.                                                                         #
 ##############################################################################################################
-net_zero_charge =  False
+net_zero_charge = False
 
 
 ##############################################################################################################
@@ -246,6 +246,25 @@ atom_style = 'full'
 # Update parent_directory as desired.                                                                        #
 ##############################################################################################################
 parent_directory = 'topofile'
+
+
+##############################################################################################################
+# Python boolean variable (True or False) to reset the simulation cell size after adding pi-electrons or to  #
+# not reset the simulation cell size. If the Boolean is True, the simulation cell size will be reset and if  #
+# the Boolean is False, the simulation cell size will not be reset. This option is useful for when           #
+# add_pi_electrons is True for some system types. When a pi-electron is added it inherits the image flag     #
+# from the carbon atom that it is added to and LAMMPS will rewrap and atoms that are outside of the          #
+# simulation cell when reading the file. However, some systems like a graphite system may have a simulation  #
+# cell size that is too small for adequate re-wrapping of the pi-electron and it may cause errors. In these  #
+# cases, it is beneficial to reset the simulation cell size. When the simulation cell size is reset the span #
+# of all atoms is found and 0.5 angstrom buffer is added to the max span of all the atoms. If the new        #
+# simulation cell size becomes smaller than the original simulation cell, the original simulation cell size  #
+# in that direction will be used instead (i.e. this operation will only ever grow a simulation cell and      #
+# never shrink the simulation cell).                                                                         #
+#                                                                                                            #
+# Update reset_simulation_cell as desired.                                                                   #
+##############################################################################################################
+reset_simulation_cell = False
 
 
 ##############################################################################################################
@@ -292,12 +311,12 @@ if __name__ == "__main__":
     if use_GUI or '-gui' in commandline_inputs:
         from src.add_pi_electrons.GUI import add_pi_electrons_GUI 
         print('\n\n\nadd_pi_electrons is currently running in GUI mode, where all GUI inputs are intialized from add_pi_electrons.\n\n\n')
-        add_pi_electrons_GUI(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1,
-                             add_pi_electrons, parent_directory, newfile, include_type_labels, neighbor_charge_constraint, GUI_zoom)
+        add_pi_electrons_GUI(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
+                             parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell, GUI_zoom)
     else:
         # Run main convert2graphite
-        main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
-             parent_directory, newfile, include_type_labels, neighbor_charge_constraint, commandline_inputs=commandline_inputs)
+        main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons, parent_directory,
+             newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell, commandline_inputs=commandline_inputs)
 
 
 
