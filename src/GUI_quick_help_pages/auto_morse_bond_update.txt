@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 5/3/2024
+# Last edited 5/13/2024
 #
 ************
 * Overview *
@@ -88,6 +88,68 @@
   include_type_labels
     A drop-down menu to select the Boolean to include LAMMPS TypeLabels in the written LAMMPS datafile If the Boolean is True TypeLabels will be
     written in files, if the Boolean is False the written files will use the standard LAMMPS TypeIDs.
+	
+  include_rcut
+    A drop-down menu to select the Boolean to include a rcut value in the Morse bond coefficients, which allows for the shifting of the Morse
+    bond to create near zero energy discontinuity once a bond is broken. This Morse bond shifting has been shown to help stabilize systems when
+    using "fix bond/break" using the "fix temp/csvr", canonical sampling thermostat. The standard Morse bond parameters layout is described below
+    and will result from setting include_rcut as False, which is compatible with the standard LAMMPS Morse bond potential.
+      Bond Coeffs  # morse
+      1  morse      D  r0  alpha 
+	  
+    If include_rcut is True, the Morse bond parameters layout is described below and is only compatible if you compile LAMMPS with the
+    USER-MORSE/active/bond_morse.cpp and USER-MORSE/active/bond_morse.h files.
+      Bond Coeffs  # morse
+      1  morse      D  r0  alpha  rcut
+    Where the rcut value will shift the Morse bonding potential as shown in dark blue below and rcut is controlled by the r0 and bondbreak_scale
+    via rcut = r0*bondbreak_scale.
+	
+  min_bond_length
+    An entry to supply a float value that sets the minimum bond length to update a harmonic bond to a Morse bond. This option can be used in
+    conjunction with Bond CoeffIDs 2 skip to control which bonds are updated to Morse bonds.
+	
+  bond_break_scale
+    An entry to supply float value to serve as a multiplier value to the equilibrium r0value of each bondTypeID. The purpose of bondbreak_scale
+    is to adjust the rcut value in the LAMMPS include the file that auto_morse_bond_update.py can write if files2write write_bondbreak is True,
+    which auto-generates "fix bond/break" commands with rcut = r0*bondbreak_scale. The r0*bondbreak_scale is consistent with how IFF-R has been
+    defined to be used with the "fix bond/break" command, where the default range of bondbreak_scale is 1.75-2.0.
+
+*****************************
+* Plot/Alphas2check Options *
+*****************************
+
+  plot start radius
+    An entry to supply float value to set the starting value for plotting the fit Morse bond potential (almost always should be zero).
+	
+  plot end radius
+    An entry to supply float value to set the ending value for plotting the fit Morse bond potential (almost always should be 8.0).
+	
+  plot radius increment
+    An entry to supply float value to set the increment of the radius data (almost always should be 0.01).
+	
+  smallest alpha
+    An entry to supply float value to the lower bound for alpha parameters (almost always should be 1.0).
+	
+  largest alpha
+    An entry to supply float value to the upper bound for alpha parameters (almost always should be 3.5).
+	
+  alpha increment
+    An entry to supply float value to set the increment of the alpha values to fit (almost always should be 0.1).
+	
+***********************
+* Files2write Options *
+***********************
+
+  write_datafile
+    A drop-down menu to select the Boolean to write a LAMMPS datafile with new Morse bonds defined and possible modifications of any
+    crossterms in class2 force fields depending on zero_effected_xterms Boolean option.
+	
+  write_pdffile
+    A drop-down menu to select the Boolean to write .pdf file of all fit Morse bond potentials around the harmonic bond potential.
+	
+  write_bondbreak
+    A drop-down menu to select the Boolean to write LAMMPS "include" type of file with "fix bond/break" commands set based on bondbreak_scale
+    and include_rcut Boolean options.
 	
 ***********
 * Buttons *
