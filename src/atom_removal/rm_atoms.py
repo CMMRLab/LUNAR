@@ -7,7 +7,6 @@ Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
 """
-
 # Class to rebuild m class with atomIDs removed and remapped with atoms, bonds, angles, dihedrals, impropers, and coeffs
 class Atom: pass # .type .molid .charge .x .y .z .ix. iy .iz .comment
 class Bond: pass  # .type .atomids = [atom1id, atom2id]
@@ -79,9 +78,71 @@ class constructor:
                 log.out('    Identifying atoms based on atomIDs')
             elif method == 'typeIDs':
                 log.out('    Identifying atoms based on TypeIDs')
+            elif method == 'cluster-mass':
+                log.out('    Identifying atoms based on mass of cluster')
+            elif method == 'cluster-size':
+                log.out('    Identifying atoms based on size of cluster')
             else:
                 log.error(f"ERROR trying to remove atoms with method = {method}, currently supported methods are 'atomIDs' or 'typeIDs'")
-
+                
+        # If method is mass perform cluster analsis
+        if method in ['cluster-mass', 'cluster-size']:
+            # Check for proper inputs (only one value)
+            if len(atoms2remove) != 1:
+                log.error(f"ERROR using {method} method, but input in atoms2remove {str(atoms2remove)} is not a single value.")
+            elif len(m.bonds) == 0:
+                log.error(f"ERROR using {method} method, no bonds exists to perform cluster analysis.")
+            else:
+                # Generate graph
+                graph = {i:[] for i in m.atoms}
+                for i in m.bonds:
+                    id1, id2 = m.bonds[i].atomids
+                    graph[id1].append(id2)
+                    graph[id2].append(id1)
+                
+                # Find clusters
+                clusters = set([]) # { (tuple of atoms in cluster1), (nclusters) }
+                checked = {ID:False for ID in m.atoms}
+                size_total = len(m.atoms); mass_total = 0
+                for ID in graph:
+                    mass_total += m.masses[m.atoms[ID].type].coeffs[0]
+                    if checked[ID]: continue
+                    visited=set([ID]); queue=[ID];
+                    while queue:
+                        s = queue.pop(0) 
+                        for neighbor in graph[s]:
+                            if checked[neighbor]: continue
+                            visited.add(neighbor)
+                            queue.append(neighbor)
+                            checked[neighbor]=True
+                    clusters.add( tuple(sorted(visited)) )
+                clusters = sorted(clusters, key=lambda x: x[0]) # Sort all clusters based on 1st atomID in cluster
+                clusters = sorted(clusters, key=len, reverse=True) # Sort all clusters by number of atoms
+                
+                # analyze clusters and add cluster_mass and cluster_size to atoms object
+                def getmass(c):                                                                                                                  
+                    return sum([m.masses[m.atoms[i].type].coeffs[0] for i in c])
+                log.out('\n\n    ------------------------------------Cluster Analysis------------------------------------')
+                log.out('    {:^10} {:^15} {:^15} {:^15} {:^15} {:^15}'.format('molID', 'size', '%size', 'mass', '%mass', 'status'))
+                log.out('    ----------------------------------------------------------------------------------------')  
+                for n, cluster in enumerate(clusters, 1):
+                    # print table
+                    psize = 0; pmass = 0; # Intialize as zeros and update
+                    mass = getmass(cluster); size = len(cluster);
+                    if size_total > 0: psize = 100*size/size_total
+                    if mass_total > 0: pmass = 100*mass/mass_total
+                    status = 'kept'
+                    if method == 'cluster-mass' and mass <= atoms2remove[0]: status = 'removed'
+                    if method == 'cluster-size' and size <= atoms2remove[0]: status = 'removed'
+                    log.out('    {:^10} {:^15} {:^15.2f} {:^15.2f} {:^15.2f} {:^15}'.format(n, size, psize, mass, pmass, status))
+                    
+                    # add to m.atoms
+                    for i in cluster:
+                        m.atoms[i].cluster_mass = mass
+                        m.atoms[i].cluster_size = size
+                        m.atoms[i].cluster_ID = n
+                log.out('\n\n')
+            
         # Start removing atoms
         atomID_map = {} # { orginal atomID : new atomID }
         atoms = sorted(m.atoms.keys()) # sort atoms to keep atomIDs as close as possible
@@ -92,6 +153,11 @@ class constructor:
                 if i in atoms2remove: saveatom = False
             elif method == 'typeIDs':
                 if m.atoms[i].type in atoms2remove: saveatom = False
+            elif method == 'cluster-mass':
+                if m.atoms[i].cluster_mass <= atoms2remove[0]: saveatom = False
+            elif method == 'cluster-size':
+                if m.atoms[i].cluster_size <= atoms2remove[0]: saveatom = False
+            
             if saveatom:
                 atom = m.atoms[i]
                 self.natoms += 1 # increment atom count

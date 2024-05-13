@@ -533,12 +533,50 @@ Tg_CTE_piecewise_mode = {'logfile' : 'EXAMPLES\log_analysis\properties=Tg_and_CT
 
 
 #----------------------------------------------------------------------------------------------------------------#
+# min_density_mode built by Josh Kemppainen 5/13/2024 as an example density analysis mode that is loadable. These#
+# settings maybe adjusted as needed. For example the 'xdata' is set as Step and then an 'xscale' value of        #
+# '1/2000' is applied to convert the timesteps to picoseconds since a 0.5 fs timestep was used to produce the    #
+# example log file.                                                                                              #
+#----------------------------------------------------------------------------------------------------------------#
+min_density_mode = {'logfile' : 'EXAMPLES/log_analysis/property=density_ts=0.5.log.lammps',
+                    'keywords': ['Step', 'Temp'],
+                    'sections': '1,2',
+                       'xdata': 'Step',
+                       'ydata': 'Density',
+                      'xlabel':'Time (ps)',
+                      'ylabel':'Density ($g/cm^3$)',
+                    'xscale'  : '1/2000',
+                    'yscale'  : '', 
+                    'analysis': [['minimum', 0, 2100, 'window=10', 'Density minimum']]
+                   }
+
+#----------------------------------------------------------------------------------------------------------------#
+# min_density_mode built by Josh Kemppainen 5/13/2024 as an example density analysis mode that is loadable. These#
+# settings maybe adjusted as needed. For example the 'xdata' is set as Step and then an 'xscale' value of        #
+# '1/2000' is applied to convert the timesteps to picoseconds since a 0.5 fs timestep was used to produce the    #
+# example log file.                                                                                              #
+#----------------------------------------------------------------------------------------------------------------#
+max_density_mode = {'logfile' : 'EXAMPLES/log_analysis/property=density_ts=0.5.log.lammps',
+                    'keywords': ['Step', 'Temp'],
+                    'sections': '1,2',
+                       'xdata': 'Step',
+                       'ydata': 'Density',
+                      'xlabel':'Time (ps)',
+                      'ylabel':'Density ($g/cm^3$)',
+                    'xscale'  : '1/2000',
+                    'yscale'  : '', 
+                    'analysis': [['maximum', 0, 2100, '', 'Density maximum']]
+                   }
+
+#----------------------------------------------------------------------------------------------------------------#
 # Group all of the modes into one dictionary. You may then open each mode in the GUI based on the name provided  #
 # as the key to the mode dictionary. If more modes are defined above, you MUST set them in this dictionary and   #
 # provide a key to access the mode from within the GUI, when the GUI is running.                                 #                                                                            
 #----------------------------------------------------------------------------------------------------------------#
 modes = {'blank': blank_mode,
          'density': density_mode,
+         'minimum density': min_density_mode,
+         'maximum density': max_density_mode,
          'potential energy': potential_energy_mode,
          'tensile modulus x': tensile_modulus_x_mode,
          'tensile modulus y': tensile_modulus_y_mode,

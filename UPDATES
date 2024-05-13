@@ -1,0 +1,29 @@
+--------------------------------------------
+Developers
+--------------------------------------------
+JDK = Josh Dan Kemppainen (jdkemppa@mtu.edu)
+
+
+-------------------------------------------------------------------------------------------------------------
+Notes for formatting this file
+-------------------------------------------------------------------------------------------------------------
+- Only spaces will be used to create whitespace (i.e. no tabs)
+- The maximum length of each line should be limited to 110 column (i.e. no text should be placed beyound 110)
+- Sections of file will be identified by placing header type info between two horizontal lines
+- Two empty lines should be placed between sections
+
+
+-------------------------------------------------------------------------------------------------------------
+LUNAR (version 13May2024)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+10May2024          JDK         - Added UPDATES log
+                               - atom_typing: enforced include_nta_comments boolean for General:N atom types
+
+13May2024          JDK         - GUIs: Added traceback exception handling to GUI log
+                               - atom_removal: added ability to remove atoms based on cluster-size or cluster
+                                 mass cutoffs 
+                               - log_analysis.py: added checkbox to GUI to replace logfile when loading mode 
+                               - log_analysis.py: added minimum/maximum analysis methods
+                               - Updated manual to reflect changes

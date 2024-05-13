@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-December 1st, 2023
+May 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import traceback
 import math
 import os
 
@@ -436,8 +437,8 @@ class all2lmp_GUI:
                       use_auto_equivalence, use_assumed_auto_fill, reset_molids, reset_charges, write_txt_comments,
                       write_bond_react, print_options, use_morse_bonds, include_type_labels, add2box, ignore_missing_parameters,
                       shift, rotate, commandline_inputs, log=log)
-            except Exception as error:
-                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
+            except Exception:
+                log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')
         return     
     

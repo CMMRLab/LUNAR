@@ -26,7 +26,7 @@ def print_man_page(topofile, parent_directory, newfile, atom_style, atoms2remove
     print('\n\natom_removal has been run with -opt or -man option to show the optional command line overrides available. Command line')
     print('option summary [-tag <tag-input>]:')
     print('python3 atom_removal.py [-topo <topo-filename>] [-dir <new directory name>] [-newfile <string>] [-atomstyle <atomstyle>]')
-    print('                        [-type-labels<T|F>] [-types <string of IDs>] [-method <atomIDs or TypeIDs>] <-gui> <-opt>|<-man>')
+    print('                        [-type-labels<T|F>] [-types <string of IDs>] [-method <atomIDs or TypeIDs or ...>] <-gui> <-opt>|<-man>')
 
 
     print('\n*NOTE: If the command line input options are not used the hard coded inputs in the inputs section of the atom_removal.py')
@@ -102,16 +102,24 @@ def print_man_page(topofile, parent_directory, newfile, atom_style, atoms2remove
     
     # print -atoms2remove option
     print(f'\n -atoms2remove or -a2r <string of IDs> atom_removal variable: atoms2remove    hard coded: {atoms2remove}')
-    print('    Command line option to set the list of atomIDs to remove from the system. Example usage:')
+    print('    Command line option to set the list of atomIDs or atomTypeIDs or mass cutoff or size cutoff to remove from the')
+    print('    system. NOTE for cluster-size or cluster-mass only a single value maybe supplied. Example usage:')
     print('        python3 atom_removal.py -atoms2remove 1,2')
     
     # print -method option
-    print(f'\n -method or -m <T|F>   atom_removal variable: include_type_labels    hard coded: {method}')
+    print(f'\n -method or -m <string>   atom_removal variable: include_type_labels    hard coded: {method}')
     print('    Command line option to set method of identifying which atoms to remove from the system. The following methods are supported:')
     print("       'atomIDs' will identify atoms based on atomIDs")
     print("       'typeIDs' will identify atoms based on atom typeIDs")
+    print("       'cluster-mass' will perform cluster analysis and identify atoms based on a cutoff value set in")
+    print('                      atoms2remove, where all cluster mass less than or equal to the cutoff value will')
+    print('                      be removed')
+    print("       'cluster-size' will perform cluster analysis and identify atoms based on a cutoff value set in")
+    print('                      atoms2remove, where all cluster sizes (number of atoms) less than or equal to the')
+    print('                      cutoff value will be removed')
     print('    Example usage:')
     print('        python3 atom_removal.py -method atomIDs')
+    print('        python3 atom_removal.py -method cluster-mass -atoms2remove 25.55')
     
     # print -type-labels option
     print(f'\n -type-labels or -tl <T|F>   atom_removal variable: include_type_labels    hard coded: {include_type_labels}')
@@ -241,9 +249,9 @@ class inputs:
             
         # set new -atoms2remove option and print confirmation
         if tags['-atoms2remove']:
-            try: self.atoms2remove = [int(i) for i in tags['-atoms2remove'].split(',')]
+            try: self.atoms2remove = [eval(i) for i in tags['-atoms2remove'].split(',')]
             except:
-                print(f'ERROR tag -atoms2remove atomID list could not be converted to ints {tags["-atoms2remove"]}'); sys.exit()
+                print(f'ERROR tag -atoms2remove atomID list could not be converted to ints or floats {tags["-atoms2remove"]}'); sys.exit()
             print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-atoms2remove', self.atoms2remove))
         
         # set new -type-labels option and print confirmation

@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-January 5th, 2024
+May 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import traceback
 import math
 import os
 
@@ -428,8 +429,8 @@ class auto_morse_bond_GUI:
             try: main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip,
                       radius_specs, alpha_specs, alpha_scale, files2write, atom_style, zero_effected_xterms,
                       bondbreak_scale, ff_class, include_type_labels, include_rcut, log=log)
-            except Exception as error:
-                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
+            except Exception:
+                log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs') 
         return     
     

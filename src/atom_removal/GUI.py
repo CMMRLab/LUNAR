@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-April 1st, 2024
+May 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import traceback
 import math
 import os
 
@@ -126,8 +127,8 @@ class atom_removal_GUI:
         self.include_type_labels_label.grid(column=1, row=0)
         
         # method drop down
-        styles = ['atomIDs', 'typeIDs']
-        self.method = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/9.5), font=font_settings)
+        styles = ['atomIDs', 'typeIDs', 'cluster-mass', 'cluster-size']
+        self.method = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/8), font=font_settings)
         self.method.current(styles.index(method))
         self.method.grid(column=2, row=1)
         self.method_label = tk.Label(self.options_frame, text='method', font=font_settings)
@@ -204,7 +205,7 @@ class atom_removal_GUI:
         parent_directory = self.parent_directory.get() 
         newfile = self.newfile.get()
         atom_style = self.atom_style.get()
-        try: atoms2remove = [int(i) for i in self.atoms2remove.get().split(',')]
+        try: atoms2remove = [eval(i) for i in self.atoms2remove.get().split(',')]
         except: 
             atoms2remove = []
             log.GUI_error('ERROR atoms2remove is an empty list')
@@ -215,8 +216,8 @@ class atom_removal_GUI:
         # Run LUNAR/atom_removal
         if valid_inputs:
             try: main(topofile, parent_directory, newfile, atom_style, atoms2remove, include_type_labels, method, log=log)
-            except Exception as error:
-                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
+            except Exception:
+                log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')
         return     
     
@@ -238,7 +239,7 @@ class atom_removal_GUI:
         parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
         newfile = self.newfile.get()
         atom_style = self.atom_style.get()
-        try: atoms2remove = [int(i) for i in self.atoms2remove.get().split(',')]
+        try: atoms2remove = [eval(i) for i in self.atoms2remove.get().split(',')]
         except: atoms2remove = []
         include_type_labels = boolean[self.include_type_labels.get()]
         method = self.method.get()

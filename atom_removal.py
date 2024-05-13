@@ -55,9 +55,16 @@ GUI_zoom = 100
 #################################################################################################################
 # Input variables for atom removal:                                                                             #
 #    topofile = LAMMPS .data with atom styles as full, charge, or molecular.                                    #
-#    atoms2remove = [1, 2, 3] list of atomIDs or TypeIDs to remove from the system                              #
-#    method = 'atomIDs' or 'TypeIDs', where 'atomIDs' will identify atoms based on atomIDs and 'TypeIDs' will   #
-#             identify atoms based on atom TypeIDs.                                                             #
+#    atoms2remove = [1, 2, 3] list of atomIDs, TypeIDs, cluster-size or cluster-mass cutoff to remove from the  #
+#                   system. NOTE for cluster-size or cluster-mass only a single value maybe supplied in list.   #
+#   method                                                                                                      #
+#     'atomIDs' will identify atoms based on atomIDs                                                            #
+#     'TypeIDs' will identify atoms based on atom TypeIDs                                                       #
+#     'cluster-mass' will perform cluster analysis and identify atoms based on a cutoff value set in            #
+#                    atoms2remove, where all cluster mass less than or equal to the cutoff value will be removed#                                                                      #
+#     'cluster-size' will perform cluster analysis and identify atoms based on a cutoff value set in            #
+#                    atoms2remove, where all cluster sizes (number of atoms) less than or equal to the cutoff   #
+#                    value will be removed                                                                      #
 #################################################################################################################
 topofile = 'EXAMPLES/atom_removal_test/pre1_typed_IFF_GT_merged.data'
 method = 'atomIDs'

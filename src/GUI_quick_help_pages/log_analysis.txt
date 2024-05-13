@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 4/15/2024
+# Last edited 4/13/2024
 #
 ************
 * Overview *
@@ -32,6 +32,8 @@
     - "hyperbola"
     - "piecewise-regression"
     - "spline-integration"
+    - "minimum"
+    - "maximum"
     - all other methods can leave this column empty
 
   Methods that use the "Misc settings" column (all keywords are lowercase)
@@ -103,6 +105,13 @@
       anything. Thus the default if not present is to do nothing. Examples:
         x=10; y=200;  # Will place a cursor at (10, 200) in the plot
         x=50; y=800;  # Will place a cursor at (50, 800) in the plot
+		
+    - "minimum" and "maxmimum"
+        window=<N>, where <N> is the number of data points to group and average together. The default window is 100 and will be applied if
+        entry is left empty. Examples:
+          window=50  # group 50 data points and average into one data point
+          window=75  # group 75 data points and average into one data point
+        After the moving average is applied the minimum or maximum Y-value on the moving average data will found and reported.
                  
   All methods will use "Name" column, however if left empty the code will create the name as analysis-<N>, where <N> is the index of the analysis
   in the GUI.   

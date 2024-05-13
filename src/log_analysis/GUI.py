@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-February 27th, 2024
+May 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -109,21 +109,25 @@ class GUI:
         # logfile selection button
         self.logfile = tk.Entry(self.inputs_frame, width=int(1.43*self.maxwidth), font=self.font_settings)
         self.logfile.insert(0, self.settings['modes'][self.settings['mode']]['logfile'])
-        self.logfile.grid(column=1, row=0, columnspan=2)
+        self.logfile.grid(column=1, row=0, columnspan=3)
         self.logfile_button = tk.Button(self.inputs_frame, text='logfile', font=self.font_settings, command=self.logfile_path)
         self.logfile_button.grid(column=0, row=0)
         
         # keywords
         modes = list(self.settings['modes'].keys())
-        self.mode_dropdown = ttk.Combobox(self.inputs_frame, values=modes, font=self.font_settings, width=int(0.95*self.maxwidth))
+        self.mode_dropdown = ttk.Combobox(self.inputs_frame, values=modes, font=self.font_settings, width=int(0.75*self.maxwidth))
         self.mode_dropdown.current(modes.index(self.mode))
         self.mode_dropdown.grid(column=1, row=1)
         self.mode_label = tk.Label(self.inputs_frame, text='mode', font=self.font_settings)
         self.mode_label.grid(column=0, row=1)
         
         # load file button
-        self.loadmode_button = tk.Button(self.inputs_frame, text='load mode', font=self.font_settings, width=int(self.maxwidth/3), command=self.load_mode)
+        self.loadmode_button = tk.Button(self.inputs_frame, text='load mode', font=self.font_settings, width=int(self.maxwidth/4), command=self.load_mode)
         self.loadmode_button.grid(column=2, row=1)
+        
+        self.replace = tk.IntVar()
+        self.load_replace_logfile = tk.Checkbutton(self.inputs_frame, text='Replace logfile when loading mode', variable=self.replace, onvalue=1, offvalue=0, command=self.print_selection)
+        self.load_replace_logfile.grid(column=3, row=1)
         
         # Add padding to all frames in self.inputs_frame
         for widget in self.inputs_frame.winfo_children():
@@ -223,7 +227,7 @@ class GUI:
         # file selection button and qty
         self.nanalysis = len(self.analysis)
         self.supported_methods = ['average', 'linear regression', 'moving average', 'hyperbola', 'piecewise-regression', 
-                                  'spline-integration', 'cursor', 'remove LAMMPS data', 'skip'];
+                                  'spline-integration', 'cursor', 'remove LAMMPS data', 'minimum', 'maximum', 'skip'];
         self.methods = []; self.xlos = []; self.xhis = []; self.miscs = []; self.names = [];
         for n in range(1, self.nanalysis+1):
             method, xlo, xhi, misc, name = self.analysis[n-1]
@@ -303,6 +307,12 @@ class GUI:
     #################################
     # Functions to call as commands #
     #################################
+    def print_selection(self):
+        if (self.replace.get()) == 1:
+            self.log.out(f'Will replace logfile when loading mode (var = {self.replace.get()})')
+        else:
+            self.log.out(f'Will NOT replace logfile when loading mode (var = {self.replace.get()})')
+    
     # Function to load mode
     def load_mode(self):
         # Get mode
@@ -310,8 +320,9 @@ class GUI:
         settings = self.settings['modes'][mode]
         
         # Start updating settings
-        self.logfile.delete(0, tk.END)
-        self.logfile.insert(0, settings['logfile'])
+        if (self.replace.get()) == 1:
+            self.logfile.delete(0, tk.END)
+            self.logfile.insert(0, settings['logfile'])
         
         self.keywords = ','.join(settings['keywords'])
         self.keywords_entry.delete(0, tk.END)
@@ -563,6 +574,30 @@ class GUI:
                         self.log.out('  {}'.format(label))
                         movavgdata = plot_parms(x=x_movavg, y=y_movavg, style='point', marker='.', line='-', size=4, label=label, shiftable=True)
                         data2plot.append(movavgdata)
+                        
+                    if method in ['minimum', 'maximum']:
+                        setting = self.get_misc_setting(misc)
+                        if 'window' in setting:
+                            window = setting['window']
+                        else: 
+                            window = 100;
+                            misc = 'default-window=100';
+                        x_movavg, y_movavg = self.moving_average(x, y, xlo, xhi, window)
+                        label = '{} ({})'.format(name, misc)
+                        movavgdata = plot_parms(x=x_movavg, y=y_movavg, style='point', marker='.', line='-', size=4, label=label, shiftable=True)
+                        data2plot.append(movavgdata)
+                        self.log.out(format_analysis(method, xlo, xhi, misc, name))
+                        self.log.out('  {}'.format(label))
+                        
+                        x_movavg = list(x_movavg); y_movavg = list(y_movavg)
+                        if method == 'minimum': y = min(y_movavg)
+                        if method == 'maximum': y = max(y_movavg)
+                        x =  x_movavg[y_movavg.index(y)]
+                        label = '{} (x={}, y={})'.format(name, x, y)
+                        minmaxdata = plot_parms(x=x, y=y, style='point', marker='o', line='-', size=8, label=label, shiftable=False)
+                        data2plot.append(minmaxdata)
+                        self.log.out('  {}'.format(label))
+                        
                     
                     if method == 'cursor':
                         setting = self.get_misc_setting(misc)

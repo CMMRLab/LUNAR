@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.3
-March 27th, 2024
+May 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import traceback
 import math
 import os
 
@@ -493,8 +494,8 @@ class bond_react_merge_GUI:
             try: main(files, parent_directory, newfile, atom_style, generate_map_file, write_rxn_mol2files, 
                       write_rxn_datafiles, write_moleculefiles, print_options, commandline_inputs, map_near_edge_rxn_charges,
                       molecule_file_options, include_type_labels, log=log)
-            except Exception as error:
-                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
+            except Exception:
+                log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')
         return   
     

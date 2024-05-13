@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-November 22nd, 2023
+May 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -17,6 +17,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import traceback
 import math
 import sys
 import os
@@ -171,8 +172,8 @@ class GUI:
         # Run LUNAR/lmp2SYBYLmol2
         if valid_inputs:
             try: main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=log)
-            except Exception as error:
-                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
+            except Exception:
+                log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')
         return  
     

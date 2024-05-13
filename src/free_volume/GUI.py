@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-January 1st, 2023
+May 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import traceback
 import math
 import os
 
@@ -337,8 +338,8 @@ class free_volume_GUI:
             try: main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory,
                       compute_free_volume_distributions, files2write, run_mode, probe_diameter,
                       vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, [], log=log)
-            except Exception as error:
-                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
+            except Exception:
+                log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')
         return  
     

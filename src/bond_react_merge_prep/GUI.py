@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-November 22nd, 2023
+May 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import traceback
 import math
 import os
 
@@ -199,8 +200,8 @@ class bond_react_merge_prep_GUI:
         # Run LUNAR/bond_react_merge_prep
         if valid_inputs:
             try: main(topofile, cta_file, newfile, atom_style, parent_directory, rm_unused_coeffs, log=log)
-            except Exception as error:
-                log.GUI_error('{}: {}'.format(type(error).__name__, str(error)))
+            except Exception:
+                log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')
         return 
 
