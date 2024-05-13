@@ -1,0 +1,15 @@
+# ignore python cache file
+__pycache__/
+src/__pycache__/
+src/add_pi_electrons/__pycache__/
+src/all2lmp/__pycache__/
+src/atom_removal/__pycache__/
+src/atom_typing/__pycache__/
+src/atom_typing/Gasteiger/__pycache__/
+src/atom_typing/typing/__pycache__/
+src/auto_morse_bond/__pycache__/
+src/bond_react_merge/__pycache__/
+src/bond_react_merge_prep/__pycache__/
+src/cell_builder/__pycache__/
+src/free_volume/__pycache__/
+src/log_analysis/__pycache__/
