@@ -150,6 +150,7 @@ class file:
                 # Break thermo data section if 'Loop time of' in string
                 elif 'Loop time of' in string: data_flag = False
                 elif 'Loop' in string and 'time' in string and 'of' in string: data_flag = False
+                elif 'ERROR' in line: data_flag = False
                     
                 # Add data to self.data if data_flag
                 if data_flag:
