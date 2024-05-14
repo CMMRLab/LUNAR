@@ -267,7 +267,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     # Read lammps data file
     if topofile.endswith('data') or topofile.endswith('dat') or topofile.endswith('data.gz') or topofile.endswith('dat.gz'):
         if os.path.isfile(topofile):
-            m = read_lmp.Molecule_File(topofile, method='forward', sections = ['Atoms', 'Bonds'])
+            m = read_lmp.Molecule_File(topofile, method='forward', sections = ['Atoms', 'Bonds', 'Velocities'])
             log.out(f'Read in {m.filename} LAMMPS datafile')
         else: log.error(f'ERROR lammps datafile: {topofile} does not exist'); sys.exit();
         
@@ -419,10 +419,11 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
        
     # write lammps datafile
     log.out('\n\nWriting LAMMPS datafile')
-    write_lmp.datafile(basename, atom_style, parameters, ff_class, version, include_type_labels, log)
+    if newfile != ':':
+        write_lmp.datafile(basename, atom_style, parameters, ff_class, version, include_type_labels, log)
     
     # write comments file if user desires this file
-    if write_txt_comments:
+    if write_txt_comments and newfile != ':':
         log.out('Writing verbose comment file')
         write_lmp.comments(basename, atom_style, parameters, ff_class, version, log)
         
@@ -459,7 +460,8 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     log.out_warnings_and_errors()
     
     # write log
-    log.write_logged(basename+'.log.lunar')
+    if newfile != ':':
+        log.write_logged(basename+'.log.lunar')
             
     # Change back to the intial directory to keep directory free for deletion
     os.chdir(pwd)

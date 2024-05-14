@@ -110,7 +110,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
         
         # find file and add to merge dictionary
         if os.path.isfile(files[i]):
-            merge[i] = read_lmp.Molecule_File(files[i], method='forward', sections=['Atoms', 'Bonds', 'Angles', 'Dihedrals', 'Impropers'])
+            merge[i] = read_lmp.Molecule_File(files[i], method='forward', sections=['Atoms', 'Bonds', 'Angles', 'Dihedrals', 'Impropers', 'Velocities'])
         else: log.error(f'ERROR lammps datafile: {files[i]} does not exist')
         
     # Check for duplicate filenames

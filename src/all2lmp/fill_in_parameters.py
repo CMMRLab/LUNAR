@@ -127,7 +127,7 @@ class get:
             self.nangletypes = 0; self.ndihedraltypes = 0; self.nimpropertypes = 0;
             
             # Find atoms info such as setting up atoms charge, molid, x-pos, y-pos, z-pos, and image flags along with the masses and pair_coeffs
-            self.atoms = find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_equivalence, ff_class, skip_printouts, log)    
+            self.atoms, self.velocities = find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_equivalence, ff_class, skip_printouts, log)    
             self.masses, self.mass_comment = find_reaxff_atom_parameters(frc, BADI, ff_class, log)
             
         
@@ -154,7 +154,7 @@ class get:
             sort_remap_atomids = True
             
             # Find atoms info such as setting up atoms charge, molid, x-pos, y-pos, z-pos, and image flags along with the masses and pair_coeffs
-            self.atoms = find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_equivalence, ff_class, skip_printouts, log)        
+            self.atoms, self.velocities = find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_equivalence, ff_class, skip_printouts, log)        
             self.masses, self.pair_coeffs, self.mass_comment, self.pair_comment = find_atom_parameters(frc, BADI, use_auto_equivalence, ff_class, skip_printouts, log)
             
             # Find bond_coeffs and then find bonds and reorder atomids to match bond coeff using sort_remap_atomids (Reordering is Not Necessary - might as well though for cleanliness)
@@ -252,6 +252,7 @@ def find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_a
     
     # Dictionaries to add info to
     atoms = {}   # {atom number : atom object}
+    velocities = {}  # {atom number : tuple of velocities}
 
     # If user wants molids compute them and reset them
     if reset_molids:
@@ -267,6 +268,9 @@ def find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_a
         atom = m.atoms[id1]  
         new_atom_type = nta[id1]
         additional_comments = ''
+        try: velocity = m.velocities[id1]
+        except: velocity = (0, 0, 0)
+        velocities[id1] = velocity
         
         # Check if atom type exists in .frc file
         if ff_class in [0, 1, 2, 'd', 'r']:
@@ -348,7 +352,7 @@ def find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_a
     log.out('  There are {} atoms in {} molecules in this file'.format(len(atoms), len(molecules)) )
     if abs(system_charge_sum) == 0.0: system_charge_sum = 0.0 # python tallying sometimes produces -0.0000 so reset to zero in this case
     log.out('  The total charge in the system is {:.4f}'.format(system_charge_sum) )
-    return atoms
+    return atoms, velocities
 
 ##########################################
 # Function for finding reaxff atom types #

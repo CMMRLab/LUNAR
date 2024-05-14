@@ -45,22 +45,25 @@ class GUI:
         # Find present working directory
         self.pwd = os.getcwd()
         self.filepath = self.pwd
+        self.modespath = settings['modes-dir']
         
         # Set defaults
         self.settings = settings
+        module = misc_funcs.import_file(settings['mode'])
+        mode = module.mode
         self.columns = ['Step'];
         self.mode = self.settings['mode']
-        self.xdata = self.settings['modes'][self.settings['mode']]['xdata']
-        self.ydata = self.settings['modes'][self.settings['mode']]['ydata']
+        self.xdata = mode['xdata']
+        self.ydata = mode['ydata']
         if self.xdata not in self.columns: self.columns.append(self.xdata)
         if self.ydata not in self.columns: self.columns.append(self.ydata)
-        self.keywords = self.settings['modes'][self.settings['mode']]['keywords']
-        self.sections = self.settings['modes'][self.settings['mode']]['sections']
-        self.xlabel = self.settings['modes'][self.settings['mode']]['xlabel']
-        self.ylabel = self.settings['modes'][self.settings['mode']]['ylabel']
-        self.xscale = self.settings['modes'][self.settings['mode']]['xscale']
-        self.yscale = self.settings['modes'][self.settings['mode']]['yscale']
-        self.analysis = self.settings['modes'][self.settings['mode']]['analysis']
+        self.keywords = mode['keywords']
+        self.sections = mode['sections']
+        self.xlabel = mode['xlabel']
+        self.ylabel = mode['ylabel']
+        self.xscale = mode['xscale']
+        self.yscale = mode['yscale']
+        self.analysis = mode['analysis']
         
         # Initialize window
         self.root = tk.Tk()
@@ -108,23 +111,19 @@ class GUI:
         
         # logfile selection button
         self.logfile = tk.Entry(self.inputs_frame, width=int(1.43*self.maxwidth), font=self.font_settings)
-        self.logfile.insert(0, self.settings['modes'][self.settings['mode']]['logfile'])
+        self.logfile.insert(0, mode['logfile'])
         self.logfile.grid(column=1, row=0, columnspan=3)
         self.logfile_button = tk.Button(self.inputs_frame, text='logfile', font=self.font_settings, command=self.logfile_path)
         self.logfile_button.grid(column=0, row=0)
         
-        # keywords
-        modes = list(self.settings['modes'].keys())
-        self.mode_dropdown = ttk.Combobox(self.inputs_frame, values=modes, font=self.font_settings, width=int(0.75*self.maxwidth))
-        self.mode_dropdown.current(modes.index(self.mode))
-        self.mode_dropdown.grid(column=1, row=1)
-        self.mode_label = tk.Label(self.inputs_frame, text='mode', font=self.font_settings)
-        self.mode_label.grid(column=0, row=1)
+        # modes
+        self.modefile = tk.Entry(self.inputs_frame, width=int(1.1*self.maxwidth), font=self.font_settings)
+        self.modefile.insert(0, settings['mode'])
+        self.modefile.grid(column=1, row=1)
+        self.modefile_button = tk.Button(self.inputs_frame, text='mode file', font=self.font_settings, command=self.modefile_path)
+        self.modefile_button.grid(column=0, row=1)        
         
-        # load file button
-        self.loadmode_button = tk.Button(self.inputs_frame, text='load mode', font=self.font_settings, width=int(self.maxwidth/4), command=self.load_mode)
-        self.loadmode_button.grid(column=2, row=1)
-        
+        # logfile replace
         self.replace = tk.IntVar()
         self.load_replace_logfile = tk.Checkbutton(self.inputs_frame, text='Replace logfile when loading mode', variable=self.replace, onvalue=1, offvalue=0, command=self.print_selection)
         self.load_replace_logfile.grid(column=3, row=1)
@@ -285,14 +284,20 @@ class GUI:
         #-------------------------#
         self.execute_frame = tk.LabelFrame(self.frame, borderwidth=0, highlightthickness=0)
         self.execute_frame.grid(column=0, row=3, padx=self.xpadding, pady=self.ypadding)
+                
+        # data2csv
+        self.data2csv_btn = tk.Button(self.execute_frame, width=int(self.maxwidth/2.4), text='write loaded data to csv', command=self.write2csv, font=self.font_settings)
+        self.data2csv_btn.grid(column=0, row=0)
+        
+        # save_mode
+        self.save_mode_btn = tk.Button(self.execute_frame, width=int(self.maxwidth/2.4), text='save settings as mode', command=self.save_mode, font=self.font_settings)
+        self.save_mode_btn.grid(column=1, row=0)
         
         # update plot
-        self.update_plot_btn = tk.Button(self.execute_frame, width=int(self.maxwidth/1.6), text='update plot', command=self.analyze_and_plot, font=self.font_settings)
-        self.update_plot_btn.grid(column=0, row=0)
+        self.update_plot_btn = tk.Button(self.execute_frame, width=int(self.maxwidth/2.4), text='update plot', command=self.analyze_and_plot, font=self.font_settings)
+        self.update_plot_btn.grid(column=2, row=0)
         
-        # data2csv
-        self.data2csv_btn = tk.Button(self.execute_frame, width=int(self.maxwidth/1.6), text='write loaded data to csv', command=self.write2csv, font=self.font_settings)
-        self.data2csv_btn.grid(column=1, row=0)
+
         
         # Add padding to all frames in self.analysis_frame
         for widget in self.execute_frame.winfo_children():
@@ -307,33 +312,158 @@ class GUI:
     #################################
     # Functions to call as commands #
     #################################
+    # Function to save current GUI settings as a mode
+    def save_mode(self):
+        # Function to get directory
+        def directory_path():
+            path =filedialog.askdirectory(initialdir=self.pwd)
+            if path:
+                path = os.path.relpath(path)
+                parent_directory.delete(0, tk.END); parent_directory.insert(0, path);
+        
+        # save_mode print(__doc__)
+        def save():
+            if filename.get() == '':
+                self.log.GUI_error('ERROR attempting to save GUI settings as mode, but filename is blank.')
+            elif filename.get().count(' ') > 0:
+                self.log.GUI_error(f'ERROR attempting to save GUI settings as mode, but filename "{filename.get()}" has whitespaces. Use "_" to seperate words.')
+            else:
+                # setup path and where to write
+                path = os.path.join(self.pwd, parent_directory.get())
+                name = '{}.py'.format(filename.get())
+                self.log.out(f'"{name}" will be saved at {path}')
+                if not os.path.isdir(path):
+                    os.makedirs(path, exist_ok=True)
+                os.chdir(path)
+                
+                # Write new file and change back to pwd
+                with open(name, 'w') as f:
+                    f.write('# -*- coding: utf-8 -*-\n')
+                    f.write('"""\n')
+                    f.write('Created by log_analysis.py to store a mode dictionary\n')
+                    f.write('called "mode", which will then allow all settings to be\n')
+                    f.write('loaded by clicking on this file within log_anaylsis.py.\n\n')
+                    f.write('{}'.format(about.get('1.0', tk.END)))
+                    f.write('"""\n')
+                    
+                    f.write('# analysis list\n')
+                    if len(self.methods) > 0 and self.methods.count('skip') < len(self.methods):
+                        analysis = [] # [method, xlo, xhi, miscs, names]
+                        for i, j, k, l, m  in zip(self.methods, self.xlos, self.xhis, self.miscs, self.names):
+                            try: 
+                                method = i.get(); xlo = j.get(); xhi = k.get(); misc = l.get(); name = m.get();
+                                if method != 'skip':
+                                    analysis.append([method, xlo, xhi, misc, name])
+                            except: pass
+                        f.write('analysis = [')
+                        for n, (method, xlo, xhi, misc, name) in enumerate(analysis, 1):
+                            try:
+                                if xlo == '': xlo = "'{}'".format(xlo)
+                                if xhi == '': xhi = "'{}'".format(xhi)
+                                string = "['{}', {}, {}, '{}', '{}']".format(method, xlo, xhi, misc, name)
+                                if n < len(analysis): string += ','
+                                else: string += ']'
+                                if n == 1: f.write("{}\n".format(string))
+                                else: f.write("{:>12}{}\n".format('', string))
+                            except: pass
+                    else: f.write('analysis = []\n')
+                    f.write('\n')
+                    
+                    f.write('# loadable mode\n')
+                    f.write("mode = {")
+                    f.write("{}{}: '{}',\n".format('', "'logfile'", self.logfile.get()))
+                    keywords = ["'{}'".format(str(i)) for i in self.keywords_entry.get().split(',')]
+                    f.write("{:>8}{}: [{}],\n".format('',"'keywords'", ', '.join(keywords)))
+                    f.write("{:>8}{}: '{}',\n".format('',"'sections'", self.sections_entry.get()))
+                    f.write("{:>8}{}: '{}',\n".format('',"'xdata'", self.xdata_dropdown.get()))
+                    f.write("{:>8}{}: '{}',\n".format('',"'ydata'", self.ydata_dropdown.get()))
+                    f.write("{:>8}{}: '{}',\n".format('',"'xlabel'", self.xlabel_entry.get()))
+                    f.write("{:>8}{}: '{}',\n".format('',"'ylabel'", self.ylabel_entry.get()))
+                    f.write("{:>8}{}: '{}',\n".format('',"'xscale'", self.xscale_entry.get()))
+                    f.write("{:>8}{}: '{}',\n".format('',"'yscale'", self.yscale_entry.get()))
+                    f.write("{:>8}{}: {}\n".format('',"'analysis'", 'analysis'))
+                    f.write("{:>8}{}\n\n".format('', '}'))
+                os.chdir(self.pwd)
+            return
+        
+        self.log.out('Saving current GUI settings as a mode')
+        save_frame = Toplevel(self.root)
+        save_frame.title('Save GUI settings as mode')
+        save_frame.resizable(width=False, height=False)
+        
+        filename = tk.Entry(save_frame, width=67, font=self.font_settings)
+        filename.insert(0, '')
+        filename.grid(column=1, row=0)
+        filename_label = tk.Label(save_frame, text='filename (no .py extension)', font=self.font_settings)
+        filename_label.grid(column=0, row=0)
+        
+        about = tk.Text(save_frame, width=50, height=4)
+        about.insert(tk.END, 'Date: XX/YY/ZZZZ\n')
+        about.insert(tk.END, 'Author: John Doe\n')
+        about.insert(tk.END, 'Purpose: Mode to find xxx\n')
+        # about.insert(tk.END, 'Date: 05/13/2024\n')
+        # about.insert(tk.END, 'Author: Josh Kemppainen\n')
+        # about.insert(tk.END, 'Purpose: Mode to find xxx\n')
+        about.grid(column=1, row=1)
+        about_label = tk.Label(save_frame, text='about mode', font=self.font_settings)
+        about_label.grid(column=0, row=1)
+        
+        parent_directory = tk.Entry(save_frame, width=67, font=self.font_settings)
+        parent_directory.insert(0, self.modespath)
+        parent_directory.grid(column=1, row=2)
+        dir_button = tk.Button(save_frame, text='parent_directory', font=self.font_settings, command=directory_path)
+        dir_button.grid(column=0, row=2)
+        
+        save_btn = tk.Button(save_frame, width=85, text='save as mode', command=save, font=self.font_settings)
+        save_btn.grid(column=0, row=3, columnspan=3)        
+
+        # Add padding to all frames in self.analysis_frame
+        for widget in save_frame.winfo_children():
+            widget.grid_configure(padx=self.xpadding, pady=int(self.ypadding/3))
+        save_frame.mainloop()
+        
+    # Function to toggle if replacing log file during loading mode
     def print_selection(self):
         if (self.replace.get()) == 1:
             self.log.out(f'Will replace logfile when loading mode (var = {self.replace.get()})')
         else:
             self.log.out(f'Will NOT replace logfile when loading mode (var = {self.replace.get()})')
+            
+    # Function to get filepath for modefile
+    def modefile_path(self):
+        ftypes = (('Python files (.py)', '*.py'), ('all files', '*.*'))
+        startpath = io_functions.path_to_string(os.path.join(self.pwd, self.modespath))
+        path = filedialog.askopenfilename(initialdir=startpath, title='Open mode file?', filetypes=ftypes)
+        if path:
+            self.modespath = os.path.dirname(os.path.abspath(path))
+            path = io_functions.path_to_string(os.path.relpath(path))
+            self.modefile.delete(0, tk.END); self.modefile.insert(0, path);
+            
+            module = misc_funcs.import_file(path)
+            mode = module.mode
+            self.load_mode(mode)
+        else: self.log.GUI_error('ERROR could not load mode')
     
     # Function to load mode
-    def load_mode(self):
+    def load_mode(self, mode):
         # Get mode
-        mode = self.mode_dropdown.get()
-        settings = self.settings['modes'][mode]
+        #mode = self.mode
         
         # Start updating settings
         if (self.replace.get()) == 1:
             self.logfile.delete(0, tk.END)
-            self.logfile.insert(0, settings['logfile'])
+            self.logfile.insert(0, mode['logfile'])
         
-        self.keywords = ','.join(settings['keywords'])
+        self.keywords = ','.join(mode['keywords'])
         self.keywords_entry.delete(0, tk.END)
         self.keywords_entry.insert(0, self.keywords)
     
-        self.sections = settings['sections']        
+        self.sections = mode['sections']        
         self.sections_entry.delete(0, tk.END)
         self.sections_entry.insert(0, self.sections)
 
-        self.xdata = settings['xdata']
-        self.ydata = settings['ydata']
+        self.xdata = mode['xdata']
+        self.ydata = mode['ydata']
         if self.xdata not in self.columns: self.columns.append(self.xdata)
         if self.ydata not in self.columns: self.columns.append(self.ydata)
         self.xdata_dropdown.config(values=self.columns)
@@ -341,15 +471,15 @@ class GUI:
         self.xdata_dropdown.current(self.columns.index(self.xdata))
         self.ydata_dropdown.current(self.columns.index(self.ydata))
         
-        self.xscale = settings['xscale']
-        self.yscale = settings['yscale']
+        self.xscale = mode['xscale']
+        self.yscale = mode['yscale']
         self.xscale_entry.delete(0, tk.END)
         self.yscale_entry.delete(0, tk.END)
         self.xscale_entry.insert(0, self.xscale)
         self.yscale_entry.insert(0, self.yscale)
         
-        self.xlabel = settings['xlabel']
-        self.ylabel = settings['ylabel']
+        self.xlabel = mode['xlabel']
+        self.ylabel = mode['ylabel']
         self.xlabel_entry.delete(0, tk.END)
         self.ylabel_entry.delete(0, tk.END)
         self.xlabel_entry.insert(0, self.xlabel)
@@ -358,7 +488,7 @@ class GUI:
         # Start updating analysis
         self.clear_all()
         nloaded = len(self.methods)
-        analysis = settings['analysis']
+        analysis = mode['analysis']
         for n, i in enumerate(analysis):
             method, xlo, xhi, misc, name = i
             if n >= nloaded: # add more boxes as needed
@@ -418,7 +548,6 @@ class GUI:
                 self.log.GUI_error(f'ERROR could not evalute {string} in internal compute.')
                 return nzeros*[0]
             
-        
         # create plot
         if data:            
             # Get data
@@ -432,17 +561,12 @@ class GUI:
                 string4eval = xdata.replace('compute:', '')
                 x = string2math(data, string4eval)
                 xdata = 'compute'
-                #data[xdata] = x
             else: x = data[xdata] 
             if 'compute:' in ydata and ydata not in data:
                 string4eval = ydata.replace('compute:', '')
                 y = string2math(data, string4eval)
                 ydata = 'compute'
-                #data[ydata] = y
             else: y = data[ydata] 
-            
-            # Open .txt file to write results to
-
             
             # Scale data
             xscale = 1; yscale = 1;
@@ -535,7 +659,6 @@ class GUI:
                             if 'shift' in setting:
                                 shift = setting['shift']
                             else: shift=False; misc = 'default-shift=False';
-                            print(setting)
                         else: 
                             shift=False
                             misc = 'default-shift=False'
@@ -1056,8 +1179,7 @@ class GUI:
                 for row in matrix:
                     row = ', '.join(row);
                     f.write('{}\n'.format(row));
-        else:
-            print('ERROR could not write data to csv file')
+        else: print('ERROR could not write data to csv file')
         return
     
     # Function to get run mode

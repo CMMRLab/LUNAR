@@ -57,7 +57,16 @@ def file(mm, filename, version, ff_name):
                                                                                                 atom.z, atom.ix, atom.iy, atom.iz, comment)) 
             except:
                 f.write('{:^6} {:^4} {:^2} {:^10.6f} {:^15.9f} {:^15.9f} {:^15.9f} {:^5}\n'.format(i, atom.molid, atom.type, atom.charge, atom.x, atom.y, atom.z, comment)) 
-
+        
+        # Write velocities
+        if mm.velocities:
+            velocities = {mm.velocities[i] for i in mm.velocities}
+            if len(velocities) > 1 and (0, 0, 0) not in velocities:
+                f.write('\nVelocities\n\n')
+                for i in mm.velocities:
+                    vx, vy, vz = mm.velocities[i]
+                    f.write('{:^6} {:^15.9f} {:^15.9f} {:^15.9f}\n'.format(i, vx, vy, vz))
+        
         # Write bonds
         f.write('\nBonds\n\n')
         for i in mm.bonds:

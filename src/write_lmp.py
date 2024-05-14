@@ -393,6 +393,17 @@ def file(m, filename, header, atom_style, include_type_labels, log, force_field_
                 # else raise and exception
                 else:
                     log.error('Atom Style Error - write_lmp.py does not support atom style {atom_style}')
+                    
+            # Write velocities
+            try:
+                if m.velocities:
+                    velocities = {m.velocities[i] for i in m.velocities}
+                    if len(velocities) > 1 and (0, 0, 0) not in velocities:
+                        f.write('\nVelocities\n\n')
+                        for i in m.velocities:
+                            vx, vy, vz = m.velocities[i]
+                            f.write('{:^6} {:^15.9f} {:^15.9f} {:^15.9f}\n'.format(i, vx, vy, vz))
+            except: pass
     
     
                 

@@ -22,7 +22,7 @@ def merge(topofile, mass_map, ff_class, log):
     # read topofile and bondfile (when applicable) #
     ################################################
     if os.path.isfile(topofile):
-        m = read_lmp.Molecule_File(topofile, method='forward', sections=['Atoms', 'Bonds', 'Angles', 'Dihedrals', 'Impropers'])
+        m = read_lmp.Molecule_File(topofile, method='forward', sections=['Atoms', 'Bonds', 'Angles', 'Dihedrals', 'Impropers', 'Velocities'])
         log.out(f'Read in {m.filename} LAMMPS datafile')
     else: log.error(f'ERROR lammps datafile: {topofile} does not exist')
             

@@ -19,6 +19,7 @@ Houghton, MI 49931
 ##############################
 import numpy as np
 import sys
+import os
 
 ###################################################
 # Josh's hand built linear regression model class #
@@ -95,4 +96,19 @@ def convert_to_float(frac_str):
         except ValueError:
             whole = 0
         frac = float(num) / float(denom)
-        return whole - frac if whole < 0 else whole + frac            
+        return whole - frac if whole < 0 else whole + frac   
+
+
+#############################################################
+# Function to import file from path useage:                 #
+#  module = import_file('path/to/file/default_density.py')  #
+#  print(module.mode) # print mode dict                     #
+#############################################################
+def import_file(path):
+    from importlib import util
+    root = os.path.basename(path)
+    root = root[:root.rfind('.')]
+    spec = util.spec_from_file_location(root, path)
+    module = util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module      

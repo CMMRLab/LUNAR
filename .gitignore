@@ -13,3 +13,4 @@ src/bond_react_merge_prep/__pycache__/
 src/cell_builder/__pycache__/
 src/free_volume/__pycache__/
 src/log_analysis/__pycache__/
+src/log_analysis/modes/__pycache__/

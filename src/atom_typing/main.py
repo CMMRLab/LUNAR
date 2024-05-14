@@ -301,14 +301,16 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
     # Write lmp file #
     ##################
     filename  = '{}.data'.format(basename)
-    write_lmp.file(mm, filename, version, ff_name) # Write lmp .data file
+    if newfile != ':':
+        write_lmp.file(mm, filename, version, ff_name) # Write lmp .data file
     
     
     ##################
     # Write nta file #
     ##################
     filename  = '{}.nta'.format(basename)
-    write_nta.file(mm, filename, version, ff_name, include_comments_nta)
+    if newfile != ':':
+        write_nta.file(mm, filename, version, ff_name, include_comments_nta)
     
     
     ##################
@@ -341,7 +343,8 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
     log.out_warnings_and_errors()
     
     # write log
-    log.write_logged(basename+'.log.lunar')
+    if newfile != ':':
+        log.write_logged(basename+'.log.lunar')
     
     # Change back to the intial directory to keep directory free for deletion
     os.chdir(pwd)

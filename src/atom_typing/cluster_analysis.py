@@ -164,6 +164,7 @@ class cluster_removal:
         self.atoms = {}  # {atom number : atom object}
         self.bonds = {}  # {bond number : bond object}
         self.bond_coeffs = {} # { bondtype-id : coeffs class}
+        self.velocities = {}  # {atom number : tuple of velocities}
         self.natoms = 0 # Initialize and update later
         self.nbonds = 0 # Initialize and update later
         self.nbondtypes = 1 # No unique bond-typing will be performed
@@ -248,6 +249,9 @@ class cluster_removal:
         for i in kept_atoms:
             self.atoms[atomid_map[i]] = m.atoms[i]
             kept_molids.add(self.atoms[atomid_map[i]].molid)
+            try: velocity = m.velocities[i]
+            except: velocity = (0, 0, 0)
+            self.velocities[atomid_map[i]] = velocity
             
             
         #############################################

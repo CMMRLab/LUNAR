@@ -82,7 +82,7 @@ def main(topofile, cta_file, newfile, atom_style, parent_directory, rm_unused_co
     ####################
     # Read lammps data file
     if os.path.isfile(topofile):
-        m = read_lmp.Molecule_File(topofile, method='forward', sections=['Atoms', 'Bonds', 'Angles', 'Dihedrals', 'Impropers'])
+        m = read_lmp.Molecule_File(topofile, method='forward', sections=['Atoms', 'Bonds', 'Angles', 'Dihedrals', 'Impropers', 'Velocities'])
         log.out(f'Read in {m.filename} LAMMPS datafile')
     else: log.error(f'ERROR lammps datafile: {topofile} does not exist')
         

@@ -80,7 +80,7 @@ def main(topofile, parent_directory, newfile, atom_style, atoms2remove, include_
     # read topofile with or without typelabels #
     ############################################
     if os.path.isfile(topofile):
-        m = read_lmp.Molecule_File(topofile, method='forward', sections=['Atoms', 'Bonds', 'Angles', 'Dihedrals', 'Impropers'])
+        m = read_lmp.Molecule_File(topofile, method='forward', sections=['Atoms', 'Bonds', 'Angles', 'Dihedrals', 'Impropers', 'Velocities'])
         log.out(f'Read in {m.filename} LAMMPS datafile')
     else:
         log.error(f'ERROR lammps datafile: {topofile} does not exist')
