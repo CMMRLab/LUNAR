@@ -375,8 +375,17 @@ class GUI:
                     keywords = ["'{}'".format(str(i)) for i in self.keywords_entry.get().split(',')]
                     f.write("{:>8}{}: [{}],\n".format('',"'keywords'", ', '.join(keywords)))
                     f.write("{:>8}{}: '{}',\n".format('',"'sections'", self.sections_entry.get()))
-                    f.write("{:>8}{}: '{}',\n".format('',"'xdata'", self.xdata_dropdown.get()))
-                    f.write("{:>8}{}: '{}',\n".format('',"'ydata'", self.ydata_dropdown.get()))
+                    
+                    if "'" in self.xdata_dropdown.get():
+                        f.write('{:>8}{}: "{}",\n'.format('', '"xdata"', self.xdata_dropdown.get()))
+                    else:
+                        f.write("{:>8}{}: '{}',\n".format('',"'xdata'", self.xdata_dropdown.get()))
+                    
+                    if "'" in self.ydata_dropdown.get():
+                        f.write('{:>8}{}: "{}",\n'.format('', '"ydata"', self.ydata_dropdown.get()))
+                    else:    
+                        f.write("{:>8}{}: '{}',\n".format('',"'ydata'", self.ydata_dropdown.get()))
+                    
                     f.write("{:>8}{}: '{}',\n".format('',"'xlabel'", self.xlabel_entry.get()))
                     f.write("{:>8}{}: '{}',\n".format('',"'ylabel'", self.ylabel_entry.get()))
                     f.write("{:>8}{}: '{}',\n".format('',"'xscale'", self.xscale_entry.get()))
