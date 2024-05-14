@@ -20,7 +20,7 @@ def file(mm, name, version, ff_name, include_comments_nta):
             if include_comments_nta:
                 f.write('equivs # please manually set equivs. format is two columns with column-1 = set-atom-type-in-"style id" and column-2 = atom-type-to-map-to\n') # If general is used assume user wants to set equivs
             else:
-                f.write('equivs')
+                f.write('equivs\n')
             for i in equivs:
                 if include_comments_nta:
                     comment = '# set-atom-type-in-"style id"  atom-type-to-map-to'
