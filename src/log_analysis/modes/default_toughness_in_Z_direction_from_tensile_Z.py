@@ -9,12 +9,9 @@ Author: Josh Kemppainen
 Purpose: Mode to find toughness when strained in
          Z-dir
 
-
 """
 # analysis list
-analysis = [['moving average', 0, 0.1, 'window=50', 'moving average'],
-            ['linear regression', 0, 0.02, 'shift=True', 'Modulus'],
-            ['cursor', '', '', 'x=0.02; y=5;', 'Yield strength']]
+analysis = [['spline-integration', 0, 0.1, 'window=100; shift=True;', 'Toughness']]
 
 # loadable mode
 mode = {'logfile': 'EXAMPLES/log_analysis/property=tensile_modulus_z_strain_rate=2e8.log.lammps',
