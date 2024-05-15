@@ -14,4 +14,10 @@ src/cell_builder/__pycache__/
 src/free_volume/__pycache__/
 src/log_analysis/__pycache__/
 src/log_analysis/modes/__pycache__/
+
+# ignore automatic test outputs
 automatic_tests/outputs
+
+# ignore log_analysis outputs
+EXAMPLES/log_analysis/*.jpeg
+EXAMPLES/log_analysis/*.lunar
