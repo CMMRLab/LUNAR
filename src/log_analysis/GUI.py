@@ -112,21 +112,24 @@ class GUI:
         # logfile selection button
         self.logfile = tk.Entry(self.inputs_frame, width=int(1.43*self.maxwidth), font=self.font_settings)
         self.logfile.insert(0, mode['logfile'])
-        self.logfile.grid(column=1, row=0, columnspan=3)
+        self.logfile.grid(column=1, row=0, columnspan=4)
         self.logfile_button = tk.Button(self.inputs_frame, text='logfile', font=self.font_settings, command=self.logfile_path)
         self.logfile_button.grid(column=0, row=0)
         
         # modes
-        self.modefile = tk.Entry(self.inputs_frame, width=int(1.1*self.maxwidth), font=self.font_settings)
+        self.modefile = tk.Entry(self.inputs_frame, width=int(0.9*self.maxwidth), font=self.font_settings)
         self.modefile.insert(0, settings['mode'])
         self.modefile.grid(column=1, row=1)
         self.modefile_button = tk.Button(self.inputs_frame, text='mode file', font=self.font_settings, command=self.modefile_path)
         self.modefile_button.grid(column=0, row=1)        
         
-        # logfile replace
-        self.replace = tk.IntVar()
-        self.load_replace_logfile = tk.Checkbutton(self.inputs_frame, text='Replace logfile when loading mode', variable=self.replace, onvalue=1, offvalue=0, command=self.print_selection)
-        self.load_replace_logfile.grid(column=3, row=1)
+        # remove_PBC_bonds drop down menu
+        styles = [True, False]
+        self.load_replace_logfile = ttk.Combobox(self.inputs_frame, values=styles, width=int(self.maxwidth/10), font=self.font_settings)
+        self.load_replace_logfile.current(styles.index(False))
+        self.load_replace_logfile.grid(column=4, row=1)
+        self.load_replace_logfile_label = tk.Label(self.inputs_frame, text='Replace logfile when loading mode', font=self.font_settings)
+        self.load_replace_logfile_label.grid(column=3, row=1)
         
         # Add padding to all frames in self.inputs_frame
         for widget in self.inputs_frame.winfo_children():
@@ -454,12 +457,9 @@ class GUI:
         else: self.log.GUI_error('ERROR could not load mode')
     
     # Function to load mode
-    def load_mode(self, mode):
-        # Get mode
-        #mode = self.mode
-        
+    def load_mode(self, mode):       
         # Start updating settings
-        if (self.replace.get()) == 1:
+        if self.load_replace_logfile.get() == 'True':
             self.logfile.delete(0, tk.END)
             self.logfile.insert(0, mode['logfile'])
         
