@@ -18,7 +18,7 @@ analysis = [['moving average', 100, 800, 'window=100', 'moving average'],
             ['cursor', '', '', 'x=460; y=190_000;', 'Tg']]
 
 # loadable mode
-mode = {'logfile': 'EXAMPLES\log_analysis\properties=Tg_and_CTE_heating_rate=50_k_ns.log.lammps',
+mode = {'logfile': 'EXAMPLES/log_analysis/properties=Tg_and_CTE_heating_rate=50_k_ns.log.lammps',
         'keywords': ['Step', 'Temp'],
         'sections': 'all',
         'xdata': 'Temp',

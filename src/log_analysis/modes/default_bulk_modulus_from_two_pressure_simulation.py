@@ -15,7 +15,7 @@ analysis = [['average', 0, 400, '', 'v0 average (A$^3$)'],
             ['average', 1000, 2100, '', 'v1 average (A$^3$)']]
 
 # loadable mode
-mode = {'logfile': 'EXAMPLES\log_analysis\property=bulk_modulus_v0_v1_calc_ts=0.5_p0=1atm_p1=5000atm.log.lammps',
+mode = {'logfile': 'EXAMPLES/log_analysis/property=bulk_modulus_v0_v1_calc_ts=0.5_p0=1atm_p1=5000atm.log.lammps',
         'keywords': ['Step', 'Temp'],
         'sections': '1-3',
         'xdata': 'Step',

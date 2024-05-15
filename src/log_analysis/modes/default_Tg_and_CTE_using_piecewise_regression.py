@@ -17,7 +17,7 @@ analysis = [['average', 290, 310, '', 'room temp volume average (A$^3$)'],
             ['piecewise-regression', 100, 800, 'n=1', 'Segmented piecewise-regression']]
 
 # loadable mode
-mode = {'logfile': 'EXAMPLES\log_analysis\properties=Tg_and_CTE_heating_rate=50_k_ns.log.lammps',
+mode = {'logfile': 'EXAMPLES/log_analysis/properties=Tg_and_CTE_heating_rate=50_k_ns.log.lammps',
         'keywords': ['Step', 'Temp'],
         'sections': 'all',
         'xdata': 'Temp',
