@@ -371,7 +371,7 @@ class GUI:
                     
                     f.write('# loadable mode\n')
                     f.write("mode = {")
-                    f.write("{}{}: '{}',\n".format('', "'logfile'", self.logfile.get()))
+                    f.write("{}{}: '{}',\n".format('', "'logfile'", io_functions.path_to_string(self.logfile.get())))
                     keywords = ["'{}'".format(str(i)) for i in self.keywords_entry.get().split(',')]
                     f.write("{:>8}{}: [{}],\n".format('',"'keywords'", ', '.join(keywords)))
                     f.write("{:>8}{}: '{}',\n".format('',"'sections'", self.sections_entry.get()))
@@ -459,9 +459,9 @@ class GUI:
         #mode = self.mode
         
         # Start updating settings
-        if (self.replace.get()) == 1:
-            self.logfile.delete(0, tk.END)
-            self.logfile.insert(0, mode['logfile'])
+        #if (self.replace.get()) == 1:
+        self.logfile.delete(0, tk.END)
+        self.logfile.insert(0, mode['logfile'])
         
         self.keywords = ','.join(mode['keywords'])
         self.keywords_entry.delete(0, tk.END)
