@@ -459,9 +459,9 @@ class GUI:
         #mode = self.mode
         
         # Start updating settings
-        #if (self.replace.get()) == 1:
-        self.logfile.delete(0, tk.END)
-        self.logfile.insert(0, mode['logfile'])
+        if (self.replace.get()) == 1:
+            self.logfile.delete(0, tk.END)
+            self.logfile.insert(0, mode['logfile'])
         
         self.keywords = ','.join(mode['keywords'])
         self.keywords_entry.delete(0, tk.END)
