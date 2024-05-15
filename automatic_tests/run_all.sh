@@ -6,7 +6,9 @@
 # None
 
 # Set current directory
-DIR="automatic_tests/outputs"
+DIR_FROM_LUNAR="automatic_tests"
+DIR_IN_TESTS="outputs"
+DIR=$DIR_FROM_LUNAR/$DIR_IN_TESTS
 SECONDS=0
 
 
@@ -17,10 +19,11 @@ echo "***  LUNAR automated tests  ***"
 echo "*******************************"
 echo "*******************************"
 echo "DIR = $DIR"
+mkdir $DIR_IN_TESTS
 
 
 # run LUNAR/all2lmp.py tests
-bash all2lmp.sh $DIR/"all2lmp"
+bash all2lmp.sh $DIR/all2lmp | tee $DIR_IN_TESTS/all2lmp_TEST_LOG.txt
 
 
 # Set run time of script
