@@ -61,5 +61,8 @@ Date               Developer   Description
                                               which will find all paths between the first neighbor and the
                                               N-th neighbor (N=2,3,4) where the paths are then set in the
                                               general atom type string
+                               - Added "automatic_tests" directory where bash scripts will slowly be added
+                                 to test each functionality of each code using the CLI to ensure any future
+                                 work doesnt break any current features
 
 							  
