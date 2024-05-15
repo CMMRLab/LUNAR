@@ -742,10 +742,13 @@ class GUI:
                     
                     if method == 'hyperbola':
                         minimum_convergence=None
+                        initial_guess=False
                         setting = self.get_misc_setting(misc)
                         if 'p' in setting:
                             minimum_convergence = setting['p']
-                        xout, yout, params, center, slopes, transition = self.fit_hyperbola(x, y, xlo, xhi, minimum_convergence=minimum_convergence, intial_guess=None, maxiter=10**6)
+                        if 'initial_guess' in setting:
+                            initial_guess = setting['initial_guess']
+                        xout, yout, params, center, slopes, transition = self.fit_hyperbola(x, y, xlo, xhi, minimum_convergence=minimum_convergence, initial_guess=initial_guess, maxiter=10**6)
                         self.log.out(format_analysis(method, xlo, xhi, misc, name))
                         
                         label = '{} slopes (lower-slope={};\nupper-slope={})'.format(name, slopes[0], slopes[1])
@@ -997,11 +1000,10 @@ class GUI:
     #    maxiter sets a cutoff for the maximum number of iterations                      #
     #    intial_guess list of parameters 1-N or None, if None scipy intializes the guess #
     ######################################################################################
-    def fit_hyperbola(self, x, y, xlo, xhi, minimum_convergence=None, intial_guess=None, maxiter=10**4):
+    def fit_hyperbola(self, x, y, xlo, xhi, minimum_convergence=None, initial_guess=False, maxiter=10**4):
         from scipy import optimize
         reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
-        if reduced_x and reduced_y:
-        
+        if reduced_x and reduced_y:        
             # define default outputs (in-case something goes wrong)
             xout = list(reduced_x); yout = len(reduced_x)*[0];
             params = [0, 0, 0, 0, 0]; center = [0, 0];
@@ -1010,6 +1012,12 @@ class GUI:
             
             # Convert to float64 and then lists to numpy arrays
             xx = np.array(reduced_x); yy = np.array(reduced_y);
+            
+            # Setup intial guess
+            p0 = None
+            if initial_guess:
+                slopeguess= (yy[-1]-yy[0])/(xx[-1]-xx[0])
+                p0 = (np.mean(xx),np.mean(yy), slopeguess, slopeguess, np.log((xx[-1]-xx[0])**2/100))
     
             # Define the hyperbola equation (eqn 1 in paper)
             def hyberbola(t, t0, v0, a, b, c):
@@ -1020,7 +1028,7 @@ class GUI:
             # Find best fit    t0          v0        a        b        c
             parm_bounds = ((np.min(xx), np.min(yy), -np.inf, -np.inf, -np.inf), # lower
                            (np.max(xx), np.max(yy),  np.inf,  np.inf,  np.inf)) # upper
-            param, param_cov = optimize.curve_fit(hyberbola, xx, yy, p0=intial_guess, method='trf', bounds=parm_bounds, maxfev=maxiter)
+            param, param_cov = optimize.curve_fit(hyberbola, xx, yy, p0=p0, method='trf', bounds=parm_bounds, maxfev=maxiter)
             t0, v0, a, b, c = param # extract out fitting coeffs
             
             # update defaults
