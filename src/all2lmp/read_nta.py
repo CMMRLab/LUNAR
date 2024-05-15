@@ -260,7 +260,9 @@ def atoms(nta_file, m, log):
             for i in nta:
                 if nta[i] in type_equivs:
                     equivs_count[nta[i]] += 1
-                    nta[i] = type_equivs[nta[i]]
+                    equiv = type_equivs[nta[i]]
+                    nta[i] = equiv
+                    name[i] = equiv
             for i in equivs_count:
                 log.out(' - {} -> {} mapping occured on {} atoms'.format(i, type_equivs[i], equivs_count[i]))
                 

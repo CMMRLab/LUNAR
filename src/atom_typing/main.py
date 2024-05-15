@@ -56,7 +56,7 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
     log.configure(level='production')
-    #log.configure(level='debug')
+    #log.configure(level='debug', print2console=False)
     
     #########################
     # Command Line Override #

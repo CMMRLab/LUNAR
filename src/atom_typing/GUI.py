@@ -131,8 +131,9 @@ class atom_typing_GUI:
         self.options_frame.grid(row=1, column=0, columnspan=2, sticky='news', padx=xpadding, pady=ypadding)
                 
         # ff_class drop down menu
-        styles = ['PCFF-IFF', 'PCFF', 'compass', 'CVFF-IFF', 'CVFF', 'Clay-FF', 'DREIDING', 'OPLS-AA', 'general:0', 'general:1', 'general:2', 'general:3', 'general:4']
-        self.ff_name = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/10), font=font_settings)
+        styles = ['PCFF-IFF', 'PCFF', 'compass', 'CVFF-IFF', 'CVFF', 'Clay-FF', 'DREIDING', 'OPLS-AA', 'general:0',
+                  'general:1', 'general:2', 'general:3', 'general:4', 'general-pp:2', 'general-pp:3', 'general-pp:4']
+        self.ff_name = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/7), font=font_settings)
         self.ff_name.current(styles.index(ff_name))
         self.ff_name.grid(column=0, row=1)
         self.ff_name_label = tk.Label(self.options_frame, text='ff_name', font=font_settings)

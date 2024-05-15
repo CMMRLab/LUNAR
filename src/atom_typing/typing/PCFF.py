@@ -414,7 +414,7 @@ def nta(mm, basename, ff_name):
                 
             # hc      1.00797      H          1        hydrogen bonded to carbon
             elif elements1[0] == 'C':
-                atom.nta_type = 'hpan'; tally['found'] += 1;
+                atom.nta_type = 'hc'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
 
                 

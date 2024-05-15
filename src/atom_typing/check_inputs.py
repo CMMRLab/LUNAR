@@ -24,7 +24,8 @@ def safety(topofile, bondfile, parent_dir, newfile, ff_name, delete_atoms, mass_
         log.error('{} {} {} {}'.format('ERROR topofile: ', topofile, 'not supported. Currently supported file extensions: ', '  '.join(topo_exts)))
                 
     # Check if frc_file is valid. If passed is empty switch return_boolean and print error
-    ff_names = ['PCFF-IFF', 'PCFF', 'compass', 'CVFF-IFF', 'CVFF', 'Clay-FF', 'DREIDING', 'OPLS-AA', 'general:0', 'general:1', 'general:2', 'general:3', 'general:4'] # valid ff_names
+    ff_names = ['PCFF-IFF', 'PCFF', 'compass', 'CVFF-IFF', 'CVFF', 'Clay-FF', 'DREIDING', 'OPLS-AA', 'general:0', 'general:1',
+                'general:2', 'general:3', 'general:4', 'general-pp:2', 'general-pp:3', 'general-pp:4'] # valid ff_names
     passed = [i for i in ff_names if i in ff_name]
     if not passed:
         return_boolean = False

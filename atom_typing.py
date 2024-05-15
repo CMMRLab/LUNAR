@@ -190,6 +190,9 @@ newfile = ':_typed'
 #    - general:2  will set atom type as elementRINGnb-(1st-neighs)-(2nd-neighs) and (ith-neighs) = (count:elementRINGnb,...)#
 #    - general:3  will set atom type as elementRINGnb-(1st)-(2nd)-(3rd) and (ith-neighs) = (count:elementRINGnb,...)        #
 #    - general:4  will set atom type as elementRINGnb-(1st)-(2nd)-(3rd)-(4th) and (ith-neighs) = (count:elementRINGnb,...)  #
+#    - general-pp:2 will set atom type as general:1 and then create paths from neighbor 1 to neighbor 2                     #
+#    - general-pp:3 will set atom type as general:1 and then create paths from neighbor 1 to neighbor 3                     #
+#    - general-pp:4 will set atom type as general:1 and then create paths from neighbor 1 to neighbor 4                     #
 #    NOTES: When using the general atom typing module the code will set an "equivs" header with all the unqiue atom type    #
 #    strings in column-1. The user will have to manually add column-2 to set the equivalent atom type that they would like  #
 #    to use. all2lmp.py will then automatically convert all atom types in the "type id" section to the mapped atom types    #
