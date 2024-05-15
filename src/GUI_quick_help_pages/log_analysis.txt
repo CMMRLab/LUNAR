@@ -74,6 +74,20 @@
           p=0.9  # Will set the minimum convergence value to 0.9
           p=0.95 # Will set the minimum convergence value to 0.95
 		  
+        initial_guess=<Boolean>, where <Boolean> is True or False. If initial_guess=False all hyperbola parameters of t0, p0, a, b, c will be
+        set to 1 intially and then scip.optimize.curve_fit() fill determine the fit based on those intial values. If initial_guess=True the
+        hyperbola parameters will be intialized as:
+          t0 initial guess = mean(x)
+          p0 initial guess = mean(y)
+          a initial guess = (y[-1]-y[0])/(x[-1]-x[0])
+          b initial guess = (y[-1]-y[0])/(x[-1]-x[0])
+          c initial guess = log((x[-1]-x[0])**2/100)
+        Both p=<float> and initial_guess=<Boolean> can be paired. Examples:
+          initial_guess=False        # use default starting values
+          initial_guess=True         # guess and use computed starting values	
+          p=0.9; initial_guess=True  # guess and use computed starting values and also show convergence
+          initial_guess=True; p=0.9	 # guess and use computed starting values and also show convergence	  
+		  
         This method requires the Python scipy package (install via: pip install scipy)
 
     - "spline-integration"
