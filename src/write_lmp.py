@@ -398,7 +398,11 @@ def file(m, filename, header, atom_style, include_type_labels, log, force_field_
             try:
                 if m.velocities:
                     velocities = {m.velocities[i] for i in m.velocities}
-                    if len(velocities) > 1 and (0, 0, 0) not in velocities and len(m.velocities) == len(m.atoms):
+                    atoms_in_velocities = True
+                    for i in m.atoms:
+                        try: vel = m.velocities[i]
+                        except: atoms_in_velocities = False; break;
+                    if atoms_in_velocities and len(velocities) > 1 and (0, 0, 0) not in velocities and len(m.velocities) == len(m.atoms):
                         f.write('\nVelocities\n\n')
                         for i in m.velocities:
                             vx, vy, vz = m.velocities[i]
