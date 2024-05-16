@@ -187,7 +187,8 @@ def main(topofiles, force_field_joining, duplicate, distance_scale, newfile, ato
         ntypes = {'atom':set(),'bond':set(),'angle':set(),'dihedral':set(),'improper':set()}
         for i in files:
             m = files[i]
-            files[i] = merge_coeffs.update_TypeIDs(m, new, log) # Update coeffs from merge
+            m = merge_coeffs.update_TypeIDs(m, new, log) # Update coeffs from merge
+            files[i] = m
             ntypes['atom'].add(len(m.masses))
             ntypes['bond'].add(len(m.bond_coeffs))
             ntypes['angle'].add(len(m.angle_coeffs))
