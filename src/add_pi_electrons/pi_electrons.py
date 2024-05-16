@@ -230,6 +230,11 @@ def add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset
             y1 = atom1.y + 0.65*normal[1] # cg1-cge bond length = 0.6500
             z1 = atom1.z + 0.65*normal[2] # cg1-cge bond length = 0.6500
             atoms2add[pi1] = create_atoms(x1, y1, z1, atom1.ix, atom1.iy, atom1.iz, atom1.molid, 'cge/C', cge_q, cge)
+            if m.velocities:
+                try: vel = m.velocities[id1]
+                except: vel = (0, 0, 0)
+                m.velocities[pi1] = vel
+            
             
             # Creating virtual atom bonds
             bonds_count += 1
@@ -260,6 +265,10 @@ def add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset
             y1 = atom1.y - 0.65*normal[1] # cg1-cge bond length = 0.6500
             z1 = atom1.z - 0.65*normal[2] # cg1-cge bond length = 0.6500
             atoms2add[pi2] = create_atoms(x1, y1, z1, atom1.ix, atom1.iy, atom1.iz, atom1.molid, 'cge/C', cge_q, cge)
+            if m.velocities:
+                try: vel = m.velocities[id1]
+                except: vel = (0, 0, 0)
+                m.velocities[pi1] = vel
             
             # Creating virtual atom bonds
             bonds_count += 1
