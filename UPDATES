@@ -46,7 +46,7 @@ Date               Developer   Description
 							   
 							   
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 15May2024)
+LUNAR (version 16May2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -64,5 +64,8 @@ Date               Developer   Description
                                - Added "automatic_tests" directory where bash scripts will slowly be added
                                  to test each functionality of each code using the CLI to ensure any future
                                  work doesnt break any current features
+								 
+16May2024          JDK         - add_pi_electrons.py: Pi-electron now inherits velocity from the atom it was added to
+16May2024          JDK         - log_analysis.py: No has an intial_guess=<Boolean> option for the hyperbola fit
 
 							  
