@@ -66,6 +66,6 @@ Date               Developer   Description
                                  work doesnt break any current features
 								 
 16May2024          JDK         - add_pi_electrons.py: Pi-electron now inherits velocity from the atom it was added to
-16May2024          JDK         - log_analysis.py: No has an intial_guess=<Boolean> option for the hyperbola fit
+16May2024          JDK         - log_analysis.py: Now has an intial_guess=<Boolean> option for the hyperbola fit
 
 							  
