@@ -75,7 +75,7 @@
           p=0.95 # Will set the minimum convergence value to 0.95
 		  
         initial_guess=<Boolean>, where <Boolean> is True or False. If initial_guess=False all hyperbola parameters of t0, p0, a, b, c will be
-        set to 1 intially and then scip.optimize.curve_fit() fill determine the fit based on those intial values. If initial_guess=True the
+        set to 1 intially and then scipy.optimize.curve_fit() fill determine the fit based on those intial values. If initial_guess=True the
         hyperbola parameters will be intialized as:
           t0 initial guess = mean(x)
           p0 initial guess = mean(y)
