@@ -268,7 +268,7 @@ def add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset
             if m.velocities:
                 try: vel = m.velocities[id1]
                 except: vel = (0, 0, 0)
-                m.velocities[pi1] = vel
+                m.velocities[pi2] = vel
             
             # Creating virtual atom bonds
             bonds_count += 1
