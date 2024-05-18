@@ -201,6 +201,7 @@ def interatomic_cell_linked(m, maxdist_dict, radial, edgeflags, scaled_images, x
                 
     # Find domain connectivity (graph)
     domain_graph = {ID:set() for ID in domain} # { ID : set(bonded IDs) }
+    domain_graph[0] = set()
     sub_domain = {i for i in domain}
     log.out('Finding cell linked graph for interatomic distance calculations ...')
     for id1 in domain:
@@ -233,17 +234,27 @@ def interatomic_cell_linked(m, maxdist_dict, radial, edgeflags, scaled_images, x
                         
     # Build linked list
     linked_lst = {i:set() for i in domain} # { domainID : atoms in domain }
+    linked_lst[0] = set()
     atom_domain = {} # { atomID : domainID }
-    failed_domain = set()
+    failed_domain = set(); inner_atoms = set()
+    progress_increment = 10; count = 0; natoms = len(m.atoms); guess = 1
     for i in m.atoms:
+        inner_atoms.add(i)
         atom = m.atoms[i]
         x = atom.x; y = atom.y; z = atom.z
-        atom_domain[i] = 0
-        for j in domain:
-            xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r, edgeflag = domain[j]
-            if xlo_sub < x < xhi_sub and ylo_sub < y < yhi_sub and zlo_sub < z < zhi_sub: 
-                linked_lst[j].add(i); atom_domain[i] = j; break;
-        if atom_domain[i] == 0: failed_domain.add(i)
+        atom_domain[i] = 0; count += 1
+        edgeflags[i] = check_near_edge(x, y, z, domain_size, xlo, xhi, ylo, yhi, zlo, zhi)
+        if 100*count/natoms % progress_increment == 0:
+            log.out('    progress: {} %'.format(int(100*count/natoms)))
+        xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r2, edgeflag = domain[guess]
+        if xlo_sub <= x < xhi_sub and ylo_sub <= y < yhi_sub and zlo_sub <= z < zhi_sub:
+            linked_lst[guess].add(i); atom_domain[i] = guess;
+        else:    
+            for j in domain:
+                xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r2, edgeflag = domain[j]
+                if xlo_sub <= x < xhi_sub and ylo_sub <= y < yhi_sub and zlo_sub <= z < zhi_sub: 
+                    linked_lst[j].add(i); atom_domain[i] = j; guess = j; break
+            if atom_domain[i] == 0: failed_domain.add(j)
                     
     # Start finding interatomic distances
     possible_bonds = {} # { tuple(id1, id2): distance_fff or distance_ppp }
@@ -253,6 +264,7 @@ def interatomic_cell_linked(m, maxdist_dict, radial, edgeflags, scaled_images, x
     checked = {i:False for i in m.atoms}
     for id1 in m.atoms:      
         # Find atom1 to access x1, y1, and z1
+        inner_atoms.remove(id1)
         atom1 = m.atoms[id1]; count += 1
         x1 = atom1.x; y1 = atom1.y; z1 = atom1.z; r1 = radial[id1]
         if edgeflags[id1]: periodic_postions = [ (x1+ixlx, y1+iyly, z1+izlz) for ixlx, iyly, izlz in scaled_images ]
@@ -263,7 +275,8 @@ def interatomic_cell_linked(m, maxdist_dict, radial, edgeflags, scaled_images, x
         checked[id1] = True
         if not atom_domains: continue
         for domainID in atom_domains:
-            id2_atoms = linked_lst[domainID]
+            try: id2_atoms = linked_lst[domainID]
+            except: id2_atoms = inner_atoms
             for id2 in id2_atoms:
                 if checked[id2]: continue
                 # Find atom2 and max distance cutoff

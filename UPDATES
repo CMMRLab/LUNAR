@@ -54,7 +54,7 @@ Date               Developer   Description
 
 15May2024          JDK         - all2lmp.py: Made "equivs" compatible with new ATOMTYPE:NAME convention
                                - Update examples in EXAMPLES/atom_typing_general/ folder
-                               - atom_typing: Added "path preserving" general atom types as
+                               - atom_typing.py: Added "path preserving" general atom types as
                                                 * general-pp:2
                                                 * general-pp:3
                                                 * general-pp:4
@@ -67,5 +67,13 @@ Date               Developer   Description
 								 
 16May2024          JDK         - add_pi_electrons.py: Pi-electron now inherits velocity from the atom it was added to
 16May2024          JDK         - log_analysis.py: Now has an intial_guess=<Boolean> option for the hyperbola fit
+
+
+-------------------------------------------------------------------------------------------------------------
+LUNAR (version 18May2024)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+18May2024          JDK         - atom_typing:.py: Added command line over rides for bond finding options
 
 							  

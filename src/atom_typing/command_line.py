@@ -20,7 +20,8 @@ import sys
 
 
 def print_man_page(topofile, bondfile, parent_dir, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded,
-                   boundary, vdw_radius_scale, reset_charges, print_options, pdb_file, chargefile, include_comments_nta):
+                   boundary, vdw_radius_scale, reset_charges, print_options, pdb_file, chargefile, include_comments_nta,
+                   bonds_via_distance_override):
 
     
     # print general command line options
@@ -28,8 +29,8 @@ def print_man_page(topofile, bondfile, parent_dir, newfile, ff_name, delete_atom
     print('option summary [-tag <tag-input>]:')
     print('python3 atom_typing.py [-topo <topo-filename>] [-bond <bond-filename>] [-dir <new directory name>] [-newfile <string>]')
     print('                       [-ff <force field name>] [-reset-charges <T|F>] [-charge-file <Gasteiger-filename>]')
-    print('                       [-nta-comments] <T|F> <-gui> <-opt>|<-man> [*NOTE: Not all options found in atom_typing.py are')
-    print('                       currently supported via command line overrides.*]')
+    print('                       [-nta-comments <T|F>] [-vdw-scale <float>] [-boundary <string>] [-bond-reset <T|F>] <-gui> <-opt>|<-man>')
+    print('                       [*NOTE: Not all options found in atom_typing.py are currently supported via command line overrides.*]')
 
     print('\n*NOTE: If the command line input options are not used the hard coded inputs in the inputs section of the atom_typing.py')
     print('file will be enforced. The command line inputs option gives more flexibility to the code depending on IDE usage or')
@@ -177,6 +178,25 @@ def print_man_page(topofile, bondfile, parent_dir, newfile, ff_name, delete_atom
     
     # print -vdw-scale option
     print(f'\n -vdw-scale or -vdw <float> atom_typing variable: vdw_radius_scale    hard coded: {vdw_radius_scale}')
+    print('    Command line option set the vdw radii scale for finding bonds based on interatomic distances. Example usage:')
+    print('        python3 atom_typing.py -vdw-scale 1.0')
+    
+    # print -boundary option
+    string = '-'.join([i for i in boundary.split()])
+    print(f'\n -boundary or -by <string> atom_typing variable: boundary    hard coded: {string}')
+    print('    Command line option set the boundary for finding bonds based on interatomic distances. Three boundary flags')
+    print('    must be provided to set the boundary conditions for finding bonds. Two flags are supported:')
+    print('      - f is non-periodic and fixed')
+    print('      -p is periodic')
+    print('    To set the boundary flags at the commandline a "-" character must be supplied between each of the three flags')
+    print('    (i.e. f-f-f or p-f-f or p-p-p or ...), such that there exists no whitespace in the "tag-input". Example usage:')
+    print('        python3 atom_typing.py -boundary f-f-p')
+    
+    # print -bond-reset option
+    print(f'\n -bond-reset or -br <T|F> atom_typing variable: bonds_via_distance_override    hard coded: {bonds_via_distance_override}')
+    print('    Command line option set the over ride flag to reset bonds via interatomic distance searching. The bonds that will be found')
+    print('    are dependant on the vdw_radius_scale, boundary, and maxbonded inputs. Example usage:')
+    print('        python3 atom_typing.py -bond-reset T')
     
     # print -opt or -man option
     print(f'\n -opt or -man   atom_typing variable: print_options    hard coded: {print_options}')
@@ -205,7 +225,7 @@ def print_man_page(topofile, bondfile, parent_dir, newfile, ff_name, delete_atom
 class inputs:
     def __init__(self, topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded,
                  boundary, vdw_radius_scale, reset_charges, print_options, pdb_file, chargefile, include_comments_nta, 
-                 commandline_inputs):
+                 bonds_via_distance_override, commandline_inputs):
         
         # Give access to inputs (update later on if command line over ride is given)
         self.commandline_inputs = commandline_inputs
@@ -225,6 +245,7 @@ class inputs:
         self.pdb_file = pdb_file
         self.chargefile = chargefile
         self.include_comments_nta = include_comments_nta
+        self.bonds_via_distance_override = bonds_via_distance_override
 
         
         
@@ -242,16 +263,18 @@ class inputs:
         
         # Check that tag is supported and log if tag from the command line
         # set supported tags
-        supported_tags = ['-topo', '-bond', '-dir', '-newfile', '-ff', '-reset-charges', '-vdw-scale', '-pdb', '-charge-file', '-nta-comments']
+        supported_tags = ['-topo', '-bond', '-dir', '-newfile', '-ff', '-reset-charges', '-vdw-scale', '-pdb', '-charge-file', '-nta-comments',
+                          '-vdw-scale', '-boundary', '-bond-reset']
         
         # set shortcut_tags mapping
         shortcut_tags = {'-t':'-topo', '-b':'-bond', '-d':'-dir', '-nf':'-newfile', '-f':'-ff', '-rq':'-reset-charges', '-vdw':'-vdw-scale', '-p':'-pdb',
-                         '-qf':'-charge-file', '-nc':'-nta-comments'}
+                         '-qf':'-charge-file', '-nc':'-nta-comments', '-vdw':'-vdw-scale', '-br':'-bond-reset', '-by':'-boundary'}
         
         # set default variables
         default_variables ={'-topo': self.topofile, '-bond': self.bondfile, '-dir': self.parent_directory, '-ext': self.newfile, '-ff': self.ff_name,
                             '-reset-charges': self.reset_charges, '-vdw-scale': self.vdw_radius_scale, '-pdb':self.pdb_file,
-                            '-charge-file':self.chargefile, '-newfile':self.newfile, '-nta-comments':self.include_comments_nta}
+                            '-charge-file':self.chargefile, '-newfile':self.newfile, '-nta-comments':self.include_comments_nta,
+                            '-boundary':self.boundary, '-bond-reset':self.bonds_via_distance_override}
         
         # set tag/tag-input pair as empty string and update
         tags = {i:'' for i in supported_tags}
@@ -345,6 +368,16 @@ class inputs:
             except:
                 self.vdw_radius_scale = tags['-vdw-scale']
             print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-vdw-scale', self.vdw_radius_scale))
+            
+        # set new -boundary option and print confirmation (ERROR checks will occur in the next step so only try float except set as input)
+        if tags['-boundary']:
+            self.boundary = ' '.join(tags['-boundary'].split('-'))
+            print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-boundary', self.boundary))
+            
+        # set new -bond-reset option and print confirmation
+        if tags['-bond-reset']:
+            self.bonds_via_distance_override = T_F_string2boolean('-bond-reset', (tags['-bond-reset']))
+            print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-bond-reset', self.bonds_via_distance_override))
 
         # print buffer
         print('\n\n')

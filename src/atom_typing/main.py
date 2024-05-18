@@ -66,7 +66,7 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
         # call man page and exit if '-opt' or '-man' is provided at the command line
         command_line.print_man_page(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms,
                                     mass_map, bondorder, maxbonded, boundary, vdw_radius_scale, reset_charges,
-                                    print_options, pdb_file, chargefile, include_comments_nta)
+                                    print_options, pdb_file, chargefile, include_comments_nta, bonds_via_distance_override)
         sys.exit()
     
     ###################################################################################
@@ -76,7 +76,7 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
         # call inputs for commandline over rides
         over_rides = command_line.inputs(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded,
                                          boundary, vdw_radius_scale, reset_charges, print_options, pdb_file, chargefile, include_comments_nta,
-                                         commandline_inputs)
+                                         bonds_via_distance_override, commandline_inputs)
         
         # Set new inputs from over_rides class
         topofile = over_rides.topofile
@@ -95,6 +95,7 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
         pdb_file = over_rides.pdb_file
         chargefile = over_rides.chargefile
         include_comments_nta = over_rides.include_comments_nta
+        bonds_via_distance_override = over_rides.bonds_via_distance_override
     
     
     ######################################################
