@@ -17,6 +17,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import threading
 import traceback
 import math
 import sys
@@ -171,7 +172,11 @@ class GUI:
         
         # Run LUNAR/lmp2SYBYLmol2
         if valid_inputs:
-            try: main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=log)
+            try: 
+                inputs = (topofile, parent_directory, remove_PBC_bonds, mass_map, log)
+                t1=threading.Thread(target=main, args=inputs)
+                t1.start()
+                t1.join()
             except Exception:
                 log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')

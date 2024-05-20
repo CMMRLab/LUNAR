@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import threading
 import traceback
 import math
 import os
@@ -212,10 +213,16 @@ class atom_removal_GUI:
             valid_inputs = False
         include_type_labels = boolean[self.include_type_labels.get()]
         method = self.method.get()
+        commandline_inputs = []
         
         # Run LUNAR/atom_removal
         if valid_inputs:
-            try: main(topofile, parent_directory, newfile, atom_style, atoms2remove, include_type_labels, method, log=log)
+            try: 
+                inputs = (topofile, parent_directory, newfile, atom_style, atoms2remove, include_type_labels, method, commandline_inputs, log)
+                
+                t1=threading.Thread(target=main, args=inputs)
+                t1.start()
+                t1.join()
             except Exception:
                 log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')

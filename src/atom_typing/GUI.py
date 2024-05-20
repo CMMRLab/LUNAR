@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import threading
 import traceback
 import math
 import os
@@ -337,9 +338,13 @@ class atom_typing_GUI:
 
         # Run LUNAR/atom_typing
         if valid_inputs:
-            try: main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded, boundary,
-                      vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file, chargefile,
-                      include_comments_nta, log=log)
+            try: 
+                inputs = (topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded, boundary,
+                          vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file, chargefile,
+                          include_comments_nta, log)            
+                t1=threading.Thread(target=main, args=inputs)
+                t1.start()
+                t1.join()
             except Exception:
                 log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')

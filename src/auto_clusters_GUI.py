@@ -17,6 +17,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import threading
 import traceback
 import math
 import sys
@@ -194,7 +195,11 @@ class GUI:
         
         # Run LUNAR/auto_cluster_analysis
         if valid_inputs:
-            try: main(files_directory, N0, fav, txtfile, newfile, log=log)
+            try: 
+                inputs = (files_directory, N0, fav, txtfile, newfile, log)
+                t1=threading.Thread(target=main, args=inputs)
+                t1.start()
+                t1.join()
             except Exception:
                 log.GUI_error(traceback.format_exc())
         self.popup(log.logged)

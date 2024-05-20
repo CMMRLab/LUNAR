@@ -70,10 +70,13 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 18May2024)
+LUNAR (version 20May2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
 18May2024          JDK         - atom_typing:.py: Added command line over rides for bond finding options
+
+20May2024          JDK         - GUIs: Brought back threading to have GUI run on a seperate thread from the 
+                                       main() functions. The threading is also compatible with traceback logs.									   
 
 							  

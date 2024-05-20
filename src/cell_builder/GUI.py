@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import threading
 import traceback
 import math
 import os
@@ -489,8 +490,12 @@ class cell_builder_GUI:
 
         # Run LUNAR/cell_builder on a different thread
         if valid_inputs:
-            try: main(files, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
-                      reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, log=log)
+            try: 
+                inputs = (files, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
+                          reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, [], log)
+                t1=threading.Thread(target=main, args=inputs)
+                t1.start()
+                t1.join()
             except Exception:
                 log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs', width=200)

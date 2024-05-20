@@ -131,6 +131,10 @@ def merge(topofile, bondfile, mass_map, bondorder, maxbonded, boundary, vdw_radi
             log.out(f'Read in {topofile} SMILES string. Cite Rdkit for functionality:')
             log.out('    RDKit: Open-source cheminformatics; http://www.rdkit.org')
         else: log.error('ERROR Requesting rdkit addin and rdkit is not currently installed')
+        
+    # else exit since file extension is not supported
+    else:
+        log.error(f'ERROR topofile {topofile} has an unsupported file extension')
             
             
     # If topofile was a .mol or .sdf or .mol2 file it will not have m.masses nor correct atom types so find elements and set types

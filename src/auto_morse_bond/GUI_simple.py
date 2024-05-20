@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import threading
 import traceback
 import math
 import os
@@ -426,9 +427,13 @@ class auto_morse_bond_GUI:
         # Run LUNAR/auto_morse_bond
         valid_inputs = True
         if valid_inputs:
-            try: main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip,
-                      radius_specs, alpha_specs, alpha_scale, files2write, atom_style, zero_effected_xterms,
-                      bondbreak_scale, ff_class, include_type_labels, include_rcut, log=log)
+            try: 
+                inputs = (topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip,
+                          radius_specs, alpha_specs, alpha_scale, files2write, atom_style, zero_effected_xterms,
+                          bondbreak_scale, ff_class, include_type_labels, include_rcut, [], log)
+                t1=threading.Thread(target=main, args=inputs)
+                t1.start()
+                t1.join()
             except Exception:
                 log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs') 

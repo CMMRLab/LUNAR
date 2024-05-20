@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import threading
 import traceback
 import math
 import os
@@ -491,9 +492,14 @@ class bond_react_merge_GUI:
 
         # Run LUNAR/bond_react_merge
         if valid_inputs:
-            try: main(files, parent_directory, newfile, atom_style, generate_map_file, write_rxn_mol2files, 
-                      write_rxn_datafiles, write_moleculefiles, print_options, commandline_inputs, map_near_edge_rxn_charges,
-                      molecule_file_options, include_type_labels, log=log)
+            try:
+                inputs = (files, parent_directory, newfile, atom_style, generate_map_file, write_rxn_mol2files, 
+                          write_rxn_datafiles, write_moleculefiles, print_options, commandline_inputs, map_near_edge_rxn_charges,
+                          molecule_file_options, include_type_labels, log)
+                
+                t1=threading.Thread(target=main, args=inputs)
+                t1.start()
+                t1.join()
             except Exception:
                 log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')

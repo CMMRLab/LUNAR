@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import threading
 import traceback
 import math
 import os
@@ -188,7 +189,11 @@ class GUI:
         
         # Run LUNAR/cluster
         if valid_inputs:
-            try: clusters.analysis(topofile, N0, txtfile, fav, pflag, log=log)
+            try: 
+                inputs = (topofile, N0, txtfile, fav, pflag, log)
+                t1=threading.Thread(target=clusters.analysis, args=inputs)
+                t1.start()
+                t1.join()
             except Exception:
                 log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')

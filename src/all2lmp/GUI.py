@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import threading
 import traceback
 import math
 import os
@@ -433,10 +434,14 @@ class all2lmp_GUI:
 
         # Run LUNAR/all2lmp
         if valid_inputs:
-            try: main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_style, ff_class,
-                      use_auto_equivalence, use_assumed_auto_fill, reset_molids, reset_charges, write_txt_comments,
-                      write_bond_react, print_options, use_morse_bonds, include_type_labels, add2box, ignore_missing_parameters,
-                      shift, rotate, commandline_inputs, log=log)
+            try: 
+                inputs = (topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_style, ff_class,
+                          use_auto_equivalence, use_assumed_auto_fill, reset_molids, reset_charges, write_txt_comments,
+                          write_bond_react, print_options, use_morse_bonds, include_type_labels, add2box, ignore_missing_parameters,
+                          shift, rotate, commandline_inputs, log)
+                t1=threading.Thread(target=main, args=inputs)
+                t1.start()
+                t1.join()
             except Exception:
                 log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')

@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import threading
 import traceback
 import math
 import os
@@ -335,9 +336,13 @@ class free_volume_GUI:
         
         # Run LUNAR/free_volume
         if valid_inputs:
-            try: main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory,
-                      compute_free_volume_distributions, files2write, run_mode, probe_diameter,
-                      vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, [], log=log)
+            try: 
+                inputs = (topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory,
+                          compute_free_volume_distributions, files2write, run_mode, probe_diameter,
+                          vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, [], log)
+                t1=threading.Thread(target=main, args=inputs)
+                t1.start()
+                t1.join()
             except Exception:
                 log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')

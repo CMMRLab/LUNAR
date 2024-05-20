@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import threading
 import traceback
 import math
 import os
@@ -278,8 +279,12 @@ class add_pi_electrons_GUI:
         # Run LUNAR/add_pi_electrons
         if valid_inputs:
             try: 
-                main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
-                     parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell, log=log)
+                inputs = (topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
+                          parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell, [], log)
+                
+                t1=threading.Thread(target=main, args=inputs)
+                t1.start()
+                t1.join()
             except Exception:
                 log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')

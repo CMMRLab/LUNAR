@@ -18,6 +18,7 @@ from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import threading
 import traceback
 import math
 import os
@@ -199,7 +200,12 @@ class bond_react_merge_prep_GUI:
 
         # Run LUNAR/bond_react_merge_prep
         if valid_inputs:
-            try: main(topofile, cta_file, newfile, atom_style, parent_directory, rm_unused_coeffs, log=log)
+            try: 
+                inputs = (topofile, cta_file, newfile, atom_style, parent_directory, rm_unused_coeffs, [], log)
+                
+                t1=threading.Thread(target=main, args=inputs)
+                t1.start()
+                t1.join()
             except Exception:
                 log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')
