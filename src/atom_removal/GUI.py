@@ -75,7 +75,7 @@ class atom_removal_GUI:
         #--------------#
         # Initalize  inputs frame
         self.inputs_frame = tk.LabelFrame(self.frame, text='Inputs', font=font_settings)
-        self.inputs_frame.grid(row=0, column=0, padx=xpadding, pady=ypadding)
+        self.inputs_frame.grid(row=0, column=0, columnspan=2, padx=xpadding, pady=ypadding)
         
         # topofile selection button
         self.topofile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
@@ -108,7 +108,7 @@ class atom_removal_GUI:
         #---------------#
         # Initalize  options frame
         self.options_frame = tk.LabelFrame(self.frame, text='Options', font=font_settings)
-        self.options_frame.grid(row=1, column=0, sticky='news', padx=xpadding, pady=int(maxwidth/9.5))
+        self.options_frame.grid(row=1, column=0, columnspan=2, sticky='news', padx=xpadding, pady=int(maxwidth/9.5))
                 
 
         # atom_style drop down
@@ -150,13 +150,19 @@ class atom_removal_GUI:
         # Run button #
         #------------#
         self.run = tk.Button(self.frame, text='Run LUNAR/atom_removal.py', font=font_settings, command=self.run_LUNAR)
-        self.run.grid(row=4, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.run.grid(row=4, column=0, columnspan=2, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
                         
         #-----------------#
         # update defaults #
         #-----------------#
         self.update = tk.Button(self.frame, text='Save the current GUI settings as the default GUI settings', font=font_settings, command=self.update_py_script)
-        self.update.grid(row=5, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.update.grid(row=5, column=0, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
+        
+        #------------#
+        # Quick help #
+        #------------#
+        self.quick_help = tk.Button(self.frame, text='Quick help', font=font_settings, command=self.quickhelp)
+        self.quick_help.grid(row=5, column=1, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
         
         
         #------------------------#
@@ -170,6 +176,25 @@ class atom_removal_GUI:
     #################################
     # Functions to call as commands #
     #################################
+    # Quick help button
+    def quickhelp(self):
+        try: # Try to get text from GUI_help_page.txt file
+            txt = os.path.join(self.pwd, 'src/GUI_quick_help_pages/atom_removal.txt')
+            logged = []
+            with open(txt, 'r') as f:
+                for line in f:
+                    if line.startswith('#'): continue
+                    # Strip comment's and split by whitespace
+                    line = line.split('#')[0]
+                    line = line.rstrip()
+                    logged.append(line)
+        except: # except something failed
+            logged.append('FAILED to read LUNAR/src/GUI_quick_help_pages/atom_removal.txt document.')
+            logged.append('Most likely cause is the atom_removal.txt file was renamed in the')
+            logged.append('LUNAR/src/GUI_quick_help_pages/ directory or directory names were changed.')
+        self.popup(logged, title='Quick help')
+        return   
+    
     # Function to get filepath for topofile
     def topofile_path(self):
         ftypes = (('data files', '*.data *.data.gz'), ('all files', '*.*'))

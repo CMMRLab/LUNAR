@@ -75,7 +75,7 @@
         2 = class2 (PCFF, PCFF-IFF, COMPASS)
 		
   atom_style
-    A drop-down menu to select the format of the Atoms section that will be written in the outputted LAMMPS datafile. The all2lmp.py module
+    A drop-down menu to select the format of the Atoms section that will be written in the outputted LAMMPS datafile. auto_morse_bond_update.py
     supports many LAMMPS atom styles, however if the information for the atom style does not exist in the read-in frc_file, the code will insert
     ZERO's and will WARN the user of doing so. In general for fix-bond force fields the full atom style is recomended and for ReaxFF the charge
     atom style is recomended.

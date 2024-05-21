@@ -1,0 +1,81 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restricted to 145.
+#
+# Last edited 5/21/2024
+#
+************
+* Overview *
+************
+  LUNAR/auto_cluster_analysis.py is meant to analyze "large batches" of LAMMPS datafiles by loading in a directory of LAMMPS datafiles iterating
+  through the directory automatically and then storing the outputs (user-defined based on some small amount of Python coding) in a .csv file.
+  This can reduce the tedious process of analyzing "large batches" of LAMMPS datafiles with cluster_analysis.py however customizing the output
+  .csv file format requires a small amount of Python code manipulation. The default values written to the .csv files are enough to compute the
+  gel point of polymerization simulation, but others may be added if the users desire them. The following metrics can be reported in the .csv file
+    Clusters from 1-to-N clusters in the systems where the following metrics are computed for each bonded cluster:
+      Number of atoms (size)
+      Percent number of atoms (% size)
+      Mass (in AMU)
+      Percent Mass (% mass)
+    Extent of reaction (p)
+    Critical extent of reaction (pg)
+    Degree of Polymerization (Xn)
+    Weight-average molar mass (Mw)
+    Number-average molar mass (Mn)
+    Higher-average molar mass (Mz)
+    Higher-average molar mass (Mz+1)
+    Weight-average reduced molar mass (RMW)
+
+
+**********
+* Inputs *
+**********
+
+  files_directory  
+    Button to set the files directory to load in all the LAMMPS datafiles in the directory and analyze the bonding connectivity. You may also
+    directly type the files directory name to the right of the button as well.
+	
+  N0 and fav
+    Entries to set N0 and fav values which are used to compute the following metrics:
+      Extent of reaction: p = (2*(N0-N))/(N0*fav)
+      Critical extent of reaction: pg = 2/fav
+      Degree of Polymerization: Xn = 2/(2-p*fav)
+      Where:
+        p is the extent of reaction
+        pg is the critical extent of reaction
+        N0 Number of initial molecules before polymerization
+        N is the number of clusters in the current LAMMPS datafile
+        fav is the average number of functional groups present per monomer unit  
+        Xn is the degree of polymerization  
+	
+  txtfile
+    A drop-down menu to select a Boolean variable (True or False) to write a .txt file to log the printouts of the code.
+	
+***********
+* Buttons *
+***********
+
+  Run LUNAR/cluster_analysis.py
+    A button to run the cluster_analysis.py to merge all parameters of mutliple molecular systems, using all settings defined in the GUI.
+	
+  Save the current GUI settings as the default GUI settings
+    A button to update variables in cluster_analysis.py file. Each time the GUI is launched all GUI settings are loaded from the
+    cluster_analysis.py file. Thus this button creates a method to update the cluster_analysis.py file. The CLI also initializes its
+    defaults from the variables in the cluster_analysis.py, so this button updates the defaults for that run mode as well. Finally, running
+    cluster_analysis.py from an IDE, the defaults for IDE usage are also set by the variables in the cluster_analysis.py file, thus
+    this button will also update the defaults for IDE usage.
+    
+  Quick help
+    A button to create a popup for quick help and guidance.
+
+*****************************************************************************
+* Please see the "Code: cluster_analysis.py" chapter in the official manual *
+* found in the LUNAR/docs folder for further details.                       *
+*****************************************************************************

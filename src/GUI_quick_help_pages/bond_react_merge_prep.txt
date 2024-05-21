@@ -1,0 +1,99 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restricted to 145.
+#
+# Last edited 5/21/2024
+#
+************
+* Overview *
+************
+
+  LUNAR/bond_react_merge_prep.py is meant to prepare inputs for LUNAR/bond_react_merge.py, for cases in which the files were not immediately
+  generated with LUNAR/all2lmp.py. In particular, this code will read in a LAMMPS datafile and a comment-type-assignment (.cta) file to add
+  in the comments as if the file was written by LUNAR/all2lmp.py. The output of this code will be a file that is compatible with
+  LUNAR/bond_react_merge.py.
+
+**********
+* Inputs *
+**********
+
+  topofile   
+    Button to load in a LAMMPS datafile to add comments to make the file compatible with LUNAR/bond_react_merge.py. You may also directly type
+    the filename in the entry to the right of the button as well.
+	
+  cta_file
+    Button to load in a file defining atom types/elements to add comments to the topofile. You may also directly type the filename in the
+    entry to the right of the button as well. The filename must have either the .cta extension.
+            
+  parent_directory
+    Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the 
+    right of the button as well. The path can be a full path or relative path or be set to the . (dot character) to write files to the
+    location where bond_react_merge.py is currently being run from. Setting parent_directory to "topofile" will use the path of the topofile
+    variable to write the files to that location on your machine. The "topofile" shortcut string should be the default usage for 1st time users.
+	
+  newfile
+    An entry to supply a string that will be used to set the output filenames. The following options exist for using the newfile string for
+    setting the output file basenames: 
+      
+      if newfile starts with ':' or ends with ':'
+        The output filename(s) will be the same as the input filename(s), but will have a suffix or prefix added to the file basename. The
+        following are examples:
+          Suffix (newfile == ':_cta'  and topofile == 'detda.data')
+            basename = 'detda_cta', where the ':' character acts as a placeholder for the topofile basename.
+          Prefix (newfile == 'cta-:'  and topofile == 'detda.data')
+            basename = 'cta-detda', where the ':' character acts as a placeholder for the topofile basename.
+        Recommended usage: common and safe as this method is safe and output filename(s) carry similar names to input filename(s).
+		
+      if newfile == 'ANYTEXT'
+        The output filename(s) will be set as the file tag of each file and 'ANYTEXT' will be a suffix appended to the file tag. For example:
+          newfile = '-cta', topofile = 'detda.data', and tag = 'data1'
+          basename = 'data1-cta'
+        Recommended usage: occasional and safe as output filename(s) no longer carry similar names as output filename(s), but is safe as output
+        filename(s) will not overwrite input filename(s).
+      
+      if newfile == '':
+        The output filename(s) will be the same as the input filename(s). This can be a dangerous option as you may inadvertently overwrite a
+        file and then must assume the file to contain certain information, but it contains other information.
+        Recommended usage: rare and dangerous as this could lead to using incorrect files if not paying attention very carefully.
+
+  atom_style
+    A drop-down menu to select the format of the Atoms section that will be written in the outputted LAMMPS datafile. bond_react_merge_prep.py
+    module supports many LAMMPS atom styles, however if the information for the atom style does not exist in the read-in datafile, the code
+    will insert ZERO's and will WARN the user of doing so. In general for fix-bond force fields the full atom style is recomended and for
+    ReaxFF the charge atom style is recomended.
+	
+  rm_unused_coeffs
+    A drop-down menu to select a Boolean variable (True or False) to remove any CoeffIDs where atomID(s) do not currently use that coeffID.
+    Typically, unused coeffIDs(s) occur in a "fix bond/react" simulation as the "fix bond/react" algorithm is changing which atoms are using
+    which coeffIDs. These unused CoeffIDs will not harm while using bond_react_merge.py or bond_react_merge_prep.py but they do make the LAMMPS
+    datafile slightly more unorganized. Most of the LUNAR codes have been devised to keep the LAMMPS datafile organized and neat and this option
+    allows us to keep that philosophy true. The default value of rm_unused_coeffs should be True.
+	
+***********
+* Buttons *
+***********
+
+  Run LUNAR/bond_react_merge_prep.py
+    A button to run the bond_react_merge_prep.py to merge all parameters of mutliple molecular systems, using all settings defined in the GUI.
+	
+  Save the current GUI settings as the default GUI settings
+    A button to update variables in bond_react_merge_prep.py file. Each time the GUI is launched all GUI settings are loaded from the
+    bond_react_merge_prep.py file. Thus this button creates a method to update the bond_react_merge_prep.py file. The CLI also initializes its
+    defaults from the variables in the bond_react_merge_prep.py, so this button updates the defaults for that run mode as well. Finally, running
+    bond_react_merge_prep.py from an IDE, the defaults for IDE usage are also set by the variables in the bond_react_merge_prep.py file, thus
+    this button will also update the defaults for IDE usage.
+    
+  Quick help
+    A button to create a popup for quick help and guidance.
+
+*****************************************************************************
+* Please see the "Code: bond_react_merge_prep.py" chapter in the official   *
+* manual found in the LUNAR/docs folder for further details.                *
+*****************************************************************************

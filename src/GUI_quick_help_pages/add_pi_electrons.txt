@@ -1,0 +1,162 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restricted to 145.
+#
+# Last edited 5/21/2024
+#
+************
+* Overview *
+************
+
+  LUNAR/add_pi_electrons.py is meant to add pi-electrons to any PCFF-IFF LAMMPS datafile. The pi-electrons allow for electrostatic interactions
+  to be modeled in pure sp2 Carbon systems.
+
+**********
+* Inputs *
+**********
+
+  topofile   
+    Button to load in a LAMMPS datafile to add comments to make the file compatible with LUNAR/bond_react_merge.py. You may also directly type
+    the filename in the entry to the right of the button as well.
+            
+  parent_directory
+    Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the 
+    right of the button as well. The path can be a full path or relative path or be set to the . (dot character) to write files to the
+    location where bond_react_merge.py is currently being run from. Setting parent_directory to "topofile" will use the path of the topofile
+    variable to write the files to that location on your machine. The "topofile" shortcut string should be the default usage for 1st time users.
+	
+  newfile
+    An entry to supply a string that will be used to set the output filenames. The following options exist for using the newfile string for
+    setting the output file basenames: 
+      
+      if newfile starts with ':' or ends with ':'
+        The output filename(s) will be the same as the input filename(s), but will have a suffix or prefix added to the file basename. The
+        following are examples:
+          Suffix (newfile == ':_pi_electrons'  and topofile == 'detda.data')
+            basename = 'detda_pi_electrons', where the ':' character acts as a placeholder for the topofile basename.
+          Prefix (newfile == 'pi_electrons-:'  and topofile == 'detda.data')
+            basename = 'pi_electrons-detda', where the ':' character acts as a placeholder for the topofile basename.
+        Recommended usage: common and safe as this method is safe and output filename(s) carry similar names to input filename(s).
+		
+      if newfile == 'ANYTEXT'
+        The output filename(s) will be set as the file tag of each file and 'ANYTEXT' will be a suffix appended to the file tag. For example:
+          newfile = '-pi_electrons', topofile = 'detda.data', and tag = 'data1'
+          basename = 'data1-pi_electrons'
+        Recommended usage: occasional and safe as output filename(s) no longer carry similar names as output filename(s), but is safe as output
+        filename(s) will not overwrite input filename(s).
+      
+      if newfile == '':
+        The output filename(s) will be the same as the input filename(s). This can be a dangerous option as you may inadvertently overwrite a
+        file and then must assume the file to contain certain information, but it contains other information.
+        Recommended usage: rare and dangerous as this could lead to using incorrect files if not paying attention very carefully.
+
+***********
+* Options *
+***********
+
+  atom_style
+    A drop-down menu to select the format of the Atoms section that will be written in the outputted LAMMPS datafile. add_pi_electrons.py module
+    supports many LAMMPS atom styles, however if the information for the atom style does not exist in the read-in frc_file, the code will insert
+    ZERO's and will WARN the user of doing so. In general for fix-bond force fields the full atom style is recomended and for ReaxFF the charge
+    atom style is recomended.
+	
+  convert2cg1
+    A drop-down menu to select a Boolean variable (True or False) to have the atomTypeIDs in types2convert to be converted to cg1 parameters.
+    For example, if only converting the PCFF cp atom type the cp Masses and Pair Coeffs will be converted to cg1, the cp-cp Bond Coeffs will
+    be converted to cg1-cg1, the cp-cp-cp Angle Coeffs will be converted to cg1-cg1-cg1, the cp-cp-cp-cp Dihedral Coeffs will be converted to
+    cg1-cg1-cg1-cg1 and the cp-cp-cp-cp Improper Coeffs will be converted to cg1-cg1-cg1-cg1. All the corresponding crossterms will be converted
+    accordingly. Please note that when using convert2cg1 the atomic charges will be left alone and must be updated using add_pi_electrons or
+    reset_charges Boolean variables.
+	
+  add_pi_electrons
+    A drop-down menu to select a Boolean variable (True or False) to add pi-electrons to the atomTypeIDs listed in types2convert. When the
+    pi-electrons are added the bonding and angle topologies will be updated and the parameters will be assigned accordingly. Using
+    add_pi_electrons will also add in the proper pi-electron charge and update the charge on all atomTypeIDs in types2convert, thus if
+    add_pi_electrons is True there is no need to have reset_charges as True.
+	
+  reset_charges
+    A drop-down menu to select a Boolean variable (True or False) to reset the charge of all atomTypeIDs listed in types2convert to the cg1 atom
+    type charge. Note that this will make the system non-charge neutral if no pi-electrons are added to the system.
+	
+  net_zero_charge
+    A drop-down menu to select a Boolean variable (True or False) to force the system net charge to zero by adding a fixed charge value to all
+    atoms that do not belong to the atomTypeIDs listed in types2convert (i.e., every atom that has not been converted to cg1 or is not a cge
+    atom type will have their charges scaled by a fixed value to force the net system charge to be zero). 
+	
+  reset_simulation_cell
+    A drop-down menu to select a Boolean variable (True or False) to reset the simulation cell size after adding pi-electrons or to not reset
+    the simulation cell size. If the Boolean is True, the simulation cell size will be reset and if the Boolean is False, the simulation cell
+    size will not be reset. This option is useful for when add_pi_electrons is True for some system types. When a pi-electron is added it
+    inherits the image flag from the carbon atom that it is added to and LAMMPS will rewrap and atoms that are outside of the simulation cell
+    when reading the file. However, some systems like a graphite system may have a simulation cell size that is too small for adequate re-
+    wrapping of the pi-electron and it may cause errors. In these cases, it is beneficial to reset the simulation cell size. When the simulation
+    cell size is reset the span of all atoms is found and 0.5 angstrom buffer is added to the max span of all the atoms. If the new simulation
+    cell size becomes smaller than the original simulation cell, the original simulation cell size in that direction will be used instead (i.e.
+    this operation will only ever grow a simulation cell and never shrink the simulation cell).
+	
+  include_type_labels
+    A drop-down menu to select the Boolean to include LAMMPS TypeLabels in the written LAMMPS datafile or the written LAMMPS molecule files. If
+    the Boolean is True TypeLabels will be written in files, if the Boolean is False the written files will use the standard LAMMPS TypeIDs.
+	
+  neighbor_charge_constrain
+    A drop-down menu to select how to handle charge on "compounds" (materials that are not either pure graphite or CNT or fullerene, where there
+    are other atom types bonded to the aromatic carbon atoms). The IFF charge model using the virtual pi-electrons was originally formulated only
+    for pure graphitic systems and thus when trying to use the pi-electron charge with system that have different atom types other than aromatic
+    carbons, the total system charge will become none-neutral. One method around this is to enforce the system charge to be neutral via the
+    net_zero_charge option, however this method can have adverse effects such as completely removing charge from all none-aromatic atoms or
+    arbitrarily scaling all none-aromatic atoms by the same charge value to achieve charge neutrality. This option provides a greater level of
+    control to enforce charge neutrality. If your system is pure graphite or CNT or fullerene this option can be set to any supported options as
+    none of the options effect this type of system. The following options exist:
+      'none'                   which does not apply any constraint to how neighbor charges are handled. If there are any first neighbors bonded
+                               to the aromatic carbon atoms, this method may result in a none-charge neutral system.
+	  
+      'check-neighbors'        which checks that all neighbors are aromatic and only places the pi-electron if all neighbors are aromatic. This
+                               method is recommended if you are unsure what method to use as these type of atoms already have charge modeled and
+                               reducing the number of atoms in the simulation. Reducing the number of added pi-electrons results in the quickest
+                               simulation times.
+	  
+      'accumulate-carbon'      which will accumulate any residual charge into the carbon atom, to ensure the "local grouping of atoms" stays
+                               charge neutral and thus the entire system will remain charge neutral.
+	  
+      'accumulate-pi-electron' which will accumulate any residual charge into the pi-electron atoms, to ensure the "local grouping of atoms"
+                               stays charge neutral and thus the entire system will remain charge neutral.
+	  
+      'accumulate-neighbor'    which will accumulate any residual charge into the first neighboring atom, to ensure the "local grouping of atoms"
+                               stays charge neutral and thus the entire system will remain charge neutral.
+							   
+  types2convert
+    An entry to add any atomTypeIDs to convert from either a "cp" and/or "c5" atom type to a "cg1" atom type. Additionally, the atomTypeIDs
+    present in this list can have pi-electrons added to them by using the add_pi_electrons Boolean variable or charges set as "cg1" by using
+    the reset_charges Boolean variable. You may supply the atomTypeIDs as int values or if the read-in topofile has atom type comments in the
+    Masses section you may supply a string value of the atomType characters (i.e., "cp" or "c5" may be used to identify the atomTypeIDs to
+    convert to "cg1" or add pi electrons to).
+	
+
+***********
+* Buttons *
+***********
+
+  Run LUNAR/add_pi_electrons.py
+    A button to run the add_pi_electrons.py to merge all parameters of mutliple molecular systems, using all settings defined in the GUI.
+	
+  Save the current GUI settings as the default GUI settings
+    A button to update variables in add_pi_electrons.py file. Each time the GUI is launched all GUI settings are loaded from the
+    add_pi_electrons.py file. Thus this button creates a method to update the add_pi_electrons.py file. The CLI also initializes its
+    defaults from the variables in the add_pi_electrons.py, so this button updates the defaults for that run mode as well. Finally, running
+    add_pi_electrons.py from an IDE, the defaults for IDE usage are also set by the variables in the add_pi_electrons.py file, thus
+    this button will also update the defaults for IDE usage.
+    
+  Quick help
+    A button to create a popup for quick help and guidance.
+
+*****************************************************************************
+* Please see the "Code: add_pi_electrons.py" chapter in the official manual *
+* found in the LUNAR/docs folder for further details.                       *
+*****************************************************************************

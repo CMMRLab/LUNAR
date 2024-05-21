@@ -75,7 +75,7 @@ class bond_react_merge_prep_GUI:
         #--------------#
         # Initalize  inputs frame
         self.inputs_frame = tk.LabelFrame(self.frame, text='Inputs', font=font_settings)
-        self.inputs_frame.grid(row=0, column=0, padx=xpadding, pady=ypadding)
+        self.inputs_frame.grid(row=0, column=0, columnspan=2, padx=xpadding, pady=ypadding)
         
         # topofile selection button
         self.topofile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
@@ -130,13 +130,19 @@ class bond_react_merge_prep_GUI:
         # Run button #
         #------------#
         self.run = tk.Button(self.frame, text='Run LUNAR/bond_react_merge_prep.py', font=font_settings, command=self.run_LUNAR)
-        self.run.grid(row=2, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.run.grid(row=2, column=0, columnspan=2, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
         
         #-----------------#
         # update defaults #
         #-----------------#
         self.update = tk.Button(self.frame, text='Save the current GUI settings as the default GUI settings', font=font_settings, command=self.update_py_script)
-        self.update.grid(row=3, column=0, sticky='news', padx=xpadding, pady=ypadding)
+        self.update.grid(row=3, column=0, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
+        
+        #------------#
+        # Quick help #
+        #------------#
+        self.quick_help = tk.Button(self.frame, text='Quick help', font=font_settings, command=self.quickhelp)
+        self.quick_help.grid(row=3, column=1, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
         
         
         #------------------------#
@@ -150,6 +156,25 @@ class bond_react_merge_prep_GUI:
     #################################
     # Functions to call as commands #
     #################################
+    # Quick help button
+    def quickhelp(self):
+        try: # Try to get text from GUI_help_page.txt file
+            txt = os.path.join(self.pwd, 'src/GUI_quick_help_pages/bond_react_merge_prep.txt')
+            logged = []
+            with open(txt, 'r') as f:
+                for line in f:
+                    if line.startswith('#'): continue
+                    # Strip comment's and split by whitespace
+                    line = line.split('#')[0]
+                    line = line.rstrip()
+                    logged.append(line)
+        except: # except something failed
+            logged.append('FAILED to read LUNAR/src/GUI_quick_help_pages/bond_react_merge_prep.txt document.')
+            logged.append('Most likely cause is the bond_react_merge_prep.txt file was renamed in the')
+            logged.append('LUNAR/src/GUI_quick_help_pages/ directory or directory names were changed.')
+        self.popup(logged, title='Quick help')
+        return   
+    
     # Function to get filepath for topofile
     def topofile_path(self):
         ftypes = (('all files', '*.*'), ('data files', '*.data *.data.gz'), ('mol files', '*.mol'), ('mol2 files', '*.mol2'), ('mdf files', '*.mdf'), ('sdf files', '*.sdf'))

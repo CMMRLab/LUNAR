@@ -1,0 +1,63 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restricted to 145.
+#
+# Last edited 5/21/2024
+#
+************
+* Overview *
+************
+
+  LUNAR/lmp2SYBYLmol2.py is meant to to have a tool to convert any LAMMPS datafile to a SYBYL .mol2 format such that chemical drawing
+  or visualization tools such as ChemDraw, Avogadro, VMD, Material Studio, etc may be used open, view and/or modify a LAMMPS simulated molecule
+  or system. The intended usage case is to either visualize a molecule/system or to be able to draw in or remove atoms using tools such as
+  ChemDraw, Avogadro, VMD, Material Studio, etc. Creating a loop of processing within LUNAR where the sequence would be atom_typing.py ->
+  all2lmp.py -> LAMMPS simulation -> lmp2SYBYLmol2.py -> chemical drawing software -> atom_typing.py, for an arbitrary number of cycles. 
+
+**********
+* Inputs *
+**********
+
+  topofile   
+    Button to load in a LAMMPS datafile to convert to a .mol2 file. You may also directly type
+    the filename in the entry to the right of the button as well.
+            
+  parent_directory
+    Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the 
+    right of the button as well. The path can be a full path or relative path or be set to the . (dot character) to write files to the
+    location where bond_react_merge.py is currently being run from. Setting parent_directory to "topofile" will use the path of the topofile
+    variable to write the files to that location on your machine. The "topofile" shortcut string should be the default usage for 1st time users.
+
+  rm_PBC_bonds
+    A drop-down menu to select a Boolean to remove periodic bonds or not remove periodic bonds, where these bonds are determined to be periodic
+    via the minimum image convention. If the intended use is to visualize a molecule system in tools such as ChemDraw, Avogadro, VMD, Material
+    Studio, etc it may be desired to remove the periodic bonds, which will appear as long bonds spanning the system.
+	
+***********
+* Buttons *
+***********
+
+  Run LUNAR/lmp2SYBYLmol2.py
+    A button to run the lmp2SYBYLmol2.py to merge all parameters of mutliple molecular systems, using all settings defined in the GUI.
+	
+  Save the current GUI settings as the default GUI settings
+    A button to update variables in lmp2SYBYLmol2.py file. Each time the GUI is launched all GUI settings are loaded from the
+    lmp2SYBYLmol2.py file. Thus this button creates a method to update the lmp2SYBYLmol2.py file. The CLI also initializes its
+    defaults from the variables in the lmp2SYBYLmol2.py, so this button updates the defaults for that run mode as well. Finally, running
+    lmp2SYBYLmol2.py from an IDE, the defaults for IDE usage are also set by the variables in the lmp2SYBYLmol2.py file, thus
+    this button will also update the defaults for IDE usage.
+    
+  Quick help
+    A button to create a popup for quick help and guidance.
+
+*****************************************************************************
+* Please see the "Code: lmp2SYBYLmol2.py" chapter in the official manual    *
+* found in the LUNAR/docs folder for further details.                       *
+*****************************************************************************

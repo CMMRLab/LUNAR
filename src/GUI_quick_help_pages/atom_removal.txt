@@ -1,0 +1,118 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restricted to 145.
+#
+# Last edited 5/21/2024
+#
+************
+* Overview *
+************
+
+  LUNAR/atom_removal.py is meant to have a tool to remove atoms from a LAMMPS datafile and then renumber the atoms, bonds, angles, dihedrals
+  and impropers to be contiguous. The energy coefficients will not be adjusted after deleting atoms so there may be energy coefficients that
+  are not used by any atom, bond, angle, or dihedral, or improper. Additionally, atom_removal.py will write the energy coefficient comments
+  and the style hints (if they exist in the read-in file) in the output LAMMPS datafile. The initial intended use case of atom_removal.py was
+  to fix templates that are built for a LAMMPS "fix bond/react" simulation where the template was accidentally built with atoms that should not
+  be in the template. The most typical case is when individuals accidentally leave extra atoms on any atom that should be an "edge atom" in the
+  template ("edge atoms" should only have one bonded neighbor, but it seems that even experienced "fix bond/react" often forget this when making
+  the reaction templates). atom_removal.py can be used to fix quickly and easily these types of "fix bond/react" templates where the energy
+  coefficient comments are maintained in the output, such that the atom_removal.py output LAMMPS datafille can be used immediately in
+  bond_react_merge.py to create an entire set of files for a "fix bond/react" simulation.
+
+**********
+* Inputs *
+**********
+
+  topofile   
+    Button to load in a LAMMPS datafile to remove certain atoms from the file. You may also directly type the filename in the entry to the right
+    of the button as well.
+            
+  parent_directory
+    Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the 
+    right of the button as well. The path can be a full path or relative path or be set to the . (dot character) to write files to the
+    location where bond_react_merge.py is currently being run from. Setting parent_directory to "topofile" will use the path of the topofile
+    variable to write the files to that location on your machine. The "topofile" shortcut string should be the default usage for 1st time users.
+	
+  newfile
+    An entry to supply a string that will be used to set the output filenames. The following options exist for using the newfile string for
+    setting the output file basenames: 
+      
+      if newfile starts with ':' or ends with ':'
+        The output filename(s) will be the same as the input filename(s), but will have a suffix or prefix added to the file basename. The
+        following are examples:
+          Suffix (newfile == ':_rm_atoms'  and topofile == 'detda.data')
+            basename = 'detda_rm_atoms', where the ':' character acts as a placeholder for the topofile basename.
+          Prefix (newfile == 'rm_atoms-:'  and topofile == 'detda.data')
+            basename = 'rm_atoms-detda', where the ':' character acts as a placeholder for the topofile basename.
+        Recommended usage: common and safe as this method is safe and output filename(s) carry similar names to input filename(s).
+		
+      if newfile == 'ANYTEXT'
+        The output filename(s) will be set as the file tag of each file and 'ANYTEXT' will be a suffix appended to the file tag. For example:
+          newfile = '-rm_atoms', topofile = 'detda.data', and tag = 'data1'
+          basename = 'data1-rm_atoms'
+        Recommended usage: occasional and safe as output filename(s) no longer carry similar names as output filename(s), but is safe as output
+        filename(s) will not overwrite input filename(s).
+      
+      if newfile == '':
+        The output filename(s) will be the same as the input filename(s). This can be a dangerous option as you may inadvertently overwrite a
+        file and then must assume the file to contain certain information, but it contains other information.
+        Recommended usage: rare and dangerous as this could lead to using incorrect files if not paying attention very carefully.
+
+***********
+* Options *
+***********
+
+  atom_style
+    A drop-down menu to select the format of the Atoms section that will be written in the outputted LAMMPS datafile. atom_removal.py module
+    supports many LAMMPS atom styles, however if the information for the atom style does not exist in the read-in frc_file, the code will insert
+    ZERO's and will WARN the user of doing so. In general for fix-bond force fields the full atom style is recomended and for ReaxFF the charge
+    atom style is recomended.
+	
+  include_type_labels
+    A drop-down menu to select the Boolean to include LAMMPS TypeLabels in the written LAMMPS datafile or the written LAMMPS molecule files. If
+    the Boolean is True TypeLabels will be written in files, if the Boolean is False the written files will use the standard LAMMPS TypeIDs.
+	
+  method
+    A drop-down menu to set the method to determine which atoms should be removed from the systems. The following strings/methods are supported:
+      'atomIDs'      which will identify atoms to remove based on their atomID that will be supplied in the atoms2remove list.
+      'typeIDs'      which will identify atoms to remove based on their atomTypeID that will be supplied in the atoms2remove list.
+      'cluster-mass' will perform cluster analysis and identify atoms based on a cutoff value set in in the atoms2remove list, where all cluster
+                     mass less than or equal to the cutoff value will be removed.
+      'cluster-size' will perform cluster analysis and identify atoms based on a cutoff value set in in the atoms2remove list, where all cluster
+                     size (number of atoms) less than or equal to the cutoff value will be removed.
+			   
+  atoms2remove
+    An entry to add any atomIDs or atomTypeIDs or mass cutoff or size cutoff to remove based on the remove method. The atomIDs or typeIDs should
+    be integer values with no limit to the number of them to add to the atoms2remove list. However, it is envisioned that users visualize their
+    LAMMPS datafile and pick a small number of atoms to remove by specifying their atomIDs or typeIDs in the atoms2remove list. NOTE for cluster
+    -size or cluster-mass only a single value maybe supplied in list.
+	
+
+***********
+* Buttons *
+***********
+
+  Run LUNAR/atom_removal.py
+    A button to run the atom_removal.py to merge all parameters of mutliple molecular systems, using all settings defined in the GUI.
+	
+  Save the current GUI settings as the default GUI settings
+    A button to update variables in atom_removal.py file. Each time the GUI is launched all GUI settings are loaded from the
+    atom_removal.py file. Thus this button creates a method to update the atom_removal.py file. The CLI also initializes its
+    defaults from the variables in the atom_removal.py, so this button updates the defaults for that run mode as well. Finally, running
+    atom_removal.py from an IDE, the defaults for IDE usage are also set by the variables in the atom_removal.py file, thus
+    this button will also update the defaults for IDE usage.
+    
+  Quick help
+    A button to create a popup for quick help and guidance.
+
+*****************************************************************************
+* Please see the "Code: atom_removal.py" chapter in the official manual     *
+* found in the LUNAR/docs folder for further details.                       *
+*****************************************************************************

@@ -1,0 +1,180 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restricted to 145.
+#
+# Last edited 5/21/2024
+#
+************
+* Overview *
+************
+
+  LUNAR/free_volume.py is meant to estimate the free volume, percent free volume, free volume spatial distribution, and free volume
+  connectivity in a LAMMPS simulated system. 
+
+**********
+* Inputs *
+**********
+
+  topofile   
+    Button to load in a LAMMPS datafile to analyze the free volume in the system. You may also directly type the filename in the entry to the
+    right of the button as well.
+    
+  parent_directory
+    Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the
+    right of the button as well. The path can be a full path or relative path or be set to the . (dot character) to write files to the location
+    where free_volume.py is currently being run from. Setting parent_directory to "topofile" will use the path of the topofile variable to write
+    the files to that location on your machine. The "topofile" shortcut string should be the default usage for 1st time users.
+	
+  run_mode
+    A drop-down menu to select the run mode and dependencies of the free volume calculation. Depending on the chosen max_voxel_size and the
+    number of atoms and the size of the simulation cell, free_volume.py can become very slow to compute the free volume. Different run modes
+    have been provided to try to optimize the run time, but also control the number of additional Python packages needed to run the code. The
+    following run modes are supported with a description and their dependencies:
+      'stl'       which runs on the standard Python library and requires: tqdm. This is the slowest-performing run mode but has the least amount
+                  of dependencies.
+      
+	  'numpy'     which runs on the standard Python library uses numpy vectorization and requires tqdm and numpy. This is the medium-performing
+                  run mode and has a medium amount of dependencies.
+      
+	  'numba'     which runs on the standard Python library and uses numba to compile numpy arrays down to machine code and runs in serial and
+                  requires: tqdm, numpy, and numba. This is one of the fastest-performing run modes and has the most amount of dependencies.
+      
+	  'numba-p'    which runs on the standard Python library and uses numba to compile numpy arrays down to machine code runs in parallel and
+                   requires: tqdm, numpy, and numba. This is one of the fastest-performing run modes and has the most amount of dependencies.
+                   The numba documentation does not say how it determines the number of processors it will use to parallelize the code, so it is
+                   best to assume that it will use all available processors to run the code in parallel, which means you should be cautious
+                   about running free_volume.py on an HPC infrastructure in 'numba-p' mode, since it may try to run on all the HPC processors
+                   (this also depends on the queuing system and architecture or the HPC clusters).
+      
+	  'stl-dd'     which has the same meaning as 'stl', but uses a domain decomposition and linked cell list algorithm instead of the default
+                   algorithm. The domain decomposition and linked cell list algorithm may be quicker for all models over the 'stl' run_mode.
+      
+	  'numba-dd'   which has the same meaning as 'numba', but uses a domain decomposition and linked cell list algorithm instead of the default
+                   algorithm. The domain decomposition and linked cell list algorithm may be quicker for some models over the 'numba' run_mode.
+      
+	  'numba-ddp'  which has the same meaning as 'numba-p', but uses a domain decomposition and linked cell list algorithm instead of the default
+                   algorithm. The domain decomposition and linked cell list algorithm may be quicker for some models over the 'numba-p' run_mode.
+      
+	  'CUDA'       which runs on the standard Python library and uses numba to compile numpy arrays down to machine code runs in parallel on the
+                   GPU and requires: tqdm, numpy, and numba. This is one of the fastest-performing run modes and has the most amount of
+                   dependencies. This mode requires that you have a CUDA-enabled GPU (i.e. a NVIDIA GPU) and the number of threads per block for
+                   atom operations and voxel operations are defined via the Python variables CUDA_threads_per_block_atoms and
+                   CUDA_threads_per_block_voxels, respectively. 
+      
+	  'CUDA-dd'    which has the same meaning as 'CUDA', but uses a domain decomposition and linked cell list algorithm instead of the default
+                   algorithm. The domain decomposition and linked cell list algorithm may be quicker for some models over the 'CUDA' run_mode.
+      
+	  'dd' variants define the subdomain size from the following equation:
+        subdomain = round(2.1*max(system_vdw_radii), 2) + 2*max_voxel_size + probe_diameter
+        restrictions that the simulation cell must at least be 3*subdomain in each direction to use any of the 'dd' variants.
+		
+  CUDA_threads_per_block_atoms
+    A drop-down menu to select the number of threads per block for atom operations for the GPU parallelization. The blocks per grid are then
+    computed by:
+      blocks_per_grid_atoms  = math.ceil( natoms  / CUDA_threads_per_block_atoms )
+    The threads per block should be in doubling multiples of 8 (i.e. 8, 16, 32, 64, 128, 256, 512, and 1024), where some GPUs may not be able
+    to go up to 1024.
+  
+  CUDA_threads_per_block_voxels
+    A drop-down menu to select the number of threads per block for voxel operations such as generating voxels and computing the free volume voxel
+    connectivity for the GPU parallelization. The blocks per grid are then computed by:
+      blocks_per_grid_voxels  = math.ceil( natoms  / CUDA_threads_per_block_voxels )
+    The threads per block should be in doubling multiples of 8 (i.e. 8, 16, 32, 64, 128, 256, 512, and 1024), where some GPUs may not be able
+    to go up to 1024.
+
+
+***********
+* Options *
+***********
+
+  boundary
+    An entry to set three characters with whitespace between them. This option sets the boundary of the simulation cell to use when computing
+    bonds via interatomic distance searching with bond length cutoffs set based on the vdw_radius_scale variable. The following characters are
+    supported:
+      p is periodic
+      f is non-periodic and fixed
+    The characters are based on LAMMPS syntax and each location in the string sets the x, y, or z faces of the simulation cell to that boundary.
+	
+  max_voxel_size
+    An entry to supply a float or int value that will set the maximum voxel size to discretize the simulation cell into voxels. The max_voxel_size
+    is the maximum length of any edge on the discretized voxel.
+	
+  probe_diameter
+    An entry to supply a float or int value that will set the probe size in insert it into the voxelated grid. If the probe diameter is zero the
+    atom volume calculation is exactly the vdw volume of the atoms. Whereas if the probe diameter is greater than zero the calculation starts to
+    approach the Positron annihilation lifetime spectroscopy (PALS) method and the probe diameter supplied to free_volume.py can be thought of as
+    the probe size of Positron annihilation lifetime spectroscopy (PALS) method.
+	
+  vdw_method
+    A drop-down menu to select the vdw radii to use for setting the occupied vdw volume. The following methods are supported:
+      'dict'   where the used vdw radii will come from the vdw_radius dictionary.
+      'class1' where the used vdw radii will come from the read-in topofile and the topofile uses the 12-6 LJ potential and parameter ordering
+	           in file is [epsilon sigma].
+      'class2' where the used vdw radii will come from the read-in topofile and the topofile uses the 9-6 LJ potential and parameter ordering
+               in file is [epsilon sigma].
+			   
+  compute_free_volume_distributions
+    A drop-down menu to select a Boolean (True or False) to compute the free volume voxel connectivity based on a graph theory approach. For a
+    voxel to be connected to another it must be less than a max_voxel_size distance away in either the X, Y, or Z-directions, which means a voxel
+    that is "fully buried" in other voxels will have 26 first neighbors. Once the first neighbor connectivity is determined the voxels are
+    determined to be connected to a larger number of neighbors using a breadth-first search traversal. This analysis works decently well but
+    tends to be slow and the results usually don't further the understanding of the tested systems. Due to this, it is often recommended that
+    this option is set as False and used only if a need seems to arise to understand the free volume connectivity. In most cases, the free volume
+    is usually one large, connected volume, which is why compute_free_volume_distributions should usually be False since it is slow, and that
+    information can almost already be assumed to be the case.
+
+***********************
+* Files2write options *
+***********************
+
+  This section will detail some of the optional files that LUNAR/free_volume.py can write. These files are meant for further analysis or to be
+  able to visualize the free volume in some manner. The following files to write options are available:
+    'write_atoms_free' which is a *.data file with the voxels that are assigned to the atoms and to the free volume, where different atomTypeIDs
+                       are provided to visualize the atom volume and free volume together in software like OVITO.
+  
+    'write_bonds_free' which is a *.data file with the voxels that are assigned to the free volume and the atoms and bonds are transferred from
+                       the read in topofile, where different atomTypeIDs are provided to visualize the atoms/bonds and free volume together in
+                       software like OVITO.
+  
+    'write_atoms_only' which is a *.data file with the voxels that are assigned to the atoms only, where different atomTypeIDs are provided for
+	                   the element types in the system to visualize the atom volume in software like OVITO.
+  
+    'write_free_only'  which is a *.data file with the voxels that are assigned to the free volume only to visualize the free volume in software
+                       like OVITO.
+  
+    'write_all_voxels' which is a *.data file with all the unassigned voxels to get an understanding of how discretized the system was based on
+                       the max_voxel_size variable.
+  
+    'write_spat_dis-x' which is a *spatial_distribution_direction_x.csv file of the free volume grouped spatial distribution in the X-directions.
+  
+    'write_spat_dis-y' which is a *spatial_distribution_direction_y.csv file of the free volume grouped spatial distribution in the Y-directions.
+    
+	'write_spat_dis-z' which is a *spatial_distribution_direction_z.csv file of the free volume grouped spatial distribution in the Z-directions.
+
+***********
+* Buttons *
+***********
+
+  Run LUNAR/free_volume.py
+    A button to run the free_volume.py to set the atom types of a molecular system, using all settings defined in the GUI.
+	
+  Save the current GUI settings as the default GUI settings
+    A button to update variables in free_volume.py file. Each time the GUI is launched all GUI settings are loaded from the free_volume.py file.
+    Thus this button creates a method to update the free_volume.py file. The CLI also initializes its defaults from the variables in the
+    free_volume.py, so this button updates the defaults for that run mode as well. Finally, running free_volume.py from an IDE, the defaults for
+    IDE usage are also set by the variables in the free_volume.py file, thus this button will also update the defaults for IDE usage.
+    
+  Quick help
+    A button to create a popup for quick help and guidance.
+
+******************************************************************************
+* Please see the "Code: free_volume.py" chapter in the official manual found *
+* in the LUNAR/docs folder for further details.                              *
+******************************************************************************

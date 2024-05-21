@@ -50,7 +50,7 @@ LUNAR (version 16May2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-14May2024          JDK         - auto_morse_bond_update.py: Finished "Quick help" page 
+14May2024          JDK         - auto_morse_bond_update.py GUI: Finished "Quick help" page 
 
 15May2024          JDK         - all2lmp.py: Made "equivs" compatible with new ATOMTYPE:NAME convention
                                - Update examples in EXAMPLES/atom_typing_general/ folder
@@ -70,13 +70,21 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 20May2024)
+LUNAR (version 21May2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
 18May2024          JDK         - atom_typing:.py: Added command line over rides for bond finding options
 
 20May2024          JDK         - GUIs: Brought back threading to have GUI run on a seperate thread from the 
-                                       main() functions. The threading is also compatible with traceback logs.									   
+                                       main() functions. The threading is also compatible with traceback logs.	
+
+21May2024          JDK         - bond_react_merge_prep.py GUI: Added "Quick help" page	
+21May2024          JDK         - add_pi_electrons.py GUI: Added "Quick help" page	
+21May2024          JDK         - cluster_analysis.py GUI: Added "Quick help" page
+21May2024          JDK         - auto_cluster_analysis.py GUI: Added "Quick help" page	
+21May2024          JDK         - lmp2SYBYLmol2.py GUI: Added "Quick help" page	
+21May2024          JDK         - atom_removal.py GUI: Added "Quick help" page		
+21May2024          JDK         - free_volume.py GUI: Added "Quick help" page							   
 
 							  
