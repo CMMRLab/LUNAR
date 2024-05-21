@@ -80,11 +80,12 @@ Date               Developer   Description
                                        main() functions. The threading is also compatible with traceback logs.	
 
 21May2024          JDK         - bond_react_merge_prep.py GUI: Added "Quick help" page	
-21May2024          JDK         - add_pi_electrons.py GUI: Added "Quick help" page	
-21May2024          JDK         - cluster_analysis.py GUI: Added "Quick help" page
-21May2024          JDK         - auto_cluster_analysis.py GUI: Added "Quick help" page	
-21May2024          JDK         - lmp2SYBYLmol2.py GUI: Added "Quick help" page	
-21May2024          JDK         - atom_removal.py GUI: Added "Quick help" page		
-21May2024          JDK         - free_volume.py GUI: Added "Quick help" page							   
+                   JDK         - add_pi_electrons.py GUI: Added "Quick help" page	
+                   JDK         - cluster_analysis.py GUI: Added "Quick help" page
+                   JDK         - auto_cluster_analysis.py GUI: Added "Quick help" page	
+                   JDK         - lmp2SYBYLmol2.py GUI: Added "Quick help" page	
+                   JDK         - atom_removal.py GUI: Added "Quick help" page		
+                   JDK         - free_volume.py GUI: Added "Quick help" page
+                   JDK         - Added atom_typing.py tests to "automatic_tests" directory							   
 
 							  

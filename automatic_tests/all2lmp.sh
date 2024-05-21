@@ -18,6 +18,9 @@ fi
 PWD_DIR=$PWD
 DIR=$1
 
+# Set python call (i.e. "python3 filename.py" or "python filename.py" or "py filename.py" ...)
+PYTHON="python3"
+
 # print intialization
 echo ""
 echo "************************************"
@@ -36,7 +39,7 @@ NEWFILE=":_PCFF_test"
 ASM="frc_files/general_assumed_equivs.coeffs"
 TOPO="EXAMPLES/EPON_862/atom_typing_Outputs/detda_typed.data"
 NTA="EXAMPLES/EPON_862/atom_typing_Outputs/detda_typed.nta"
-python3 all2lmp.py -dir $DIR -class 2 -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
+$PYTHON all2lmp.py -dir $DIR -class 2 -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
                    -type-labels T -reset-charges T -atomstyle full -auto-equivs T -asm $ASM -assumed-equivs F \
 				   -reset-molids T -write-comments T -write-bond-react T -morse-bond F -rx 45 -ry 45 -rz 45 \
 				   -sx 10 -sy 20 -sz 30 -add2box 5
@@ -47,7 +50,7 @@ NEWFILE=":_CVFF_test"
 ASM="frc_files/general_assumed_equivs.coeffs"
 TOPO="EXAMPLES/all2lmp_car_mdf/cnt-hexagonal-class1.mdf"
 NTA="EXAMPLES/all2lmp_car_mdf/cnt-hexagonal-class1.car"
-python3 all2lmp.py -dir $DIR -class 1 -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
+$PYTHON all2lmp.py -dir $DIR -class 1 -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
                    -type-labels T -reset-charges T -atomstyle full -auto-equivs T -asm $ASM -assumed-equivs F \
 				   -reset-molids T -write-comments T -write-bond-react F -morse-bond F -rx 0 -ry 0 -rz 0 \
 				   -sx 0 -sy 0 -sz 0 -add2box 0
@@ -58,7 +61,7 @@ NEWFILE=":_OPLS-AA_test"
 ASM="frc_files/general_assumed_equivs.coeffs"
 TOPO="EXAMPLES/all2lmp_car_mdf/ethane-oplsaa.mdf"
 NTA="EXAMPLES/all2lmp_car_mdf/ethane-oplsaa.car"
-python3 all2lmp.py -dir $DIR -class 0 -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
+$PYTHON all2lmp.py -dir $DIR -class 0 -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
                    -type-labels T -reset-charges T -atomstyle full -auto-equivs T -asm $ASM -assumed-equivs F \
 				   -reset-molids T -write-comments T -write-bond-react F -morse-bond F -rx 0 -ry 0 -rz 0 \
 				   -sx 0 -sy 0 -sz 0 -add2box 0
@@ -69,7 +72,7 @@ NEWFILE=":_ReaxFF_test"
 ASM="frc_files/general_assumed_equivs.coeffs"
 TOPO="EXAMPLES/EPON_862/atom_typing_Inputs/detda.mol"
 NTA="empty.nta"
-python3 all2lmp.py -dir $DIR -class r -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
+$PYTHON all2lmp.py -dir $DIR -class r -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
                    -type-labels F -reset-charges F -atomstyle charge -auto-equivs T -asm $ASM -assumed-equivs F \
 				   -reset-molids F -write-comments T -write-bond-react T -morse-bond F -rx 0 -ry 0 -rz 0 \
 				   -sx 0 -sy 0 -sz 0 -add2box 0
@@ -80,7 +83,7 @@ NEWFILE=":_DREIDING_test"
 ASM="frc_files/general_assumed_equivs.coeffs"
 TOPO="EXAMPLES/EPON_862/atom_typing_Inputs/detda.mol"
 NTA="DREIDING-q"
-python3 all2lmp.py -dir $DIR -class d -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
+$PYTHON all2lmp.py -dir $DIR -class d -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
                    -type-labels T -reset-charges F -atomstyle full -auto-equivs T -asm $ASM -assumed-equivs F \
 				   -reset-molids F -write-comments T -write-bond-react T -morse-bond F -rx 0 -ry 0 -rz 0 \
 				   -sx 0 -sy 0 -sz 0 -add2box 0
@@ -91,7 +94,7 @@ NEWFILE=":_DREIDING_test"
 ASM="frc_files/general_assumed_equivs.coeffs"
 TOPO="EXAMPLES/EPON_862/atom_typing_Inputs/dgebf.mol"
 NTA="DREIDING"
-python3 all2lmp.py -dir $DIR -class d -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
+$PYTHON all2lmp.py -dir $DIR -class d -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
                    -type-labels F -reset-charges T -atomstyle full -auto-equivs T -asm $ASM -assumed-equivs F \
 				   -reset-molids F -write-comments T -write-bond-react T -morse-bond F -rx 0 -ry 0 -rz 0 \
 				   -sx 0 -sy 0 -sz 0 -add2box 0
@@ -102,7 +105,7 @@ NEWFILE=":_Skeleton1_test"
 ASM="frc_files/general_assumed_equivs.coeffs"
 TOPO="EXAMPLES/EPON_862/atom_typing_Outputs/detda_typed.data"
 NTA="EXAMPLES/EPON_862/atom_typing_Outputs/detda_typed.nta"
-python3 all2lmp.py -dir $DIR -class s1 -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
+$PYTHON all2lmp.py -dir $DIR -class s1 -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
                    -type-labels F -reset-charges F -atomstyle charge -auto-equivs T -asm $ASM -assumed-equivs F \
 				   -reset-molids F -write-comments T -write-bond-react T -morse-bond F -rx 0 -ry 0 -rz 0 \
 				   -sx 0 -sy 0 -sz 0 -add2box 0
@@ -113,7 +116,7 @@ NEWFILE=":_Skeleton2_test"
 ASM="frc_files/general_assumed_equivs.coeffs"
 TOPO="EXAMPLES/EPON_862/atom_typing_Outputs/detda_typed.data"
 NTA="EXAMPLES/EPON_862/atom_typing_Outputs/detda_typed.nta"
-python3 all2lmp.py -dir $DIR -class s2 -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
+$PYTHON all2lmp.py -dir $DIR -class s2 -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
                    -type-labels F -reset-charges F -atomstyle charge -auto-equivs T -asm $ASM -assumed-equivs F \
 				   -reset-molids F -write-comments T -write-bond-react T -morse-bond F -rx 0 -ry 0 -rz 0 \
 				   -sx 0 -sy 0 -sz 0 -add2box 0
@@ -124,7 +127,7 @@ NEWFILE=":_FF_applied"
 ASM="frc_files/general_assumed_equivs.coeffs"
 TOPO="EXAMPLES/atom_typing_general/detda_general.data"
 NTA="EXAMPLES/atom_typing_general/detda_general_filled_in.nta"
-python3 all2lmp.py -dir $DIR -class 2 -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
+$PYTHON all2lmp.py -dir $DIR -class 2 -frc $FF -newfile $NEWFILE -topo $TOPO -nta $NTA -ignore T \
                    -type-labels T -reset-charges T -atomstyle full -auto-equivs T -asm $ASM -assumed-equivs F \
 				   -reset-molids T -write-comments T -write-bond-react T -morse-bond F -rx 45 -ry 45 -rz 45 \
 				   -sx 10 -sy 20 -sz 30 -add2box 5
