@@ -81,7 +81,7 @@
 ***********
 
   Run LUNAR/bond_react_merge_prep.py
-    A button to run the bond_react_merge_prep.py to merge all parameters of mutliple molecular systems, using all settings defined in the GUI.
+    A button to run the bond_react_merge_prep.py to generate inputs for bond_react_merge.py, using all settings defined in the GUI.
 	
   Save the current GUI settings as the default GUI settings
     A button to update variables in bond_react_merge_prep.py file. Each time the GUI is launched all GUI settings are loaded from the

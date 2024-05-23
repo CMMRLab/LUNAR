@@ -144,7 +144,7 @@
 ***********
 
   Run LUNAR/add_pi_electrons.py
-    A button to run the add_pi_electrons.py to merge all parameters of mutliple molecular systems, using all settings defined in the GUI.
+    A button to run the add_pi_electrons.py to enable IFF electrostatic interactions, using all settings defined in the GUI.
 	
   Save the current GUI settings as the default GUI settings
     A button to update variables in add_pi_electrons.py file. Each time the GUI is launched all GUI settings are loaded from the

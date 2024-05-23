@@ -24,7 +24,7 @@
   template ("edge atoms" should only have one bonded neighbor, but it seems that even experienced "fix bond/react" often forget this when making
   the reaction templates). atom_removal.py can be used to fix quickly and easily these types of "fix bond/react" templates where the energy
   coefficient comments are maintained in the output, such that the atom_removal.py output LAMMPS datafille can be used immediately in
-  bond_react_merge.py to create an entire set of files for a "fix bond/react" simulation.
+  atom_removal.py to create an entire set of files for a "fix bond/react" simulation.
 
 **********
 * Inputs *
@@ -37,7 +37,7 @@
   parent_directory
     Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the 
     right of the button as well. The path can be a full path or relative path or be set to the . (dot character) to write files to the
-    location where bond_react_merge.py is currently being run from. Setting parent_directory to "topofile" will use the path of the topofile
+    location where atom_removal.py is currently being run from. Setting parent_directory to "topofile" will use the path of the topofile
     variable to write the files to that location on your machine. The "topofile" shortcut string should be the default usage for 1st time users.
 	
   newfile
@@ -100,7 +100,7 @@
 ***********
 
   Run LUNAR/atom_removal.py
-    A button to run the atom_removal.py to merge all parameters of mutliple molecular systems, using all settings defined in the GUI.
+    A button to run the atom_removal.py to remove certain atoms from a system, using all settings defined in the GUI.
 	
   Save the current GUI settings as the default GUI settings
     A button to update variables in atom_removal.py file. Each time the GUI is launched all GUI settings are loaded from the

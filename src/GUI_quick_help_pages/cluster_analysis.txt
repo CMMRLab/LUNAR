@@ -60,7 +60,7 @@
 ***********
 
   Run LUNAR/cluster_analysis.py
-    A button to run the cluster_analysis.py to merge all parameters of mutliple molecular systems, using all settings defined in the GUI.
+    A button to run the cluster_analysis.py to analyze bonding connectivity, using all settings defined in the GUI.
 	
   Save the current GUI settings as the default GUI settings
     A button to update variables in cluster_analysis.py file. Each time the GUI is launched all GUI settings are loaded from the

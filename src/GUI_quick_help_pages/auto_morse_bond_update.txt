@@ -156,7 +156,7 @@
 ***********
 
   Run LUNAR/auto_morse_bond_update.py
-    A button to run the auto_morse_bond_update.py to set the atom types of a molecular system, using all settings defined in the GUI.
+    A button to run the auto_morse_bond_update.py to convert harmonic bonds to morse bonds, using all settings defined in the GUI.
 	
   Save the current GUI settings as the default GUI settings
     A button to update variables in auto_morse_bond_update.py file. Each time the GUI is launched all GUI settings are loaded from the

@@ -163,7 +163,7 @@
 ***********
 
   Run LUNAR/free_volume.py
-    A button to run the free_volume.py to set the atom types of a molecular system, using all settings defined in the GUI.
+    A button to run the free_volume.py to analyze the free volume in a molecular system, using all settings defined in the GUI.
 	
   Save the current GUI settings as the default GUI settings
     A button to update variables in free_volume.py file. Each time the GUI is launched all GUI settings are loaded from the free_volume.py file.

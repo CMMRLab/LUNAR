@@ -45,7 +45,7 @@
 ***********
 
   Run LUNAR/lmp2SYBYLmol2.py
-    A button to run the lmp2SYBYLmol2.py to merge all parameters of mutliple molecular systems, using all settings defined in the GUI.
+    A button to run the lmp2SYBYLmol2.py to convert a LAMMPS datafile to a .mol2 file, using all settings defined in the GUI.
 	
   Save the current GUI settings as the default GUI settings
     A button to update variables in lmp2SYBYLmol2.py file. Each time the GUI is launched all GUI settings are loaded from the
