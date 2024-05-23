@@ -70,7 +70,7 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 21May2024)
+LUNAR (version 23May2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -86,6 +86,8 @@ Date               Developer   Description
                    JDK         - lmp2SYBYLmol2.py GUI: Added "Quick help" page	
                    JDK         - atom_removal.py GUI: Added "Quick help" page		
                    JDK         - free_volume.py GUI: Added "Quick help" page
-                   JDK         - Added atom_typing.py tests to "automatic_tests" directory							   
+                   JDK         - Added atom_typing.py tests to "automatic_tests" directory		
+
+23May2024          JDK         - Updated "Quick help" pages					   
 
 							  
