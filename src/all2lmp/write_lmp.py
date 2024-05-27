@@ -304,20 +304,20 @@ def datafile(doc_title, atom_style, parameters, ff_class, version, include_type_
             # else raise and exception
             else: log.warn('Atom Style Error - write_lmp.py does not support atom style {atom_style}')
             
-            # Write velocities
-            try:
-                if parameters.velocities:
-                    velocities = {parameters.velocities[i] for i in parameters.velocities}
-                    atoms_in_velocities = True
-                    for i in parameters.atoms:
-                        try: vel = parameters.velocities[i]
-                        except: atoms_in_velocities = False; break;
-                    if atoms_in_velocities and len(velocities) > 1 and (0, 0, 0) not in velocities and len(parameters.velocities) == len(parameters.atoms):
-                        f.write('\nVelocities\n\n')
-                        for i in parameters.velocities:
-                            vx, vy, vz = parameters.velocities[i]
-                            f.write('{:^6} {:^15.9f} {:^15.9f} {:^15.9f}\n'.format(i, vx, vy, vz))
-            except: pass
+        # Write velocities
+        try:
+            if parameters.velocities:
+                velocities = {parameters.velocities[i] for i in parameters.velocities}
+                atoms_in_velocities = True
+                for i in parameters.atoms:
+                    try: vel = parameters.velocities[i]
+                    except: atoms_in_velocities = False; break;
+                if atoms_in_velocities and len(velocities) > 1 and (0, 0, 0) not in velocities and len(parameters.velocities) == len(parameters.atoms):
+                    f.write('\nVelocities\n\n')
+                    for i in parameters.velocities:
+                        vx, vy, vz = parameters.velocities[i]
+                        f.write('{:^6} {:^15.9f} {:^15.9f} {:^15.9f}\n'.format(i, vx, vy, vz))
+        except: pass
                 
         # Write bonds
         if parameters.nbonds > 0:
