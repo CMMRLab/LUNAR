@@ -70,7 +70,7 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 23May2024)
+LUNAR (version 30May2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -88,6 +88,8 @@ Date               Developer   Description
                    JDK         - free_volume.py GUI: Added "Quick help" page
                    JDK         - Added atom_typing.py tests to "automatic_tests" directory		
 
-23May2024          JDK         - Updated "Quick help" pages					   
+23May2024          JDK         - Updated "Quick help" pages	
+
+30May2024          JDK         - Updated manual figures of GUIs to inlcude the "Quick help" buttons				   
 
 							  
