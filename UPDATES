@@ -103,7 +103,10 @@ Date               Developer   Description
 
 4June2024          JDK         - sheet_builder.py: NEW module to generate sheet(s), chiral-tubes, and
                                                    symmetric-multi-wall tubes of sp2 hybridized atoms
-                                                   like carbon, nitrogen, boron. The module supports IFF's
-                                                   virtual pi-electrons for graphene/graphite and boron-nitride												   
+                                                   like carbon, nitrogen, boron, .... The module supports IFF's
+                                                   virtual pi-electrons for graphene/graphite and boron-nitride
+
+4June2024          JDK         - atom_typing.py: Updated general atom types to use the ':' character instead of the
+                                                 ';' character to go between QTY and general string											   
 
 							  

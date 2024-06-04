@@ -69,7 +69,7 @@ def nta(mm, basename, ff_name):
         count = dict(OrderedDict( sorted(count.items(), key=lambda x:x[0][0]) )) # [0=keys;1=values][index position in key tuple lst]
         string = ''
         for i in count:
-            string += '{};'.format(count[i])
+            string += '{}:'.format(count[i])
             string += ''.join([str(j) for j in i])
             string += ','
         return string[:-1]
@@ -111,25 +111,25 @@ def nta(mm, basename, ff_name):
         if ff_name == 'general:1':
             atom.nta_type = '{}-({})'.format(info, neigh1_info)
             tally['found'] += 1;
-            atom.nta_info = '{} type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count;elementRINGnb,...)'.format(ff_name)
+            atom.nta_info = '{} type; where type = elementRINGnb-(1st-neighs) and (1st-neighs) = (count:elementRINGnb,...)'.format(ff_name)
             
         # Set new type and comment if ff_name = general:2
         if ff_name == 'general:2':
             atom.nta_type = '{}-({})-({})'.format(info, neigh1_info, neigh2_info)
             tally['found'] += 1;
-            atom.nta_info = '{} type; where type = elementRINGnb-(1st-neighs)-(2nd-neighs) and (ith-neighs) = (count;elementRINGnb,...)'.format(ff_name)
+            atom.nta_info = '{} type; where type = elementRINGnb-(1st-neighs)-(2nd-neighs) and (ith-neighs) = (count:elementRINGnb,...)'.format(ff_name)
             
         # Set new type and comment if ff_name = general:3
         if ff_name == 'general:3':
             atom.nta_type = '{}-({})-({})-({})'.format(info, neigh1_info, neigh2_info, neigh3_info)
             tally['found'] += 1;
-            atom.nta_info = '{} type; where type = elementRINGnb-(1st-neighs)-(2nd-neighs)-(3rd-neighs) and (ith-neighs) = (count;elementRINGnb,...)'.format(ff_name)
+            atom.nta_info = '{} type; where type = elementRINGnb-(1st-neighs)-(2nd-neighs)-(3rd-neighs) and (ith-neighs) = (count:elementRINGnb,...)'.format(ff_name)
             
         # Set new type and comment if ff_name = general:4
         if ff_name == 'general:4':
             atom.nta_type = '{}-({})-({})-({})-({})'.format(info, neigh1_info, neigh2_info, neigh3_info, neigh4_info)
             tally['found'] += 1;
-            atom.nta_info = '{} type; where type = elementRINGnb-(1st-neighs)-(2nd-neighs)-(3rd-neighs)-(4th-neighs) and (ith-neighs) = (count;elementRINGnb,...)'.format(ff_name)
+            atom.nta_info = '{} type; where type = elementRINGnb-(1st-neighs)-(2nd-neighs)-(3rd-neighs)-(4th-neighs) and (ith-neighs) = (count:elementRINGnb,...)'.format(ff_name)
                 
         
         ###############################################################################
@@ -166,7 +166,7 @@ def nta(mm, basename, ff_name):
             couted_neighs = {u:neighs.count(u) for u in unique_neighs}
             nta_types = [str(info)]
             for u in couted_neighs:
-                nta_types.append('({};{})'.format(couted_neighs[u], u))
+                nta_types.append('{}({})'.format(couted_neighs[u], u))
             atom.nta_type = '-'.join(nta_types)
             atom.nta_info = '{} type; path_preserving where each set of () represent a path from the first neigh to the N-th neigh'.format(ff_name)
 
@@ -410,5 +410,7 @@ def nta(mm, basename, ff_name):
                 atoms2keep.add(atomID)
                 bonds2keep = reduce_atoms_bonds(mm, atoms2keep)
                 smallfile = '{}-atomtype={}-atomID={}.data'.format(basename, string, atomID)
+                if ':' in smallfile:
+                    smallfile = smallfile.replace(':', ';')
                 write_small_lmp(mm, atoms2keep, bonds2keep, smallfile, center=True)    
     return mm
