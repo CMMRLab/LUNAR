@@ -28,7 +28,8 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 - **free_volume.py**             LUNAR file to run free_volume.py
 - **LUNAR.py**                   LUNAR file to run LUNAR.py
 - **lmp2SYBYLmol2.py**           LUNAR file to run lmp2SYBYLmol2.py
-- **log_analysis.py**             LUNAR file to run log_analysis.py
+- **log_analysis.py**            LUNAR file to run log_analysis.py
+- **sheet_builder.py**           LUNAR file to run sheet_builder.py
 
 ## Installation
 - Install python (3.7+) via a number of different methods such as:
