@@ -14,6 +14,7 @@ from collections import OrderedDict
 import math
 import os
 
+
 ##################################
 # Function to find shortest path #
 ##################################
@@ -33,8 +34,6 @@ def find_shortest_path(graph, start, end, path=[]):
     return shortest
 
 
-
-
 ######################################################################
 # Function to perform atom-typing for PCFF-IFF forcefield atom types #
 ######################################################################
@@ -50,7 +49,6 @@ def nta(mm, basename, ff_name):
     for i in mm.bonds:
         id1, id2 = mm.bonds[i].atomids
         graph[id1].append(id2); graph[id2].append(id1);
-            
     
     ######################################
     # Set general informations and flags #
@@ -137,13 +135,6 @@ def nta(mm, basename, ff_name):
         # NEW DEVELOPMENTAL path preserving general atom types for general:N; N=2,3,4 #
         ###############################################################################
         if ff_name in ['general-pp:2', 'general-pp:3', 'general-pp:4']:
-            # Generate graph to manipulate
-            graph = {i:[] for i in mm.atoms}
-            for i in mm.bonds:
-                id1, id2 = mm.bonds[i].atomids
-                graph[id1].append(id2); graph[id2].append(id1);
-                
-            # Start finding path preserving strings
             cummulative_paths = True # option to trace out cummulative paths that terminate before "max_depth"
             first_neighs = mm.graph[i];  max_depth = int(ff_name.split(':')[-1])-1; neighs = []
             if cummulative_paths:
