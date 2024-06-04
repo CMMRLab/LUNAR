@@ -1,0 +1,47 @@
+!BIOSYM molecular_data 4
+ 
+!Date: Fri Nov 25 03:26:46 2022   Materials Studio Generated MDF file
+ 
+#topology
+
+@column 1 element
+@column 2 atom_type
+@column 3 charge_group
+@column 4 isotope
+@column 5 formal_charge
+@column 6 charge
+@column 7 switching_atom
+@column 8 oop_flag
+@column 9 chirality_flag
+@column 10 occupancy
+@column 11 xray_temp_factor
+@column 12 connections
+ 
+@molecule Molecule
+ 
+XXXX_1:B1           B  bbn     ?     0  2+    0.6500 0 0 8 1.0000  0.0000 N2 N2%010#1 N2%-100#1 H7 H8 
+XXXX_1:B2           B  bbn     ?     0  2+    0.6500 0 0 8 1.0000  0.0000 N1 N1%100#1 N1%0-10#1 H3 H4 
+XXXX_1:N1           N  nbn     ?     0  0    -0.2500 0 0 8 1.0000  0.0000 B2 B2%-100#1 B2%010#1 H5 H6 
+XXXX_1:N2           N  nbn     ?     0  0    -0.2500 0 0 8 1.0000  0.0000 B1 B1%0-10#1 B1%100#1 H1 H2 
+XXXX_1:H1           H  nbe     ?     0  0    -0.1000 0 0 8 1.0000  0.0000 N2 
+XXXX_1:H2           H  nbe     ?     0  0    -0.1000 0 0 8 1.0000  0.0000 N2 
+XXXX_1:H3           H  bbe     ?     0  0    -0.1000 0 0 8 1.0000  0.0000 B2 
+XXXX_1:H4           H  bbe     ?     0  0    -0.1000 0 0 8 1.0000  0.0000 B2 
+XXXX_1:H5           H  nbe     ?     0  0    -0.1000 0 0 8 1.0000  0.0000 N1 
+XXXX_1:H6           H  nbe     ?     0  0    -0.1000 0 0 8 1.0000  0.0000 N1 
+XXXX_1:H7           H  bbe     ?     0  0    -0.1000 0 0 8 1.0000  0.0000 B1 
+XXXX_1:H8           H  bbe     ?     0  0    -0.1000 0 0 8 1.0000  0.0000 B1 
+ 
+!
+#symmetry
+@periodicity 3 xyz
+@group (P1)
+
+
+#atomset
+
+@list subset atom
+
+Molecule:XXXX_1:B1 B2 N1 N2 
+
+#end

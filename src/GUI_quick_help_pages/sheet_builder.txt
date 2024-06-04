@@ -1,0 +1,245 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restricted to 145.
+#
+# Last edited 5/23/2024
+#
+************
+* Overview *
+************
+
+  LUNAR/sheet_builder.py is meant to build sheets or tubes of sp2 hybridized atoms. The outputs are meant to be passed onto LUNAR/all2lmp.py
+  to build a fully parameterized LAMMPS datafile or if find_bonds = False, the LUNAR/sheet_builder.py outputted LAMMPS datafile can directly
+  be used for a ReaxFF simulation in LAMMPS.
+
+*****************
+* Global Inputs *
+*****************
+            
+  parent_directory
+    Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the 
+    right of the button as well. The path can be a full path or relative path or be set to the . (dot character) to write files to the
+    location where sheet_builder.py is currently being run from.
+	
+  type1 and type2 and type3 and type4
+    Drop down menu to supply a string that will assign an atom type or element in a specfic location of the ring. This will allow users to control the
+    "pattern" of atoms for generating sheets or tubes that contain multiple atom types or elements (for example in Boron-Nitride sheets or
+    tubes). The "base unit" that is replicated to generate the sheets or tubes is describe in the figure below:
+
+       type2___type3    replicated   2___3    2___3    types = {1:'B', 2:'N', 3:'B', 4:'N'}   N___B    N___B    
+           /   \        --------->  1/   \4__1/   \4   ------------------------------------> B/   \N__B/   \N   
+      type1     type4                \___/    \___/    |                                      \___/    \___/    
+                                     2   3    2   3    |                                      N   B    N   B    
+                                                       |                                                         
+                                                       |types = {1:'B', 2:'N', 3:'N', 4:'B'}  N___N    N___N   
+                                                       +------------------------------------> B/   \B__B/   \B  
+                                                       |                                       \___/    \___/   
+                                                       |                                       N   N    N   N   
+                                                       |                                                         
+                                                       |types = {1:'N', 2:'B', 3:'B', 4:'B'}   B___B    B___B   
+                                                       +------------------------------------> N/   \N__N/   \N  
+                                                       |                                       \___/    \___/   
+                                                       |                                       B   B    B   B   
+                                                       |                                                         
+                                                       |types = {1:'C', 2:'C', 3:'C', 4:'C'}   C___C    C___C   
+                                                       +------------------------------------> C/   \C__C/   \C  
+                                                                                               \___/    \___/   
+                                                                                               C   C    C   C   
+    
+    The drop down menu will set the atom type or element to repeat in the "pattern". Note that if you would like to generate a sheet or tube
+    with different atom types or elements then are currently in the drop down menu, you may do so by deleting the entry (or selecting the blank
+    entry) and typing the specifc atom type or element combination in manually). An .nta file will be written such that the outputs of this code
+    can be read into LUNAR/all2lmp.py to assign a specifc force field to the atomic positions generated. Thus the strings in the Drop down menu 
+    should be set to the force field specfic atom types that you plan to apply using LUNAR/all2lmp.py. Here are a few examples for different force
+    fields for a carbon system:                                                                          
+      PCFF     -> types = {1:'cp',  2:'cp',  3:'cp',  4:'cp'}                                                 
+      PCFF-IFF -> types = {1:'cg1', 2:'cg1', 3:'cg1', 4:'cg1'}                                                
+      DREIDING -> types = {1:'C_R', 2:'C_R', 3:'C_R', 4:'C_R'}                                                
+      ReaxFF   -> types = {1:'C',   2:'C',   3:'C',   4:'C'}                                                  
+    NOTE: that when generating inputs to ReaxFF that you set the actually element symbol and not classical force field atom types. Also note that
+    when generating inputs to ReaxFF, you should set find_bonds as False which will allow you to directly take the output LAMMPS datafile of this
+    code and run in a LAMMPS ReaxFF simulation.   
+
+    Additionaly IFF's pi-electrons can be added to a system by setting each type as 'atomtype|pi-electron' where the '|' character seperates the
+    atomtype from the pi-electron type. For example:                     
+                                                                                                            
+        types = {1:'cg1|cge', 2:'cg1|cge', 3:'cg1|cge', 4:'cg1|cge'} will generate:                            
+                                                         cge cge  cge cge                                       
+             2___3    2___3            cg1___cg1          |   |    |   |                                        
+            1/   \4__1/   \4   --->   cg1/   \cg1   ---> cg1-cg1--cg1-cg1                                        
+             \___/    \___/              \___/            |   |    |   |                                        
+             2   3    2   3            cg1   cg1         cge cge  cge cge                                       
+                                                                                                            
+        types = {1:'bbn|bbe', 2:'nbn|nbe', 3:'bbn|bbe', 4:'nbn|nbe'} will generate:                            
+                                                         bbe nbe  bbe nbe                                       
+             2___3    2___3            nbn___bbn          |   |    |   |                                        
+            1/   \4__1/   \4   --->   bbn/   \nbn   ---> bbn-nbn--bbn-nbn                                        
+             \___/    \___/              \___/            |   |    |   |                                        
+             2   3    2   3            nbn   bbn         bbe nbe  bbe nbe  
+    
+    Final note, is that in the "sheet_builder.py" file, there is a charge dictionary, which is used to store the charge for each atom type that
+    may appear in the type1 - type4 drop down menus. Thus the only way to adjust charge is to open the "sheet_builder.py" file and manually
+    adjust the charge dictionary.	                                        	
+	
+  bond_length
+    An entry to control the in-plane spacing of atoms when generating sheets or tubes based on the bond length between atoms. The bond length is
+    supplied in units of Angstroms (usually around 1.42 A).
+	
+  find_bonds
+     A drop-down menu to select the Boolean to control whether or not to find bonds based on interatomic distance searching. If find_bonds is
+     True, bonds will be found via interatomic distance searching and bonds will be written in the output LAMMPS datafile. If find_bonds is False
+     no bonds will be found and no bonds will be written in the output LAMMPS datafile. When finding bonds the bonds can be set to be periodic or
+     non-periodic, see the periodic_bonds flag. NOTE find_bonds must be True to generate an outputted .nta file.
+	 
+  periodic_bonds
+     A drop-down menu to select the Boolean to control whether bonds will pass through the periodic boundary or not. If the Boolean is True, when
+     bonds are determined via interatomic distances, bonds will be found that pass through a periodic boundary. If the Boolean is False no
+     periodic bonds will be found.
+
+***************
+* Sheets mode *
+***************
+
+  basename
+	An entry to set output basename of outputs for when running in 'sheet' mode.
+	
+  edge length and perpendicular length
+    Entries to control the size of the sheet. The "edge length" will set the length in the edge type direction set by the "edge type" entry and
+    the "perpendicular length" entry sets the perpendicular length from the edge type. The units are in Angstroms. Here is the meaning of "edge
+    length" and "perpendicular length" for different "plane" and "edge type" entries:
+      "plane" = 'xy' and "edge type" = 'zigzag'                                                             
+        "perpendicular length" is length in X-direction                                                    
+        "edge length" is length in Y-direction                                                           
+                                                                                                            
+      "plane" = 'xz' and "edge type" = 'zigzag'                                                             
+        "perpendicular length" is length in X-direction                                                    
+        "edge length" is length in Z-direction                                                           
+                                                                                                            
+      "plane" = 'yz' and "edge type" = 'zigzag'                                                             
+        "perpendicular length" is length in Y-direction                                                    
+        "edge length" is length in Z-direction                                                           
+                                                                                                            
+      "plane" = 'xy' and "edge type" = 'armchair'                                                           
+        "perpendicular length" is length in Y-direction                                                    
+        "edge length" is length in X-direction                                                           
+                                                                                                            
+      "plane" = 'xz' and "edge type" = 'armchair'                                                           
+        "perpendicular length" is length in X-direction                                                    
+        "edge length" is length in Z-direction                                                           
+                                                                                                            
+      "plane" = 'yz' and "edge type" = 'armchair'                                                           
+        "perpendicular length" is length in Z-direction                                                    
+        "edge length" is length in Y-direction  	
+		
+  layer spacing
+    An entry to control the out-of-plane spacing of atoms when multiple layers are added. The layer spacing is supplied in units of Angstroms
+    (usually around 3.354 A).
+	
+  nlayers
+    An entry to control the number of layers to generated. All models will be centered about (0, 0, 0) no matter the number of layers generated.
+	
+  edge type
+    A drop-down menu to set the edge type of the sheet. The available edge types are:
+      'armchair' which will generate a sheet in the armchair directions, with the length in the armchair     
+                 direction set by the "edge length" entry.                                           
+      'zigzag'   which will generate a sheet in the zigzag directions, with the length in the zigzag         
+                 direction set by the "edge length" entry.  
+				 
+  stacking
+    A drop-down menu to set how sheets are stacked if "nlayers" is greater than one. The following stacking sequences are available:
+      'AA'
+      'AB'
+      'ABC'
+    where the schematic below shows AA, AB, and ABC stacking for six sheets:
+      AA-stacking        AB-stacking        ABC-stacking                                                    
+      ___________        ___________        ___________                                                     
+      ___________           ___________         ___________                                                 
+      ___________        ___________                ___________                                             
+      ___________           ___________     ___________                                                     
+      ___________        ___________            ___________                                                 
+      ___________           ___________             ___________  
+    
+    The "shift" in AB- and ABC-stacking is the "bond_length". Also note for AB- and ABC-stacking, the simulation cell will be set by the
+    "top layer" and the rest of the layers will be wrapped to fit within a periodic simulation cell.
+	
+  plane
+    A drop-down menu to set the plane to generate the sheet on.
+	
+  Run LUNAR/sheet_builder.py in 'sheet' mode
+    A button to run sheet_builder.py to in 'sheet' mode to generate sheets, using all settings defined in the GUI.
+  
+************************
+* Symmetric tubes mode *
+************************
+
+  basename
+	An entry to set output basename of outputs for when running in 'symmetric-tube' mode.
+	
+  tube length and tube diameter
+    Entries to control the size of the tube. The "tube length" entry controls the length of the tube in the axial direction and "tube diameter"
+    controls the diameter of the tube.
+	
+  layer spacing
+    An entry to control the out-of-plane spacing of atoms when multiple tubes are added (i.e. when ntubes is greater then 1). The layer spacing
+    is supplied in units of Angstroms (usually around 3.354 A).
+	
+  ntubes
+    An entry to control the number of tubes to generate. All models will be centered about (0, 0, 0) no matter the number of tubes generated.
+    When ntubes is greater then 1, the "diameter" entry will control the inner most tube diameter and the N-outer layer tube diameters will be
+    controlled by the "ntubes" and "layer spacing" entries.
+	
+  edge type
+    A drop-down menu to set the edge type of the tube. The available edge types are:
+      'armchair' which will generate a tube with the "circumference" being in the armchair direction         
+      'zigzag'   which will generate a tube with the "circumference" being in the zigzag direction 
+
+  axis	
+    A drop-down menu to set which axis the tube axis is aligned with. 
+	
+************************
+* Symmetric tubes mode *
+************************
+
+  basename
+    An entry to set output basename of outputs for when running in 'chiral-tube' mode.
+	
+  tube length
+    An entry to control the length of a chiral tube. NOTE the chiral indices "m" and "n" control the "base-tube" length where the "tube length"
+    sets the desired length of a chiral tube, where the "base-tube" will be replicated enough times to get a tube close in length to "tube
+    length".
+	
+  n and m
+    Entries to control the chiral indices of n and m. All physical properties of a chiral single wall tube depend on the chiral indices.
+    Symmetric tubes can be generated when:
+      m = n, which generates an armchair tube                                                                 
+      m = 0, which generates a zigzag tube   
+    If it is desired to create armchair or zigzag tubes this code can be ran in mode = 'symmetric-tube', which provides easier control over the
+    tube length and diameter. The 'symmetric-tube' mode also allows multiwall nanotubes to be generated with easy. Thus it is recommend only to
+    use the 'chiral-tube' mode if you want to generate a chiral tube and use the 'symmetric-tube' to generate tubes in either armchair or zigzag      
+    configurations.	  
+
+***********
+* Buttons *
+***********
+	
+  Save the current GUI settings as the default GUI settings
+    A button to update variables in sheet_builder.py file. Each time the GUI is launched all GUI settings are loaded from the
+    sheet_builder.py file. Thus this button creates a method to update the sheet_builder.py file. The CLI also initializes its
+    defaults from the variables in the sheet_builder.py, so this button updates the defaults for that run mode as well. Finally,
+    running sheet_builder.py from an IDE, the defaults for IDE usage are also set by the variables in the sheet_builder.py file,
+    thus this button will also update the defaults for IDE usage.
+    
+  Quick help
+    A button to create a popup for quick help and guidance.
+
+#*****************************************************************************
+#* Please see the "Code: sheet_builder.py" chapter in the official manual    *
+#* found in the LUNAR/docs folder for further details.                       *
+#*****************************************************************************

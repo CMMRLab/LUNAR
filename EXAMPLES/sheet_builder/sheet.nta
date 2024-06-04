@@ -1,0 +1,20 @@
+New type assignment file for sheet.data created with sheet_builder v1.0 / 18 May 2024
+
+
+# Assign atom types based on atomTypeID
+style type
+1      cg1
+2      cge
+
+
+# Assign charge based on charge nta style
+charge nta
+cg1     0.250000 
+cge    -0.125000 
+
+
+# Remove unneeded dihedral and improper interactions
+#dihedral-remove zero  # can uncomment to remove any parms and interactions if parms are all zeros
+#improper-remove zero  # can uncomment to remove any parms and interactions if parms are all zeros
+dihedral-remove nta
+cge    *      *      *     

@@ -74,7 +74,7 @@ LUNAR (version 30May2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-18May2024          JDK         - atom_typing:.py: Added command line over rides for bond finding options
+18May2024          JDK         - atom_typing.py: Added command line over rides for bond finding options
 
 20May2024          JDK         - GUIs: Brought back threading to have GUI run on a seperate thread from the 
                                        main() functions. The threading is also compatible with traceback logs.	
@@ -90,6 +90,20 @@ Date               Developer   Description
 
 23May2024          JDK         - Updated "Quick help" pages	
 
-30May2024          JDK         - Updated manual figures of GUIs to inlcude the "Quick help" buttons				   
+30May2024          JDK         - Updated manual figures of GUIs to inlcude the "Quick help" buttons		
+
+
+-------------------------------------------------------------------------------------------------------------
+LUNAR (version 4June2024)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+3June2024          JDK         - all2lmp.py: Added 3-wildcard flag to be remove_things.py to all the ability
+                                             to remove any dihedral interactions for IFF's pi-electrons	
+
+4June2024          JDK         - sheet_builder.py: NEW module to generate sheet(s), chiral-tubes, and
+                                                   symmetric-multi-wall tubes of sp2 hybridized atoms
+                                                   like carbon, nitrogen, boron. The module supports IFF's
+                                                   virtual pi-electrons for graphene/graphite and boron-nitride												   
 
 							  

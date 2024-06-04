@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-February 29th, 2024
+June 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -142,6 +142,10 @@ class LUNAR:
         # log_analysis button
         self.log_analysis_button = tk.Button(self.inputs_frame, text='log_analysis', font=font_settings, command=self.log_analysis_GUI_in)
         self.log_analysis_button.grid(column=5, row=1)
+        
+        # sheet_builder button
+        self.sheet_builder_button = tk.Button(self.inputs_frame, text='sheet_builder', font=font_settings, command=self.sheet_builder_GUI_in)
+        self.sheet_builder_button.grid(column=6, row=1)
         
         # Add padding to all frames in self.inputs_frame
         for widget in self.inputs_frame.winfo_children():
@@ -306,6 +310,19 @@ class LUNAR:
 
         # Run GUI
         GUI(l.settings, self.GUI_zoom)
+        return
+    
+    # sheet_builder GUI Run
+    def sheet_builder_GUI_in(self):
+        # Import sheet_builder
+        from src.sheet_builder.GUI import sheet_builder_GUI
+        import sheet_builder as sb
+
+        # Run GUI
+        sheet_builder_GUI(sb.sheet_basename, sb.symmetric_tube_basename, sb.chiral_tube_basename, sb.run_mode, sb.parent_directory, sb.length_in_perpendicular, sb.length_in_edgetype,
+                          sb.sheet_edgetype, sb.types, sb.bond_length, sb.sheet_layer_spacing, sb.sheet_nlayers, sb.stacking, sb.plane, sb.tube_edgetype, sb.tube_layer_spacing,
+                          sb.symmetric_ntubes, sb.symmetric_length, sb.diameter, sb.n, sb.m, sb.chiral_length, sb.symmetric_tube_axis, sb.chiral_tube_axis, sb.find_bonds, sb.periodic_bonds,
+                          sb.charges, sb.masses, self.GUI_zoom)
         return
     
     # Def citations page

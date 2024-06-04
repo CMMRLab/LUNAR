@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-October 11th, 2023
+Revision 1.1
+June 3rd, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -81,7 +81,9 @@ def post_processor(parameters, remove, ff_class, BADI, log):
         dihedral = parameters.dihedrals[i]
         forward = dihedral.symbol; reverse = tuple(reversed(forward));
         wildcardf = ('*', forward[1], forward[2], '*'); wildcardr = ('*', reverse[1], reverse[2], '*');
-        if forward in rm_nta or reverse in rm_nta or wildcardf in rm_nta or wildcardr in rm_nta:
+        triple_f1 = (forward[0], '*', '*', '*'); triple_f2 = ('*', '*', '*', forward[3]); 
+        triple_r1 = (reverse[0], '*', '*', '*'); triple_r2 = ('*', '*', '*', reverse[3]); 
+        if forward in rm_nta or reverse in rm_nta or wildcardf in rm_nta or wildcardr in rm_nta or triple_f1 in rm_nta or triple_f2 in rm_nta  or triple_r1 in rm_nta or triple_r2 in rm_nta:
             dihedralCoeffIDs2remove.add(dihedral.type)  
     rm_dihedral['types'] = len(dihedralCoeffIDs2remove)
     
@@ -94,8 +96,12 @@ def post_processor(parameters, remove, ff_class, BADI, log):
     for i in parameters.dihedrals:
         forward = tuple(parameters.dihedrals[i].atomids); reverse = tuple(reversed(forward));
         wildcardf = ('*', forward[1], forward[2], '*'); wildcardr = ('*', reverse[1], reverse[2], '*');
+        triple_f1 = (forward[0], '*', '*', '*'); triple_f1 = ('*', '*', '*', forward[3]); 
+        triple_r1 = (reverse[0], '*', '*', '*'); triple_r2 = ('*', '*', '*', reverse[3]);
         if forward in rm_id or reverse in rm_id: rm_dihedral['dihedral'] += 1; continue
         if wildcardf in rm_id or wildcardr in rm_id: rm_dihedral['dihedral'] += 1; continue
+        if triple_f1 in rm_id or triple_f1 in rm_id: rm_dihedral['dihedral'] += 1; continue
+        if triple_r1 in rm_id or triple_r1 in rm_id: rm_dihedral['dihedral'] += 1; continue
         if parameters.dihedrals[i].type in coeffIDmap:
             ID += 1
             dihedrals[ID] = parameters.dihedrals[i]

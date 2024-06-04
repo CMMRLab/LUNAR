@@ -1,0 +1,531 @@
+
+
+Running all2lmp v1.18 / 28 April 2024
+Using Python version 3.11.5 (tags/v3.11.5:cce6ba9, Aug 24 2023, 14:38:34) [MSC v.1936 64 bit (AMD64)]
+Trying Atom Equivalences if needed
+Trying Atom Auto-Equivalences if needed
+Resetting molecule-ids based on cluster analysis
+
+
+Using higher version of parameters for #equivalences N a version: 2.10 
+Using higher version of parameters for #bond_increments h* o* version: 3.30 
+Using higher version of parameters for #bond_increments c si version: 2.20 
+Using higher version of parameters for #bond_increments cp si version: 2.20 
+Using higher version of parameters for #bond_increments h si version: 2.20 
+Using higher version of parameters for #bond_increments c_1 cp version: 2.10 
+Using higher version of parameters for #bond_increments si si version: 2.20 
+Using higher version of parameters for #quartic_bonds cp cp version: 2.10 
+Using higher version of parameters for #quartic_bonds c_1 o_1 version: 2.10 
+Using higher version of parameters for #quartic_bonds c= c=1 version: 3.10 
+Using higher version of parameters for #quartic_bonds c c version: 2.10 
+Using higher version of parameters for #quartic_bonds c h version: 2.10 
+Using higher version of parameters for #quartic_bonds cp h version: 2.10 
+Using higher version of parameters for #quartic_bonds c o_2 version: 2.20 
+Using higher version of parameters for #torsion_1 * c_ p_ * version: 3.30 
+Using higher version of parameters for #torsion_3 h c c h version: 2.10 
+Using higher version of parameters for #torsion_3 h c cp cp version: 2.00 
+Using higher version of parameters for #torsion_3 c c c c version: 2.10 
+Using higher version of parameters for #torsion_3 c c c h version: 2.10 
+Using higher version of parameters for #wilson_out_of_plane c cp cp cp version: 2.00 
+Using higher version of parameters for #wilson_out_of_plane cp cp cp h version: 3.10 
+Using higher version of parameters for #pair_coeffs_9_6 o _ 1 version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 h o 2 version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 s i version: 2.20 
+Using higher version of parameters for #pair_coeffs_9_6 c = version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 h * version: 3.30 
+Using higher version of parameters for #pair_coeffs_9_6 n = version: 3.10 
+Using higher version of parameters for #pair_coeffs_9_6 s ' version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 o * version: 3.40 
+Using higher version of parameters for #pair_coeffs_9_6 n z version: 2.10 
+Using higher version of parameters for #bondbond13 cp cp cp cp version: 2.10 
+Using higher version of parameters for #middlebondtorsion o_1 c_1 o_2 c version: 2.10 
+
+Read in frc_files\pcff_interface_v1_6mBN.frc forcefeild file
+Read in EXAMPLES\sheet_builder\tube-symmetric.data LAMMPS datafile
+Read in EXAMPLES\sheet_builder\tube-symmetric.nta new-type-assignment file
+
+
+
+Getting force field parameters for the read in system
+
+Checking for atom-type assignment consistency with atom-types in .frc file
+
+
+Finding molecules to reset molids....
+-----------------Cluster Analysis-----------------
+  molID    Size of Fragment     %Size of Fragment    
+--------------------------------------------------
+    1             960               100.00          
+
+
+WARNING inconsistent # of connects on atom-id 1 type bbn
+WARNING inconsistent # of connects on atom-id 2 type nbn
+WARNING inconsistent # of connects on atom-id 3 type bbn
+WARNING inconsistent # of connects on atom-id 4 type nbn
+WARNING inconsistent # of connects on atom-id 5 type bbn
+WARNING inconsistent # of connects on atom-id 6 type nbn
+WARNING inconsistent # of connects on atom-id 7 type bbn
+WARNING inconsistent # of connects on atom-id 8 type nbn
+WARNING inconsistent # of connects on atom-id 9 type bbn
+WARNING inconsistent # of connects on atom-id 10 type nbn
+WARNING inconsistent # of connects on atom-id 11 type bbn
+WARNING inconsistent # of connects on atom-id 12 type nbn
+WARNING inconsistent # of connects on atom-id 13 type bbn
+WARNING inconsistent # of connects on atom-id 14 type nbn
+WARNING inconsistent # of connects on atom-id 15 type bbn
+WARNING inconsistent # of connects on atom-id 16 type nbn
+WARNING inconsistent # of connects on atom-id 17 type bbn
+WARNING inconsistent # of connects on atom-id 18 type nbn
+WARNING inconsistent # of connects on atom-id 19 type bbn
+WARNING inconsistent # of connects on atom-id 20 type nbn
+WARNING inconsistent # of connects on atom-id 21 type bbn
+WARNING inconsistent # of connects on atom-id 22 type nbn
+WARNING inconsistent # of connects on atom-id 23 type bbn
+WARNING inconsistent # of connects on atom-id 24 type nbn
+WARNING inconsistent # of connects on atom-id 25 type bbn
+WARNING inconsistent # of connects on atom-id 26 type nbn
+WARNING inconsistent # of connects on atom-id 27 type bbn
+WARNING inconsistent # of connects on atom-id 28 type nbn
+WARNING inconsistent # of connects on atom-id 29 type bbn
+WARNING inconsistent # of connects on atom-id 30 type nbn
+WARNING inconsistent # of connects on atom-id 31 type bbn
+WARNING inconsistent # of connects on atom-id 32 type nbn
+WARNING inconsistent # of connects on atom-id 33 type bbn
+WARNING inconsistent # of connects on atom-id 34 type nbn
+WARNING inconsistent # of connects on atom-id 35 type bbn
+WARNING inconsistent # of connects on atom-id 36 type nbn
+WARNING inconsistent # of connects on atom-id 37 type bbn
+WARNING inconsistent # of connects on atom-id 38 type nbn
+WARNING inconsistent # of connects on atom-id 39 type bbn
+WARNING inconsistent # of connects on atom-id 40 type nbn
+WARNING inconsistent # of connects on atom-id 41 type bbn
+WARNING inconsistent # of connects on atom-id 42 type nbn
+WARNING inconsistent # of connects on atom-id 43 type bbn
+WARNING inconsistent # of connects on atom-id 44 type nbn
+WARNING inconsistent # of connects on atom-id 45 type bbn
+WARNING inconsistent # of connects on atom-id 46 type nbn
+WARNING inconsistent # of connects on atom-id 47 type bbn
+WARNING inconsistent # of connects on atom-id 48 type nbn
+WARNING inconsistent # of connects on atom-id 49 type bbn
+WARNING inconsistent # of connects on atom-id 50 type nbn
+WARNING inconsistent # of connects on atom-id 51 type bbn
+WARNING inconsistent # of connects on atom-id 52 type nbn
+WARNING inconsistent # of connects on atom-id 53 type bbn
+WARNING inconsistent # of connects on atom-id 54 type nbn
+WARNING inconsistent # of connects on atom-id 55 type bbn
+WARNING inconsistent # of connects on atom-id 56 type nbn
+WARNING inconsistent # of connects on atom-id 57 type bbn
+WARNING inconsistent # of connects on atom-id 58 type nbn
+WARNING inconsistent # of connects on atom-id 59 type bbn
+WARNING inconsistent # of connects on atom-id 60 type nbn
+WARNING inconsistent # of connects on atom-id 61 type bbn
+WARNING inconsistent # of connects on atom-id 62 type nbn
+WARNING inconsistent # of connects on atom-id 63 type bbn
+WARNING inconsistent # of connects on atom-id 64 type nbn
+WARNING inconsistent # of connects on atom-id 65 type bbn
+WARNING inconsistent # of connects on atom-id 66 type nbn
+WARNING inconsistent # of connects on atom-id 67 type bbn
+WARNING inconsistent # of connects on atom-id 68 type nbn
+WARNING inconsistent # of connects on atom-id 69 type bbn
+WARNING inconsistent # of connects on atom-id 70 type nbn
+WARNING inconsistent # of connects on atom-id 71 type bbn
+WARNING inconsistent # of connects on atom-id 72 type nbn
+WARNING inconsistent # of connects on atom-id 73 type bbn
+WARNING inconsistent # of connects on atom-id 74 type nbn
+WARNING inconsistent # of connects on atom-id 75 type bbn
+WARNING inconsistent # of connects on atom-id 76 type nbn
+WARNING inconsistent # of connects on atom-id 77 type bbn
+WARNING inconsistent # of connects on atom-id 78 type nbn
+WARNING inconsistent # of connects on atom-id 79 type bbn
+WARNING inconsistent # of connects on atom-id 80 type nbn
+WARNING inconsistent # of connects on atom-id 81 type bbn
+WARNING inconsistent # of connects on atom-id 82 type nbn
+WARNING inconsistent # of connects on atom-id 83 type bbn
+WARNING inconsistent # of connects on atom-id 84 type nbn
+WARNING inconsistent # of connects on atom-id 85 type bbn
+WARNING inconsistent # of connects on atom-id 86 type nbn
+WARNING inconsistent # of connects on atom-id 87 type bbn
+WARNING inconsistent # of connects on atom-id 88 type nbn
+WARNING inconsistent # of connects on atom-id 89 type bbn
+WARNING inconsistent # of connects on atom-id 90 type nbn
+WARNING inconsistent # of connects on atom-id 91 type bbn
+WARNING inconsistent # of connects on atom-id 92 type nbn
+WARNING inconsistent # of connects on atom-id 93 type bbn
+WARNING inconsistent # of connects on atom-id 94 type nbn
+WARNING inconsistent # of connects on atom-id 95 type bbn
+WARNING inconsistent # of connects on atom-id 96 type nbn
+WARNING inconsistent # of connects on atom-id 97 type bbn
+WARNING inconsistent # of connects on atom-id 98 type nbn
+WARNING inconsistent # of connects on atom-id 99 type bbn
+WARNING inconsistent # of connects on atom-id 100 type nbn
+WARNING inconsistent # of connects on atom-id 101 type bbn
+WARNING inconsistent # of connects on atom-id 102 type nbn
+WARNING inconsistent # of connects on atom-id 103 type bbn
+WARNING inconsistent # of connects on atom-id 104 type nbn
+WARNING inconsistent # of connects on atom-id 105 type bbn
+WARNING inconsistent # of connects on atom-id 106 type nbn
+WARNING inconsistent # of connects on atom-id 107 type bbn
+WARNING inconsistent # of connects on atom-id 108 type nbn
+WARNING inconsistent # of connects on atom-id 109 type bbn
+WARNING inconsistent # of connects on atom-id 110 type nbn
+WARNING inconsistent # of connects on atom-id 111 type bbn
+WARNING inconsistent # of connects on atom-id 112 type nbn
+WARNING inconsistent # of connects on atom-id 113 type bbn
+WARNING inconsistent # of connects on atom-id 114 type nbn
+WARNING inconsistent # of connects on atom-id 115 type bbn
+WARNING inconsistent # of connects on atom-id 116 type nbn
+WARNING inconsistent # of connects on atom-id 117 type bbn
+WARNING inconsistent # of connects on atom-id 118 type nbn
+WARNING inconsistent # of connects on atom-id 119 type bbn
+WARNING inconsistent # of connects on atom-id 120 type nbn
+WARNING inconsistent # of connects on atom-id 121 type bbn
+WARNING inconsistent # of connects on atom-id 122 type nbn
+WARNING inconsistent # of connects on atom-id 123 type bbn
+WARNING inconsistent # of connects on atom-id 124 type nbn
+WARNING inconsistent # of connects on atom-id 125 type bbn
+WARNING inconsistent # of connects on atom-id 126 type nbn
+WARNING inconsistent # of connects on atom-id 127 type bbn
+WARNING inconsistent # of connects on atom-id 128 type nbn
+WARNING inconsistent # of connects on atom-id 129 type bbn
+WARNING inconsistent # of connects on atom-id 130 type nbn
+WARNING inconsistent # of connects on atom-id 131 type bbn
+WARNING inconsistent # of connects on atom-id 132 type nbn
+WARNING inconsistent # of connects on atom-id 133 type bbn
+WARNING inconsistent # of connects on atom-id 134 type nbn
+WARNING inconsistent # of connects on atom-id 135 type bbn
+WARNING inconsistent # of connects on atom-id 136 type nbn
+WARNING inconsistent # of connects on atom-id 137 type bbn
+WARNING inconsistent # of connects on atom-id 138 type nbn
+WARNING inconsistent # of connects on atom-id 139 type bbn
+WARNING inconsistent # of connects on atom-id 140 type nbn
+WARNING inconsistent # of connects on atom-id 141 type bbn
+WARNING inconsistent # of connects on atom-id 142 type nbn
+WARNING inconsistent # of connects on atom-id 143 type bbn
+WARNING inconsistent # of connects on atom-id 144 type nbn
+WARNING inconsistent # of connects on atom-id 145 type bbn
+WARNING inconsistent # of connects on atom-id 146 type nbn
+WARNING inconsistent # of connects on atom-id 147 type bbn
+WARNING inconsistent # of connects on atom-id 148 type nbn
+WARNING inconsistent # of connects on atom-id 149 type bbn
+WARNING inconsistent # of connects on atom-id 150 type nbn
+WARNING inconsistent # of connects on atom-id 151 type bbn
+WARNING inconsistent # of connects on atom-id 152 type nbn
+WARNING inconsistent # of connects on atom-id 153 type bbn
+WARNING inconsistent # of connects on atom-id 154 type nbn
+WARNING inconsistent # of connects on atom-id 155 type bbn
+WARNING inconsistent # of connects on atom-id 156 type nbn
+WARNING inconsistent # of connects on atom-id 157 type bbn
+WARNING inconsistent # of connects on atom-id 158 type nbn
+WARNING inconsistent # of connects on atom-id 159 type bbn
+WARNING inconsistent # of connects on atom-id 160 type nbn
+WARNING inconsistent # of connects on atom-id 161 type bbn
+WARNING inconsistent # of connects on atom-id 162 type nbn
+WARNING inconsistent # of connects on atom-id 163 type bbn
+WARNING inconsistent # of connects on atom-id 164 type nbn
+WARNING inconsistent # of connects on atom-id 165 type bbn
+WARNING inconsistent # of connects on atom-id 166 type nbn
+WARNING inconsistent # of connects on atom-id 167 type bbn
+WARNING inconsistent # of connects on atom-id 168 type nbn
+WARNING inconsistent # of connects on atom-id 169 type bbn
+WARNING inconsistent # of connects on atom-id 170 type nbn
+WARNING inconsistent # of connects on atom-id 171 type bbn
+WARNING inconsistent # of connects on atom-id 172 type nbn
+WARNING inconsistent # of connects on atom-id 173 type bbn
+WARNING inconsistent # of connects on atom-id 174 type nbn
+WARNING inconsistent # of connects on atom-id 175 type bbn
+WARNING inconsistent # of connects on atom-id 176 type nbn
+WARNING inconsistent # of connects on atom-id 177 type bbn
+WARNING inconsistent # of connects on atom-id 178 type nbn
+WARNING inconsistent # of connects on atom-id 179 type bbn
+WARNING inconsistent # of connects on atom-id 180 type nbn
+WARNING inconsistent # of connects on atom-id 181 type bbn
+WARNING inconsistent # of connects on atom-id 182 type nbn
+WARNING inconsistent # of connects on atom-id 183 type bbn
+WARNING inconsistent # of connects on atom-id 184 type nbn
+WARNING inconsistent # of connects on atom-id 185 type bbn
+WARNING inconsistent # of connects on atom-id 186 type nbn
+WARNING inconsistent # of connects on atom-id 187 type bbn
+WARNING inconsistent # of connects on atom-id 188 type nbn
+WARNING inconsistent # of connects on atom-id 189 type bbn
+WARNING inconsistent # of connects on atom-id 190 type nbn
+WARNING inconsistent # of connects on atom-id 191 type bbn
+WARNING inconsistent # of connects on atom-id 192 type nbn
+WARNING inconsistent # of connects on atom-id 193 type bbn
+WARNING inconsistent # of connects on atom-id 194 type nbn
+WARNING inconsistent # of connects on atom-id 195 type bbn
+WARNING inconsistent # of connects on atom-id 196 type nbn
+WARNING inconsistent # of connects on atom-id 197 type bbn
+WARNING inconsistent # of connects on atom-id 198 type nbn
+WARNING inconsistent # of connects on atom-id 199 type bbn
+WARNING inconsistent # of connects on atom-id 200 type nbn
+WARNING inconsistent # of connects on atom-id 201 type bbn
+WARNING inconsistent # of connects on atom-id 202 type nbn
+WARNING inconsistent # of connects on atom-id 203 type bbn
+WARNING inconsistent # of connects on atom-id 204 type nbn
+WARNING inconsistent # of connects on atom-id 205 type bbn
+WARNING inconsistent # of connects on atom-id 206 type nbn
+WARNING inconsistent # of connects on atom-id 207 type bbn
+WARNING inconsistent # of connects on atom-id 208 type nbn
+WARNING inconsistent # of connects on atom-id 209 type bbn
+WARNING inconsistent # of connects on atom-id 210 type nbn
+WARNING inconsistent # of connects on atom-id 211 type bbn
+WARNING inconsistent # of connects on atom-id 212 type nbn
+WARNING inconsistent # of connects on atom-id 213 type bbn
+WARNING inconsistent # of connects on atom-id 214 type nbn
+WARNING inconsistent # of connects on atom-id 215 type bbn
+WARNING inconsistent # of connects on atom-id 216 type nbn
+WARNING inconsistent # of connects on atom-id 217 type bbn
+WARNING inconsistent # of connects on atom-id 218 type nbn
+WARNING inconsistent # of connects on atom-id 219 type bbn
+WARNING inconsistent # of connects on atom-id 220 type nbn
+WARNING inconsistent # of connects on atom-id 221 type bbn
+WARNING inconsistent # of connects on atom-id 222 type nbn
+WARNING inconsistent # of connects on atom-id 223 type bbn
+WARNING inconsistent # of connects on atom-id 224 type nbn
+WARNING inconsistent # of connects on atom-id 225 type bbn
+WARNING inconsistent # of connects on atom-id 226 type nbn
+WARNING inconsistent # of connects on atom-id 227 type bbn
+WARNING inconsistent # of connects on atom-id 228 type nbn
+WARNING inconsistent # of connects on atom-id 229 type bbn
+WARNING inconsistent # of connects on atom-id 230 type nbn
+WARNING inconsistent # of connects on atom-id 231 type bbn
+WARNING inconsistent # of connects on atom-id 232 type nbn
+WARNING inconsistent # of connects on atom-id 233 type bbn
+WARNING inconsistent # of connects on atom-id 234 type nbn
+WARNING inconsistent # of connects on atom-id 235 type bbn
+WARNING inconsistent # of connects on atom-id 236 type nbn
+WARNING inconsistent # of connects on atom-id 237 type bbn
+WARNING inconsistent # of connects on atom-id 238 type nbn
+WARNING inconsistent # of connects on atom-id 239 type bbn
+WARNING inconsistent # of connects on atom-id 240 type nbn
+WARNING inconsistent # of connects on atom-id 241 type bbn
+WARNING inconsistent # of connects on atom-id 242 type nbn
+WARNING inconsistent # of connects on atom-id 243 type bbn
+WARNING inconsistent # of connects on atom-id 244 type nbn
+WARNING inconsistent # of connects on atom-id 245 type bbn
+WARNING inconsistent # of connects on atom-id 246 type nbn
+WARNING inconsistent # of connects on atom-id 247 type bbn
+WARNING inconsistent # of connects on atom-id 248 type nbn
+WARNING inconsistent # of connects on atom-id 249 type bbn
+WARNING inconsistent # of connects on atom-id 250 type nbn
+WARNING inconsistent # of connects on atom-id 251 type bbn
+WARNING inconsistent # of connects on atom-id 252 type nbn
+WARNING inconsistent # of connects on atom-id 253 type bbn
+WARNING inconsistent # of connects on atom-id 254 type nbn
+WARNING inconsistent # of connects on atom-id 255 type bbn
+WARNING inconsistent # of connects on atom-id 256 type nbn
+WARNING inconsistent # of connects on atom-id 257 type bbn
+WARNING inconsistent # of connects on atom-id 258 type nbn
+WARNING inconsistent # of connects on atom-id 259 type bbn
+WARNING inconsistent # of connects on atom-id 260 type nbn
+WARNING inconsistent # of connects on atom-id 261 type bbn
+WARNING inconsistent # of connects on atom-id 262 type nbn
+WARNING inconsistent # of connects on atom-id 263 type bbn
+WARNING inconsistent # of connects on atom-id 264 type nbn
+WARNING inconsistent # of connects on atom-id 265 type bbn
+WARNING inconsistent # of connects on atom-id 266 type nbn
+WARNING inconsistent # of connects on atom-id 267 type bbn
+WARNING inconsistent # of connects on atom-id 268 type nbn
+WARNING inconsistent # of connects on atom-id 269 type bbn
+WARNING inconsistent # of connects on atom-id 270 type nbn
+WARNING inconsistent # of connects on atom-id 271 type bbn
+WARNING inconsistent # of connects on atom-id 272 type nbn
+WARNING inconsistent # of connects on atom-id 273 type bbn
+WARNING inconsistent # of connects on atom-id 274 type nbn
+WARNING inconsistent # of connects on atom-id 275 type bbn
+WARNING inconsistent # of connects on atom-id 276 type nbn
+WARNING inconsistent # of connects on atom-id 277 type bbn
+WARNING inconsistent # of connects on atom-id 278 type nbn
+WARNING inconsistent # of connects on atom-id 279 type bbn
+WARNING inconsistent # of connects on atom-id 280 type nbn
+WARNING inconsistent # of connects on atom-id 281 type bbn
+WARNING inconsistent # of connects on atom-id 282 type nbn
+WARNING inconsistent # of connects on atom-id 283 type bbn
+WARNING inconsistent # of connects on atom-id 284 type nbn
+WARNING inconsistent # of connects on atom-id 285 type bbn
+WARNING inconsistent # of connects on atom-id 286 type nbn
+WARNING inconsistent # of connects on atom-id 287 type bbn
+WARNING inconsistent # of connects on atom-id 288 type nbn
+WARNING inconsistent # of connects on atom-id 289 type bbn
+WARNING inconsistent # of connects on atom-id 290 type nbn
+WARNING inconsistent # of connects on atom-id 291 type bbn
+WARNING inconsistent # of connects on atom-id 292 type nbn
+WARNING inconsistent # of connects on atom-id 293 type bbn
+WARNING inconsistent # of connects on atom-id 294 type nbn
+WARNING inconsistent # of connects on atom-id 295 type bbn
+WARNING inconsistent # of connects on atom-id 296 type nbn
+WARNING inconsistent # of connects on atom-id 297 type bbn
+WARNING inconsistent # of connects on atom-id 298 type nbn
+WARNING inconsistent # of connects on atom-id 299 type bbn
+WARNING inconsistent # of connects on atom-id 300 type nbn
+WARNING inconsistent # of connects on atom-id 301 type bbn
+WARNING inconsistent # of connects on atom-id 302 type nbn
+WARNING inconsistent # of connects on atom-id 303 type bbn
+WARNING inconsistent # of connects on atom-id 304 type nbn
+WARNING inconsistent # of connects on atom-id 305 type bbn
+WARNING inconsistent # of connects on atom-id 306 type nbn
+WARNING inconsistent # of connects on atom-id 307 type bbn
+WARNING inconsistent # of connects on atom-id 308 type nbn
+WARNING inconsistent # of connects on atom-id 309 type bbn
+WARNING inconsistent # of connects on atom-id 310 type nbn
+WARNING inconsistent # of connects on atom-id 311 type bbn
+WARNING inconsistent # of connects on atom-id 312 type nbn
+WARNING inconsistent # of connects on atom-id 313 type bbn
+WARNING inconsistent # of connects on atom-id 314 type nbn
+WARNING inconsistent # of connects on atom-id 315 type bbn
+WARNING inconsistent # of connects on atom-id 316 type nbn
+WARNING inconsistent # of connects on atom-id 317 type bbn
+WARNING inconsistent # of connects on atom-id 318 type nbn
+WARNING inconsistent # of connects on atom-id 319 type bbn
+WARNING inconsistent # of connects on atom-id 320 type nbn
+
+
+Atoms information has been found
+  EXAMPLES\sheet_builder\tube-symmetric.data has all image flags set to zero
+  There are 960 atoms in 1 molecules in this file
+  The total charge in the system is 0.0000
+
+
+
+
+
+
+WARNING unable to find bondbond info for Bondbond Coeff 1 bbe bbn bbe
+WARNING unable to find bondbond info for Bondbond Coeff 2 bbe bbn nbn
+WARNING unable to find bondbond info for Bondbond Coeff 3 bbn nbn bbn
+WARNING unable to find bondbond info for Bondbond Coeff 4 nbe nbn bbn
+WARNING unable to find bondbond info for Bondbond Coeff 5 nbe nbn nbe
+WARNING unable to find bondbond info for Bondbond Coeff 6 nbn bbn nbn
+
+WARNING unable to find bondangle info for Bondangle Coeff 1 bbe bbn bbe
+WARNING unable to find bondangle info for Bondangle Coeff 2 bbe bbn nbn
+WARNING unable to find bondangle info for Bondangle Coeff 3 bbn nbn bbn
+WARNING unable to find bondangle info for Bondangle Coeff 4 nbe nbn bbn
+WARNING unable to find bondangle info for Bondangle Coeff 5 nbe nbn nbe
+WARNING unable to find bondangle info for Bondangle Coeff 6 nbn bbn nbn
+
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 1 bbn nbn bbn bbe
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 2 nbe nbn bbn bbe
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 3 bbn nbn bbn nbn
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 4 nbe nbn bbn nbn
+
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 1 bbn nbn bbn bbe
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 2 nbe nbn bbn bbe
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 3 bbn nbn bbn nbn
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 4 nbe nbn bbn nbn
+
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 1 bbn nbn bbn bbe
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 2 nbe nbn bbn bbe
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 3 bbn nbn bbn nbn
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 4 nbe nbn bbn nbn
+
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 1 bbn nbn bbn bbe
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 2 nbe nbn bbn bbe
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 3 bbn nbn bbn nbn
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 4 nbe nbn bbn nbn
+
+WARNING unable to find angletorsion info for Angletorsion Coeff 1 bbn nbn bbn bbe
+WARNING unable to find angletorsion info for Angletorsion Coeff 2 nbe nbn bbn bbe
+WARNING unable to find angletorsion info for Angletorsion Coeff 3 bbn nbn bbn nbn
+WARNING unable to find angletorsion info for Angletorsion Coeff 4 nbe nbn bbn nbn
+
+WARNING unable to find angleangle info for Angleangle Coeff 1 bbe bbn bbe nbn
+WARNING unable to find angleangle info for Angleangle Coeff 2 bbe bbn nbn nbn
+WARNING unable to find angleangle info for Angleangle Coeff 3 bbn nbn bbn bbn
+WARNING unable to find angleangle info for Angleangle Coeff 4 bbn nbn bbn nbe
+WARNING unable to find angleangle info for Angleangle Coeff 5 bbn nbn nbe nbe
+WARNING unable to find angleangle info for Angleangle Coeff 6 nbn bbn nbn nbn
+
+
+Removing topology and parameters (based on .nta file settings)
+   Number of removed angles, types =     0        0  
+   Number of removed dihedrals, types =    5760      3  
+   Number of removed impropers, types =    3200      6  
+
+
+
+The read in nta file EXAMPLES\sheet_builder\tube-symmetric.nta
+contains charge section(s) of either id or type or nta or combinations.
+These charges are now being applied after possible bond-incs search.
+  960 atomIDs had charges updated via flags set in nta file
+  Total system charge: -0.0
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         16.52800  angstrom  
+Ly:         16.52800  angstrom  
+Lz:         24.59512  angstrom  
+volume:    6.7188E-21 cm^3      
+mass:      6.5937E-21 grams     
+density:    0.98139   g/cm^3    
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:             960 
+nbonds:            1120 
+nangles:           3200 
+ndihedrals:        1920 
+nimpropers:          0  
+
+--------------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers Types
+--------------------------------------------
+natomtypes:          4  
+nbondtypes:          3  
+nangletypes:         6  
+ndihedraltypes:      1  
+nimpropertypes:      0  
+
+-------------------------------------
+Parameterization percentage breakdown
+-------------------------------------
+Masses:                      100.00 %
+Pair Coeffs:                 100.00 %
+Bond Coeffs:                 100.00 %
+Angle Coeffs:                100.00 %
+Dihedral Coeffs:             100.00 %
+Average MPBADI Coeffs:       100.00 %
+BondBond Coeffs:              0.00  %
+BondAngle Coeffs:             0.00  %
+AngleAngleTorsion Coeffs:     0.00  %
+EndBondTorsion Coeffs:        0.00  %
+MiddleBondTorsion Coeffs:     0.00  %
+BondBond13 Coeffs:            0.00  %
+AngleTorsion Coeffs:          0.00  %
+Average (without Bond-incs): 46.15  %
+
+User is acknowledging that all2lmp.py can not supply a fully parameterized datafile
+and that the user will take the necessary steps to correct the datafile. Please note
+that it is possible that the inputs to all2lmp.py are incorrect causing this error
+and that a certain atom type maybe wrong, where it might be easier to correct the
+inputs to all2lmp.py rather then correct the outputs of all2lmp.py.
+
+
+Using path from topofile to set parent_directory ...
+
+
+Writing LAMMPS datafile
+Writing verbose comment file
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\sheet_builder directory
+
+
+Each energy coeff Header in the written datafile contains style hint flags for
+applying proper settings in LAMMPS to be consistent with the energy definitions
+and ordering of the energy parameters.
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.4018673896789551
+
+
+Number of WARNING(s) and ERROR(s)
+  358 WARNING(s)
+  0 ERROR(s)

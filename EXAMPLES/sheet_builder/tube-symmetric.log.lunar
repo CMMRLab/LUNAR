@@ -1,0 +1,67 @@
+
+
+Running sheet_builder v1.0 / 18 May 2024 in mode symmetric-tube
+Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+
+
+Generating symmetric nanotube(s) ...
+
+
+Generating sheet(s) ...
+  edge=zigzag with an edge length=24.5951 and a perpendicular length=34.0800
+  edge=armchair with a diameter=12.0000 and a length=24.5951
+  Created: 320 atoms
+
+
+Finding bonds ...
+  Boundary flags f f p for finding bonds
+  Using 3 x 3 x 4 sub domains of size 7.1 to perform domain decomposition
+  Finding domain to use cell linked list algorithm for interatomic distance calculations ...
+  Finding cell linked graph for interatomic distance calculations ...
+  Assigning atoms to each sub domain for interatomic distance calculations ...
+    progress: 10 %
+    progress: 20 %
+    progress: 30 %
+    progress: 40 %
+    progress: 50 %
+    progress: 60 %
+    progress: 70 %
+    progress: 80 %
+    progress: 90 %
+    progress: 100 %
+  Finding interatomic distances for bond creation ...
+    progress: 10 %
+    progress: 20 %
+    progress: 30 %
+    progress: 40 %
+    progress: 50 %
+    progress: 60 %
+    progress: 70 %
+    progress: 80 %
+    progress: 90 %
+    progress: 100 %
+    Bond generation execution time: 0.0280301570892334 (seconds)
+  Created: 480 bonds
+
+
+Adding pi-electrons of types = {1: 'bbe', 2: 'nbe', 3: 'bbe', 4: 'nbe'} ...
+     640 atoms
+     640 bonds
+
+
+Attempting to add charge to system based on charges in charge dictionary ...
+  System net charge: 0.000000
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES/sheet_builder directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.047998905181884766
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

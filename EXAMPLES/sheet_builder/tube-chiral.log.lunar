@@ -1,0 +1,68 @@
+
+
+Running sheet_builder v1.0 / 18 May 2024 in mode chiral-tube
+Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+
+
+Generating a chiral nanotube ...
+  n=5 and m=10 generates a tube with a diameter=10.3566, a length=11.2709, and an alpha=40.8934
+
+
+Generating sheet(s) ...
+  edge=armchair with an edge length=93.7200 and a perpendicular length=95.9210
+  Replicating tube by 2 units. Creating a final tube length of 22.5418
+  Created: 280 atoms
+
+
+Finding bonds ...
+  Boundary flags f f p for finding bonds
+  Using 3 x 3 x 4 sub domains of size 7.1 to perform domain decomposition
+  Finding domain to use cell linked list algorithm for interatomic distance calculations ...
+  Finding cell linked graph for interatomic distance calculations ...
+  Assigning atoms to each sub domain for interatomic distance calculations ...
+    progress: 10 %
+    progress: 20 %
+    progress: 30 %
+    progress: 40 %
+    progress: 50 %
+    progress: 60 %
+    progress: 70 %
+    progress: 80 %
+    progress: 90 %
+    progress: 100 %
+  Finding interatomic distances for bond creation ...
+    progress: 10 %
+    progress: 20 %
+    progress: 30 %
+    progress: 40 %
+    progress: 50 %
+    progress: 60 %
+    progress: 70 %
+    progress: 80 %
+    progress: 90 %
+    progress: 100 %
+    Bond generation execution time: 0.020006418228149414 (seconds)
+  Created: 420 bonds
+
+
+Adding pi-electrons of types = {1: 'cge', 2: 'cge', 3: 'cge', 4: 'cge'} ...
+     560 atoms
+     560 bonds
+
+
+Attempting to add charge to system based on charges in charge dictionary ...
+  System net charge: 0.000000
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES/sheet_builder directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.05602908134460449
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

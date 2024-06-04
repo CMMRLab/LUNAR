@@ -1,0 +1,190 @@
+
+
+Running all2lmp v1.18 / 28 April 2024
+Using Python version 3.11.5 (tags/v3.11.5:cce6ba9, Aug 24 2023, 14:38:34) [MSC v.1936 64 bit (AMD64)]
+Trying Atom Equivalences if needed
+Trying Atom Auto-Equivalences if needed
+Resetting molecule-ids based on cluster analysis
+
+
+Using higher version of parameters for #equivalences N a version: 2.10 
+Using higher version of parameters for #bond_increments h* o* version: 3.30 
+Using higher version of parameters for #bond_increments h si version: 2.20 
+Using higher version of parameters for #bond_increments c si version: 2.20 
+Using higher version of parameters for #bond_increments cp si version: 2.20 
+Using higher version of parameters for #bond_increments c_1 cp version: 2.10 
+Using higher version of parameters for #bond_increments si si version: 2.20 
+Using higher version of parameters for #quartic_bonds c_1 o_1 version: 2.10 
+Using higher version of parameters for #quartic_bonds cp h version: 2.10 
+Using higher version of parameters for #quartic_bonds c c version: 2.10 
+Using higher version of parameters for #quartic_bonds c= c=1 version: 3.10 
+Using higher version of parameters for #quartic_bonds cp cp version: 2.10 
+Using higher version of parameters for #quartic_bonds c h version: 2.10 
+Using higher version of parameters for #quartic_bonds c o_2 version: 2.20 
+Using higher version of parameters for #torsion_1 * c_ p_ * version: 3.30 
+Using higher version of parameters for #torsion_3 h c cp cp version: 2.00 
+Using higher version of parameters for #torsion_3 c c c c version: 2.10 
+Using higher version of parameters for #torsion_3 c c c h version: 2.10 
+Using higher version of parameters for #torsion_3 h c c h version: 2.10 
+Using higher version of parameters for #wilson_out_of_plane c cp cp cp version: 2.00 
+Using higher version of parameters for #wilson_out_of_plane cp cp cp h version: 3.10 
+Using higher version of parameters for #pair_coeffs_9_6 o _ 1 version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 C l version: 3.40 
+Using higher version of parameters for #pair_coeffs_9_6 h * version: 3.30 
+Using higher version of parameters for #pair_coeffs_9_6 s i version: 2.20 
+Using higher version of parameters for #pair_coeffs_9_6 n = version: 3.10 
+Using higher version of parameters for #pair_coeffs_9_6 h o 2 version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 s ' version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 c = version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 n z version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 o * version: 3.40 
+Using higher version of parameters for #bondbond13 cp cp cp cp version: 2.10 
+Using higher version of parameters for #middlebondtorsion o_1 c_1 o_2 c version: 2.10 
+
+Read in frc_files\pcff_iff_v1_5_CNT_poly_solv_hpan_hc_mod.frc forcefeild file
+Read in EXAMPLES\sheet_builder\tube-chiral.data LAMMPS datafile
+Read in EXAMPLES\sheet_builder\tube-chiral.nta new-type-assignment file
+
+
+
+Getting force field parameters for the read in system
+
+Checking for atom-type assignment consistency with atom-types in .frc file
+
+
+Finding molecules to reset molids....
+-----------------Cluster Analysis-----------------
+  molID    Size of Fragment     %Size of Fragment    
+--------------------------------------------------
+    1             840               100.00          
+
+
+
+
+Atoms information has been found
+  EXAMPLES\sheet_builder\tube-chiral.data has all image flags set to zero
+  There are 840 atoms in 1 molecules in this file
+  The total charge in the system is 0.0000
+
+
+
+
+
+
+WARNING unable to find bondbond info for Bondbond Coeff 2 cge cg1 cg1
+WARNING unable to find bondbond info for Bondbond Coeff 3 cge cg1 cge
+
+WARNING unable to find bondangle info for Bondangle Coeff 1 cg1 cg1 cg1
+WARNING unable to find bondangle info for Bondangle Coeff 2 cge cg1 cg1
+WARNING unable to find bondangle info for Bondangle Coeff 3 cge cg1 cge
+
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 2 cge cg1 cg1 cge
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 3 cg1 cg1 cg1 cge
+
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 1 cg1 cg1 cg1 cg1
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 2 cge cg1 cg1 cge
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 3 cg1 cg1 cg1 cge
+
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 1 cg1 cg1 cg1 cg1
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 2 cge cg1 cg1 cge
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 3 cg1 cg1 cg1 cge
+
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 1 cg1 cg1 cg1 cg1
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 2 cge cg1 cg1 cge
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 3 cg1 cg1 cg1 cge
+
+WARNING unable to find angletorsion info for Angletorsion Coeff 1 cg1 cg1 cg1 cg1
+WARNING unable to find angletorsion info for Angletorsion Coeff 2 cge cg1 cg1 cge
+WARNING unable to find angletorsion info for Angletorsion Coeff 3 cg1 cg1 cg1 cge
+
+WARNING unable to find angleangle info for Angleangle Coeff 1 cg1 cg1 cg1 cg1
+WARNING unable to find angleangle info for Angleangle Coeff 2 cg1 cg1 cg1 cge
+WARNING unable to find angleangle info for Angleangle Coeff 3 cg1 cg1 cge cge
+
+
+Removing topology and parameters (based on .nta file settings)
+   Number of removed angles, types =     0        0  
+   Number of removed dihedrals, types =    6720      3  
+   Number of removed impropers, types =    2800      3  
+
+
+
+The read in nta file EXAMPLES\sheet_builder\tube-chiral.nta
+contains charge section(s) of either id or type or nta or combinations.
+These charges are now being applied after possible bond-incs search.
+  840 atomIDs had charges updated via flags set in nta file
+  Total system charge: 0.0
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         16.03662  angstrom  
+Ly:         16.03662  angstrom  
+Lz:         22.54180  angstrom  
+volume:    5.7971E-21 cm^3      
+mass:      5.5846E-21 grams     
+density:    0.96333   g/cm^3    
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:             840 
+nbonds:             980 
+nangles:           2800 
+ndihedrals:          0  
+nimpropers:          0  
+
+--------------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers Types
+--------------------------------------------
+natomtypes:          2  
+nbondtypes:          2  
+nangletypes:         3  
+ndihedraltypes:      0  
+nimpropertypes:      0  
+
+-------------------------------------
+Parameterization percentage breakdown
+-------------------------------------
+Masses:                      100.00 %
+Pair Coeffs:                 100.00 %
+Bond Coeffs:                 100.00 %
+Angle Coeffs:                100.00 %
+Average MPBADI Coeffs:       100.00 %
+BondBond Coeffs:             33.33  %
+BondAngle Coeffs:             0.00  %
+Average (without Bond-incs): 76.19  %
+
+User is acknowledging that all2lmp.py can not supply a fully parameterized datafile
+and that the user will take the necessary steps to correct the datafile. Please note
+that it is possible that the inputs to all2lmp.py are incorrect causing this error
+and that a certain atom type maybe wrong, where it might be easier to correct the
+inputs to all2lmp.py rather then correct the outputs of all2lmp.py.
+
+
+Using path from topofile to set parent_directory ...
+
+
+Writing LAMMPS datafile
+Writing verbose comment file
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\sheet_builder directory
+
+
+Each energy coeff Header in the written datafile contains style hint flags for
+applying proper settings in LAMMPS to be consistent with the energy definitions
+and ordering of the energy parameters.
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.2055649757385254
+
+
+Number of WARNING(s) and ERROR(s)
+  22 WARNING(s)
+  0 ERROR(s)

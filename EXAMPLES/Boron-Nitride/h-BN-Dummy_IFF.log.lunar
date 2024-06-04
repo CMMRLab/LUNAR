@@ -1,0 +1,183 @@
+
+
+Running all2lmp v1.18 / 28 April 2024
+Using Python version 3.11.5 (tags/v3.11.5:cce6ba9, Aug 24 2023, 14:38:34) [MSC v.1936 64 bit (AMD64)]
+Trying Atom Equivalences if needed
+Trying Atom Auto-Equivalences if needed
+Resetting molecule-ids based on cluster analysis
+
+
+Using higher version of parameters for #equivalences N a version: 2.10 
+Using higher version of parameters for #bond_increments h* o* version: 3.30 
+Using higher version of parameters for #bond_increments si si version: 2.20 
+Using higher version of parameters for #bond_increments c si version: 2.20 
+Using higher version of parameters for #bond_increments h si version: 2.20 
+Using higher version of parameters for #bond_increments cp si version: 2.20 
+Using higher version of parameters for #bond_increments c_1 cp version: 2.10 
+Using higher version of parameters for #quartic_bonds c h version: 2.10 
+Using higher version of parameters for #quartic_bonds c= c=1 version: 3.10 
+Using higher version of parameters for #quartic_bonds c o_2 version: 2.20 
+Using higher version of parameters for #quartic_bonds cp h version: 2.10 
+Using higher version of parameters for #quartic_bonds cp cp version: 2.10 
+Using higher version of parameters for #quartic_bonds c c version: 2.10 
+Using higher version of parameters for #quartic_bonds c_1 o_1 version: 2.10 
+Using higher version of parameters for #torsion_1 * c_ p_ * version: 3.30 
+Using higher version of parameters for #torsion_3 h c cp cp version: 2.00 
+Using higher version of parameters for #torsion_3 c c c c version: 2.10 
+Using higher version of parameters for #torsion_3 c c c h version: 2.10 
+Using higher version of parameters for #torsion_3 h c c h version: 2.10 
+Using higher version of parameters for #wilson_out_of_plane cp cp cp h version: 3.10 
+Using higher version of parameters for #wilson_out_of_plane c cp cp cp version: 2.00 
+Using higher version of parameters for #pair_coeffs_9_6 n z version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 o _ 1 version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 h * version: 3.30 
+Using higher version of parameters for #pair_coeffs_9_6 s i version: 2.20 
+Using higher version of parameters for #pair_coeffs_9_6 c = version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 h o 2 version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 s ' version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 n = version: 3.10 
+Using higher version of parameters for #pair_coeffs_9_6 o * version: 3.40 
+Using higher version of parameters for #bondbond13 cp cp cp cp version: 2.10 
+Using higher version of parameters for #middlebondtorsion o_1 c_1 o_2 c version: 2.10 
+
+Read in EXAMPLES\Boron-Nitrogen\pcff_interface_v1_6mBN.frc forcefeild file
+Read in EXAMPLES\Boron-Nitrogen\h-BN-Dummy.car_+_EXAMPLES\Boron-Nitrogen\h-BN-Dummy.mdf material studio file
+nta dictionary came from msi EXAMPLES\Boron-Nitrogen\h-BN-Dummy.car file
+
+
+
+Getting force field parameters for the read in system
+
+Checking for atom-type assignment consistency with atom-types in .frc file
+
+
+Finding molecules to reset molids....
+-----------------Cluster Analysis-----------------
+  molID    Size of Fragment     %Size of Fragment    
+--------------------------------------------------
+    1               6                50.00          
+    2               6                50.00          
+
+
+WARNING inconsistent # of connects on atom-id 1 type bbn
+WARNING inconsistent # of connects on atom-id 2 type bbn
+
+
+Atoms information has been found
+  EXAMPLES\Boron-Nitrogen\h-BN-Dummy.car_+_EXAMPLES\Boron-Nitrogen\h-BN-Dummy.mdf has all image flags set to zero
+  There are 12 atoms in 2 molecules in this file
+  The total charge in the system is 0.0000
+
+
+
+
+
+WARNING unable to find improper info for Improper Coeff 1 bbe bbn bbe nbn
+WARNING unable to find improper info for Improper Coeff 2 bbn nbn nbe nbe
+
+WARNING unable to find bondbond info for Bondbond Coeff 1 bbe bbn bbe
+WARNING unable to find bondbond info for Bondbond Coeff 2 bbe bbn nbn
+WARNING unable to find bondbond info for Bondbond Coeff 3 nbe nbn bbn
+WARNING unable to find bondbond info for Bondbond Coeff 4 nbe nbn nbe
+
+WARNING unable to find bondangle info for Bondangle Coeff 1 bbe bbn bbe
+WARNING unable to find bondangle info for Bondangle Coeff 2 bbe bbn nbn
+WARNING unable to find bondangle info for Bondangle Coeff 3 nbe nbn bbn
+WARNING unable to find bondangle info for Bondangle Coeff 4 nbe nbn nbe
+
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 1 nbe nbn bbn bbe
+
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 1 nbe nbn bbn bbe
+
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 1 nbe nbn bbn bbe
+
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 1 nbe nbn bbn bbe
+
+WARNING unable to find angletorsion info for Angletorsion Coeff 1 nbe nbn bbn bbe
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         2.51240   angstrom  
+Ly:         2.17580   angstrom  
+Lz:         7.70730   angstrom  
+volume:    4.2132E-23 cm^3      
+mass:      8.2422E-23 grams     
+density:    1.95628   g/cm^3    
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:             12  
+nbonds:             10  
+nangles:            12  
+ndihedrals:          8  
+nimpropers:          4  
+- oop:               4  
+- angleangle:        0  
+
+--------------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers Types
+--------------------------------------------
+natomtypes:          4  
+nbondtypes:          3  
+nangletypes:         4  
+ndihedraltypes:      1  
+nimpropertypes:      2  
+- oop:               2  
+- angleangle:        0  
+
+-------------------------------------
+Parameterization percentage breakdown
+-------------------------------------
+Masses:                      100.00 %
+Pair Coeffs:                 100.00 %
+Bond Coeffs:                 100.00 %
+Angle Coeffs:                100.00 %
+Dihedral Coeffs:             100.00 %
+Improper Coeffs:              0.00  %
+Average MPBADI Coeffs:       83.33  %
+BondBond Coeffs:              0.00  %
+BondAngle Coeffs:             0.00  %
+AngleAngleTorsion Coeffs:     0.00  %
+EndBondTorsion Coeffs:        0.00  %
+MiddleBondTorsion Coeffs:     0.00  %
+BondBond13 Coeffs:            0.00  %
+AngleTorsion Coeffs:          0.00  %
+AngleAngle Coeffs:           100.00 %
+Average (without Bond-incs): 45.56  %
+
+User is acknowledging that all2lmp.py can not supply a fully parameterized datafile
+and that the user will take the necessary steps to correct the datafile. Please note
+that it is possible that the inputs to all2lmp.py are incorrect causing this error
+and that a certain atom type maybe wrong, where it might be easier to correct the
+inputs to all2lmp.py rather then correct the outputs of all2lmp.py.
+
+
+Using path from topofile to set parent_directory ...
+
+
+Writing LAMMPS datafile
+Writing verbose comment file
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\Boron-Nitrogen directory
+
+
+Each energy coeff Header in the written datafile contains style hint flags for
+applying proper settings in LAMMPS to be consistent with the energy definitions
+and ordering of the energy parameters.
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.12622404098510742
+
+
+Number of WARNING(s) and ERROR(s)
+  17 WARNING(s)
+  0 ERROR(s)

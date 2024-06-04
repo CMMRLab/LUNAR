@@ -36,7 +36,7 @@
 **********
 
   topofile   
-    Button to load in a LAMMPS datafile analyze the bonding connectivity. You may also directly type the filename in the entry to the right
+    Button to load in a LAMMPS datafile to analyze the bonding connectivity. You may also directly type the filename in the entry to the right
     of the button as well.
 	
   N0 and fav
