@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-February 6th, 2024
+Revision 1.2
+June 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -33,15 +33,7 @@ def find_shortest_path(graph, start, end, path=[]):
     return shortest
 
 
-def reduce_graph(mm, i, j):
-    rgraph = {k:[] for k in mm.atoms}
-    midbond = sorted([i, j])
-    for k in mm.bonds:
-        bond = sorted(mm.bonds[k].atomids)
-        if bond != midbond:
-            rgraph[bond[0]].append(bond[1])
-            rgraph[bond[1]].append(bond[0])
-    return rgraph
+
 
 ######################################################################
 # Function to perform atom-typing for PCFF-IFF forcefield atom types #
@@ -50,6 +42,15 @@ def nta(mm, basename, ff_name):
     tally = {'found':0, 'assumed':0, 'failed':0} # To tally findings
     generate_small_lmp = True # Option to generate "small" LAMMPS data files to show atom type topology
     if len(mm.atoms) <= 100: generate_small_lmp = False # comment/uncomment, if the file has few atoms there really is no need to generate small lmp files
+    
+    ##################
+    # Generate graph #
+    ##################
+    graph = {i:[] for i in mm.atoms}
+    for i in mm.bonds:
+        id1, id2 = mm.bonds[i].atomids
+        graph[id1].append(id2); graph[id2].append(id1);
+            
     
     ######################################
     # Set general informations and flags #
@@ -136,6 +137,13 @@ def nta(mm, basename, ff_name):
         # NEW DEVELOPMENTAL path preserving general atom types for general:N; N=2,3,4 #
         ###############################################################################
         if ff_name in ['general-pp:2', 'general-pp:3', 'general-pp:4']:
+            # Generate graph to manipulate
+            graph = {i:[] for i in mm.atoms}
+            for i in mm.bonds:
+                id1, id2 = mm.bonds[i].atomids
+                graph[id1].append(id2); graph[id2].append(id1);
+                
+            # Start finding path preserving strings
             cummulative_paths = True # option to trace out cummulative paths that terminate before "max_depth"
             first_neighs = mm.graph[i];  max_depth = int(ff_name.split(':')[-1])-1; neighs = []
             if cummulative_paths:
@@ -152,9 +160,13 @@ def nta(mm, basename, ff_name):
                             if len(mm.graph[t]) == 1:
                                 outer_neighs.append(t)
                     outer_neighs = sorted(outer_neighs)
+                rm_ij = True; rm_ji = True;
+                try: graph[i].remove(j)
+                except: rm_ij = False 
+                try: graph[j].remove(i)
+                except: rm_ji = False 
                 for k in outer_neighs:
-                    rgraph = reduce_graph(mm, i, j)
-                    path = find_shortest_path(rgraph, j, k)
+                    path = find_shortest_path(graph, j, k)
                     if path:
                         strings = []
                         for l in path:
@@ -162,6 +174,8 @@ def nta(mm, basename, ff_name):
                             strings.append('{}{}{}'.format(atom_path.element, str(atom_path.ring), str(atom_path.nb)))
                         string = '-'.join(strings)
                         neighs.append(string)
+                if rm_ij: graph[i].append(j)
+                if rm_ji: graph[j].append(i)
             unique_neighs = sorted(set(neighs))
             couted_neighs = {u:neighs.count(u) for u in unique_neighs}
             nta_types = [str(info)]
@@ -169,7 +183,6 @@ def nta(mm, basename, ff_name):
                 nta_types.append('{}({})'.format(couted_neighs[u], u))
             atom.nta_type = '-'.join(nta_types)
             atom.nta_info = '{} type; path_preserving where each set of () represent a path from the first neigh to the N-th neigh'.format(ff_name)
-
 
     
     ####################################################################################
