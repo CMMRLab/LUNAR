@@ -3,7 +3,7 @@ Joshs NOTES on the .frc files:
 	msi2lmp that is found in the tools folder of the LAMMPS distribution.
 	However, Josh has also added to following .frc files:
 		- all2lmp_dreiding.frc (built by Josh from the DREIDING paper)
-		- all2lmp_reaxff.frc (built by Josh for all2lmp.py ReaxFF files)
+		- all2lmp_interatomic.frc (built by Josh for all2lmp.py ReaxFF, REBO, AIREBO, SNAP, ... files)
 		- all2lmp_oplsaa_tinker (built by Josh from Tinker opls-aa parameters)
 		- pcff_interface_v1_5.frc (from IFF website - still need permission)
 		- cvff_interface_v1_5.frc (from IFF website - still need permission)
