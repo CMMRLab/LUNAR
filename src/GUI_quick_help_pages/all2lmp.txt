@@ -111,7 +111,7 @@
       Note, that when using either s1 or s2, the frc_file that is listed is not used and can be left as any frc file.
     i notes: 
       Note that when using i, the nta_file that is listed is not used and can be left as any nta file. The element types and masses will be
-      derived from the all2lmp_reaxff.frc file.
+      derived from the all2lmp_interatomic.frc file.
     It is important that ff_class and frc_file is consistent. If the ff_class definition and frc_file is inconsistent, the code will exit with
     an ERROR.
 	
