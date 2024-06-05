@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 4/10/2024
+# Last edited 6/5/2024
 #
 ************
 * Overview *
@@ -104,7 +104,7 @@
         1 = class1 (CVFF, CVFF-IFF, Clay-FF)
         2 = class2 (PCFF, PCFF-IFF, COMPASS)
         d = DREIDING
-        r = ReaxFF
+        i = interatomic for potentials like: ReaxFF, REBO, AIREBO, SNAP, ...
         s1 = skeleton datafile with no coeffs in class1 format
         s2 = skeleton datafile with no coeffs in class2 format		
     s1 and s2 notes:

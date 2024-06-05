@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-December 1st, 2023
+Revision 1.3
+June 5th, 2023
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -221,7 +221,7 @@ def print_man_page(topofile, nta_file, frc_file, assumed, parent_dir, newfile, a
     print('          N-body coeffs will have atomIDs in the Bonds, Angles, Dihedrals, and Impropers section match the ordering')
     print('          of the types in the coeff comment)')
     print()
-    print('      r = reaxff (for reaxff .frc file specfic to all2lmp ONLY! contains elements and masses)')
+    print('      i = for interatomic potentials like: ReaxFF, REBO, AIREBO, SNAP, ... (for .frc file specfic to all2lmp ONLY! contains elements and masses)')
     print('    Example usage:')
     print('        python3 all2lmp.py -class 2')
 

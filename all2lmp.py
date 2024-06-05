@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.18
-April 28th, 2024
+Revision 1.19
+June 5th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -166,7 +166,7 @@ GUI_zoom = 100
 ###############################################################################################################################
 topofile = 'EXAMPLES/EPON_862/atom_typing_Outputs/detda_typed.data'
 nta_file = 'EXAMPLES/EPON_862/atom_typing_Outputs/detda_typed.nta'
-frc_file = 'frc_files/pcff.frc'
+frc_file = 'frc_files/pcff_iff_v1_5_CNT_poly_solv_hpan_hc_mod.frc'
 assumed = 'frc_files/general_assumed_equivs.coeffs'
 
 
@@ -201,7 +201,7 @@ add2box = 0.0
 #                                                                                                                             #
 # Update ignore_missing_parameters as desired.                                                                                #
 ###############################################################################################################################
-ignore_missing_parameters = False
+ignore_missing_parameters = True
 
 
 ###############################################################################################################################
@@ -281,13 +281,14 @@ atom_style = 'full'
 ###############################################################################################################################
 # Python string or int variable to set what type of forcefield (FF) to apply to the system. *NOTE the FF type set here MUST   #
 # be consistent with the information inside the read in FF set by the frc_file variable.* The following options are available:#
-#    0   = class0   (int data type - FF files: opls-AA {EXPEIRMENTAL})                                                        #
-#    1   = class1   (int data type - FF files: cvff-IFF, cvff, clayff)                                                        #
-#    2   = class2   (int data type - FF files: PCFF-IFF, PCFF, compass)                                                       #
-#   'd'  = DREIDING (str data type - FF file: all2lmp_dreiding.frc)                                                           #
-#   'r'  = reaxFF   (str data type - FF files: all2lmp reaxff specfic .frc file {contains elements and mass info, simulation  #
-#                    cell info, insertion of extra elements as atom types to make reaxFF files consistant with one another if #
-#                    different elements are in each file})                                                                    #
+#    0   = class0      (int data type - FF files: opls-AA {EXPEIRMENTAL})                                                     #
+#    1   = class1      (int data type - FF files: cvff-IFF, cvff, clayff)                                                     #
+#    2   = class2      (int data type - FF files: PCFF-IFF, PCFF, compass)                                                    #
+#   'd'  = DREIDING    (str data type - FF file: all2lmp_dreiding.frc)                                                        #
+#   'i'  = interatomic (str data type - FF files: all2lmp all2lmp interatomic specfic .frc file, for potentials like ReaxFF,  #
+#                      REBO, AIREBO, SNAP, ... {contains elements and mass info, simulation cell info, insertion of extra     #
+#                      elements as atom types to make reaxFF files consistant with one another if different elements are in   #
+#                      each file})                                                                                            #
 #   's1' = skeleton datafile for class1; where skeleton means a complete LAMMPS datafile, but no coeffs in it (all N-body     #
 #          coeffs will have atomIDs in the Bonds, Angles, Dihedrals, and Impropers section match the ordering of the types in #
 #          the coeff comment)                                                                                                 #
@@ -297,7 +298,7 @@ atom_style = 'full'
 #                                                                                                                             #
 # Examples:                                                                                                                   #
 #    ff_class = 1    # sets FF application for class1 FF's                                                                    #
-#    ff_class = 'r'  # sets FF application for ReaxFF                                                                         #
+#    ff_class = 'i'  # sets FF application for interatomic potentials like: ReaxFF, REBO, AIREBO, SNAP, ...                   #
 #    ff_class = 's2' # generates a class2 LAMMPS datafile with no energy coeffs, but in class2 format                         #
 #                                                                                                                             #
 # Update ff_class as required.                                                                                                #

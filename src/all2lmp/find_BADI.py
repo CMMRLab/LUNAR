@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.3
-March 16th, 2023
+Revision 1.4
+June 5th, 2023
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -46,8 +46,8 @@ class BADI:
                 self.impropers.extend(self.angleangles)
                 self.improper_types_lst.extend(self.angleangle_types_lst)  
                 
-        # If ff_class is reaxFF find atom types only
-        if ff_class == 'r':
+        # If ff_class is 'i' for interatomic force fields like reaxFF, REBO, AIREBO, SNAP,...reaxFF find atom types only
+        if ff_class == 'i':
             self.atom_types_lst, self.atom_types_dict = atom_types(nta, name)
         
         

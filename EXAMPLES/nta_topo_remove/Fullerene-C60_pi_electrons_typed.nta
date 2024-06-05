@@ -1,4 +1,12 @@
 New type assignment file for Fullerene-C60_pi_electrons_typed.data > atom_typing v1.7 / 4 November 2023 w/PCFF-IFF atom-types
+#------------------------------#
+# Convert IFF to PCFF for test #
+#------------------------------#
+equivs
+cg1 cp
+cge hc
+
+
 #----------------------#
 # NEW *-remove options #
 #----------------------#

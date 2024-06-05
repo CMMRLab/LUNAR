@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.6
-December 1st, 2023
+Revision 1.7
+June 5th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -116,8 +116,8 @@ class get:
         # Find box dimensions which is done from the read in box dimensions of the file or reset_box_dims=True will search all atom coordinates and find min/max values to set box dimensions
         self.box = get_box(m, add2box, log)
         
-        # If ff_class is reaxFF find atom types only
-        if ff_class == 'r':
+        # If ff_class is 'i' for interatomic force fields like reaxFF, REBO, AIREBO, SNAP,... find atom types only
+        if ff_class == 'i':
             # Set total number of atoms/bonds/angles/dihedrals/impropers
             self.natoms = len(m.atoms); self.nbonds = 0;
             self.nangles = 0; self.ndihedrals = 0; self.nimpropers = 0;
@@ -128,7 +128,7 @@ class get:
             
             # Find atoms info such as setting up atoms charge, molid, x-pos, y-pos, z-pos, and image flags along with the masses and pair_coeffs
             self.atoms, self.velocities = find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_equivalence, ff_class, skip_printouts, log)    
-            self.masses, self.mass_comment = find_reaxff_atom_parameters(frc, BADI, ff_class, log)
+            self.masses, self.mass_comment = find_interatomic_atom_parameters(frc, BADI, ff_class, log)
             
         
         # Find info of ff_class for class 0 or 1 or 2 or 'd' or 's1' or 's2'
@@ -357,9 +357,9 @@ def find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_a
 ##########################################
 # Function for finding reaxff atom types #
 ##########################################
-def find_reaxff_atom_parameters(frc, BADI, ff_class, log):
+def find_interatomic_atom_parameters(frc, BADI, ff_class, log):
     """
-    Function to fill in reaxFF specific masses
+    Function to fill in interatomic force fields like reaxFF, REBO, AIREBO, SNAP,... specific masses
     """
     # Add printing buffer
     log.out('')

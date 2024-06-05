@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.18
-April 28th, 2024
+Revision 1.19
+June 5th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -11,6 +11,7 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+import src.all2lmp.interatomic_force_fields as interatomic_force_fields
 import src.all2lmp.bond_react_templates as bond_react_templates
 import src.all2lmp.fill_in_parameters as fill_in_parameters
 import src.all2lmp.assumed_auto_fill as assumed_auto_fill
@@ -23,7 +24,6 @@ import src.all2lmp.write_lmp as write_lmp
 import src.all2lmp.find_BADI as find_BADI
 import src.all2lmp.read_frc as read_frc
 import src.all2lmp.read_nta as read_nta
-import src.all2lmp.reaxff as reaxff
 import src.mol2SYBYL2lmp as mol2SYBYL2lmp
 import src.io_functions as io_functions
 import src.read_lmp as read_lmp
@@ -91,7 +91,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     # Initialize some preliminary information #
     ###########################################
     # set version and print starting information to screen
-    version = 'v1.18 / 28 April 2024'
+    version = 'v1.19 / 5 June 2024'
     log.out(f'\n\nRunning all2lmp {version}')
     log.out(f'Using Python version {sys.version}')
     log.out('Trying Atom Equivalences if needed')
@@ -206,10 +206,10 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
             log.out(f'Read in {frc_file} forcefeild file')
         else: log.error(f'ERROR .frc file: {frc_file} does not exist')
         
-    # If ff_class is reaxFF build nta dictionary from m class 
-    if ff_class == 'r':
+    # If ff_class is 'i' for interatomic force fields like ReaxFF, SNAP, REBO, ... build nta dictionary from m class 
+    if ff_class == 'i':
         if os.path.isfile(frc_file):
-            frc = reaxff.forcefield_file(frc_file)
+            frc = interatomic_force_fields.forcefield_file(frc_file)
             log.out(f'Read in {frc_file} forcefield file')
         else: log.error(f'ERROR .frc file: {frc_file} does not exist')
             
@@ -247,8 +247,8 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
         if len(frc.equivalences) == 0 and len(frc.auto_equivalences) == 0:
             log.error('\n\nERROR Inconsistent data in force field file: Zero equivalence or Zero auto equivalences - Use a class 0, 1, or 2 .frc file, likely read in the reaxFF file.\n')
             
-    # Check frc type for reaxff (read in with reaxff.forcefield_file - Currently no error logging or exiting conditions known, thus pass)
-    elif frc.type == 'reaxff': pass
+    # Check frc type for interatomic (read in with interatomic_force_fields.forcefield_file - Currently no error logging or exiting conditions known, thus pass)
+    elif frc.type == 'interatomic': pass
     
     # Check if frc type is skeleton (Currently no error logging or exiting conditions known, thus pass)
     elif frc.type == 'skeleton': pass
@@ -345,9 +345,9 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
             remove = {'angle-nta':[], 'dihedral-nta':[], 'improper-nta':[], 'angle-ID':[], 'dihedral-ID':[], 'improper-ID':[], 'zero':{'angle':False, 'dihedral':False, 'improper':False}}
             log.out(f'nta dictionary came from msi {nta_file} file')
             
-    # If ff_class is reaxFF build nta dictionary from m class 
-    if ff_class == 'r':
-        nta, name, edge, charges, neutralize, remove = reaxff.generate_nta(m, frc, reset_charges, log)
+    # If ff_class is 'i' for interatomic force fields like reaxFF, REBO, AIREBO, SNAP,... build nta dictionary from m class 
+    if ff_class == 'i':
+        nta, name, edge, charges, neutralize, remove = interatomic_force_fields.generate_nta(m, frc, reset_charges, log)
     
     # Read asssumed auto fill coeffs (aafc) file
     if use_assumed_auto_fill:
