@@ -628,12 +628,16 @@ class GUI:
                 try: 
                     method = i.get(); xlo = j.get(); xhi = k.get(); misc = l.get(); name = m.get();
                     if method == 'skip': continue
-                    if method != '' and xlo != '' and xhi != '': 
+                    if method != '' and xlo != '':
                         try: xlo = float(xlo)
-                        except: xlo = 0; self.log.GUI_error(f'ERROR xlo {xlo} is not a float, using 0.0 instead')
+                        except: xlo = 'min-of-xdata'; self.log.GUI_error(f'ERROR xlo {xlo} is not a float, using minimum of xdata instead')
+                    else: 
+                        xlo = 'min-of-xdata'
+                    if method != '' and xhi != '': 
                         try: xhi = float(xhi)
-                        except: xlo = 1; self.log.GUI_error(f'ERROR xhi {xhi} is not a float, using 1.0 instead')
-                    else: xlo = 0; xhi = 10; # Default for cursor
+                        except: xlo = 'max-of-xdata'; self.log.GUI_error(f'ERROR xhi {xhi} is not a float, using maximum of xdata instead')
+                    else: 
+                        xhi = 'max-of-xdata'
                     if name == '' and method != 'remove LAMMPS data':
                         name = 'analysis-{}'.format(n)
                         self.log.warn(f'WARNING name was left empty, imposing {name}')
@@ -651,6 +655,13 @@ class GUI:
             shift=False; shift_amount = 0; # Defaults
             if analysis:
                 for method, xlo, xhi, misc, name in analysis:
+                    if xlo == 'min-of-xdata':
+                        xlo = min(x)
+                        self.log.out('  xlo was not provided, using minimum of xdata {}'.format(xlo))
+                    if xhi == 'max-of-xdata':
+                        xhi = max(x)
+                        self.log.out('  xhi was not provided, using maximum of xdata {}'.format(xhi))
+                    
                     if method == 'remove LAMMPS data':
                         rm_lmp_data = True
                     

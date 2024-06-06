@@ -94,7 +94,7 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 5June2024)
+LUNAR (version 6June2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -112,6 +112,10 @@ Date               Developer   Description
 5June2024          JDK         - all2lmp.py: Swithed ff_class 'r' for ReaxFF, to 'i' for interatomic as this
                                              method in all2lmp will allow for the generation of data files 
                                              for interatomic potentials like: ReaxFF, REBO, AIREBO, SNAP, ...
-                                             Where SNAP is a machine learned potential.											 
+                                             Where SNAP is a machine learned potential.		
+
+6June2024          JDK         - log_analysis.py: Updated that when xlo column in analysis is empty, the minimum
+                                                  xdata is now used and if the xhi column in analysis is empty the
+                                                  maximum of xdata is used												  
 
 							  
