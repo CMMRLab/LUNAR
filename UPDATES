@@ -128,7 +128,7 @@ Date               Developer   Description
                                                    parameters which can be mixed with arithmetic or geometric
                                                    or sixthpower rules. If atoms overlap, the molecule will
                                                    attempt to be inserted again. Users control the maximum
-												   number of attempts to insert the molecule. The efficiency
+                                                   number of attempts to insert the molecule. The efficiency
                                                    was tested by generating 32,175 atom EPON 862 systems with
                                                    fully-periodic boundaries and a tolerance of 2.0 angstrom:
                                                       *Packed to: 0.10 gm/cm^3 in 19 seconds
