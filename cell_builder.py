@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.7
-April 11th, 2024
+Revision 1.8
+June 11th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -175,14 +175,102 @@ group_monomers_locally = False
 #                                                          grouping of monomers will occur with a 'cubic'     #
 #                                                          lattice.                                           #
 #                                                                                                             #
+#	'LxA x LyA x LzA' where 'Lx' is the box size in the X-direction and 'A' differentiates it from Ni, 'Ly'   #
+#                     is the box size in the Y-direction and 'A' differentiates it from Nj, and 'Lz' is the   #
+#                     box size in the Z-direction and 'A' differentiates it from Nz. This method will randomly#
+#                     place molecules (not on a lattice) and randomly rotate molecules. This method can be    #
+#                     computationally intensive. However it can create systems nearing densities of 0.55 g/cc #
+#                     in under a few minutes (depending on the random settings).                              #
+#                                                                                                             #
+#	'A x A x A'       where the three 'A' means simulation box is being defined with files of QTY or ZEROs.   #
+#                                                                                                             #
 # Examples:                                                                                                   #
 #     domain = 'cubic' # will generate enough lattice points in a cube to place molecules on                  #
 #     domain = '2x2x8' # will generate 2x2x8 number of lattice points, 2 in x-dir, 2 in y-dir, and 8 in z-dir #
 #     domain = '6x8x2' # will generate 6x8x2 number of lattice points, 6 in x-dir, 8 in y-dir, and 2 in z-dir #
+#     domain = 'AxAxA' # box will be defined by files with QTY of ZEROs and will randomly fill that box       #
+#     domain = '10Ax15Ax20A' # will generate box that is 10x15x20A to randomly fill with molecules            #
 #                                                                                                             #
 # Update domain as desired.                                                                                   #
 ###############################################################################################################
 domain = 'cubic'
+
+
+############################################################################
+# Random options for if domain = 'LxA x LyA x LzA' or domain = 'A x A x A' #
+###############################################################################################################
+# The random option will be used of domain = 'LxA x LyA x LzA' or domain = 'A x A x A'. What random means is  #
+# that the insertion of molecules into a simulation cell is performed randomly. The cell_builder module was   #
+# orginally built to insert molecules onto a cubic lattice. However, this results if low density systems that #
+# may take awhile to shrink in LAMMPS. The random method allows cell_builder to randomly generate molecule    #
+# positions and rotations and then check if that molecule overlaps with any atoms in the current system. The  #
+# max density the random method can usually generate is less then 0.5 gm/cm^3 and attempting to generate any  #
+# system denser may cause cell_builder to run for very long period of times. The following variables control  #
+# the random insertion of molecules:                                                                          #
+#    maxtry                                                                                                   #
+#        Which is a Python int variable to control the number of times to try to randomly insert a molecule   #
+#        into a system. After each insertion of a molecule, the next insertion becomes even more difficult    #
+#        as, the simulation cell is getting denser with each insertaion. Examples:                            #
+#            maxtry = 1000 # try inserting each molecule 1000 times                                           #
+#            maxtry = 500  # try inserting each molecule 500 times                                            #
+#                                                                                                             #
+#    mixing_rule                                                                                              #
+#        Which is a Python string variable to control how Pair Coeff LJ parameters are mixed if the tolerance #
+#        variable is an <int>. The following strings are supported:                                           #
+#            'tolerance'   which means the tolerance variable is a <float> and to use the float variable to   #
+#                          check for atom overlaps. This option maybe needed for ReaxFF model generation, as  #
+#                          there are no Pair Coeffs in a ReaxFF LAMMPS datafile.                              #
+#            'geometric'   which means mix the i,j LJ parameters using geometric mixing rules (FFs like       #
+#                          DREIDING).                                                                         #
+#            'arithmetic'  which means mix the i,j LJ parameters using arithmetic mixing rules (FFs like      #
+#                          CHARMM).                                                                           #
+#            'sixthpower'  which means mix the i,j LJ parameters using sixthpower mixing rules (FFs like      #
+#                          PCFF).                                                                             #
+#         The 'sixthpower' mixing rule is the most 'conservative' as it generates the largest mixed LJ sigma  #
+#         parameters and thus can ensure no overlapped atoms not matter what mixing rule ends up being        #
+#         applied in LAMMPS. Thus the 'sixthpower' mixing rule can be a good default. Examples:               #
+#             mixing_rule = 'tolerance'  # will user tolerance <float> to model all atom diameters the same.  #
+#             mixing_rule = 'sixthpower' # will combine LJ parameters using the sixthpower mixing rule to     #
+#                                        # model all atom diameters like in an MD simulation.                 #
+#                                                                                                             #
+#    tolerance                                                                                                #
+#        Which is a Python int or float varaible which controls how to check for overlaps in atoms during     #
+#        molecule insertion. If it is in int or float, it effects how to check for overlaps as follows:       #
+#            tolerance = <float>, which means all atom diameters will be modeled as that <float> input        #
+#                                 provided.                                                                   #
+#            tolerance = <int>,   which sets the index of the sigma value in the LAMMPS Pair Coeff section    #
+#                                 of the LAMMPS datafile. For example Pair Coeffs are read from the LAMMPS    #
+#                                 data file as:                                                               #
+#                                     Pair Coeffs # lj/class2/coul/long                                       #
+#                                                                                                             #
+#                                     1  0.054  4.01 # [0.054, 4.01] -> index=1, sigam=4.01                   #
+#                                     2  0.054  3.90 # [0.054, 3.90] -> index=1, sigam=3.90                   #
+#                                     3  0.013  1.11 # [0.013, 1.11] -> index=1, sigam=1.11                   #
+#                                     :   :      :   :       :       :    :         :                         #
+#        Examples:                                                                                            #
+#            tolerance = 2.0  # will model all atom diameters as 2.0 angstrom to check for overlaps           #
+#            tolerance = 1    # will get LJ sigma value from index 1 of read in Pair Coeffs                   #
+#                                                                                                             #
+#    boundary                                                                                                 #
+#        Which is a Python string variable to control the boundary of the simulation cell, when inserting     #
+#        molecules. The boundary variable is set up like the LAMMPS "boundary" command, where three flags     #
+#        are provided to set the x, y, or z boundary of the simulation cell. The flags are like LAMMPS flags: #
+#            p is periodic                                                                                    #
+#            f is non-periodic and fixed                                                                      #
+#        When the boundary is 'p p p' or full periodic, each image of each atom is checked, thus checking for #
+#        overlaps is more computationaly intensive. However allowing molecules to span the simulation cell    #
+#        "opens" more space to possible insert the molecule. This ultimately seems to make the code run time  #
+#        quicker when inserting molecules into a dense system as compared to a boundary of 'f f f' or a non   #
+#        periodic system. Examples:                                                                           #
+#            boundary = 'f f f' # non-periodic system                                                         #
+#            boundary = 'p p p' # fully-periodic system                                                       #
+#            boundary = 'p f f' # periodic in X-dir and non-periodic in Y- and Z-dir                          #
+#            boundary = 'f f p' # periodic in Z-dir and non-periodic in X- and Y-dir                          #
+###############################################################################################################
+maxtry = 100
+tolerance = 2.0
+mixing_rule = 'tolerance'
+boundary = 'p p p'
 
 
 ###############################################################################################################
@@ -361,10 +449,10 @@ if __name__ == "__main__":
         from src.cell_builder.GUI import cell_builder_GUI
         print('\n\n\ncell_builder is currently running in GUI mode, where all GUI inputs are intialized from cell_builder.\n\n\n')
         cell_builder_GUI(files, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations, reset_molids,
-                         unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, GUI_zoom, nfiles=maxfiles,
-                         scroll_bar=scroll_bar)
+                         unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, maxtry, tolerance, mixing_rule, boundary,
+                         GUI_zoom, nfiles=maxfiles, scroll_bar=scroll_bar)
     else:   
         # Run main cell_builder
         main(files, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
-             reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain,
-             commandline_inputs=commandline_inputs)
+             reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, maxtry,
+             tolerance, mixing_rule, boundary, commandline_inputs=commandline_inputs)

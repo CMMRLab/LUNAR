@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.7
-April 11th, 2024
+Revision 1.8
+June 11th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -32,18 +32,18 @@ import os
 ##############################################
 def main(topofiles, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
          reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally,
-         seed, domain, commandline_inputs=[], log=io_functions.LUNAR_logger()):
+         seed, domain, maxtry, tolerance, mixing_rule, boundary, commandline_inputs=[], log=io_functions.LUNAR_logger()):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
     log.configure(level='production')
-    #log.configure(level='debug')
+    #log.configure(level='debug', print2console=False)
     
     
     ########################################################
     # set version and print starting information to screen #
     ########################################################
-    version = 'v1.7 / 11 April 2024'
+    version = 'v1.8 / 11 June 2024'
     log.out(f'\n\nRunning cell_builder {version}')
     log.out(f'Using Python version {sys.version}')
     
@@ -55,7 +55,8 @@ def main(topofiles, force_field_joining, duplicate, distance_scale, newfile, ato
     if '-opt' in commandline_inputs or  '-man' in commandline_inputs:
         # call man page and exit if '-opt' or '-man' is provided at the command line
         command_line.print_man_page(topofiles, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
-                                    reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain)
+                                    reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, maxtry,
+                                    tolerance, mixing_rule, boundary)
         sys.exit()
         
         
@@ -66,7 +67,7 @@ def main(topofiles, force_field_joining, duplicate, distance_scale, newfile, ato
         # call inputs for commandline over rides
         over_rides = command_line.inputs(topofiles, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
                                           reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally,
-                                          seed, domain, commandline_inputs)
+                                          seed, domain, maxtry, tolerance, mixing_rule, boundary, commandline_inputs)
         
         # Set new inputs from over_rides class
         topofiles = over_rides.topofiles
@@ -83,6 +84,11 @@ def main(topofiles, force_field_joining, duplicate, distance_scale, newfile, ato
         group_monomers_locally = over_rides.group_monomers_locally
         seed = over_rides.seed
         domain = over_rides.domain
+        maxtry = over_rides.maxtry
+        tolerance = over_rides.tolerance 
+        mixing_rule = over_rides.mixing_rule
+        boundary = over_rides.boundary
+                
     
     
     ###############################################################
@@ -228,22 +234,27 @@ def main(topofiles, force_field_joining, duplicate, distance_scale, newfile, ato
         log.out('Grouping monomers locally ...')
         if hasattr(m,'Regions'): m.Regions = {}; log.warn('WARNING Regions header info is not compatable with group_monomers_locally. Ignoring Regions.')
         if hasattr(m,'Rotations'): m.Rotations = {}; log.warn('WARNING Rotations header info is not compatable with group_monomers_locally. Ignoring Rotations.')
-        tmp_files = {}; tmp_qtys = {}; tmp_moleculespans = []; tmp_duplicate = duplicate;
+        if domain.count('A') == 3:
+            log.error(f'ERROR can not used group_monomers_locally and random insertion setup with domain {domain}.')
+        tmp_files = {}; tmp_qtys = {}; tmp_moleculespans = []; tmp_duplicate = duplicate; tmp_molecule_insertion = {} # { fileID : [inserted, desired] }
         for n in range(duplicate):
-            locally_grouped = subcell.constructor(files, qtys, offset_coeff_types, 1, max_rotations, distance_scale, moleculespans, seed, reset_molids, domain, molecule_insertion, occurrences, subcells, log, pflag=False, grouping=True)
+            locally_grouped = subcell.constructor(files, qtys, offset_coeff_types, 1, max_rotations, distance_scale, moleculespans, seed, reset_molids, domain, molecule_insertion,
+                                                  occurrences, subcells, maxtry, tolerance, mixing_rule, boundary, log, pflag=False, grouping=True)
             locally_grouped = misc_functions.center_about_000(locally_grouped)
             tmp_moleculespans.append(locally_grouped.maxspan)
             locally_grouped.Regions = {}; locally_grouped.Rotations = {};
             tmp_files[n+1] = locally_grouped; tmp_qtys[n+1] = 1; subcells.append(locally_grouped)
+            tmp_molecule_insertion[n+1] = [1, 1]
             if n == 0:
                 coeff_offsets = locally_grouped.coeff_offsets
                 molids_based_on_files = locally_grouped.molids_based_on_files
                 molids_based_on_offsets = locally_grouped.molids_based_on_offsets
-        duplicate = 1; files = tmp_files; qtys = tmp_qtys; 
+        duplicate = 1; files = tmp_files; qtys = tmp_qtys; molecule_insertion = tmp_molecule_insertion
         moleculespans.extend(tmp_moleculespans); occurrences += 1
 
     # Build larger simulation cell
-    m = subcell.constructor(files, qtys, offset_coeff_types, duplicate, max_rotations, distance_scale, moleculespans, seed, reset_molids, domain, molecule_insertion, occurrences, subcells, log, pflag=True, grouping=False)
+    m = subcell.constructor(files, qtys, offset_coeff_types, duplicate, max_rotations, distance_scale, moleculespans, seed, reset_molids, domain, molecule_insertion,
+                            occurrences, subcells, maxtry, tolerance, mixing_rule, boundary, log, pflag=True, grouping=False)
     occurrences += 1
     
     # if occurance equals 2 over ride current dicts based on local grouping dicts

@@ -406,7 +406,7 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
     lz = zhi - zlo
     cx = (xhi + xlo)/2
     cy = (yhi + ylo)/2
-    cz = (zhi + zlo)/2;
+    cz = (zhi + zlo)/2
     nxx = math.ceil(lx/domain_size)
     nyy = math.ceil(ly/domain_size)
     nzz = math.ceil(lz/domain_size)
@@ -414,7 +414,7 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
     if nyy == 0: nyy = 1
     if nzz == 0: nzz = 1
     if pflag: log.out(f'  Using {nxx} x {nyy} x {nzz} sub domains of size {domain_size} to perform domain decomposition')
-    dx = lx/nxx; dy = ly/nyy; dz = lz/nzz; ID = 0;
+    dx = lx/nxx; dy = ly/nyy; dz = lz/nzz;
     halfdx = dx/2; halfdy = dy/2; halfdz = dz/2; ID = 0;
     xadd = halfdx + xlo; yadd = halfdy + ylo; zadd = halfdz + zlo;
     domain = {} # { domainID : (xlo, xhi, ylo, yhi, zlo, zhi, r, edgeflag) }

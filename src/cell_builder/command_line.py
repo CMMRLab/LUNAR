@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-February 2nd, 2024
+Revision 1.2
+June 11th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -24,7 +24,8 @@ import sys
 
 
 def print_man_page(topofiles, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
-                   reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain):
+                   reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, maxtry, tolerance,
+                   mixing_rule, boundary):
     
     # function to string dict and once string get to long bump to next line
     def string_dict(dictionary):
@@ -50,7 +51,8 @@ def print_man_page(topofiles, force_field_joining, duplicate, distance_scale, ne
     print('python3 cell_builder.py [-files <files-string>] [-dir <new directory name>] [-atomstyle <atomstyle>] [-seed <int>]')
     print('                        [-newfile <new filename>] [-duplicate <int>] [-dist-scale <float>] [-type-labels <T|F>]')
     print('                        [-rx or -ry or -rz or -rall <float>] [-reset-molids <files|clusters|skip>] [-domain <string>]')
-    print('                        [-unwrap <T|F>] [-offset <T|F>] [-ff-join <none|offset|merge>] <-gui> <-opt>|<-man>')
+    print('                        [-unwrap <T|F>] [-offset <T|F>] [-ff-join <none|offset|merge>] [-tolerance <float or int>]')
+    print('                        [-maxtry <int>] [-mixing <string>] [-boundary <string>] <-gui> <-opt>|<-man>')
 
     print('\n*NOTE: If the command line input options are not used the hard coded inputs in the inputs section of the')
     print('cell_builder.py file will be enforced. The command line inputs option gives more flexibility to the code')
@@ -62,8 +64,11 @@ def print_man_page(topofiles, force_field_joining, duplicate, distance_scale, ne
     print('input value. Ordering of tag/input pairs do not matter. Example:')
     print('    python3 cell_builder.py -tag1 tag1-input  -tag2 tag2-input ...N-arbitrary tagsN/tagN-input pairs')
     
-    # print options
-    print('\n\nOptions:')
+    # print lattice options
+    print('\n\n')
+    print('*******************')
+    print('* Lattice Options *')
+    print('*******************')
 
     # print -files option
     print('\n -files or -f <files string>   cell_builder variable: files    hard coded (converted from dict):')
@@ -122,27 +127,6 @@ def print_man_page(topofiles, force_field_joining, duplicate, distance_scale, ne
     print(f'\n -grp-mono or -grp <T/F> cell_builder variable: group_monomers_locally    hard coded: {group_monomers_locally}')
     print('    Command line option to group the monomers locally to keep relative locations of hardener to resin close. Example usage:')
     print('        python3 cell_builder.py -grp-mono T')
-    
-    # print -domain option
-    print(f'\n -domain or -dn <string> cell_builder variable: domain    hard coded: {domain}')
-    print('    Command line option to set the cubic lattice domain. The lattice points will always be generated about the 0, 0, 0')
-    print('    position in x, y, and z. However, the number of lattice points in the x, y, and z directions can be set by the user')
-    print('    or set to be cubic. The following options are available:')
-    print('        cubic        which automatically determines the number of lattice points required based on the qty of files and the')
-    print('                     duplicate variable.')
-    print('        Ni x Nj x Nk where Ni is the number of lattice points in the x-direction, Nj is the number of lattice points')
-    print('                     in the y-direction, and Nk is the number of lattice points in the z-direction. Please note the')
-    print('                     following about Ni x Nj x Nk:')
-    print('                         If group_monomers_locally is False, Ni x Nj x Nk must be greater than duplicate*sum(qty of all')
-    print('                                                             files), to allow for enough lattice points. If there is not')
-    print('                                                             enough lattice points, the code will exit with an ERROR.')
-    print('                         If group_monomers_locally is True,  Ni x Nj x Nk must be greater than duplicate value, to allow')
-    print('                                                             for enough lattice points. If there is not enough lattice points,')
-    print('                                                             the code will exit with an ERROR. Additionally, by default during')
-    print('                                                             the initial grouping of monomers will occur with a cubic lattice.')
-    print('    Example usage:')
-    print('        python3 cell_builder.py -domain 2x2x4')
-    print('        python3 cell_builder.py -dn cubic')
                 
     # print -dist-scale option
     print(f'\n -dist-scale or -ds <int> cell_builder variable: distance_scale    hard coded: {distance_scale}')
@@ -214,6 +198,119 @@ def print_man_page(topofiles, force_field_joining, duplicate, distance_scale, ne
     print('    the written .data file and the written molecule .moltemp file.* Example usage:')
     print('        python3 cell_builder.py -type-labels T')
     
+    # print Random options
+    print('\n\n')
+    print('******************')
+    print('* Random Options *')
+    print('******************')
+    
+    # print -domain option
+    print(f'\n -domain or -dn <string> cell_builder variable: domain    hard coded: {domain}')
+    print('    Command line option to set the cubic lattice domain. The lattice points will always be generated about the 0, 0, 0')
+    print('    position in x, y, and z. However, the number of lattice points in the x, y, and z directions can be set by the user')
+    print('    or set to be cubic. The following options are available:')
+    print('        cubic           which automatically determines the number of lattice points required based on the qty of files and the')
+    print('                        duplicate variable.')
+    print()
+    print('        Ni x Nj x Nk    where Ni is the number of lattice points in the x-direction, Nj is the number of lattice points')
+    print('                        in the y-direction, and Nk is the number of lattice points in the z-direction. Please note the')
+    print('                        following about Ni x Nj x Nk:')
+    print('                           If group_monomers_locally is False, Ni x Nj x Nk must be greater than duplicate*sum(qty of all')
+    print('                                                               files), to allow for enough lattice points. If there is not')
+    print('                                                               enough lattice points, the code will exit with an ERROR.')
+    print('                           If group_monomers_locally is True,  Ni x Nj x Nk must be greater than duplicate value, to allow')
+    print('                                                               for enough lattice points. If there is not enough lattice points,')
+    print('                                                               the code will exit with an ERROR. Additionally, by default during')
+    print('                                                               the initial grouping of monomers will occur with a cubic lattice.')
+    print()
+    print("        LxA x LyA x LzA where 'Lx' is the box size in the X-direction and 'A' differentiates it from Ni, 'Ly'")
+    print("                        is the box size in the Y-direction and 'A' differentiates it from Nj, and 'Lz' is the")
+    print("                        box size in the Z-direction and 'A' differentiates it from Nz. This method will randomly")
+    print("                        place molecules (not on a lattice) and randomly rotate molecules. This method can be    ")
+    print("                        computationally intensive. However it can create systems nearing densities of 0.55 g/cc ")
+    print("                        in under a few minutes (depending on the random settings).                              ")
+    print()
+    print("        A x A x A       where the three 'A' means simulation box is being defined with files of QTY or ZEROs.   ")
+    print('    Example usage:')
+    print('        python3 cell_builder.py -domain 2x2x4')
+    print('        python3 cell_builder.py -domain 10Ax20Ax30A')
+    print('        python3 cell_builder.py -dn cubic')
+    
+    # print -maxtry option
+    print(f'\n -maxtry or -mt <int>   cell_builder variable: maxtry   hard coded: {maxtry}')
+    print('    Command line option to control the number of times to try to randomly insert a molecule into a system. After each')
+    print('    insertion of a molecule, the next insertion becomes even more difficult as, the simulation cell is getting denser with')
+    print('    each insertaion. Example usage:')
+    print('        python3 cell_builder.py -maxtry 100')
+    
+    # print -tolerance option
+    print(f'\n -tolerance or -tol <int or float>   cell_builder variable: tolerance   hard coded: {tolerance}')
+    print("    Command line option to control how to check for overlaps in atoms during molecule insertion. If it is in int or float,")
+    print("    it effects how to check for overlaps as follows:                                                         ")
+    print("            tolerance = <float>, which means all atom diameters will be modeled as that <float> input        ")
+    print("                                 provided.                                                                   ")
+    print("            tolerance = <int>,   which sets the index of the sigma value in the LAMMPS Pair Coeff section    ")
+    print("                                 of the LAMMPS datafile. For example Pair Coeffs are read from the LAMMPS    ")
+    print("                                 data file as:                                                               ")
+    print("                                     Pair Coeffs # lj/class2/coul/long                                       ")
+    print("                                                                                                             ")
+    print("                                     1  0.054  4.01 # [0.054, 4.01] -> index=1, sigam=4.01                   ")
+    print("                                     2  0.054  3.90 # [0.054, 3.90] -> index=1, sigam=3.90                   ")
+    print("                                     3  0.013  1.11 # [0.013, 1.11] -> index=1, sigam=1.11                   ")
+    print("                                     :   :      :   :       :       :    :         :                         ")
+    print('    Example usage:')
+    print('        python3 cell_builder.py -tolerance 1   -mixing sixthpower')
+    print('        python3 cell_builder.py -tolerance 2.0 -mixing tolerance')
+    
+    # print -mixing option
+    print(f'\n -mixing or -mix <string>   cell_builder variable: mixing_rule   hard coded: {mixing_rule}')
+    print("        Command line option to control how Pair Coeff LJ parameters are mixed if the tolerance variable is")
+    print("        an <int>. The following strings are supported:                                           ")
+    print("            'tolerance'   which means the tolerance variable is a <float> and to use the float variable to   ")
+    print("                          check for atom overlaps. This option maybe needed for ReaxFF model generation, as  ")
+    print("                          there are no Pair Coeffs in a ReaxFF LAMMPS datafile.                              ")
+    print("            'geometric'   which means mix the i,j LJ parameters using geometric mixing rules (FFs like       ")
+    print("                          DREIDING).                                                                         ")
+    print("            'arithmetic'  which means mix the i,j LJ parameters using arithmetic mixing rules (FFs like      ")
+    print("                          CHARMM).                                                                           ")
+    print("            'sixthpower'  which means mix the i,j LJ parameters using sixthpower mixing rules (FFs like      ")
+    print("                          PCFF).                                                                             ")
+    print("         The 'sixthpower' mixing rule is the most 'conservative' as it generates the largest mixed LJ sigma  ")
+    print("         parameters and thus can ensure no overlapped atoms not matter what mixing rule ends up being        ")
+    print("         applied in LAMMPS. Thus the 'sixthpower' mixing rule can be a good default. Examples:               ")
+    print("             mixing_rule = 'tolerance'  # will user tolerance <float> to model all atom diameters the same.  ")
+    print("             mixing_rule = 'sixthpower' # will combine LJ parameters using the sixthpower mixing rule to     ")
+    print("                                        # model all atom diameters like in an MD simulation.                 ")
+    print('    Example usage:')
+    print('        python3 cell_builder.py -mixing sixthpower -tolerance 1')
+    print('        python3 cell_builder.py -mixing tolerance  -tolerance 2.0')
+    
+    # print -boundary option
+    string = '-'.join([i for i in boundary.split()])
+    print(f'\n -boundary or -by <string> atom_typing variable: boundary    hard coded: {string}')
+    print("        Command line option to control the boundary of the simulation cell, when inserting molecules. The")
+    print("        boundary variable is set up like the LAMMPS 'boundary' command, where three flags are provided to")
+    print("        set the x, y, or z boundary of the simulation cell. The flags are like LAMMPS flags: ")
+    print("            p is periodic                                                                                    ")
+    print("            f is non-periodic and fixed                                                                      ")
+    print("        When the boundary is 'p p p' or full periodic, each image of each atom is checked, thus checking for ")
+    print("        overlaps is more computationaly intensive. However allowing molecules to span the simulation cell    ")
+    print("        'opens' more space to possible insert the molecule. This ultimately seems to make the code run time  ")
+    print("        quicker when inserting molecules into a dense system as compared to a boundary of 'f f f' or a non   ")
+    print("        periodic system. Examples:                                                                           ")
+    print("            boundary = 'f-f-f' # non-periodic system                                                         ")
+    print("            boundary = 'p-p-p' # fully-periodic system                                                       ")
+    print("            boundary = 'p-f-f' # periodic in X-dir and non-periodic in Y- and Z-dir                          ")
+    print("            boundary = 'f-f-p' # periodic in Z-dir and non-periodic in X- and Y-dir                          ")
+    print('    To set the boundary flags at the commandline a "-" character must be supplied between each of the three flags')
+    print('    (i.e. f-f-f or p-f-f or p-p-p or ...), such that there exists no whitespace in the "tag-input". Example usage:')
+    print('        python3 atom_typing.py -boundary f-f-p')
+    
+    print('\n\n')
+    print('****************')
+    print('* Misc Options *')
+    print('****************')
+    
     # print -opt or -man option
     print('\n -opt or -man')
     print('    Will tell cell_builder to only print out avaiable command line options known as tagN and tagN-inputs. This is the')
@@ -236,7 +333,8 @@ def print_man_page(topofiles, force_field_joining, duplicate, distance_scale, ne
 # Class to update inputs
 class inputs:
     def __init__(self, topofiles, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
-                 reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, commandline_inputs):
+                 reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, maxtry, tolerance,
+                 mixing_rule, boundary, commandline_inputs):
         
         # Give access to inputs (update later on if command line over ride is given)
         self.commandline_inputs = commandline_inputs
@@ -254,6 +352,10 @@ class inputs:
         self.seed = seed
         self.force_field_joining = force_field_joining
         self.domain = domain
+        self.maxtry = maxtry
+        self.tolerance = tolerance 
+        self.mixing_rule = mixing_rule
+        self.boundary = boundary
         
         # Check that the given command line inputs are even for alternating tags/tag-inputs
         if (len(commandline_inputs) % 2) != 0:
@@ -270,19 +372,21 @@ class inputs:
         # Check that tag is supported and log if tag from the command line
         # set supported tags
         supported_tags = ['-files', '-dir', '-atomstyle', '-type-labels', '-newfile', '-duplicate', '-dist-scale', '-reset-molids', '-rx', '-ry',
-                          '-rz', '-rall', '-unwrap', '-grp-mono', '-seed', '-ff-join', '-domain']
+                          '-rz', '-rall', '-unwrap', '-grp-mono', '-seed', '-ff-join', '-domain', '-maxtry', '-tolerance', '-mixing', '-boundary']
         
         # set shortcut_tags mapping
         shortcut_tags = {'-f':'-files', '-d':'-dir', '-as':'-atomstyle', '-tl': '-type-labels', '-nf':'-newfile', '-dup':'-duplicate',
                          '-ds':'-dist-scale', '-rm':'-reset-molids', '-rx':'-rx', '-ry':'-ry', '-rz':'-rz', '-rall':'-rall', '-u':'-unwrap',
-                         '-grp':'-grp-mono', '-s':'-seed', '-ffj':'-ff-join', '-dn':'-domain'}
+                         '-grp':'-grp-mono', '-s':'-seed', '-ffj':'-ff-join', '-dn':'-domain', '-mt':'-maxtry', '-tol':'-tolerance', '-mix':'-mixing',
+                         '-by':'-boundary'}
         
         # set default variables
         default_variables ={'-files':self.topofiles, '-dir':self.parent_directory, '-atomstyle':self.atom_style, '-type-labels': self.include_type_labels,
                             '-newfile':self.newfile, '-duplicate':self.duplicate, '-dist-scale':self.distance_scale, '-reset-molids': self.reset_molids,
                             '-rall':self.max_rotations, '-rx':self.max_rotations['x'], '-ry':self.max_rotations['y'], '-rz':self.max_rotations['z'],
                             '-unwrap':self.unwrap_atoms_via_image_flags, '-grp-mono':self.group_monomers_locally, '-seed':self.seed,
-                            '-ff-join':self.force_field_joining, '-domain':self.domain}
+                            '-ff-join':self.force_field_joining, '-domain':self.domain, '-maxtry':self.maxtry, '-tolerance':self.tolerance,
+                            '-mixing':self.mixing_rule, '-boundary':self.boundary}
         
         # set tag/tag-input pair as empty string and update
         tags = {i:'' for i in supported_tags}
@@ -452,6 +556,32 @@ class inputs:
         if tags['-type-labels']:
             self.include_type_labels = T_F_string2boolean('-type-labels', (tags['-type-labels']))
             print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-type-labels', self.include_type_labels))
+            
+        # set new -maxtry option and print confirmation
+        if tags['-maxtry']:
+            try: self.maxtry = int(tags['-maxtry']) # try getting int
+            except: 
+                print('ERROR -maxtry input could not be converted to an int value')
+                sys.exit()
+            print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-maxtry', self.maxtry))
+            
+        # set new -tolerance option and print confirmation
+        if tags['-tolerance']:
+            if '.' in tags['-tolerance']:
+                self.tolerance = float(tags['-tolerance'])
+            else:
+                self.tolerance = int(tags['-tolerance'])
+            print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-tolerance', self.tolerance))
+            
+        # set new -mixing option and print confirmation
+        if tags['-mixing']:
+            self.mixing_rule = tags['-mixing']
+            print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-mixing', self.mixing_rule))
+            
+        # set new -boundary option and print confirmation (ERROR checks will occur in the next step so only try float except set as input)
+        if tags['-boundary']:
+            self.boundary = ' '.join(tags['-boundary'].split('-'))
+            print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-boundary', self.boundary))
         
         # print buffer
         print('\n\n')

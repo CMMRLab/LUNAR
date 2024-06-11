@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 4/10/2024
+# Last edited 6/10/2024
 #
 ************
 * Overview *
@@ -58,25 +58,12 @@
   newfile
     An entry to supply a string that will be used to set the output files basenames.
 
-***********
-* Options *
-***********
+*******************
+* Lattice Options *
+*******************
 
   duplicate
     An entry to set an int value to control the number of times each qty of each molecule is duplicated.
-	
-  domain
-    An entry in which to set the lattice domain. The lattice points will always be generated about the 0, 0, 0 position in x, y, and z. However,
-    the number of lattice points in the x, y, and z directions can be set by the user or set to be cubic. The following options are available:
-      'cubic' which automatically determines the number of lattice points required based on the qty of files and the duplicate variable.
-      'Ni x Nj x Nk' where 'Ni' is the number of lattice points in the x-direction, 'Nj' is the number of lattice points in the y-direction, and
-      'Nk' is the number of lattice points in the z-direction. Please note the following about 'Ni x Nj x Nk':
-        If group_monomers_locally is False, 'Ni x Nj x Nk' must be greater than duplicate*sum(qty of all files), to allow for enough lattice
-        points. If there is not enough lattice points, the code will exit with an ERROR.
-        
-        If group_monomers_locally is True, 'Ni x Nj x Nk' must be greater than duplicate value, to allow for enough lattice points. If there is
-        not enough lattice points, the code will exit with an ERROR. Additionally, by default during the initial grouping of monomers a 'cubic'
-        lattice will be used.
 		
   distance_scale
     An entry to set the distance multiplier value of the "longest" molecule of the system defined via the read-in from the files dictionary and
@@ -147,6 +134,82 @@
 			   
       'offset' which applies an offset to each coefficient type in each file as it is read into cell_builder.py.
 
+******************
+* Random Options *
+******************
+
+  domain
+    An entry in which to set the lattice domain. The lattice points will always be generated about the 0, 0, 0 position in x, y, and z. However,
+    the number of lattice points in the x, y, and z directions can be set by the user or set to be cubic. The following options are available:
+      'cubic'        which automatically determines the number of lattice points required based on the qty of files and the duplicate variable.
+      
+	  'Ni x Nj x Nk' where 'Ni' is the number of lattice points in the x-direction, 'Nj' is the number of lattice points in the y-direction, and
+                     'Nk' is the number of lattice points in the z-direction. Please note the following about 'Ni x Nj x Nk':
+                        If group_monomers_locally is False, 'Ni x Nj x Nk' must be greater than duplicate*sum(qty of all files), to allow for
+                        enough lattice points. If there is not enough lattice points, the code will exit with an ERROR.
+        
+                        If group_monomers_locally is True, 'Ni x Nj x Nk' must be greater than duplicate value, to allow for enough lattice 
+                        points. If there is not enough lattice points, the code will exit with an ERROR. Additionally, by default during the
+                         initial grouping of monomers a 'cubic' lattice will be used.
+						
+      'LxA x LyA x LzA' where 'Lx' is the box size in the X-direction and 'A' differentiates it from Ni, 'Ly' is the box size in the Y-direction
+                        and 'A' differentiates it from Nj, and 'Lz' is the box size in the Z-direction and 'A' differentiates it from Nz. This
+                        method will randomly place molecules (not on a lattice) and randomly rotate molecules. This method can be computationally
+                        intensive. However it can create systems nearing densities of 0.55 g/cc in under a few minutes (depending on the random
+                        settings).
+
+      'A x A x A'       where the three 'A' means simulation box is being defined with files of QTY or ZEROs.
+	  
+  boundary
+    An entry in which to control the boundary of the simulation cell, when inserting molecules. The boundary variable is set up like the LAMMPS
+    'boundary' command, where three flags are provided to set the x, y, or z boundary of the simulation cell. The flags are like LAMMPS flags:
+        p is periodic
+        f is non-periodic and fixed
+    When the boundary is 'p p p' or full periodic, each image of each atom is checked, thus checking for overlaps is more computationaly
+    intensive. However allowing molecules to span the simulation cell 'opens' more space to possible insert the molecule. This ultimately seems
+    to make the code run time quicker when inserting molecules into a dense system as compared to a boundary of 'f f f' or a non-periodic system.
+    Examples:
+        boundary = 'f f f' (non-periodic system)
+        boundary = 'p p p' (fully-periodic system)
+        boundary = 'p f f' (periodic in X-dir and non-periodic in Y- and Z-dir)
+        boundary = 'f f p' (periodic in Z-dir and non-periodic in X- and Y-dir)
+		
+  maxtry
+    An entry in which to control the number of times to try to randomly insert a molecule into a system. After each insertion of a molecule, the
+    next insertion becomes even more difficult as, the simulation cell is getting denser with each insertaion.
+	
+  tolerance
+    An entry to control how to check for overlaps in atoms during molecule insertion. If it is in int or float, it effects how to check for
+    overlaps as follows:
+            tolerance = <float>, which means all atom diameters will be modeled as that <float> input provided.
+			
+            tolerance = <int>,   which sets the index of the sigma value in the LAMMPS Pair Coeff section of the LAMMPS datafile. For example
+                                 Pair Coeffs are read from the LAMMPS data file as:
+                                     Pair Coeffs # lj/class2/coul/long
+
+                                     1  0.054  4.01 ([0.054, 4.01] -> index=1, sigam=4.01)
+                                     2  0.054  3.90 ([0.054, 3.90] -> index=1, sigam=3.90)
+                                     3  0.013  1.11 ([0.013, 1.11] -> index=1, sigam=1.11)
+                                     :   :      :   :      :       :    :         :
+									 
+  mixing_rule
+    A drop-down menu to control how Pair Coeff LJ parameters are mixed if the tolerance variable is an <int>. The following strings are
+    supported:
+        'tolerance'   which means the tolerance variable is a <float> and to use the float variable to check for atom overlaps. This option
+                      maybe needed for ReaxFF model generation, as there are no Pair Coeffs in a ReaxFF LAMMPS datafile.
+					  
+        'geometric'   which means mix the i,j LJ parameters using geometric mixing rules (FFs like DREIDING).
+		
+        'arithmetic'  which means mix the i,j LJ parameters using arithmetic mixing rules (FFs like CHARMM).
+        
+        'sixthpower'  which means mix the i,j LJ parameters using sixthpower mixing rules (FFs like PCFF).
+        
+        The 'sixthpower' mixing rule is the most 'conservative' as it generates the largest mixed LJ sigma parameters and thus can ensure no
+        overlapped atoms not matter what mixing rule ends up being applied in LAMMPS. Thus the 'sixthpower' mixing rule can be a good
+        default. Examples:
+             mixing_rule = 'tolerance'  (will user tolerance <float> to model all atom diameters the same.)
+             mixing_rule = 'sixthpower' (will combine LJ parameters using the sixthpower mixing rule to model all atom diameters like in a
+                                         MD simulation.)
 	
 ***********
 * Buttons *

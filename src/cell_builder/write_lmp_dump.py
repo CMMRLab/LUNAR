@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-April 9th, 2024
+Revision 1.1
+June 11th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -24,8 +24,8 @@ def subcells2dump(basename, subcells):
             f.write('{} {}\n'.format(yline[0], yline[1]))
             f.write('{} {}\n'.format(zline[0], zline[1]))
             
-            f.write('ITEM: ATOMS x y z type id element q\n')
+            f.write('ITEM: ATOMS x y z type id q\n')
             for i in m.atoms:
                 atom = m.atoms[i]
-                f.write('{:^15.9f} {:^15.9f} {:^15.9f} {:^3} {:^3} {:^3} {:^10.6f}\n'.format(atom.x, atom.y, atom.z, atom.type, i, atom.element, atom.charge))
+                f.write('{:^15.9f} {:^15.9f} {:^15.9f} {:^3} {:^3} {:^10.6f}\n'.format(atom.x, atom.y, atom.z, atom.type, i, atom.charge))
     return

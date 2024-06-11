@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-May 13th, 2024
+Revision 1.3
+June 11th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -13,6 +13,7 @@ Houghton, MI 49931
 import src.io_functions as io_functions
 from src.cell_builder.main import main
 import src.py_script_modifier as psm
+import src.read_lmp as read_lmp
 from tkinter.scrolledtext import ScrolledText
 from tkinter import filedialog
 from tkinter import Toplevel
@@ -53,8 +54,8 @@ def get_file_qty(file, delimiter='qty='):
 ##############################
 class cell_builder_GUI:
     def __init__(self, files, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
-                 reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, GUI_zoom,
-                 nfiles=6, scroll_bar=False):
+                 reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, maxtry, tolerance,
+                 mixing_rule, boundary, GUI_zoom, nfiles=6, scroll_bar=False):
         
         # Find present working directory
         self.pwd = os.getcwd()
@@ -117,6 +118,7 @@ class cell_builder_GUI:
         ypadding = int(math.ceil(GUI_SF*self.ypadding))
         maxwidth = int(math.ceil(GUI_SF*self.maxwidth))
         font_settings = (self.font_type, font_size)
+        self.font_settings = font_settings
         
         #--------------#
         # Inputs frame #
@@ -136,7 +138,7 @@ class cell_builder_GUI:
         for n in range(1, self.nfiles+1):
             try: intialfile = list(lst_files)[n-1][0]; intialqty = list(lst_files)[n-1][1];
             except: intialfile = ''; intialqty = '';
-            self.file = tk.Entry(self.inputs_frame, width=int(1.35*maxwidth), font=font_settings)
+            self.file = tk.Entry(self.inputs_frame, width=int(1.1*maxwidth), font=font_settings)
             self.file.insert(0, intialfile)
             self.file.grid(column=0, row=n, columnspan=2)
             self.files.append(self.file)
@@ -158,14 +160,14 @@ class cell_builder_GUI:
         self.clear_button.grid(column=2, row=self.nfiles+1, columnspan=1)
         
         # parent_directory entry
-        self.parent_directory = tk.Entry(self.inputs_frame, width=int(1.25*maxwidth), font=font_settings)
+        self.parent_directory = tk.Entry(self.inputs_frame, width=int(1.1*maxwidth), font=font_settings)
         self.parent_directory.insert(0, parent_directory)
         self.parent_directory.grid(column=1, row=self.nfiles+2, columnspan=2)
         self.dir_button = tk.Button(self.inputs_frame, text='parent_directory', font=font_settings, command=self.directory_path)
         self.dir_button.grid(column=0, row=self.nfiles+2)
         
         # newfile entry
-        self.newfile = tk.Entry(self.inputs_frame, width=int(1.25*maxwidth), font=font_settings)
+        self.newfile = tk.Entry(self.inputs_frame, width=int(1.1*maxwidth), font=font_settings)
         self.newfile.insert(0, newfile)
         self.newfile.grid(column=1, row=self.nfiles+3, columnspan=2)
         self.newfile_label = tk.Label(self.inputs_frame, text='newfile', font=font_settings)
@@ -189,52 +191,46 @@ class cell_builder_GUI:
         self.duplicate.grid(column=0, row=1)
         self.duplicate_label = tk.Label(self.options_frame, text='duplicate', font=font_settings)
         self.duplicate_label.grid(column=0, row=0)
-        
-        # domain entry
-        self.domain = ttk.Entry(self.options_frame, width=int(maxwidth/6), font=font_settings)
-        self.domain.insert(0, domain)
-        self.domain.grid(column=1, row=1)
-        self.domain_label = tk.Label(self.options_frame, text='domain (cubic or Ni x Nj x Nk)', font=font_settings)
-        self.domain_label.grid(column=1, row=0)
+
         
         # distance_scale drop down menu
         self.distance_scale = ttk.Entry(self.options_frame, width=int(maxwidth/11), font=font_settings)
         self.distance_scale.insert(0, distance_scale)
-        self.distance_scale.grid(column=2, row=1)
+        self.distance_scale.grid(column=1, row=1)
         self.distance_scale_label = tk.Label(self.options_frame, text='distance_scale', font=font_settings)
-        self.distance_scale_label.grid(column=2, row=0)
+        self.distance_scale_label.grid(column=1, row=0)
         
         # atom_style drop down
         styles = ['full', 'charge', 'molecular', 'angle', 'bond', 'atomic', 'dipole', 'dpd', 'line']
         self.atom_style = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/11), font=font_settings)
         self.atom_style.current(styles.index(atom_style))
-        self.atom_style.grid(column=3, row=1)
+        self.atom_style.grid(column=2, row=1)
         self.atom_style_label = tk.Label(self.options_frame, text='atom_style', font=font_settings)
-        self.atom_style_label.grid(column=3, row=0)
+        self.atom_style_label.grid(column=2, row=0)
 
         # include_type_labels drop down menu
         styles = [True, False]
         self.include_type_labels = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/11), font=font_settings)
         self.include_type_labels.current(styles.index(include_type_labels))
-        self.include_type_labels.grid(column=4, row=1)
+        self.include_type_labels.grid(column=3, row=1)
         self.include_type_labels_label = tk.Label(self.options_frame, text='include_type_labels', font=font_settings)
-        self.include_type_labels_label.grid(column=4, row=0)
+        self.include_type_labels_label.grid(column=3, row=0)
         
         # reset_molids drop down menu
         styles = ['files', 'offset', 'clusters', 'skip']
         self.reset_molids = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/11), font=font_settings)
         self.reset_molids.current(styles.index(reset_molids))
-        self.reset_molids.grid(column=5, row=1)
+        self.reset_molids.grid(column=4, row=1)
         self.reset_molids_label = tk.Label(self.options_frame, text='reset_molids', font=font_settings)
-        self.reset_molids_label.grid(column=5, row=0)
+        self.reset_molids_label.grid(column=4, row=0)
         
         # reset_molids drop down menu
         styles = [True, False]
         self.unwrap_atoms_via_image_flags = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/11), font=font_settings)
         self.unwrap_atoms_via_image_flags.current(styles.index(unwrap_atoms_via_image_flags))
-        self.unwrap_atoms_via_image_flags.grid(column=6, row=1)
+        self.unwrap_atoms_via_image_flags.grid(column=5, row=1)
         self.unwrap_atoms_via_image_flags_label = tk.Label(self.options_frame, text='unwrap_atoms_via_image_flags', font=font_settings)
-        self.unwrap_atoms_via_image_flags_label.grid(column=6, row=0)
+        self.unwrap_atoms_via_image_flags_label.grid(column=5, row=0)
         
         # group_monomers_locally drop down menu
         styles = [True, False]
@@ -280,9 +276,61 @@ class cell_builder_GUI:
         self.force_field_joining_label = tk.Label(self.options_frame, text='force_field_joining', font=font_settings)
         self.force_field_joining_label.grid(column=5, row=2)
 
-
-        # Add padding to all frames in self.inputs_frame
+        # Add padding to all frames in self.options_frame
         for widget in self.options_frame.winfo_children():
+            widget.grid_configure(padx=xpadding, pady=int(ypadding/2))
+            
+        #--------------#
+        # Random frame #
+        #--------------#
+        # Initalize  random frame
+        self.random_frame = tk.LabelFrame(self.frame, text='Random options', font=font_settings)
+        self.random_frame.grid(row=2, column=0, columnspan=2, sticky='news', padx=xpadding, pady=ypadding)
+        
+        # domain entry
+        self.domain = ttk.Entry(self.random_frame, width=int(maxwidth/2.75), font=font_settings)
+        self.domain.insert(0, domain)
+        self.domain.grid(column=0, row=1, columnspan=3)
+        self.domain_label = tk.Label(self.random_frame, text="domain (cubic or NixNjxNk or LxAxLyAxLzA or AxAxA)", font=font_settings)
+        self.domain_label.grid(column=0, row=0, columnspan=3)
+        
+        # boundary entry
+        self.boundary = ttk.Entry(self.random_frame, width=int(maxwidth/11), font=font_settings)
+        self.boundary.insert(0, boundary)
+        self.boundary.grid(column=3, row=1)
+        self.boundary_label = tk.Label(self.random_frame, text='boundary', font=font_settings)
+        self.boundary_label.grid(column=3, row=0)
+        
+        # maxtry entry
+        self.maxtry = ttk.Entry(self.random_frame, width=int(maxwidth/11), font=font_settings)
+        self.maxtry.insert(0, maxtry)
+        self.maxtry.grid(column=4, row=1)
+        self.maxtry_label = tk.Label(self.random_frame, text='maxtry', font=font_settings)
+        self.maxtry_label.grid(column=4, row=0)
+        
+        # tolerance entry
+        self.tolerance = ttk.Entry(self.random_frame, width=int(maxwidth/11), font=font_settings)
+        self.tolerance.insert(0, tolerance)
+        self.tolerance.grid(column=5, row=1)
+        self.tolerance_label = tk.Label(self.random_frame, text='tolerance (int of float)', font=font_settings)
+        self.tolerance_label.grid(column=5, row=0)
+        
+        # mixing_rule drop down menu
+        styles = ['tolerance', 'geometric', 'arithmetic', 'sixthpower']
+        self.mixing_rule = ttk.Combobox(self.random_frame, values=styles, width=int(maxwidth/11), font=font_settings)
+        self.mixing_rule.current(styles.index(mixing_rule))
+        self.mixing_rule.grid(column=6, row=1)
+        self.mixing_rule_label = tk.Label(self.random_frame, text='mixing_rule', font=font_settings)
+        self.mixing_rule_label.grid(column=6, row=0)
+        
+        # compute density button
+        self.compute_density = tk.Button(self.random_frame, text='compute density', font=font_settings, command=self.density_calculation)
+        self.compute_density.grid(column=7, row=1)
+        #self.compute_density_label = tk.Label(self.random_frame, text='compute_density', font=font_settings)
+        #self.compute_density_label.grid(column=7, row=0)
+        
+        # Add padding to all frames in self.random_frame
+        for widget in self.random_frame.winfo_children():
             widget.grid_configure(padx=xpadding, pady=int(ypadding/2))
             
         
@@ -290,21 +338,21 @@ class cell_builder_GUI:
         # Run button #
         #------------#
         self.run = tk.Button(self.frame, text='Run LUNAR/cell_builder.py', font=font_settings, command=self.run_LUNAR)
-        self.run.grid(row=2, column=0, columnspan=2, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
+        self.run.grid(row=3, column=0, columnspan=2, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
         
                 
         #-----------------#
         # update defaults #
         #-----------------#
         self.update = tk.Button(self.frame, text='Save the current GUI settings as the default GUI settings', font=font_settings, command=self.update_py_script)
-        self.update.grid(row=3, column=0, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
+        self.update.grid(row=4, column=0, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
         
         
         #------------#
         # Quick help #
         #------------#
         self.quick_help = tk.Button(self.frame, text='Quick help', font=font_settings, command=self.quickhelp)
-        self.quick_help.grid(row=3, column=1, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
+        self.quick_help.grid(row=4, column=1, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
         
         
         #------------------------#
@@ -318,6 +366,145 @@ class cell_builder_GUI:
     #################################
     # Functions to call as commands #
     #################################
+    # density calculation
+    def density_calculation(self):        
+        # Set up calculation frame
+        calc_frame = Toplevel(self.root)
+        calc_frame.title('Compute density')
+        calc_frame.resizable(width=False, height=False)
+        
+        # Compute mass
+        files = {} # {file/path : qty }
+        perform_calculation = True
+        for i, j  in zip(self.files, self.qtys):
+            try: 
+                if j.get() != '' and i.get() != '': files[i.get()] = int(j.get())
+                elif j.get() != '' or i.get() != '': print(f'WARNING incomplete information specified from GUI. file: {i.get()} qty: {j.get()}') 
+            except: perform_calculation = False
+        try: 
+            duplicate = int(self.duplicate.get())
+        except:
+            print('ERROR duplicate is not an int')
+            perform_calculation = False
+        if perform_calculation:
+            # setup text box to add mass info to
+            mass = tk.Text(calc_frame, width=135, height=len(files)+2)
+            
+            # start finding system mass
+            system_mass_amu = 0
+            for file in files:
+                qty = files[file]
+                if file.endswith('data'):
+                    m = read_lmp.Molecule_File(file, method='forward', sections=['Atoms'])
+                    tmp_mass = 0
+                    for i in m.atoms:
+                        atom_type = m.atoms[i].type
+                        atom_mass = m.masses[atom_type].coeffs[0]
+                        tmp_mass += atom_mass
+                    root = os.path.basename(file)[0:60] # Trunacte to 60 chars
+                    string = 'mass({}) = {:.4f} amu.'.format(root, tmp_mass)
+                    if qty != 0:
+                        repeated = qty*duplicate
+                        tmp_mass = tmp_mass*repeated
+                        string += ' Duplicated ntimes={} -> mass = {:.4f} amu.'.format(repeated, tmp_mass)
+                    else:
+                        repeated = 1
+                        tmp_mass = tmp_mass*repeated
+                        string += ' Duplicated ntimes={} -> mass = {:.4f} amu.'.format(repeated, tmp_mass)
+                    string += '\n'
+                    mass.insert(tk.END, string)
+                    system_mass_amu += tmp_mass
+        string = 'Total system mass: {} amu\n'.format(system_mass_amu)
+        mass.insert(tk.END, string)      
+        mass.grid(column=0, row=0, columnspan=6)
+        mass.grid_configure(padx=self.xpadding, pady=int(self.ypadding))
+        
+        # Compute system_mass in grams density = mass/volume or volume = mass/density
+        amu2grams = 1/6.02214076e+23
+        angstromcubed2cmcubed = 1e-24
+        system_mass_grams = system_mass_amu*amu2grams
+        def control_density():
+            density_amu_per_A3 = angstromcubed2cmcubed*float(density.get())/amu2grams
+            volume_A3 = system_mass_amu/density_amu_per_A3              
+            length = '{:.4f}'.format(volume_A3**(1/3))
+            volume = '{:.4f}'.format(volume_A3)
+            density_vol.delete(0, 'end')
+            density_vol.insert(0, volume)
+            density_li.delete(0, 'end')
+            density_li.insert(0, length)
+        def control_cell():
+            volume_cm3 = float(cell_lx.get())*float(cell_ly.get())*float(cell_lz.get())*angstromcubed2cmcubed 
+            density_gcm3 = '{:.4f}'.format(system_mass_grams/volume_cm3)
+            cell_density.delete(0, 'end')
+            cell_density.insert(0, density_gcm3)
+
+        
+        # Density calculation
+        density_control = tk.LabelFrame(calc_frame, text='Control density', font=self.font_settings)
+        density_control.grid(row=2, column=0, sticky='news', padx=self.xpadding, pady=self.ypadding)
+        
+        density_button = tk.Button(density_control, text='compute cell dimensions', font=self.font_settings, command=control_density)
+        density_button.grid(column=0, row=0)
+        
+        density = ttk.Entry(density_control, width=12, font=self.font_settings)
+        density.insert(0, 0.25)
+        density.grid(column=2, row=0)
+        density_label = tk.Label(density_control, text='density (g/cc):', font=self.font_settings)
+        density_label.grid(column=1, row=0)
+        
+        density_vol = ttk.Entry(density_control, width=16, font=self.font_settings)
+        density_vol.insert(0, '')
+        density_vol.grid(column=4, row=0)
+        density_vol_label = tk.Label(density_control, text='Computed volume (Å^3):', font=self.font_settings)
+        density_vol_label.grid(column=3, row=0)
+        
+        density_li = ttk.Entry(density_control, width=16, font=self.font_settings)
+        density_li.insert(0, '')
+        density_li.grid(column=6, row=0)
+        density_li_label = tk.Label(density_control, text='Computed Lx x Ly x Lz (Å):', font=self.font_settings)
+        density_li_label.grid(column=5, row=0)
+        
+        # Add padding to all frames in density_control
+        for widget in density_control.winfo_children():
+            widget.grid_configure(padx=self.xpadding, pady=int(self.ypadding))
+        
+        # cell dimensions calculation
+        cell_control = tk.LabelFrame(calc_frame, text='Control cell', font=self.font_settings)
+        cell_control.grid(row=3, column=0, sticky='news', padx=self.xpadding, pady=self.ypadding)
+        
+        cell_button = tk.Button(cell_control, text='compute density', font=self.font_settings, command=control_cell)
+        cell_button.grid(column=0, row=0)
+        
+        cell_lx = ttk.Entry(cell_control, width=12, font=self.font_settings)
+        cell_lx.insert(0, 5)
+        cell_lx.grid(column=2, row=0)
+        cell_lx_label = tk.Label(cell_control, text='Lx (Å):', font=self.font_settings)
+        cell_lx_label.grid(column=1, row=0)
+
+        cell_ly = ttk.Entry(cell_control, width=12, font=self.font_settings)
+        cell_ly.insert(0, 5)
+        cell_ly.grid(column=4, row=0)
+        cell_ly_label = tk.Label(cell_control, text='Ly (Å):', font=self.font_settings)
+        cell_ly_label.grid(column=3, row=0)
+        
+        cell_lz = ttk.Entry(cell_control, width=12, font=self.font_settings)
+        cell_lz.insert(0, 5)
+        cell_lz.grid(column=6, row=0)
+        cell_lz_label = tk.Label(cell_control, text='Lz (Å):', font=self.font_settings)
+        cell_lz_label.grid(column=5, row=0)
+        
+        cell_density = ttk.Entry(cell_control, width=12, font=self.font_settings)
+        cell_density.insert(0, '')
+        cell_density.grid(column=8, row=0)
+        cell_density_label = tk.Label(cell_control, text='Computed density (g/cc):', font=self.font_settings)
+        cell_density_label.grid(column=7, row=0)
+        
+        # Add padding to all frames in cell_control
+        for widget in cell_control.winfo_children():
+            widget.grid_configure(padx=self.xpadding, pady=int(self.ypadding))
+        
+
+    
     # Quick help button
     def quickhelp(self):
         try: # Try to get text from GUI_help_page.txt file
@@ -386,7 +573,7 @@ class cell_builder_GUI:
         
         # Add file box
         self.nfiles += 1
-        self.file = tk.Entry(self.inputs_frame, width=int(1.35*maxwidth), font=font_settings)
+        self.file = tk.Entry(self.inputs_frame, width=int(1.1*maxwidth), font=font_settings)
         self.file.insert(0, self.overloadfile)
         self.file.grid(column=0, row=self.nfiles, columnspan=2)
         self.files.append(self.file)
@@ -479,6 +666,13 @@ class cell_builder_GUI:
         group_monomers_locally = boolean[self.group_monomers_locally.get()]
         force_field_joining = self.force_field_joining.get()
         domain = self.domain.get()
+        maxtry = int(self.maxtry.get())
+        mixing_rule = self.mixing_rule.get()
+        boundary = self.boundary.get()
+        if '.' in self.tolerance.get():
+            tolerance = float(self.tolerance.get())
+        else:
+            tolerance = int(self.tolerance.get())
         
         # build files based on GUI inputs
         files = {} # {file/path : qty }
@@ -492,7 +686,8 @@ class cell_builder_GUI:
         if valid_inputs:
             try: 
                 inputs = (files, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
-                          reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, [], log)
+                          reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, maxtry,
+                          tolerance, mixing_rule, boundary, [], log)
                 t1=threading.Thread(target=main, args=inputs)
                 t1.start()
                 t1.join()
@@ -532,6 +727,14 @@ class cell_builder_GUI:
         force_field_joining = self.force_field_joining.get()
         domain = self.domain.get()
         
+        maxtry = int(self.maxtry.get())
+        mixing_rule = self.mixing_rule.get()
+        boundary = self.boundary.get()
+        if '.' in self.tolerance.get():
+            tolerance = float(self.tolerance.get())
+        else:
+            tolerance = int(self.tolerance.get())
+        
         # Read current py script and re-write with new settings
         print('Updating settings in: {}, from current GUI settings'.format(self.filename))
         lines = psm.read(self.filename)
@@ -555,7 +758,7 @@ class cell_builder_GUI:
                 if line.startswith('unwrap_atoms_via_image_flags') and inputsflag:
                     line = psm.parse_and_modify(line, unwrap_atoms_via_image_flags, stringflag=False, splitchar='=')
                 if line.startswith('force_field_joining') and inputsflag:
-                    line = psm.parse_and_modify(line, force_field_joining, stringflag=False, splitchar='=')
+                    line = psm.parse_and_modify(line, force_field_joining, stringflag=True, splitchar='=')
                 if line.startswith('duplicate') and inputsflag:
                     line = psm.parse_and_modify(line, duplicate, stringflag=False, splitchar='=')
                 if line.startswith('seed') and inputsflag:
@@ -566,6 +769,14 @@ class cell_builder_GUI:
                     line = psm.parse_and_modify(line, newfile, stringflag=True, splitchar='=')
                 if line.startswith('max_rotations') and inputsflag:
                     line = psm.parse_and_modify(line, str(max_rotations), stringflag=False, splitchar='=')
+                if line.startswith('maxtry') and inputsflag:
+                    line = psm.parse_and_modify(line, maxtry, stringflag=False, splitchar='=')
+                if line.startswith('mixing_rule') and inputsflag:
+                    line = psm.parse_and_modify(line, mixing_rule, stringflag=True, splitchar='=')
+                if line.startswith('boundary') and inputsflag:
+                    line = psm.parse_and_modify(line, boundary, stringflag=True, splitchar='=')
+                if line.startswith('tolerance') and inputsflag:
+                    line = psm.parse_and_modify(line, tolerance, stringflag=False, splitchar='=')
                 if line.startswith('if __name__ == "__main__":'): inputsflag = False
                 f.write(line)
         return

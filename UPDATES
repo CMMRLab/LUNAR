@@ -65,8 +65,10 @@ Date               Developer   Description
                                  to test each functionality of each code using the CLI to ensure any future
                                  work doesnt break any current features
 								 
-16May2024          JDK         - add_pi_electrons.py: Pi-electron now inherits velocity from the atom it was added to
-16May2024          JDK         - log_analysis.py: Now has an intial_guess=<Boolean> option for the hyperbola fit
+16May2024          JDK         - add_pi_electrons.py: Pi-electron now inherits velocity from the atom it was
+                                                      added to
+16May2024          JDK         - log_analysis.py: Now has an intial_guess=<Boolean> option for the hyperbola
+                                                  fit
 
 
 -------------------------------------------------------------------------------------------------------------
@@ -74,7 +76,7 @@ LUNAR (version 30May2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-18May2024          JDK         - atom_typing.py: Added command line over rides for bond finding options
+18May2024          JDK         - atom_typing.py: Added command line over rides for bond finding options.
 
 20May2024          JDK         - GUIs: Brought back threading to have GUI run on a seperate thread from the 
                                        main() functions. The threading is also compatible with traceback logs.	
@@ -90,11 +92,11 @@ Date               Developer   Description
 
 23May2024          JDK         - Updated "Quick help" pages	
 
-30May2024          JDK         - Updated manual figures of GUIs to inlcude the "Quick help" buttons		
+30May2024          JDK         - Updated manual figures of GUIs to inlcude the "Quick help" buttons	.	
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 6June2024)
+LUNAR (version 11June2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -103,19 +105,46 @@ Date               Developer   Description
 
 4June2024          JDK         - sheet_builder.py: NEW module to generate sheet(s), chiral-tubes, and
                                                    symmetric-multi-wall tubes of sp2 hybridized atoms
-                                                   like carbon, nitrogen, boron, .... The module supports IFF's
-                                                   virtual pi-electrons for graphene/graphite and boron-nitride
+                                                   like carbon, nitrogen, boron, .... The module supports
+                                                   IFF's virtual pi-electrons for graphene/graphite and boron
+                                                   -nitride.
 
-4June2024          JDK         - atom_typing.py: Updated general atom types to use the ':' character instead of the
-                                                 ';' character to go between QTY and general string		
+4June2024          JDK         - atom_typing.py: Updated general atom types to use the ':' character instead of
+                                                 the ';' character to go between QTY and general string.		
 
 5June2024          JDK         - all2lmp.py: Swithed ff_class 'r' for ReaxFF, to 'i' for interatomic as this
                                              method in all2lmp will allow for the generation of data files 
                                              for interatomic potentials like: ReaxFF, REBO, AIREBO, SNAP, ...
                                              Where SNAP is a machine learned potential.		
 
-6June2024          JDK         - log_analysis.py: Updated that when xlo column in analysis is empty, the minimum
-                                                  xdata is now used and if the xhi column in analysis is empty the
-                                                  maximum of xdata is used												  
+6June2024          JDK         - log_analysis.py: Updated that when xlo column in analysis is empty, the 
+                                                  minimum xdata is now used and if the xhi column in analysis
+                                                   is empty the maximum of xdata is used.	
 
+11June2024          JDK         - cell_builder.py: created a new method which is loosley termed "random",
+                                                   which randomly inserts and rotates molecules and then 
+                                                   tries to insert the molecule into the systems. Overlaping
+                                                   atoms are checked based on a tolerance or via LJ sigma 
+                                                   parameters which can be mixed with arithmetic or geometric
+                                                   or sixthpower rules. If atoms overlap, the molecule will
+                                                   attempt to be inserted again. Users control the maximum
+												   number of attempts to insert the molecule. The efficiency
+                                                   was tested by generating 32,175 atom EPON 862 systems with
+                                                   fully-periodic boundaries and a tolerance of 2.0 angstrom:
+                                                      *Packed to: 0.10 gm/cm^3 in 19 seconds
+                                                      *Packed to: 0.20 gm/cm^3 in 35 seconds
+                                                      *Packed to: 0.30 gm/cm^3 in 1 minute 18 seconds
+                                                      *Packed to: 0.40 gm/cm^3 in 4 minutes and 12 seconds
+                                                      *Packed to: 0.50 gm/cm^3 in 39 minutes and 14 seconds
+                                                   and by generating 32,175 atom EPON 862 systems with non
+                                                   -periodic boundaries and a tolerance of 2.0 angstrom:
+                                                      *Packed to: 0.10 gm/cm^3 in 3 seconds
+                                                      *Packed to: 0.20 gm/cm^3 in 7 seconds
+                                                      *Packed to: 0.30 gm/cm^3 in 24 seconds
+                                                      *Packed to: 0.40 gm/cm^3 in 58 seconds
+                                                      *Packed to: 0.50 gm/cm^3 in 12 minutes and 25 seconds
+                                                   Currently, the manual found in the docs/ directory is not
+                                                   updated with these new options, but the "Quick help" guide,
+                                                   the IDE comments, and the commandline manual (accessible
+                                                   by python3 cell_builder.py -man) are updated.												   
 							  

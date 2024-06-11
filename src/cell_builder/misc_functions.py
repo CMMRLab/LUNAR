@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.4
-March 20th, 2024
+Revision 1.8
+June 11th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -270,8 +270,8 @@ def update_molids(m, log):
 
     # Sort clusters in a very unique fashion
     clusters = list(clusters)
-    #clusters = sorted(clusters, key=lambda x: x[0]) # Sort all clusters based on 1st atomID in cluster
-    #clusters = sorted(clusters, key=len, reverse=True) # Sort all clusters by number of atoms
+    clusters = sorted(clusters, key=lambda x: x[0]) # Sort all clusters based on 1st atomID in cluster
+    clusters = sorted(clusters, key=len, reverse=True) # Sort all clusters by number of atoms
     
     # Update atom molids
     for molID, cluster in enumerate(clusters, 1):
