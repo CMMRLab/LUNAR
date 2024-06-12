@@ -122,15 +122,15 @@ Date               Developer   Description
                                                    is empty the maximum of xdata is used.	
 
 11June2024          JDK         - cell_builder.py: created a new method which is loosley termed "random",
-                                                   which randomly inserts and rotates molecules and then 
-                                                   tries to insert the molecule into the systems. Overlaping
-                                                   atoms are checked based on a tolerance or via LJ sigma 
-                                                   parameters which can be mixed with arithmetic or geometric
-                                                   or sixthpower rules. If atoms overlap, the molecule will
-                                                   attempt to be inserted again. Users control the maximum
-                                                   number of attempts to insert the molecule. The efficiency
-                                                   was tested by generating 32,175 atom EPON 862 systems with
-                                                   fully-periodic boundaries and a tolerance of 2.0 angstrom:
+                                                   which tries to randomly insert and rotates molecules. 
+                                                   Overlaping atoms are checked based on a tolerance or via
+                                                   LJ sigma parameters which can be mixed with arithmetic or
+                                                   geometric or sixthpower rules. If atoms overlap, the 
+                                                   molecule will attempt to be inserted again. Users control
+                                                   the maximum number of attempts to insert the molecule. The
+                                                   efficiency was tested by generating 32,175 atom EPON 862
+                                                   systems with fully-periodic boundaries and a tolerance of
+                                                   2.0 angstrom:
                                                       *Packed to: 0.10 gm/cm^3 in 4 seconds
                                                       *Packed to: 0.20 gm/cm^3 in 8 seconds
                                                       *Packed to: 0.30 gm/cm^3 in 20 seconds
