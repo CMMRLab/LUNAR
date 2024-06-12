@@ -207,7 +207,7 @@ def mix_LJ_sigmas(sigma1, sigma2, mixing_rule, tolerance):
 ############################################################
 # Function to check if atom overlaps any in current system #
 ############################################################
-def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images):
+def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions):
     # Set default overlap, inside Boolean, and insert_molecule
     overlap = False; inside_box = True; insert_molecule = True
     
@@ -258,13 +258,19 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
             if mix_sigma:
                 pair_coeff1 = m.pair_coeffs[atom1.type].coeffs
                 sigma1 = pair_coeff1[tolerance]
+                half_atomsize = pair_coeff1[tolerance]/2
             x1, y1, z1 = misc_functions.vector_by_matrix(RzRyRx, [atom1.x, atom1.y, atom1.z])
             x1 += xshift
             y1 += yshift
             z1 += zshift
-            edgeflag = False
-            if not inside_box: edgeflag = check_near_edge(x1, y1, z1, 3*sigma1, sys.xlo, sys.xhi, sys.ylo, sys.yhi, sys.zlo, sys.zhi)
-            if edgeflag: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, sys.cx, sys.cy, sys.cz, Npos=12)
+            if not inside_box:
+                if x1 <= sys.xlo: x1 += sys.lx
+                if x1 >= sys.xhi: x1 -= sys.lx
+                if y1 <= sys.ylo: y1 += sys.ly
+                if y1 >= sys.yhi: y1 -= sys.ly
+                if z1 <= sys.zlo: z1 += sys.lz
+                if z1 >= sys.zhi: z1 -= sys.lz
+            r1 = compute_distance(x1, y1, z1, sys.cx, sys.cy, sys.cz)
             domainID, guess = assign_atom_a_domainID(x1, y1, z1, guess, domain)
             domains = list(domain_graph[domainID]) + [domainID]
             if loop1_break: break
@@ -279,23 +285,15 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
                     x2 = atom2.x
                     y2 = atom2.y
                     z2 = atom2.z
-                    if edgeflag:   
-                        for x1i, y1i, z1i in periodic_postions:
-                            if abs(x1i - x2) > mixed_atomsize: continue
-                            elif abs(y1i - y2) > mixed_atomsize: continue
-                            elif abs(z1i - z2) > mixed_atomsize: continue
-                            distance_ppp = compute_distance(x1i, y1i, z1i, x2, y2, z2)
-                            if distance_ppp <= mixed_atomsize: 
-                                overlap = True
-                                loop1_break = True
-                                loop2_break = True
-                                break
-                    else: # else compute none-periodic distance
+                    r2 = atom2.radius
+                    min_radius = r1 - 2.1*mixed_atomsize
+                    max_radius = r1 + 2.1*mixed_atomsize
+                    if min_radius < r2 < max_radius:
                         if abs(x1 - x2) > mixed_atomsize: continue
                         elif abs(y1 - y2) > mixed_atomsize: continue
                         elif abs(z1 - z2) > mixed_atomsize: continue
-                        distance_fff = compute_distance(x1, y1, z1, x2, y2, z2)
-                        if distance_fff <= mixed_atomsize:
+                        distance = compute_distance(x1, y1, z1, x2, y2, z2)
+                        if distance <= mixed_atomsize:
                             overlap = True
                             loop1_break = True
                             loop2_break = True

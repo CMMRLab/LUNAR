@@ -128,7 +128,7 @@ def update_linked_lst(sys, m, xshift, yshift, zshift, inside_box, linked_lst, do
 #------------------------------------------------------#
 def random_insertion_multi_processing(inputs):
     # extract out inputs
-    sys, m, linked_lst, domain, domain_graph, tolerance, mix_sigma, xshift_local, yshift_local, zshift_local, rx, ry, rz, max_rotations, mixing_rule, boundary_conditions, scaled_images = inputs
+    sys, m, linked_lst, domain, domain_graph, tolerance, mix_sigma, xshift_local, yshift_local, zshift_local, rx, ry, rz, max_rotations, mixing_rule, boundary_conditions = inputs
     
     # Find random shiftx, shifty, shiftz
     xshift = xshift_local[random.randint(0, len(xshift_local)-1)]
@@ -143,7 +143,7 @@ def random_insertion_multi_processing(inputs):
     
     # Check for overlap and determine if any part of the molecule is outside of the box
     overlap, inside_box, insert_molecule = random_insertion.check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta,
-                                                                                             psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images)
+                                                                                             psi, tolerance, mix_sigma, mixing_rule, boundary_conditions)
     
     # Generate list of outputs
     outputs = [overlap, inside_box, insert_molecule, xshift, yshift, zshift, phi, theta, psi]
@@ -677,7 +677,7 @@ class constructor:
                         
                         # Check for overlap and determine if any part of the molecule is outside of the box
                         overlap, inside_box, insert_molecule = random_insertion.check_for_overlap_and_inside_box(self, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta,
-                                                                                                                 psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images)
+                                                                                                                 psi, tolerance, mix_sigma, mixing_rule, boundary_conditions)
                         if insert_molecule and not overlap:
                             # Rotate molecule and add to system and update linked list
                             m = misc_functions.rotate_molecule(m, phi, theta, psi)
@@ -687,7 +687,7 @@ class constructor:
                             if not grouping: molecule_insertion[fileid][0] += 1
     
                             # Add molecule to system and break out of maxtry loop
-                            self.add_molecule_to_system(m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log)
+                            self.add_molecule_to_system(m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log, radius_attribute=True)
                             self.system_mass += compute_system_mass(m)
                             if not inside_box: self.wrap_periodic_atoms()
                             attempts_to_insert.append(j+1)
@@ -698,7 +698,7 @@ class constructor:
                     for j in range(attempts):
                         if np_loop1_break: break
                         with ThreadPoolExecutor(max_workers=nprocesses) as exe:
-                            inputs = [(self, m, linked_lst, domain, domain_graph, tolerance, mix_sigma, xshift_local, yshift_local, zshift_local, rx, ry, rz, max_rotations, mixing_rule, boundary_conditions, scaled_images) for _ in range(nprocesses)]
+                            inputs = [(self, m, linked_lst, domain, domain_graph, tolerance, mix_sigma, xshift_local, yshift_local, zshift_local, rx, ry, rz, max_rotations, mixing_rule, boundary_conditions) for _ in range(nprocesses)]
                             results = exe.map(random_insertion_multi_processing, inputs, chunksize=1)
                             for n, result in enumerate(results):
                                 overlap, inside_box, insert_molecule, xshift, yshift, zshift, phi, theta, psi = result
@@ -711,7 +711,7 @@ class constructor:
                                     if not grouping and occurrences == 0: molecule_insertion[fileid][0] += 1
                                 
                                     # Add molecule to system and break out of maxtry look
-                                    self.add_molecule_to_system(m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log)
+                                    self.add_molecule_to_system(m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log, radius_attribute=True)
                                     np_loop1_break = True
                                     self.system_mass += compute_system_mass(m)
                                     if not inside_box: self.wrap_periodic_atoms()
@@ -799,13 +799,16 @@ class constructor:
         pass
     
     # Method to add molecule from m class to system
-    def add_molecule_to_system(self, m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log):
+    def add_molecule_to_system(self, m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log, radius_attribute=False):
         # Start moving atoms and reseting atomIDs
         atomID_map = {} # {orginal atomID : new atomID }
         for i in m.atoms:
             atom = m.atoms[i]
             self.natoms += 1 # increment atom count
             atomID_map[i] = self.natoms
+            x = atom.x + xshift
+            y = atom.y + yshift
+            z = atom.z + zshift
             
             # Set molIDs
             if reset_molids == 'files':
@@ -835,9 +838,9 @@ class constructor:
             a = Atom()
             a.type = atom.type + self.coeff_offsets[m.filename]['atom']
             a.charge = atom.charge
-            a.x = atom.x + xshift
-            a.y = atom.y + yshift
-            a.z = atom.z + zshift
+            a.x = x
+            a.y = y
+            a.z = z
             a.comment = atom.comment
             try: a.fileid = atom.fileid # atom might already have a fileid if grouping
             except: a.fileid = fileid # for possible .mol2 resID setting to vis mols in VMD
@@ -858,6 +861,9 @@ class constructor:
             # if atom has attribute group, pass group info
             if hasattr(atom,'group'):
                 a.group = atom.group
+            # if radius_attribute, add compute and add radius attribute
+            if radius_attribute:
+                a.radius = compute_distance(x, y, z, self.cx, self.cy, self.cz)
             self.atoms[self.natoms] = a
             
         # Setting new bonds
