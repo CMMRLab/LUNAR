@@ -166,7 +166,7 @@ GUI_zoom = 100
 ###############################################################################################################################
 topofile = 'EXAMPLES/EPON_862/atom_typing_Outputs/detda_typed.data'
 nta_file = 'EXAMPLES/EPON_862/atom_typing_Outputs/detda_typed.nta'
-frc_file = 'frc_files/pcff_iff_v1_5_CNT_poly_solv_hpan_hc_mod.frc'
+frc_file = 'frc_files/pcff.frc'
 assumed = 'frc_files/general_assumed_equivs.coeffs'
 
 
