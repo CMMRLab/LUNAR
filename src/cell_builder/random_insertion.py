@@ -270,7 +270,6 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
                 if y1 >= sys.yhi: y1 -= sys.ly
                 if z1 <= sys.zlo: z1 += sys.lz
                 if z1 >= sys.zhi: z1 -= sys.lz
-            r1 = compute_distance(x1, y1, z1, sys.cx, sys.cy, sys.cz)
             domainID, guess = assign_atom_a_domainID(x1, y1, z1, guess, domain)
             domains = list(domain_graph[domainID]) + [domainID]
             if loop1_break: break
@@ -285,17 +284,13 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
                     x2 = atom2.x
                     y2 = atom2.y
                     z2 = atom2.z
-                    r2 = atom2.radius
-                    min_radius = r1 - 2.1*mixed_atomsize
-                    max_radius = r1 + 2.1*mixed_atomsize
-                    if min_radius < r2 < max_radius:
-                        if abs(x1 - x2) > mixed_atomsize: continue
-                        elif abs(y1 - y2) > mixed_atomsize: continue
-                        elif abs(z1 - z2) > mixed_atomsize: continue
-                        distance = compute_distance(x1, y1, z1, x2, y2, z2)
-                        if distance <= mixed_atomsize:
-                            overlap = True
-                            loop1_break = True
-                            loop2_break = True
+                    if abs(x1 - x2) > mixed_atomsize: continue
+                    elif abs(y1 - y2) > mixed_atomsize: continue
+                    elif abs(z1 - z2) > mixed_atomsize: continue
+                    distance = compute_distance(x1, y1, z1, x2, y2, z2)
+                    if distance <= mixed_atomsize:
+                        overlap = True
+                        loop1_break = True
+                        loop2_break = True
                 if loop2_break: break
     return overlap, inside_box, insert_molecule
