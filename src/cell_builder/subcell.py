@@ -660,7 +660,9 @@ class constructor:
                         attempts_to_insert.append(j+1)
                         inserted = True
                         break
-                if not inserted: failed += 1
+                if not inserted: 
+                    attempts_to_insert.append(j+1)
+                    failed += 1
                     
             # Optional printing of progress
             if pflag:
