@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-June 11th, 2024
+Revision 1.1
+June 14th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -12,16 +12,6 @@ Houghton, MI 49931
 ##############################
 import src.cell_builder.misc_functions as misc_functions
 import math
-
-
-###################################################################################
-# Function to compute distance when math.dist is not available. math.dist will be #
-# quicker but for some reason not all python has math.dist .... compute_distance  #
-# will be time optimized but still will be slower then math.dist.                 #
-###################################################################################     
-def compute_distance(x1, y1, z1, x2, y2, z2):
-    dx = x1 - x2; dy = y1 - y2; dz = z1 - z2;
-    return math.sqrt(dx*dx + dy*dy + dz*dz)
 
 
 ################################################
@@ -62,7 +52,7 @@ def find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=12):
     postions_distance = {} # {distance from center : (pbc-x, pbc-y, pbc-z) }
     for ixlx, iyly, izlz in scaled_images:
         x1i = x1+ixlx; y1i = y1+iyly; z1i = z1+izlz;
-        dist_from_center = compute_distance(x1i, y1i, z1i, cx, cy, cz)
+        dist_from_center = misc_functions.compute_distance(x1i, y1i, z1i, cx, cy, cz)
         postions_distance[dist_from_center] = (x1i, y1i, z1i)
     postions_distance = dict(sorted(postions_distance.items(), key=lambda x:abs(x[0]) )) # [0=keys;1=values]
     positions = []
@@ -128,7 +118,7 @@ def generate_domain(sys, domain_size, scaled_images, pflag, log):
                 yhi_sub = yc + halfdy
                 zlo_sub = zc - halfdz
                 zhi_sub = zc + halfdz
-                r = compute_distance(xc, yc, zc, cx, cy, cz)
+                r = misc_functions.compute_distance(xc, yc, zc, cx, cy, cz)
                 edgeflag = check_near_edge(xc, yc, zc, domain_size, sys.xlo, sys.xhi, sys.ylo, sys.yhi, sys.zlo, sys.zhi)
                 domain[ID] = (xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r, edgeflag)
                 
@@ -207,7 +197,7 @@ def mix_LJ_sigmas(sigma1, sigma2, mixing_rule, tolerance):
 ############################################################
 # Function to check if atom overlaps any in current system #
 ############################################################
-def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions):
+def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images):
     # Set default overlap, inside Boolean, and insert_molecule
     overlap = False; inside_box = True; insert_molecule = True
     
@@ -229,14 +219,14 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
         y1 += yshift
         z1 += zshift
         if x1 <= sys.xlo + half_atomsize:
-           if boundary_conditions[0] == 'f': insert_molecule = False
-           inside_box = False
+            if boundary_conditions[0] == 'f': insert_molecule = False
+            inside_box = False
         if x1 >= sys.xhi - half_atomsize:
-           if boundary_conditions[0] == 'f': insert_molecule = False
-           inside_box = False
+            if boundary_conditions[0] == 'f': insert_molecule = False
+            inside_box = False
         if y1 <= sys.ylo + half_atomsize:
-           if boundary_conditions[1] == 'f': insert_molecule = False
-           inside_box = False
+            if boundary_conditions[1] == 'f': insert_molecule = False
+            inside_box = False
         if y1 >= sys.yhi - half_atomsize:
             if boundary_conditions[1] == 'f': insert_molecule = False
             inside_box = False
@@ -246,15 +236,14 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
         if z1 >= sys.zhi - half_atomsize:
             if boundary_conditions[2] == 'f': insert_molecule = False
             inside_box = False
+        if not insert_molecule: break
     
     # Check for overlaps
     if sys.atoms and insert_molecule:
-        loop1_break = False
-        loop2_break = False
         guess = 1 # domainID guess
         for id1 in m.atoms:
+            if overlap: break
             atom1 = m.atoms[id1]
-            sigma1 = tolerance
             if mix_sigma:
                 pair_coeff1 = m.pair_coeffs[atom1.type].coeffs
                 sigma1 = pair_coeff1[tolerance]
@@ -270,27 +259,40 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
                 if y1 >= sys.yhi: y1 -= sys.ly
                 if z1 <= sys.zlo: z1 += sys.lz
                 if z1 >= sys.zhi: z1 -= sys.lz
+            r1 = misc_functions.compute_distance(x1, y1, z1, sys.cx, sys.cy, sys.cz)
+            edgeflag = check_near_edge(x1, y1, z1, 1.1*half_atomsize, sys.xlo, sys.xhi, sys.ylo, sys.yhi, sys.zlo, sys.zhi)
+            if edgeflag: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, sys.cx, sys.cy, sys.cz, Npos=12)
             domainID, guess = assign_atom_a_domainID(x1, y1, z1, guess, domain)
             domains = list(domain_graph[domainID]) + [domainID]
-            if loop1_break: break
             for domainID_linked in domains:
+                if overlap: break
                 neighboring_atoms = linked_lst[domainID_linked]
                 for id2 in neighboring_atoms:
                     atom2 = sys.atoms[id2]
+                    x2 = atom2.x
+                    y2 = atom2.y
+                    z2 = atom2.z
+                    r2 = atom2.radius
                     if mix_sigma:
                         pair_coeff2 = atom2.pair_coeff
                         sigma2 = pair_coeff2[tolerance]
                         mixed_atomsize = mix_LJ_sigmas(sigma1, sigma2, mixing_rule, tolerance)
-                    x2 = atom2.x
-                    y2 = atom2.y
-                    z2 = atom2.z
-                    if abs(x1 - x2) > mixed_atomsize: continue
-                    elif abs(y1 - y2) > mixed_atomsize: continue
-                    elif abs(z1 - z2) > mixed_atomsize: continue
-                    distance = compute_distance(x1, y1, z1, x2, y2, z2)
-                    if distance <= mixed_atomsize:
-                        overlap = True
-                        loop1_break = True
-                        loop2_break = True
-                if loop2_break: break
+                    if edgeflag:
+                        for x1i, y1i, z1i in periodic_postions:
+                            if abs(x1i - x2) > mixed_atomsize: continue
+                            elif abs(y1i - y2) > mixed_atomsize: continue
+                            elif abs(z1i - z2) > mixed_atomsize: continue
+                            distance = misc_functions.compute_distance(x1i, y1i, z1i, x2, y2, z2)
+                            if distance <= mixed_atomsize:
+                                overlap = True
+                                break
+                    else:
+                        if abs(r1 - r2) > mixed_atomsize: continue
+                        elif abs(x1 - x2) > mixed_atomsize: continue
+                        elif abs(y1 - y2) > mixed_atomsize: continue
+                        elif abs(z1 - z2) > mixed_atomsize: continue
+                        distance = misc_functions.compute_distance(x1, y1, z1, x2, y2, z2)
+                        if distance <= mixed_atomsize:
+                            overlap = True
+                            break
     return overlap, inside_box, insert_molecule

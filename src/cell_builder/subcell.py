@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.8
-June 11th, 2024
+Revision 1.9
+June 14th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -39,13 +39,6 @@ def generate_lattices_from_domain(ni):
             n = int((ni-1)/2); nspan = 0;
             lattices = [i for i in range(-n, n+1)]
     return lattices, nspan
-
-#--------------------------------------------------------------#
-# Function to compute distance when math.dist is not available #
-#--------------------------------------------------------------#
-def compute_distance(x1, y1, z1, x2, y2, z2):
-    dx = x1 - x2; dy = y1 - y2; dz = z1 - z2;
-    return math.sqrt(dx*dx + dy*dy + dz*dz)
 
 #--------------------------------------------------#
 # Function to find gridIDs in a specified region   #
@@ -128,18 +121,7 @@ def update_linked_lst(sys, m, xshift, yshift, zshift, inside_box, linked_lst, do
 #------------------------------------------------------#
 def random_insertion_multi_processing(inputs):
     # extract out inputs
-    sys, m, linked_lst, domain, domain_graph, tolerance, mix_sigma, xshift_local, yshift_local, zshift_local, rx, ry, rz, max_rotations, mixing_rule, boundary_conditions = inputs
-    
-    # Find random shiftx, shifty, shiftz
-    xshift = xshift_local[random.randint(0, len(xshift_local)-1)]
-    yshift = yshift_local[random.randint(0, len(yshift_local)-1)]
-    zshift = zshift_local[random.randint(0, len(zshift_local)-1)]
-    
-    # Find random phi (rx), theta (ry), psi (rz)
-    phi = 0; theta = 0; psi = 0; # intialize and update if max_rotation > 0
-    if max_rotations['x'] > 0: phi = rx[random.randint(0, len(rx)-1)]
-    if max_rotations['y'] > 0: theta = ry[random.randint(0, len(ry)-1)]
-    if max_rotations['z'] > 0: psi = rz[random.randint(0, len(rz)-1)]
+    sys, m, linked_lst, domain, domain_graph, tolerance, mix_sigma, xshift, yshift, zshift, phi, theta, psi, mixing_rule, boundary_conditions = inputs
     
     # Check for overlap and determine if any part of the molecule is outside of the box
     overlap, inside_box, insert_molecule = random_insertion.check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta,
@@ -403,7 +385,7 @@ class constructor:
                     overlap = False
                     for i in self.atoms:
                         atom = self.atoms[i]
-                        distance = compute_distance(x, y, z, atom.x, atom.y, atom.z)
+                        distance = misc_functions.compute_distance(x, y, z, atom.x, atom.y, atom.z)
                         if distance < self.maxspan/2:
                             overlap = True; break
                     if overlap: 
@@ -532,14 +514,12 @@ class constructor:
                 self.zbox_line = '{:^15.10f} {:^15.10f} {:^5} {:5}'.format(self.zlo, self.zhi, 'zlo', 'zhi')
                 
             # Set local x, y, and z shifts (remove first and last element as they are right on box edges)
-            xshift_local = generate_incremented_lst({'start':self.xlo, 'end':self.xhi, 'increment': shift_increment})
-            yshift_local = generate_incremented_lst({'start':self.ylo, 'end':self.yhi, 'increment': shift_increment})
-            zshift_local = generate_incremented_lst({'start':self.zlo, 'end':self.zhi, 'increment': shift_increment})
-            xshift_local.pop(0); yshift_local.pop(0); zshift_local.pop(0);
-            xshift_local.pop(-1); yshift_local.pop(-1); yshift_local.pop(-1);
-            if not xshift_local: log.error(f'ERROR domain = {domain} in X-direction is not large enough to insert even a single molecule. Increase X-direction.')
-            if not yshift_local: log.error(f'ERROR domain = {domain} in Y-direction is not large enough to insert even a single molecule. Increase Y-direction.')
-            if not zshift_local: log.error(f'ERROR domain = {domain} in Z-direction is not large enough to insert even a single molecule. Increase Z-direction.')
+            xshift_lst = generate_incremented_lst({'start':self.xlo+shift_increment, 'end':self.xhi-shift_increment, 'increment': shift_increment})
+            yshift_lst = generate_incremented_lst({'start':self.ylo+shift_increment, 'end':self.yhi-shift_increment, 'increment': shift_increment})
+            zshift_lst = generate_incremented_lst({'start':self.zlo+shift_increment, 'end':self.zhi-shift_increment, 'increment': shift_increment})
+            if not xshift_lst: log.error(f'ERROR domain = {domain} in X-direction is not large enough to insert even a single molecule. Increase X-direction.')
+            if not yshift_lst: log.error(f'ERROR domain = {domain} in Y-direction is not large enough to insert even a single molecule. Increase Y-direction.')
+            if not zshift_lst: log.error(f'ERROR domain = {domain} in Z-direction is not large enough to insert even a single molecule. Increase Z-direction.')
                             
             # Generate "dup2file" and "dup2grid" as if we where to add molecules to a cubic lattice
             dupID = 0 # to keep track of duplicationIDs (starts from 1)
@@ -558,7 +538,7 @@ class constructor:
             images, boundary_conditions = random_insertion.generate_iflags(boundary, log)
             scaled_images = [(ix*self.lx, iy*self.ly, iz*self.lz) for (ix, iy, iz) in images]
                         
-            # Generate domain (set roughly optimized domain_size based on box dimensions)
+            # Generate domain_region (set roughly optimized domain_size based on box dimensions)
             start_time = time.time()
             if self.lx <= 100 and self.ly <= 100 and self.lz <= 100:
                 domain_size = 8.0
@@ -568,33 +548,27 @@ class constructor:
                 domain_size = 32.0
             else:
                 domain_size = 64.0
-            domain, domain_graph = random_insertion.generate_domain(self, domain_size, scaled_images, pflag, log)
+            domain_region, domain_graph = random_insertion.generate_domain(self, domain_size, scaled_images, pflag, log)
             execution_time = (time.time() - start_time)
             if pflag: log.out('Time in seconds to generate domain and domain connectivity: ' + str(execution_time))
             
             # Generate linked_list
-            guess = 1 # intial guess for setting domainID
-            linked_lst = {i:set() for i in domain} # { domainID : atomIDs in domain }
-            linked_lst[0] = set() # for any atoms that are not in a domain (unwrapped periodic molecules)
+            linked_lst = {i:set() for i in domain_region} # { domainID : atomIDs in domain_region }
+            linked_lst[0] = set() # for any atoms that are not in a domain_region (unwrapped periodic molecules)
             
-            # If adding_to_system, assign current atoms to domains
+            # If adding_to_system, assign current atoms to domains and set radius from center of box
             if adding_to_system:
+                guess = 1 # intial guess for setting domainID
                 for i in self.atoms:
                     atom = self.atoms[i]
-                    domainID, guess = random_insertion.assign_atom_a_domainID(atom.x, atom.y, atom.z, guess, domain)
+                    atom.radius = misc_functions.compute_distance(atom.x, atom.y, atom.z, self.cx, self.cy, self.cz)
+                    domainID, guess = random_insertion.assign_atom_a_domainID(atom.x, atom.y, atom.z, guess, domain_region)
                     linked_lst[domainID].add(i)
             
             # Setup wheter or not to mix atom sizes or use one tolerance value
             mix_sigma = False
             if isinstance(tolerance, int) and mixing_rule != 'tolerance':
                 mix_sigma = True
-                
-            # Setup multi-processing (this seems to make the code slower so for now set nprocesses as 1 to run without multi-processing)
-            nprocesses = 1
-            attempts = math.floor(maxtry/nprocesses)
-            if attempts <= 0: attempts = 1
-            if nprocesses > 1:
-                from concurrent.futures import ThreadPoolExecutor
                 
             # Log used mixing rule
             if pflag:
@@ -616,6 +590,7 @@ class constructor:
                     log.out("  want to apply a mixing rule, the tolerance should be set to 1. If attempting to")
                     log.out("  use a mixing rule to set the tolerance for atom overlap checks and no Pair Coeffs")
                     log.out("  exist in the read-in LAMMPS datafiles, the code will crash.")
+
                     
         #--------------------------------------------#
         # Start moving atoms to randomized locations #
@@ -626,16 +601,14 @@ class constructor:
         rz = generate_incremented_lst({'start':0, 'end':max_rotations['z'], 'increment': rotation_increment})
         if pflag: log.out('\n\nGenerating new simulation cell ....')
         progress_increment = 5; count = 0; ndups = len(dup2grid);
-        attempts_to_insert = []; failed = 0
+        attempts_to_insert = []; failed = 0;
         for ID in dup2grid:            
             # Generate molecules on a lattice
             if not random_packing:
                 xshift, yshift, zshift = grid[dup2grid[ID]] # get x, y, z shift
                 m = files[dup2file[ID]] # get m-object
-                fileid = dup2file[ID]
-                if not grouping:
-                    if occurrences == 0: molecule_insertion[fileid][0] += 1
-                    #else: molecule_insertion[fileID][0] += qtys[fileid]
+                fileid = dup2file[ID] # get fileid
+                if not grouping: molecule_insertion[fileid][0] += 1
                 if m.Regions and m.Rotations: 
                     rx_local = generate_incremented_lst({'start':0, 'end':m.Rotations['x'], 'increment': rotation_increment})
                     ry_local = generate_incremented_lst({'start':0, 'end':m.Rotations['y'], 'increment': rotation_increment})
@@ -658,87 +631,55 @@ class constructor:
             
             # Randomly inserting molecules
             else:
-                # get m-object
-                m = files[dup2file[ID]]
-                fileid = dup2file[ID]
+                m = files[dup2file[ID]] # get m-object
+                fileid = dup2file[ID] # get fileid
                 inserted = False
-                if nprocesses == 1: # run on standard python, single thread, single processor
-                    for j in range(maxtry):
-                        # Find random shiftx, shifty, shiftz
-                        xshift = xshift_local[random.randint(0, len(xshift_local)-1)]
-                        yshift = yshift_local[random.randint(0, len(yshift_local)-1)]
-                        zshift = zshift_local[random.randint(0, len(zshift_local)-1)]
-                        
-                        # Find random phi (rx), theta (ry), psi (rz)
-                        phi = 0; theta = 0; psi = 0; # intialize and update if max_rotation > 0
-                        if max_rotations['x'] > 0: phi = rx[random.randint(0, len(rx)-1)]
-                        if max_rotations['y'] > 0: theta = ry[random.randint(0, len(ry)-1)]
-                        if max_rotations['z'] > 0: psi = rz[random.randint(0, len(rz)-1)]
-                        
-                        # Check for overlap and determine if any part of the molecule is outside of the box
-                        overlap, inside_box, insert_molecule = random_insertion.check_for_overlap_and_inside_box(self, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta,
-                                                                                                                 psi, tolerance, mix_sigma, mixing_rule, boundary_conditions)
-                        if insert_molecule and not overlap:
-                            # Rotate molecule and add to system and update linked list
-                            m = misc_functions.rotate_molecule(m, phi, theta, psi)
-                            linked_lst = update_linked_lst(self, m, xshift, yshift, zshift, inside_box, linked_lst, domain)
-                            
-                            # log that molecule was inserted
-                            if not grouping: molecule_insertion[fileid][0] += 1
-    
-                            # Add molecule to system and break out of maxtry loop
-                            self.add_molecule_to_system(m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log, radius_attribute=True)
-                            self.system_mass += compute_system_mass(m)
-                            if not inside_box: self.wrap_periodic_atoms()
-                            attempts_to_insert.append(j+1)
-                            inserted = True
-                            break
-                else: # run on as many threads as the user wants
-                    np_loop1_break = False
-                    for j in range(attempts):
-                        if np_loop1_break: break
-                        with ThreadPoolExecutor(max_workers=nprocesses) as exe:
-                            inputs = [(self, m, linked_lst, domain, domain_graph, tolerance, mix_sigma, xshift_local, yshift_local, zshift_local, rx, ry, rz, max_rotations, mixing_rule, boundary_conditions) for _ in range(nprocesses)]
-                            results = exe.map(random_insertion_multi_processing, inputs, chunksize=1)
-                            for n, result in enumerate(results):
-                                overlap, inside_box, insert_molecule, xshift, yshift, zshift, phi, theta, psi = result
-                                if insert_molecule and not overlap:
-                                    # Rotate molecule and add to system and update linked list
-                                    m = misc_functions.rotate_molecule(m, phi, theta, psi)
-                                    linked_lst = update_linked_lst(self, m, xshift, yshift, zshift, inside_box, linked_lst, domain)
-                                    
-                                    # log that molecule was inserted
-                                    if not grouping and occurrences == 0: molecule_insertion[fileid][0] += 1
-                                
-                                    # Add molecule to system and break out of maxtry look
-                                    self.add_molecule_to_system(m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log, radius_attribute=True)
-                                    np_loop1_break = True
-                                    self.system_mass += compute_system_mass(m)
-                                    if not inside_box: self.wrap_periodic_atoms()
-                                    attempts_to_insert.append(n+1*j+1)
-                                    inserted = True
-                                    break
+                for j in range(maxtry):
+                    # Find random phi (rx), theta (ry), psi (rz) and random shiftx, shifty, shiftz
+                    phi = 0; theta = 0; psi = 0; # intialize and update if max_rotation > 0
+                    if max_rotations['x'] > 0: phi = rx[random.randint(0, len(rx)-1)]
+                    if max_rotations['y'] > 0: theta = ry[random.randint(0, len(ry)-1)]
+                    if max_rotations['z'] > 0: psi = rz[random.randint(0, len(rz)-1)]
+                    xshift = xshift_lst[random.randint(0, len(xshift_lst)-1)]
+                    yshift = yshift_lst[random.randint(0, len(yshift_lst)-1)]
+                    zshift = zshift_lst[random.randint(0, len(zshift_lst)-1)]
+                    
+                    # Check for overlap and determine if any part of the molecule is outside of the box
+                    overlap, inside_box, insert_molecule = random_insertion.check_for_overlap_and_inside_box(self, m, linked_lst, domain_region, domain_graph, xshift, yshift, zshift, phi,
+                                                                                                             theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images)
+                    if insert_molecule and not overlap:
+                        # Rotate molecule and add to system and update linked list and log that molecule was inserted
+                        m = misc_functions.rotate_molecule(m, phi, theta, psi)
+                        linked_lst = update_linked_lst(self, m, xshift, yshift, zshift, inside_box, linked_lst, domain_region)
+                        if not grouping: molecule_insertion[fileid][0] += 1
+
+                        # Add molecule to system and break out of maxtry loop
+                        self.add_molecule_to_system(m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log, radius_attribute=True)
+                        self.system_mass += compute_system_mass(m)
+                        if not inside_box: self.wrap_periodic_atoms()
+                        attempts_to_insert.append(j+1)
+                        inserted = True
+                        break
                 if not inserted: failed += 1
                     
             # Optional printing of progress
             if pflag:
                 count += 1
                 if 100*count/ndups % progress_increment == 0:
-                    if pflag: 
-                        current_percent = int(100*count/ndups)
-                        current_density = '{:.5f} g/cc'.format(round(compute_system_density(self, self.system_mass), 5))
-                        current_time = '{:10.4f} seconds,'.format(time.time() - start_time)
-                        additional = ''
-                        if random_packing:
-                            if attempts_to_insert:
-                                avg_attempts = sum(attempts_to_insert)/len(attempts_to_insert)
-                                additional = 'failed: {:>3},  attempts (min;max;avg): {};{};{:.2f}'.format(failed, min(attempts_to_insert), max(attempts_to_insert), avg_attempts)
-                                attempts_to_insert = []; failed = 0 # reset to get next iteration
-                            else:
-                                additional = 'failed: {:>3},  attempts (min;max;avg): {};{};{:.2f}'.format(failed, 0, 0, 0)
-                                attempts_to_insert = []; failed = 0 # reset to get next iteration
-                        if additional: current_density += ','
-                        log.out('    progress: {:^3} %,  time: {:^14}  density: {}  {}'.format(current_percent, current_time, current_density, additional))
+                    current_percent = int(100*count/ndups)
+                    current_density = '{:.5f} g/cc'.format(round(compute_system_density(self, self.system_mass), 5))
+                    current_time = '{:10.4f} seconds,'.format(time.time() - start_time)
+                    additional = ''
+                    if random_packing:
+                        if attempts_to_insert:
+                            avg_attempts = sum(attempts_to_insert)/len(attempts_to_insert)
+                            additional = 'failed: {:>3},  attempts (min;max;avg): {};{};{:.2f}'.format(failed, min(attempts_to_insert), max(attempts_to_insert), avg_attempts)
+                            attempts_to_insert = []; failed = 0 # reset to get next iteration
+                        else:
+                            additional = 'failed: {:>3},  attempts (min;max;avg): {};{};{:.2f}'.format(failed, 0, 0, 0)
+                            attempts_to_insert = []; failed = 0 # reset to get next iteration
+                    if additional: current_density += ','
+                    log.out('    progress: {:^3} %,  time: {:^14}  density: {}  {}'.format(current_percent, current_time, current_density, additional))
         execution_time = (time.time() - start_time)
         if pflag: log.out('Time in seconds to insert molecules into simulation cell: ' + str(execution_time))
                                 
@@ -793,10 +734,6 @@ class constructor:
                 atom.z -= self.lz
                 atom.iz += 1
         return
-    
-    # Method to add atom to domain
-    def add_atom_to_domain(self, domainID):
-        pass
     
     # Method to add molecule from m class to system
     def add_molecule_to_system(self, m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log, radius_attribute=False):
@@ -863,7 +800,7 @@ class constructor:
                 a.group = atom.group
             # if radius_attribute, add compute and add radius attribute
             if radius_attribute:
-                a.radius = compute_distance(x, y, z, self.cx, self.cy, self.cz)
+                a.radius = misc_functions.compute_distance(x, y, z, self.cx, self.cy, self.cz)
             self.atoms[self.natoms] = a
             
         # Setting new bonds
