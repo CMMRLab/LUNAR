@@ -96,7 +96,7 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 14June2024)
+LUNAR (version 15June2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ Date               Developer   Description
                                                   minimum xdata is now used and if the xhi column in analysis
                                                   is empty the maximum of xdata is used.	
 
-14June2024         JDK         - cell_builder.py: Created a new method which is loosley termed "random",
+15June2024         JDK         - cell_builder.py: Created a new method which is loosley termed "random",
                                                   which tries to randomly insert and rotates molecules. 
                                                   Overlaping atoms are checked based on a tolerance or via
                                                   LJ sigma parameters which can be mixed with arithmetic or
@@ -131,19 +131,19 @@ Date               Developer   Description
                                                   efficiency was tested by generating 32,175 atom EPON 862
                                                   systems with fully-periodic boundaries and a tolerance of
                                                   2.0 angstrom:
-                                                      *Packed to: 0.10 gm/cm^3 in 3 seconds
+                                                      *Packed to: 0.10 gm/cm^3 in 4 seconds
                                                       *Packed to: 0.20 gm/cm^3 in 8 seconds
-                                                      *Packed to: 0.30 gm/cm^3 in 17 seconds
-                                                      *Packed to: 0.40 gm/cm^3 in 19 seconds
-                                                      *Packed to: 0.50 gm/cm^3 in 1 minutes and 27 seconds
-                                                      *Packed to: 0.60 gm/cm^3 in 22 minutes and 46 seconds
+                                                      *Packed to: 0.30 gm/cm^3 in 22 seconds
+                                                      *Packed to: 0.40 gm/cm^3 in 24 seconds
+                                                      *Packed to: 0.50 gm/cm^3 in 2 minutes and 48 seconds
+                                                      *Packed to: 0.57 gm/cm^3 in 25 minutes and 40 seconds
                                                   and by generating 32,175 atom EPON 862 systems with non
                                                   -periodic boundaries and a tolerance of 2.0 angstrom:
-                                                      *Packed to: 0.10 gm/cm^3 in 3 seconds
+                                                      *Packed to: 0.10 gm/cm^3 in 4 seconds
                                                       *Packed to: 0.20 gm/cm^3 in 7 seconds
-                                                      *Packed to: 0.30 gm/cm^3 in 24 seconds
-                                                      *Packed to: 0.40 gm/cm^3 in 53 seconds
-                                                      *Packed to: 0.50 gm/cm^3 in 11 minutes and 13 seconds	
+                                                      *Packed to: 0.30 gm/cm^3 in 25 seconds
+                                                      *Packed to: 0.40 gm/cm^3 in 52 seconds
+                                                      *Packed to: 0.50 gm/cm^3 in 11 minutes and 18 seconds	
                                                   Currently, the manual found in the docs/ directory is not
                                                   updated with these new options, but the "Quick help" guide,
                                                   the IDE comments, and the commandline manual (accessible

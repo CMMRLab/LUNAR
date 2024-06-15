@@ -183,14 +183,17 @@ def assign_atom_a_domainID(x, y, z, guess, domain):
 def mix_LJ_sigmas(sigma1, sigma2, mixing_rule, tolerance):
     # 'geometric' or 'arithmetic' or 'sixthpower'
     mixed_atomsize = tolerance
-    if mixing_rule == 'arithmetic':
+    if 'arithmetic' in mixing_rule:
         mixed_atomsize = 0.5*(sigma1 + sigma2)
-    elif mixing_rule == 'geometric':
+    elif 'geometric' in mixing_rule:
         mixed_atomsize = math.sqrt(sigma1*sigma2)
-    elif mixing_rule == 'sixthpower':
+    elif 'sixthpower' in mixing_rule:
         mixed_atomsize = (0.5*(sigma1**6 + sigma2**6))**(1/6)
     else:
-        raise Exception(f"ERROR mixing_rule = {mixing_rule} is not supported. Currently supported rules: 'geometric' or 'arithmetic' or 'sixthpower'")
+        raise Exception(f"ERROR mixing_rule = {mixing_rule} is not supported. Currently supported rules: 'geometric' or 'arithmetic' or 'sixthpower' or 'geometric-min' or 'arithmetic-min' or 'sixthpower-min'")
+    if 'min' in mixing_rule:
+        # both 9-6 and 12-6 LJ have minimum energy at 2**(1/6) or 1.12 of sigma as the sixth power is the respulive portion of the LJ-potential
+        mixed_atomsize = (2**(1/6))*mixed_atomsize
     return mixed_atomsize
 
 
@@ -259,7 +262,6 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
                 if y1 >= sys.yhi: y1 -= sys.ly
                 if z1 <= sys.zlo: z1 += sys.lz
                 if z1 >= sys.zhi: z1 -= sys.lz
-            r1 = misc_functions.compute_distance(x1, y1, z1, sys.cx, sys.cy, sys.cz)
             edgeflag = check_near_edge(x1, y1, z1, 1.1*half_atomsize, sys.xlo, sys.xhi, sys.ylo, sys.yhi, sys.zlo, sys.zhi)
             if edgeflag: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, sys.cx, sys.cy, sys.cz, Npos=12)
             domainID, guess = assign_atom_a_domainID(x1, y1, z1, guess, domain)
@@ -272,7 +274,6 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
                     x2 = atom2.x
                     y2 = atom2.y
                     z2 = atom2.z
-                    r2 = atom2.radius
                     if mix_sigma:
                         pair_coeff2 = atom2.pair_coeff
                         sigma2 = pair_coeff2[tolerance]
@@ -287,8 +288,7 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
                                 overlap = True
                                 break
                     else:
-                        if abs(r1 - r2) > mixed_atomsize: continue
-                        elif abs(x1 - x2) > mixed_atomsize: continue
+                        if abs(x1 - x2) > mixed_atomsize: continue
                         elif abs(y1 - y2) > mixed_atomsize: continue
                         elif abs(z1 - z2) > mixed_atomsize: continue
                         distance = misc_functions.compute_distance(x1, y1, z1, x2, y2, z2)

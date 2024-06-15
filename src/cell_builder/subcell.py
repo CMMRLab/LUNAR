@@ -561,7 +561,6 @@ class constructor:
                 guess = 1 # intial guess for setting domainID
                 for i in self.atoms:
                     atom = self.atoms[i]
-                    atom.radius = misc_functions.compute_distance(atom.x, atom.y, atom.z, self.cx, self.cy, self.cz)
                     domainID, guess = random_insertion.assign_atom_a_domainID(atom.x, atom.y, atom.z, guess, domain_region)
                     linked_lst[domainID].add(i)
             
@@ -654,7 +653,7 @@ class constructor:
                         if not grouping: molecule_insertion[fileid][0] += 1
 
                         # Add molecule to system and break out of maxtry loop
-                        self.add_molecule_to_system(m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log, radius_attribute=True)
+                        self.add_molecule_to_system(m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log)
                         self.system_mass += compute_system_mass(m)
                         if not inside_box: self.wrap_periodic_atoms()
                         attempts_to_insert.append(j+1)
@@ -738,7 +737,7 @@ class constructor:
         return
     
     # Method to add molecule from m class to system
-    def add_molecule_to_system(self, m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log, radius_attribute=False):
+    def add_molecule_to_system(self, m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log):
         # Start moving atoms and reseting atomIDs
         atomID_map = {} # {orginal atomID : new atomID }
         for i in m.atoms:
@@ -800,9 +799,6 @@ class constructor:
             # if atom has attribute group, pass group info
             if hasattr(atom,'group'):
                 a.group = atom.group
-            # if radius_attribute, add compute and add radius attribute
-            if radius_attribute:
-                a.radius = misc_functions.compute_distance(x, y, z, self.cx, self.cy, self.cz)
             self.atoms[self.natoms] = a
             
         # Setting new bonds

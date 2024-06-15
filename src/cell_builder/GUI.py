@@ -316,8 +316,8 @@ class cell_builder_GUI:
         self.tolerance_label.grid(column=5, row=0)
         
         # mixing_rule drop down menu
-        styles = ['tolerance', 'geometric', 'arithmetic', 'sixthpower']
-        self.mixing_rule = ttk.Combobox(self.random_frame, values=styles, width=int(maxwidth/11), font=font_settings)
+        styles = ['tolerance', 'geometric', 'arithmetic', 'sixthpower', 'geometric-min', 'arithmetic-min', 'sixthpower-min']
+        self.mixing_rule = ttk.Combobox(self.random_frame, values=styles, width=int(maxwidth/9), font=font_settings)
         self.mixing_rule.current(styles.index(mixing_rule))
         self.mixing_rule.grid(column=6, row=1)
         self.mixing_rule_label = tk.Label(self.random_frame, text='mixing_rule', font=font_settings)
