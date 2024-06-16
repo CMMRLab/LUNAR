@@ -96,7 +96,7 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 15June2024)
+LUNAR (version 16June2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -147,4 +147,26 @@ Date               Developer   Description
                                                   Currently, the manual found in the docs/ directory is not
                                                   updated with these new options, but the "Quick help" guide,
                                                   the IDE comments, and the commandline manual (accessible
-                                                  by python3 cell_builder.py -man) are updated.												  
+                                                  by python3 cell_builder.py -man) are updated.	
+
+16June2024         JDK         - cell_builder.py: Increased the efficiency of the "random" packing method.
+                                                  the new efficiency was tested by generating 32,175 atom EPON
+                                                  862 systems with fully-periodic boundaries and a tolerance
+                                                  of 2.0 angstrom:
+                                                      *Packed to: 0.10 gm/cm^3 in 3 seconds
+                                                      *Packed to: 0.20 gm/cm^3 in 3 seconds
+                                                      *Packed to: 0.30 gm/cm^3 in 3 seconds
+                                                      *Packed to: 0.40 gm/cm^3 in 8 seconds
+                                                      *Packed to: 0.50 gm/cm^3 in 48 seconds
+                                                      *Packed to: 0.57 gm/cm^3 in 9 minutes and 45 seconds
+                                                  and by generating 32,175 atom EPON 862 systems with non
+                                                  -periodic boundaries and a tolerance of 2.0 angstrom:
+                                                      *Packed to: 0.10 gm/cm^3 in 2 seconds
+                                                      *Packed to: 0.20 gm/cm^3 in 2 seconds
+                                                      *Packed to: 0.30 gm/cm^3 in 4 seconds
+                                                      *Packed to: 0.40 gm/cm^3 in 18 seconds
+                                                      *Packed to: 0.50 gm/cm^3 in 4 minutes and 49 seconds	
+                                                  Currently, the manual found in the docs/ directory is not
+                                                  updated with these new options, but the "Quick help" guide,
+                                                  the IDE comments, and the commandline manual (accessible
+                                                  by python3 cell_builder.py -man) are updated.													  

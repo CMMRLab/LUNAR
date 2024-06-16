@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.9
-June 14th, 2024
+June 16th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -96,8 +96,7 @@ def compute_system_density(sys, system_mass):
 #---------------------------------------------------#
 # Function to get domainID on pre-inserted molecule #
 #---------------------------------------------------#
-def update_linked_lst(sys, m, xshift, yshift, zshift, inside_box, linked_lst, domain):
-    guess = 1
+def update_linked_lst(sys, m, xshift, yshift, zshift, inside_box, linked_lst, domain, atoms2domain):
     for k in m.atoms:
         newID = k + sys.natoms
         newatom = m.atoms[k]
@@ -111,7 +110,7 @@ def update_linked_lst(sys, m, xshift, yshift, zshift, inside_box, linked_lst, do
             if newy >= sys.yhi: newy -= sys.ly
             if newz <= sys.zlo: newz += sys.lz
             if newz >= sys.zhi: newz -= sys.lz
-        domainID, guess = random_insertion.assign_atom_a_domainID(newx, newy, newz, guess, domain)
+        domainID = random_insertion.assign_atom_a_domainID(newx, newy, newz, atoms2domain)
         linked_lst[domainID].add(newID)
     return linked_lst
 
@@ -537,18 +536,28 @@ class constructor:
             # Find image flags, scaled images and boundary_conditions
             images, boundary_conditions = random_insertion.generate_iflags(boundary, log)
             scaled_images = [(ix*self.lx, iy*self.ly, iz*self.lz) for (ix, iy, iz) in images]
+            
+            # Setup wheter or not to mix atom sizes or use one tolerance value
+            mix_sigma = False
+            if isinstance(tolerance, int) and mixing_rule != 'tolerance':
+                mix_sigma = True
+            
+            # Find max atom size to use for setting domain size
+            atomsizes = set([tolerance])
+            if mix_sigma:
+                atomsizes = set()
+                for fileID in files:
+                    m = files[fileID]
+                    for i in m.atoms:
+                        atom = m.atoms[i]
+                        pair_coeff = m.pair_coeffs[atom.type].coeffs
+                        sigma = pair_coeff[tolerance]
+                        atomsizes.add(sigma)
                         
             # Generate domain_region (set roughly optimized domain_size based on box dimensions)
             start_time = time.time()
-            if self.lx <= 100 and self.ly <= 100 and self.lz <= 100:
-                domain_size = 8.0
-            elif self.lx <= 500 and self.ly <= 500 and self.lz <= 500:
-                domain_size = 16.0
-            elif self.lx <= 1000 and self.ly <= 1000 and self.lz <= 1000:
-                domain_size = 32.0
-            else:
-                domain_size = 64.0
-            domain_region, domain_graph = random_insertion.generate_domain(self, domain_size, scaled_images, pflag, log)
+            domain_size = 1.75*max(atomsizes)
+            domain_region, domain_graph, atoms2domain = random_insertion.generate_domain(self, domain_size, scaled_images, pflag, log)
             execution_time = (time.time() - start_time)
             if pflag: log.out('Time in seconds to generate domain and domain connectivity: ' + str(execution_time))
             
@@ -558,16 +567,10 @@ class constructor:
             
             # If adding_to_system, assign current atoms to domains and set radius from center of box
             if adding_to_system:
-                guess = 1 # intial guess for setting domainID
                 for i in self.atoms:
                     atom = self.atoms[i]
-                    domainID, guess = random_insertion.assign_atom_a_domainID(atom.x, atom.y, atom.z, guess, domain_region)
+                    domainID = random_insertion.assign_atom_a_domainID(atom.x, atom.y, atom.z, atoms2domain)
                     linked_lst[domainID].add(i)
-            
-            # Setup wheter or not to mix atom sizes or use one tolerance value
-            mix_sigma = False
-            if isinstance(tolerance, int) and mixing_rule != 'tolerance':
-                mix_sigma = True
                 
             # Log used mixing rule
             if pflag:
@@ -589,6 +592,7 @@ class constructor:
                     log.out("  want to apply a mixing rule, the tolerance should be set to 1. If attempting to")
                     log.out("  use a mixing rule to set the tolerance for atom overlap checks and no Pair Coeffs")
                     log.out("  exist in the read-in LAMMPS datafiles, the code will crash.")
+
 
                     
         #--------------------------------------------#
@@ -644,12 +648,12 @@ class constructor:
                     zshift = zshift_lst[random.randint(0, len(zshift_lst)-1)]
                     
                     # Check for overlap and determine if any part of the molecule is outside of the box
-                    overlap, inside_box, insert_molecule = random_insertion.check_for_overlap_and_inside_box(self, m, linked_lst, domain_region, domain_graph, xshift, yshift, zshift, phi,
-                                                                                                             theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images)
+                    overlap, inside_box, insert_molecule = random_insertion.check_for_overlap_and_inside_box(self, m, linked_lst, domain_region, domain_graph, xshift, yshift, zshift, phi, theta, psi,
+                                                                                                             tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images, atoms2domain) 
                     if insert_molecule and not overlap:
                         # Rotate molecule and add to system and update linked list and log that molecule was inserted
                         m = misc_functions.rotate_molecule(m, phi, theta, psi)
-                        linked_lst = update_linked_lst(self, m, xshift, yshift, zshift, inside_box, linked_lst, domain_region)
+                        linked_lst = update_linked_lst(self, m, xshift, yshift, zshift, inside_box, linked_lst, domain_region, atoms2domain)
                         if not grouping: molecule_insertion[fileid][0] += 1
 
                         # Add molecule to system and break out of maxtry loop

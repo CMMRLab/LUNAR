@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.1
-June 14th, 2024
+June 16th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -91,13 +91,15 @@ def generate_domain(sys, domain_size, scaled_images, pflag, log):
     if nxx == 0: nxx = 1
     if nyy == 0: nyy = 1
     if nzz == 0: nzz = 1
-    if pflag: log.out(f'Using {nxx} x {nyy} x {nzz} sub domains of size {domain_size} to perform domain decomposition')
     dx = sys.lx/nxx; dy = sys.ly/nyy; dz = sys.lz/nzz;
     halfdx = dx/2; halfdy = dy/2; halfdz = dz/2; ID = 0;
     xadd = halfdx + sys.xlo; yadd = halfdy + sys.ylo; zadd = halfdz + sys.zlo;
-    domain = {} # { domainID : (xlo, xhi, ylo, yhi, zlo, zhi, r, edgeflag) }
+    if pflag: log.out('Using {} x {} x {} sub domains of size {:.2f} x {:.2f} x {:.2f} to perform domain decomposition'.format(nxx, nyy, nzz, dx, dy, dz))
     if pflag: log.out('Finding domain to use cell linked list algorithm for interatomic distance calculations ...')
     ndomain = nxx*nyy*nzz; progress_increment = 10; count = 0;
+    domain = {} # { domainID : (xlo, xhi, ylo, yhi, zlo, zhi, r, edgeflag) }
+    indexes_forward = {} #{ domainID : (nx, ny, nz) }
+    indexes_reverse = {} #{ (nx, ny, nz) : domainID }
     for nx in range(nxx):
         for ny in range(nyy):
             for nz in range(nzz):
@@ -105,7 +107,7 @@ def generate_domain(sys, domain_size, scaled_images, pflag, log):
                 if pflag:
                     count += 1
                     if 100*count/ndomain % progress_increment == 0:
-                        if pflag: log.out('    progress: {} %'.format(int(100*count/ndomain)))
+                        log.out('    progress: {} %'.format(int(100*count/ndomain)))
                 
                 # Generate domain center
                 ID += 1
@@ -121,11 +123,22 @@ def generate_domain(sys, domain_size, scaled_images, pflag, log):
                 r = misc_functions.compute_distance(xc, yc, zc, cx, cy, cz)
                 edgeflag = check_near_edge(xc, yc, zc, domain_size, sys.xlo, sys.xhi, sys.ylo, sys.yhi, sys.zlo, sys.zhi)
                 domain[ID] = (xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r, edgeflag)
+                indexes_forward[ID] = (nx+1, ny+1, nz+1)
+                indexes_reverse[(nx+1, ny+1, nz+1)] = ID
+
                 
     # Find domain connectivity (graph)
+    def get_neighboring_indexes(ni, nii):
+        neighs = [ni]
+        if ni-1 < 1:
+            neighs.append(nii)
+        else: neighs.append(ni-1)
+        if ni+1 > nii: 
+            neighs.append(1)
+        else: neighs.append(ni+1)
+        return sorted(neighs)
     domain_graph = {ID:set() for ID in domain} # { ID : set(bonded IDs) }
     domain_graph[0] = {ID for ID in domain}
-    sub_domain = {i for i in domain}
     if pflag: log.out('Finding cell linked graph for interatomic distance calculations ...')
     progress_increment = 10; count = 0;
     for id1 in domain:
@@ -133,48 +146,66 @@ def generate_domain(sys, domain_size, scaled_images, pflag, log):
         if pflag:
             count += 1
             if 100*count/ndomain % progress_increment == 0:
-                if pflag: log.out('    progress: {} %'.format(int(100*count/ndomain)))
+                log.out('    progress: {} %'.format(int(100*count/ndomain)))
+                
         d1 = domain[id1]
         x1 = d1[6]; y1 = d1[7]; z1 = d1[8]; r1 = d1[9]; edge1 = d1[10];
         min_radius = r1 - 2*domain_size
         max_radius = r1 + 2*domain_size
-        sub_domain.remove(id1)
         if edge1: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=12)
-        for id2 in sub_domain:
-            if min_radius < domain[id2][9] < max_radius:
-                d2 = domain[id2]
-                x2 = d2[6]; y2 = d2[7]; z2 = d2[8]; edge2 = d2[10];
-                if edge1 and edge2: # periodic
-                    for x1i, y1i, z1i in periodic_postions:
-                        if abs(x1i - x2) > domain_size: continue
-                        elif abs(y1i - y2) > domain_size: continue
-                        elif abs(z1i - z2) > domain_size: continue
-                        domain_graph[id1].add(id2)
-                        domain_graph[id2].add(id1)
-                        break
-                else: # non-periodic
-                    if abs(x1 - x2) > domain_size: continue
-                    elif abs(y1 - y2) > domain_size: continue
-                    elif abs(z1 - z2) > domain_size: continue
-                    domain_graph[id1].add(id2)
-                    domain_graph[id2].add(id1)
-    return domain, domain_graph
+        nx, ny, nz = indexes_forward[id1]
+        nxs = get_neighboring_indexes(nx, nxx)
+        nys = get_neighboring_indexes(ny, nyy)
+        nzs = get_neighboring_indexes(nz, nzz)
+        for ix in nxs:
+            for iy in nys:
+                for iz in nzs:
+                    id2 = indexes_reverse[(ix, iy, iz)]
+                    if id1 == id2: continue
+                    if min_radius < domain[id2][9] < max_radius:
+                        d2 = domain[id2]
+                        x2 = d2[6]; y2 = d2[7]; z2 = d2[8]; edge2 = d2[10];
+                        if edge1 and edge2: # periodic
+                            for x1i, y1i, z1i in periodic_postions:
+                                if abs(x1i - x2) > domain_size: continue
+                                elif abs(y1i - y2) > domain_size: continue
+                                elif abs(z1i - z2) > domain_size: continue
+                                domain_graph[id1].add(id2)
+                                domain_graph[id2].add(id1)
+                                break
+                        else: # non-periodic
+                            if abs(x1 - x2) > domain_size: continue
+                            elif abs(y1 - y2) > domain_size: continue
+                            elif abs(z1 - z2) > domain_size: continue
+                            domain_graph[id1].add(id2)
+                            domain_graph[id2].add(id1)
+                            
+    # setup dict to hold info needed to assign atoms to domain
+    atoms2domain = {'indexes_forward':indexes_forward,
+                    'indexes_reverse':indexes_reverse,
+                    'cubes': [dx, dy, dz],
+                    'xlo': sys.xlo,
+                    'ylo': sys.ylo,
+                    'zlo': sys.zlo}
+    return domain, domain_graph, atoms2domain
 
 
 #####################################
 # Function to assing atom to domain #
 #####################################
-def assign_atom_a_domainID(x, y, z, guess, domain):
-    domainID = 0
-    xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r2, edgeflag = domain[guess]
-    if xlo_sub <= x <= xhi_sub and ylo_sub <= y <= yhi_sub and zlo_sub <= z <= zhi_sub:
-        domainID = guess
-    else:    
-        for j in domain:
-            xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r2, edgeflag = domain[j]
-            if xlo_sub <= x <= xhi_sub and ylo_sub <= y <= yhi_sub and zlo_sub <= z <= zhi_sub: 
-                domainID = j; guess = j; break
-    return domainID, guess
+def assign_atom_a_domainID(x, y, z, atoms2domain):
+    try:
+        xlo = atoms2domain['xlo']
+        ylo = atoms2domain['ylo']
+        zlo = atoms2domain['zlo']
+        cubes = atoms2domain['cubes']
+        indexes_reverse = atoms2domain['indexes_reverse']
+        nx = math.ceil( (x-xlo)/cubes[0] )
+        ny = math.ceil( (y-ylo)/cubes[0] )
+        nz = math.ceil( (z-zlo)/cubes[0] )
+        domainID = indexes_reverse[(nx, ny, nz)]
+    except: domainID = 0
+    return domainID
 
 
 #############################
@@ -200,7 +231,7 @@ def mix_LJ_sigmas(sigma1, sigma2, mixing_rule, tolerance):
 ############################################################
 # Function to check if atom overlaps any in current system #
 ############################################################
-def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images):
+def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images, atoms2domain):
     # Set default overlap, inside Boolean, and insert_molecule
     overlap = False; inside_box = True; insert_molecule = True
     
@@ -243,7 +274,6 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
     
     # Check for overlaps
     if sys.atoms and insert_molecule:
-        guess = 1 # domainID guess
         for id1 in m.atoms:
             if overlap: break
             atom1 = m.atoms[id1]
@@ -264,7 +294,7 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
                 if z1 >= sys.zhi: z1 -= sys.lz
             edgeflag = check_near_edge(x1, y1, z1, 1.1*half_atomsize, sys.xlo, sys.xhi, sys.ylo, sys.yhi, sys.zlo, sys.zhi)
             if edgeflag: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, sys.cx, sys.cy, sys.cz, Npos=12)
-            domainID, guess = assign_atom_a_domainID(x1, y1, z1, guess, domain)
+            domainID = assign_atom_a_domainID(x1, y1, z1, atoms2domain)
             domains = list(domain_graph[domainID]) + [domainID]
             for domainID_linked in domains:
                 if overlap: break
