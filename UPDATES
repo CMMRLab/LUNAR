@@ -185,4 +185,8 @@ Date               Developer   Description
                                                       *Packed to: 0.30 gm/cm^3 in 2 seconds
                                                       *Packed to: 0.40 gm/cm^3 in 5 seconds
                                                       *Packed to: 0.50 gm/cm^3 in 28 seconds
-                                                      *Packed to: 0.60 gm/cm^3 in 6 minute and 16 seconds													  												  												  
+                                                      *Packed to: 0.60 gm/cm^3 in 6 minute and 16 seconds	
+
+17June2024         JDK         - sheet_builder.py: Increased the efficiency for finding bonds (used some
+                                                   of the tricks found while optimizing the cell_builder 
+                                                   "random" method).													  

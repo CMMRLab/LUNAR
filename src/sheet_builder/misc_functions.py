@@ -413,15 +413,25 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
     if nxx == 0: nxx = 1
     if nyy == 0: nyy = 1
     if nzz == 0: nzz = 1
-    if pflag: log.out(f'  Using {nxx} x {nyy} x {nzz} sub domains of size {domain_size} to perform domain decomposition')
     dx = lx/nxx; dy = ly/nyy; dz = lz/nzz;
     halfdx = dx/2; halfdy = dy/2; halfdz = dz/2; ID = 0;
     xadd = halfdx + xlo; yadd = halfdy + ylo; zadd = halfdz + zlo;
+    if pflag: log.out('Using {} x {} x {} sub domains of size {:.2f} x {:.2f} x {:.2f} to perform domain decomposition'.format(nxx, nyy, nzz, dx, dy, dz))
+    ndomain = nxx*nyy*nzz; progress_increment = 10; count = 0;
     domain = {} # { domainID : (xlo, xhi, ylo, yhi, zlo, zhi, r, edgeflag) }
-    if pflag: log.out('  Finding domain to use cell linked list algorithm for interatomic distance calculations ...')
+    indexes_forward = {} #{ domainID : (nx, ny, nz) }
+    indexes_reverse = {} #{ (nx, ny, nz) : domainID }
+    cubes = [dx, dy, dz]
     for nx in range(nxx):
         for ny in range(nyy):
             for nz in range(nzz):
+                # # Optional printing of progress
+                # if pflag:
+                #     count += 1
+                #     if 100*count/ndomain % progress_increment == 0:
+                #         log.out('    progress: {} %'.format(int(100*count/ndomain)))
+                
+                # Generate domain center
                 ID += 1
                 xc = nx*dx + xadd
                 yc = ny*dy + yadd
@@ -435,38 +445,64 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
                 r = compute_distance(xc, yc, zc, cx, cy, cz)
                 edgeflag = check_near_edge(xc, yc, zc, domain_size, xlo, xhi, ylo, yhi, zlo, zhi)
                 domain[ID] = (xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r, edgeflag)
+                indexes_forward[ID] = (nx+1, ny+1, nz+1)
+                indexes_reverse[(nx+1, ny+1, nz+1)] = ID
+
                 
     # Find domain connectivity (graph)
-    domain_graph = {ID:set() for ID in domain} # { ID : set(bonded IDs) }
-    domain_graph[0] = set()
-    sub_domain = {i for i in domain}
+    def get_neighboring_indexes(ni, nii):
+        neighs = [ni]
+        if ni-1 < 1:
+            neighs.append(nii)
+        else: neighs.append(ni-1)
+        if ni+1 > nii: 
+            neighs.append(1)
+        else: neighs.append(ni+1)
+        return sorted(neighs)
     scaled_images = [(ix*lx, iy*ly, iz*lz) for (ix, iy, iz) in images]
+    domain_graph = {ID:set() for ID in domain} # { ID : set(bonded IDs) }
+    domain_graph[0] = {ID for ID in domain}
     if pflag: log.out('  Finding cell linked graph for interatomic distance calculations ...')
+    progress_increment = 10; count = 0;
     for id1 in domain:
+        # # Optional printing of progress
+        # if pflag:
+        #     count += 1
+        #     if 100*count/ndomain % progress_increment == 0:
+        #         log.out('    progress: {} %'.format(int(100*count/ndomain)))
+                
         d1 = domain[id1]
         x1 = d1[6]; y1 = d1[7]; z1 = d1[8]; r1 = d1[9]; edge1 = d1[10];
         min_radius = r1 - 2*domain_size
         max_radius = r1 + 2*domain_size
-        sub_domain.remove(id1)
         if edge1: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=12)
-        for id2 in sub_domain:
-            if min_radius < domain[id2][9] < max_radius:
-                d2 = domain[id2]
-                x2 = d2[6]; y2 = d2[7]; z2 = d2[8]; edge2 = d2[10];
-                if edge1 and edge2: # periodic
-                    for x1i, y1i, z1i in periodic_postions:
-                        if abs(x1i - x2) > domain_size: continue
-                        elif abs(y1i - y2) > domain_size: continue
-                        elif abs(z1i - z2) > domain_size: continue
-                        domain_graph[id1].add(id2)
-                        domain_graph[id2].add(id1)
-                        break
-                else: # non-periodic
-                    if abs(x1 - x2) > domain_size: continue
-                    elif abs(y1 - y2) > domain_size: continue
-                    elif abs(z1 - z2) > domain_size: continue
-                    domain_graph[id1].add(id2)
-                    domain_graph[id2].add(id1)
+        nx, ny, nz = indexes_forward[id1]
+        nxs = get_neighboring_indexes(nx, nxx)
+        nys = get_neighboring_indexes(ny, nyy)
+        nzs = get_neighboring_indexes(nz, nzz)
+        for ix in nxs:
+            for iy in nys:
+                for iz in nzs:
+                    id2 = indexes_reverse[(ix, iy, iz)]
+                    if id1 == id2: continue
+                    if min_radius < domain[id2][9] < max_radius:
+                        d2 = domain[id2]
+                        x2 = d2[6]; y2 = d2[7]; z2 = d2[8]; edge2 = d2[10];
+                        if edge1 and edge2: # periodic
+                            for x1i, y1i, z1i in periodic_postions:
+                                if abs(x1i - x2) > domain_size: continue
+                                elif abs(y1i - y2) > domain_size: continue
+                                elif abs(z1i - z2) > domain_size: continue
+                                domain_graph[id1].add(id2)
+                                domain_graph[id2].add(id1)
+                                break
+                        else: # non-periodic
+                            if abs(x1 - x2) > domain_size: continue
+                            elif abs(y1 - y2) > domain_size: continue
+                            elif abs(z1 - z2) > domain_size: continue
+                            domain_graph[id1].add(id2)
+                            domain_graph[id2].add(id1)
+                            
                         
     # Build linked list
     linked_lst = {i:set() for i in domain} # { domainID : atoms in domain }
@@ -476,7 +512,7 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
     failed_domain = set(); inner_atoms = set()
     
     if pflag: log.out('  Assigning atoms to each sub domain for interatomic distance calculations ...')
-    progress_increment = 10; count = 0; natoms = len(atoms); guess = 1
+    progress_increment = 10; count = 0; natoms = len(atoms)
     for i in atoms:
         inner_atoms.add(i)
         atom = atoms[i]
@@ -487,16 +523,14 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
             if pflag: log.out('    progress: {} %'.format(int(100*count/natoms)))
             
         # Assign to domain
-        xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r2, edgeflag = domain[guess]
-        if xlo_sub <= x <= xhi_sub and ylo_sub <= y <= yhi_sub and zlo_sub <= z <= zhi_sub:
-            linked_lst[guess].add(i); atom_domain[i] = guess;
-        else:    
-            for j in domain:
-                xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r2, edgeflag = domain[j]
-                if xlo_sub <= x <= xhi_sub and ylo_sub <= y <= yhi_sub and zlo_sub <= z <= zhi_sub: 
-                    linked_lst[j].add(i); atom_domain[i] = j; guess = j; break
-            if atom_domain[i] == 0: failed_domain.add(j)
-            
+        try:
+            nx = math.ceil( (x-xlo)/cubes[0] )
+            ny = math.ceil( (y-ylo)/cubes[0] )
+            nz = math.ceil( (z-zlo)/cubes[0] )
+            domainID = indexes_reverse[(nx, ny, nz)]
+        except: domainID = 0
+        linked_lst[domainID].add(i)
+        
         # check if atom is outside of box and assign to every domain if it is outside of the box
         outside = False
         if atom.x <= xlo: outside = True
