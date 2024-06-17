@@ -201,8 +201,8 @@ def assign_atom_a_domainID(x, y, z, atoms2domain):
         cubes = atoms2domain['cubes']
         indexes_reverse = atoms2domain['indexes_reverse']
         nx = math.ceil( (x-xlo)/cubes[0] )
-        ny = math.ceil( (y-ylo)/cubes[0] )
-        nz = math.ceil( (z-zlo)/cubes[0] )
+        ny = math.ceil( (y-ylo)/cubes[1] )
+        nz = math.ceil( (z-zlo)/cubes[2] )
         domainID = indexes_reverse[(nx, ny, nz)]
     except: domainID = 0
     return domainID
