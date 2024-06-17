@@ -166,7 +166,23 @@ Date               Developer   Description
                                                       *Packed to: 0.30 gm/cm^3 in 4 seconds
                                                       *Packed to: 0.40 gm/cm^3 in 18 seconds
                                                       *Packed to: 0.50 gm/cm^3 in 4 minutes and 49 seconds	
-                                                  Currently, the manual found in the docs/ directory is not
-                                                  updated with these new options, but the "Quick help" guide,
-                                                  the IDE comments, and the commandline manual (accessible
-                                                  by python3 cell_builder.py -man) are updated.													  
+
+17June2024         JDK         - cell_builder.py: Increased the efficiency of the "random" packing method.
+                                                  the new efficiency was tested by generating 32,175 atom EPON
+                                                  862 systems with fully-periodic boundaries and a tolerance
+                                                  of 2.0 angstrom:
+                                                      *Packed to: 0.10 gm/cm^3 in 3 seconds
+                                                      *Packed to: 0.20 gm/cm^3 in 2 seconds
+                                                      *Packed to: 0.30 gm/cm^3 in 2 seconds
+                                                      *Packed to: 0.40 gm/cm^3 in 4 seconds
+                                                      *Packed to: 0.50 gm/cm^3 in 10 seconds
+                                                      *Packed to: 0.60 gm/cm^3 in 1 minute and 17 seconds
+                                                      *Packed to: 0.70 gm/cm^3 in 22 minutes and 36 seconds
+                                                  and by generating 32,175 atom EPON 862 systems with non
+                                                  -periodic boundaries and a tolerance of 2.0 angstrom:
+                                                      *Packed to: 0.10 gm/cm^3 in 3 seconds
+                                                      *Packed to: 0.20 gm/cm^3 in 2 seconds
+                                                      *Packed to: 0.30 gm/cm^3 in 2 seconds
+                                                      *Packed to: 0.40 gm/cm^3 in 5 seconds
+                                                      *Packed to: 0.50 gm/cm^3 in 28 seconds
+                                                      *Packed to: 0.60 gm/cm^3 in 6 minute and 16 seconds													  												  												  

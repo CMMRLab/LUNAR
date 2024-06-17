@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.9
-June 16th, 2024
+June 17th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -519,12 +519,17 @@ class constructor:
             if not xshift_lst: log.error(f'ERROR domain = {domain} in X-direction is not large enough to insert even a single molecule. Increase X-direction.')
             if not yshift_lst: log.error(f'ERROR domain = {domain} in Y-direction is not large enough to insert even a single molecule. Increase Y-direction.')
             if not zshift_lst: log.error(f'ERROR domain = {domain} in Z-direction is not large enough to insert even a single molecule. Increase Z-direction.')
-                            
+            
+            # sort fileIDs to insert largest spans and largest masses first (easier and quicker packing for system with varying molecule sizes)
+            molecules = {i:(files[i].maxspan, compute_system_mass(files[i])) for i in files} # { fileID :  (molecule-span, system-mass)}
+            molecules = dict(sorted(molecules.items(), key=lambda x:abs(x[1][1]), reverse=True )) # [0=keys;1=values][1=index position in value tuple]
+            molecules = dict(sorted(molecules.items(), key=lambda x:abs(x[1][0]), reverse=True )) # [0=keys;1=values][0=index position in value tuple]
+            
             # Generate "dup2file" and "dup2grid" as if we where to add molecules to a cubic lattice
             dupID = 0 # to keep track of duplicationIDs (starts from 1)
             dup2file = {} # { dupID : fileID used in location }
             dup2grid = {} # { dupID : gridID }
-            for fileID in files:
+            for fileID in molecules:
                 if qtys[fileID] == 0: continue
                 for qty in range(qtys[fileID]):
                     for i in range(duplicate):
@@ -604,6 +609,7 @@ class constructor:
         rz = generate_incremented_lst({'start':0, 'end':max_rotations['z'], 'increment': rotation_increment})
         if pflag: log.out('\n\nGenerating new simulation cell ....')
         progress_increment = 5; count = 0; ndups = len(dup2grid);
+        nevery = math.ceil(ndups*(progress_increment/100))
         attempts_to_insert = []; failed = 0;
         for ID in dup2grid:            
             # Generate molecules on a lattice
@@ -648,8 +654,7 @@ class constructor:
                     zshift = zshift_lst[random.randint(0, len(zshift_lst)-1)]
                     
                     # Check for overlap and determine if any part of the molecule is outside of the box
-                    overlap, inside_box, insert_molecule = random_insertion.check_for_overlap_and_inside_box(self, m, linked_lst, domain_region, domain_graph, xshift, yshift, zshift, phi, theta, psi,
-                                                                                                             tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images, atoms2domain) 
+                    overlap, inside_box, insert_molecule = random_insertion.overlap_check_serial(self, m, linked_lst, domain_region, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images, atoms2domain) 
                     if insert_molecule and not overlap:
                         # Rotate molecule and add to system and update linked list and log that molecule was inserted
                         m = misc_functions.rotate_molecule(m, phi, theta, psi)
@@ -670,7 +675,7 @@ class constructor:
             # Optional printing of progress
             if pflag:
                 count += 1
-                if 100*count/ndups % progress_increment == 0:
+                if count % nevery == 0 or count == ndups:
                     current_percent = int(100*count/ndups)
                     current_density = '{:.5f} g/cc'.format(round(compute_system_density(self, self.system_mass), 5))
                     current_time = '{:10.4f} seconds,'.format(time.time() - start_time)

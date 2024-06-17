@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.9
-June 16th, 2024
+June 17th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -43,7 +43,7 @@ def main(topofiles, force_field_joining, duplicate, distance_scale, newfile, ato
     ########################################################
     # set version and print starting information to screen #
     ########################################################
-    version = 'v1.9 / 14 June 2024'
+    version = 'v1.9 / 17 June 2024'
     log.out(f'\n\nRunning cell_builder {version}')
     log.out(f'Using Python version {sys.version}')
     

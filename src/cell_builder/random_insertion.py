@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.1
-June 16th, 2024
+June 17th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -216,22 +216,28 @@ def mix_LJ_sigmas(sigma1, sigma2, mixing_rule, tolerance):
     mixed_atomsize = tolerance
     if 'arithmetic' in mixing_rule:
         mixed_atomsize = 0.5*(sigma1 + sigma2)
+        # typically used with 12-6 LJ, which has minimum energy at 2**(1/6) or 1.12 of sigma
+        if 'min' in mixing_rule:
+            mixed_atomsize = (2**(1/6))*mixed_atomsize
     elif 'geometric' in mixing_rule:
         mixed_atomsize = math.sqrt(sigma1*sigma2)
+        # typically used with 12-6 LJ, which has minimum energy at 2**(1/6) or 1.12 of sigma
+        if 'min' in mixing_rule:
+            mixed_atomsize = (2**(1/6))*mixed_atomsize
     elif 'sixthpower' in mixing_rule:
         mixed_atomsize = (0.5*(sigma1**6 + sigma2**6))**(1/6)
+        # typically used with 9-6 LJ, which has minimum energy at (1.5)**(1/3) or 1.14 of sigma
+        if 'min' in mixing_rule:
+            mixed_atomsize = (1.5)**(1/3)*mixed_atomsize
     else:
         raise Exception(f"ERROR mixing_rule = {mixing_rule} is not supported. Currently supported rules: 'geometric' or 'arithmetic' or 'sixthpower' or 'geometric-min' or 'arithmetic-min' or 'sixthpower-min'")
-    if 'min' in mixing_rule:
-        # both 9-6 and 12-6 LJ have minimum energy at 2**(1/6) or 1.12 of sigma as the sixth power is the respulive portion of the LJ-potential
-        mixed_atomsize = (2**(1/6))*mixed_atomsize
     return mixed_atomsize
 
 
-############################################################
-# Function to check if atom overlaps any in current system #
-############################################################
-def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images, atoms2domain):
+####################################################################
+# Function to check if atom overlaps any in current system: serial #
+####################################################################
+def overlap_check_serial(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images, atoms2domain):
     # Set default overlap, inside Boolean, and insert_molecule
     overlap = False; inside_box = True; insert_molecule = True
     
@@ -326,3 +332,135 @@ def check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, x
                             overlap = True
                             break
     return overlap, inside_box, insert_molecule
+
+
+######################################################################
+# Function to check if atom overlaps any in current system: parallel #
+######################################################################
+# Function to use for multiprocesing
+def overlap_multiprocessing(sys, m, atoms, mix_sigma, tolerance, mixing_rule, RzRyRx, xshift, yshift, zshift, inside_box, scaled_images, atoms2domain, domain_graph, linked_lst):
+    # Set mixed and half atom size from tolerance and update later if mix_sigma Boolean Pair Coeffs
+    mixed_atomsize = tolerance; half_atomsize = tolerance/2
+    
+    # Check for overlaps
+    overlap = False
+    for id1 in atoms:
+        if overlap: break
+        atom1 = m.atoms[id1]
+        if mix_sigma:
+            pair_coeff1 = m.pair_coeffs[atom1.type].coeffs
+            sigma1 = pair_coeff1[tolerance]
+            half_atomsize = pair_coeff1[tolerance]/2
+        x1, y1, z1 = misc_functions.vector_by_matrix(RzRyRx, [atom1.x, atom1.y, atom1.z])
+        x1 += xshift
+        y1 += yshift
+        z1 += zshift
+        if not inside_box:
+            if x1 <= sys.xlo: x1 += sys.lx
+            if x1 >= sys.xhi: x1 -= sys.lx
+            if y1 <= sys.ylo: y1 += sys.ly
+            if y1 >= sys.yhi: y1 -= sys.ly
+            if z1 <= sys.zlo: z1 += sys.lz
+            if z1 >= sys.zhi: z1 -= sys.lz
+        edgeflag = check_near_edge(x1, y1, z1, 1.1*half_atomsize, sys.xlo, sys.xhi, sys.ylo, sys.yhi, sys.zlo, sys.zhi)
+        if edgeflag: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, sys.cx, sys.cy, sys.cz, Npos=12)
+        domainID = assign_atom_a_domainID(x1, y1, z1, atoms2domain)
+        domains = list(domain_graph[domainID]) + [domainID]
+        for domainID_linked in domains:
+            if overlap: break
+            neighboring_atoms = linked_lst[domainID_linked]
+            for id2 in neighboring_atoms:
+                atom2 = sys.atoms[id2]
+                x2 = atom2.x
+                y2 = atom2.y
+                z2 = atom2.z
+                if mix_sigma:
+                    pair_coeff2 = atom2.pair_coeff
+                    sigma2 = pair_coeff2[tolerance]
+                    mixed_atomsize = mix_LJ_sigmas(sigma1, sigma2, mixing_rule, tolerance)
+                if edgeflag:
+                    for x1i, y1i, z1i in periodic_postions:
+                        if abs(x1i - x2) > mixed_atomsize: continue
+                        elif abs(y1i - y2) > mixed_atomsize: continue
+                        elif abs(z1i - z2) > mixed_atomsize: continue
+                        distance = misc_functions.compute_distance(x1i, y1i, z1i, x2, y2, z2)
+                        if distance <= mixed_atomsize:
+                            overlap = True
+                            break
+                else:
+                    if abs(x1 - x2) > mixed_atomsize: continue
+                    elif abs(y1 - y2) > mixed_atomsize: continue
+                    elif abs(z1 - z2) > mixed_atomsize: continue
+                    distance = misc_functions.compute_distance(x1, y1, z1, x2, y2, z2)
+                    if distance <= mixed_atomsize:
+                        overlap = True
+                        break
+    return overlap
+
+# Funtion to divide atoms list into chunks
+def divide_chunks(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+# Function to that will glue all multiprocessing functions together
+def overlap_check_parallel(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images, atoms2domain, np):
+    # These will only be imported if parallel overlap checks get called
+    #from concurrent.futures import ProcessPoolExecutor
+    from concurrent.futures import ThreadPoolExecutor
+    from concurrent.futures import as_completed
+    
+    # Set default overlap, inside Boolean, and insert_molecule
+    overlap = False; inside_box = True; insert_molecule = True
+    
+    # Set mixed and half atom size from tolerance and update later if mix_sigma Boolean Pair Coeffs
+    half_atomsize = tolerance/2
+    
+    # Find rotational matrix
+    RzRy = misc_functions.matrix_by_matrix(misc_functions.Rz(psi), misc_functions.Ry(theta))
+    RzRyRx = misc_functions.matrix_by_matrix(RzRy, misc_functions.Rx(phi))
+
+    # Check if molecule is inside the box
+    for id1 in m.atoms:
+        atom1 = m.atoms[id1]
+        if mix_sigma:
+            pair_coeff1 = m.pair_coeffs[atom1.type].coeffs
+            half_atomsize = pair_coeff1[tolerance]/2
+        x1, y1, z1 = misc_functions.vector_by_matrix(RzRyRx, [atom1.x, atom1.y, atom1.z])
+        x1 += xshift
+        y1 += yshift
+        z1 += zshift
+        if x1 <= sys.xlo + half_atomsize:
+            if boundary_conditions[0] == 'f': insert_molecule = False
+            inside_box = False
+        if x1 >= sys.xhi - half_atomsize:
+            if boundary_conditions[0] == 'f': insert_molecule = False
+            inside_box = False
+        if y1 <= sys.ylo + half_atomsize:
+            if boundary_conditions[1] == 'f': insert_molecule = False
+            inside_box = False
+        if y1 >= sys.yhi - half_atomsize:
+            if boundary_conditions[1] == 'f': insert_molecule = False
+            inside_box = False
+        if z1 <= sys.zlo + half_atomsize:
+            if boundary_conditions[2] == 'f': insert_molecule = False
+            inside_box = False
+        if z1 >= sys.zhi - half_atomsize:
+            if boundary_conditions[2] == 'f': insert_molecule = False
+            inside_box = False
+        if not insert_molecule: break
+    
+    # Check for overlaps
+    if sys.atoms and insert_molecule:
+        atoms = list(m.atoms.keys())
+        nchunks = math.ceil(len(atoms)/np)
+        overlaps = set()
+        #with ProcessPoolExecutor() as exe:
+        with ThreadPoolExecutor() as exe:
+            results = [exe.submit(overlap_multiprocessing, sys, m, chunked_atoms, mix_sigma, tolerance, mixing_rule, RzRyRx, xshift, yshift, zshift, inside_box, scaled_images, atoms2domain, domain_graph, linked_lst) for chunked_atoms in divide_chunks(atoms, nchunks)]
+            for n, result in enumerate(as_completed(results)):
+                overlap = result.result()
+                overlaps.add(overlap)
+        if True in overlaps:
+            overlap = True
+    return overlap, inside_box, insert_molecule
+

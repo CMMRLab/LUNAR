@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.9
-June 14th, 2024
+June 17th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -228,8 +228,9 @@ domain = 'cubic'
 #                          PCFF).                                                                             #
 #            '-min'        NOTE: the '-min' ending can be appended to 'geometric' or 'arithmetic' or          #
 #                          'sixthpower' to create 'geometric-min' or 'arithmetic-min' or 'sixthpower-min',    #
-#                          which will multiple the mixed LJ-sigma values by 2^(1/6) to set the overlap        #
-#                          condition to place molecules with vdw energy at the LJ-minimum.                    #
+#                          which will multiply the mixed LJ-sigma values by 2^(1/6) for 'geometric' and       #
+#                          'arithmetic'or 1.5^(1/3) for 'sixthpower' to set the overlap condition to place    #
+#                          molecules with vdw energy at the LJ-minimum.                                       #
 #         The 'sixthpower' mixing rule is the most 'conservative' as it generates the largest mixed LJ sigma  #
 #         parameters and thus can ensure no overlapped atoms not matter what mixing rule ends up being        #
 #         applied in LAMMPS. Thus the 'sixthpower' mixing rule can be a good default. Examples:               #
