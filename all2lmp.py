@@ -159,14 +159,14 @@ GUI_zoom = 100
 # atom name column of the .pdb file and then apply those atom types to the system. This method requires manual editing of the #
 # .pdb file and is mainly meant for an integration method with packmol, since packmol will maintain the atom name column.     #
 # Plese look in EXAMPLES/packmol_pdb_methods/atom_name_as_atom_type for an example water test of this method. Settings:       #
-# 	topofile = 'EXAMPLES/packmol_pdb_methods/atom_name_as_atom_type/water_packmol_atom_name_as_atom_type.pdb'                 #
-#	nta_file = 'types_from_pdb.nta'                                                                                           #
+#   topofile = 'EXAMPLES/packmol_pdb_methods/atom_name_as_atom_type/water_packmol_atom_name_as_atom_type.pdb'                 #
+#   nta_file = 'types_from_pdb.nta'                                                                                           #
 #                                                                                                                             #
 # Update topofile, nta_file, frc_file, and assumed as needed.                                                                 #
 ###############################################################################################################################
 topofile = 'EXAMPLES/EPON_862/atom_typing_Outputs/detda_typed.data'
 nta_file = 'EXAMPLES/EPON_862/atom_typing_Outputs/detda_typed.nta'
-frc_file = 'frc_files/pcff.frc'
+frc_file = 'frc_files/pcff_iff_v1_5_CNT_poly_solv_hpan_hc_mod.frc'
 assumed = 'frc_files/general_assumed_equivs.coeffs'
 
 
