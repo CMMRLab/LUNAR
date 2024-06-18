@@ -546,6 +546,10 @@ class constructor:
             mix_sigma = False
             if isinstance(tolerance, int) and mixing_rule != 'tolerance':
                 mix_sigma = True
+                
+            # Check if mix_sigma and mixing_rule are consistent
+            if not mix_sigma and mixing_rule in ['geometric', 'arithmetic', 'sixthpower', 'geometric-min', 'arithmetic-min', 'sixthpower-min']:
+                log.error(f'ERROR mixing_rule {mixing_rule} requires tolerance to be an integer (usually 1 for 9-6 or 12-6 Pair Coeffs). tolerance is {tolerance}.')
             
             # Find max atom size to use for setting domain size
             atomsizes = set([tolerance])
