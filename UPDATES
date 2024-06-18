@@ -189,4 +189,13 @@ Date               Developer   Description
 
 17June2024         JDK         - sheet_builder.py: Increased the efficiency for finding bonds (used some
                                                    of the tricks found while optimizing the cell_builder 
-                                                   "random" method).													  
+                                                   "random" method).			
+
+-------------------------------------------------------------------------------------------------------------
+LUNAR (version 18June2024)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+18June2024         JDK         - LUNAR.py: Made LUNAR.py compatible with the new cell_builder.py.
+
+18June2024         JDK         - atom_typing.py: Corrected a typo in the "Quick help" page.										   

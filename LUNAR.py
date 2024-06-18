@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-June 4th, 2024
+June 11th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -236,7 +236,8 @@ class LUNAR:
 
         # Run cell_builder_GUI
         cell_builder_GUI(cb.files, cb.force_field_joining, cb.duplicate, cb.distance_scale, cb.newfile, cb.atom_style, cb.parent_directory, cb.max_rotations, cb.reset_molids,
-                         cb.unwrap_atoms_via_image_flags, cb.include_type_labels, cb.group_monomers_locally, cb.seed, cb.domain, self.GUI_zoom, nfiles=cb.maxfiles, scroll_bar=cb.scroll_bar)
+                         cb.unwrap_atoms_via_image_flags, cb.include_type_labels, cb.group_monomers_locally, cb.seed, cb.domain, cb.maxtry, cb.tolerance, cb.mixing_rule,
+                         cb.boundary, self.GUI_zoom, nfiles=cb.maxfiles, scroll_bar=cb.scroll_bar)
         return
     
     # add_pi_electrons GUI Run

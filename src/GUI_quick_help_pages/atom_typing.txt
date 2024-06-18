@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 5/2/2024
+# Last edited 6/18/2024
 #
 ************
 * Overview *
@@ -25,7 +25,7 @@
   topofile   
     Button to load in a file defining atomic positions and bonding connectivity. You may also directly type the filename in the entry to the
     right of the button as well. The supported file extensions are:
-      .data  or  .mol  or  .mol2  or  .sdf  or  .pdf  or  .smiles
+      .data  or  .mol  or  .mol2  or  .sdf  or  .pdb  or  .smiles
     Using the .smiles extension requires rdkit to be installed where you may supply a SMILES string as CCC1=CC(=C(C(=C1N)C)N)CC.smiles, which
     will generate the atomic positions using rdkit and assign atom types.
 	  
