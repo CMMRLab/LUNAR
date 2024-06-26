@@ -201,4 +201,6 @@ Date               Developer   Description
 18June2024         JDK         - atom_typing.py: Corrected a typo in the "Quick help" page.	
 
 26June2024         JDK         - atom_typing.py and all2lmp.py: Updated mol2lmp.py to be able to read .mol
-                                                                files in V2000 or V3000 format.										   
+                                                                files in V2000 or V3000 format.	
+
+26June2024         JDK         - atom_typing.py: adjusted velocity transfer bug																
