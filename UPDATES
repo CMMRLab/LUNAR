@@ -192,10 +192,13 @@ Date               Developer   Description
                                                    "random" method).			
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 18June2024)
+LUNAR (version 26June2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
 18June2024         JDK         - LUNAR.py: Made LUNAR.py compatible with the new cell_builder.py.
 
-18June2024         JDK         - atom_typing.py: Corrected a typo in the "Quick help" page.										   
+18June2024         JDK         - atom_typing.py: Corrected a typo in the "Quick help" page.	
+
+26June2024         JDK         - atom_typing.py and all2lmp.py: Updated mol2lmp.py to be able to read .mol
+                                                                files in V2000 or V3000 format.										   

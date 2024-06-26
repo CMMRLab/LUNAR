@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.3
-March 6th, 2024
+Revision 1.4
+June 26th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -40,6 +40,7 @@ a large number of file types to a lammps datafile.
 
 Format of .mol files from (character spacing):
     http://biotech.fyicenter.com/1000024_SDF_File_Format_Specification.html
+    http://biotech.fyicenter.com/1000250_What_Is_SDF_Mol_V3000_File_Format.html
 """
 
 
@@ -75,58 +76,102 @@ class read_mol:
             
             # Initializing flags
             info_flag = False; atoms_flag = False; bonds_flag = False;
-            atom_id = 0; bond_id = 0; natoms = False;
+            atom_id = 0; bond_id = 0; natoms = False; v2000 = False; v3000 = False
             
             # Looping through each line of the .mol file
             for n, line in enumerate(f):
                 
-                # Split every 3 chars to get natoms
+                # Split every 3 chars to get natoms for V2000 format
                 char_lst = [line[i:i+3] for i in range(0, len(line), 3)]
                 
                 # Setting flags
                 if char_lst == ['\n'] or line == '' or line == '\n':
                     info_flag = False; atoms_flag = False; bonds_flag = False;
-                if 'V2000' in line or n == 3:
-                    info_flag = True; natoms = int(char_lst[0].strip());
-                elif line != '' and n >= 4:
-                    info_flag = False; atoms_flag = True;
-                if line != '' and is_integer(char_lst[0].strip()) and natoms and n > 3+natoms:
-                    atoms_flag = False; bonds_flag = True;
-                if 'END' in line and 'M' in line and n > 3:
-                    atoms_flag = False; bonds_flag = False; break;
-    
+                if 'V2000' in line or 'V3000' in line or n == 3:
+                    info_flag = True; 
+                    if 'V2000' in line:
+                        natoms = int(char_lst[0].strip()); v2000 = True
+                    elif 'V3000' in line:
+                        natoms = 0; v3000 = True
+                    else: raise Exception(f'ERROR could not determine if {inmolfile} is V2000 or V3000 format')
                 
-                # Finding atom and bond info
-                if info_flag:
-                    # Find char_lst be splitting every 3-characters and then split whitespace from needed info
-                    char_lst = [line[i:i+3] for i in range(0, len(line), 3)] # Split every 3 chars to get natoms and nbonds
-                    self.natoms = int(char_lst[0].strip())
-                    self.nbonds = int(char_lst[1].strip())
-                    natoms = self.natoms
-                if atoms_flag:
-                    try:
-                        atom_id += 1
-                        a = Atom_mol()
-                        char_coords = [line[i:i+10] for i in range(0, len(line), 10)] # Split every 10 chars to get coords
-                        if len(char_coords) >= 4:
-                            char_element = line[30:33] # Split line at 30-33 chars to get element
-                            a.x = float(char_coords[0].strip())
-                            a.y = float(char_coords[1].strip())
-                            a.z = float(char_coords[2].strip())
-                            a.element = str(char_element.strip())
-                            self.atoms[atom_id] = a
-                        else: atoms_flag = False
-                    except: print(f'WARNING can not read line number {n} -> ', line)
-                if bonds_flag:
-                    char_bonds = [line[i:i+3] for i in range(0, len(line), 3)] # Split every 3 chars to get bonds
-                    if len(char_bonds) >= 3:
+                # Parse the V2000 format
+                if v2000:
+                    if line != '' and n >= 4:
+                        info_flag = False; atoms_flag = True;
+                    if line != '' and is_integer(char_lst[0].strip()) and natoms and n > 3+natoms:
+                        atoms_flag = False; bonds_flag = True;
+                    if 'END' in line and 'M' in line and n > 3:
+                        atoms_flag = False; bonds_flag = False; break;
+    
+                    # Finding atom and bond info
+                    if info_flag:
+                        # Find char_lst be splitting every 3-characters and then split whitespace from needed info
+                        char_lst = [line[i:i+3] for i in range(0, len(line), 3)] # Split every 3 chars to get natoms and nbonds
+                        self.natoms = int(char_lst[0].strip())
+                        self.nbonds = int(char_lst[1].strip())
+                        natoms = self.natoms
+                    if atoms_flag:
                         try:
-                            bond_id += 1; b = Bond_mol();
-                            b.atomids = [int(char_bonds[0].strip()), int(char_bonds[1].strip())]
-                            #b.type = char_bonds[2].strip()
+                            atom_id += 1
+                            a = Atom_mol()
+                            char_coords = [line[i:i+10] for i in range(0, len(line), 10)] # Split every 10 chars to get coords
+                            if len(char_coords) >= 4:
+                                char_element = line[30:33] # Split line at 30-33 chars to get element
+                                a.x = float(char_coords[0].strip())
+                                a.y = float(char_coords[1].strip())
+                                a.z = float(char_coords[2].strip())
+                                a.element = str(char_element.strip())
+                                self.atoms[atom_id] = a
+                            else: atoms_flag = False
+                        except: print(f'WARNING can not read line number {n} -> ', line)
+                    if bonds_flag:
+                        char_bonds = [line[i:i+3] for i in range(0, len(line), 3)] # Split every 3 chars to get bonds
+                        if len(char_bonds) >= 3:
+                            try:
+                                bond_id += 1; b = Bond_mol();
+                                b.atomids = [int(char_bonds[0].strip()), int(char_bonds[1].strip())]
+                                #b.type = char_bonds[2].strip()
+                                self.bonds[bond_id] = b
+                            except: print(f'WARNING can not read line number {n} -> ', line)
+                        else: bonds_flag = False
+                        
+                # Parse the V3000 format
+                if v3000:
+                    line_split = line.split()
+                    if line != '' and n >= 4 and 'BEGIN' in line and 'ATOM' in line:
+                        info_flag = False; atoms_flag = True; continue
+                    if 'END' in line and 'ATOM' in line: atoms_flag = False
+                    
+                    if line != '' and n >= 4 and 'BEGIN' in line and 'BOND' in line:
+                        info_flag = False; bonds_flag = True; continue
+                    if 'END' in line and 'BOND' in line: bonds_flag = False
+                    
+                    if 'END' in line and 'M' in line and len(line_split) == 2:
+                        atoms_flag = False; bonds_flag = False; break;
+
+                    # Finding atom and bond info
+                    if info_flag and 'M' in line and 'V30' in line and 'COUNTS' in line:
+                        self.natoms = int(line_split[3])
+                        self.nbonds = int(line_split[4])
+                    if atoms_flag:
+                        try:
+                            a = Atom_mol()
+                            atom_id = int(line_split[2])
+                            a.element = str(line_split[3])
+                            a.x = float(line_split[4])
+                            a.y = float(line_split[5])
+                            a.z = float(line_split[6])
+                            self.atoms[atom_id] = a
+                        except: print(f'WARNING can not read line number {n} -> ', line)
+                    if bonds_flag:
+                        try:
+                            b = Bond_mol()
+                            bond_id = int(line_split[2])
+                            b.atomids = [int(line_split[4]), int(line_split[5])]
+                            b.type = line_split[3]
                             self.bonds[bond_id] = b
                         except: print(f'WARNING can not read line number {n} -> ', line)
-                    else: bonds_flag = False
 
 
 ##################################################
@@ -238,5 +283,4 @@ class Molecule_File:
         # Set box dimensions string
         self.xbox_line = '{:^15.10f} {:^15.10f} {:^5} {:5}'.format(xlo, xhi, 'xlo', 'xhi')
         self.ybox_line = '{:^15.10f} {:^15.10f} {:^5} {:5}'.format(ylo, yhi, 'ylo', 'yhi')
-        self.zbox_line = '{:^15.10f} {:^15.10f} {:^5} {:5}'.format(zlo, zhi, 'zlo', 'zhi')
-        
+        self.zbox_line = '{:^15.10f} {:^15.10f} {:^5} {:5}'.format(zlo, zhi, 'zlo', 'zhi')        
