@@ -521,7 +521,7 @@ class constructor:
             if not zshift_lst: log.error(f'ERROR domain = {domain} in Z-direction is not large enough to insert even a single molecule. Increase Z-direction.')
             
             # sort fileIDs to insert largest spans and largest masses first (easier and quicker packing for system with varying molecule sizes)
-            molecules = {i:(files[i].maxspan, compute_system_mass(files[i])) for i in files} # { fileID :  (molecule-span, system-mass)}
+            molecules = {i:(files[i].maxspan, compute_system_mass(files[i])) for i in files if qtys[i] != 0} # { fileID :  (molecule-span, system-mass)}
             molecules = dict(sorted(molecules.items(), key=lambda x:abs(x[1][1]), reverse=True )) # [0=keys;1=values][1=index position in value tuple]
             molecules = dict(sorted(molecules.items(), key=lambda x:abs(x[1][0]), reverse=True )) # [0=keys;1=values][0=index position in value tuple]
             
