@@ -5,8 +5,8 @@
          type labels, headers, triclinic support, morse/
          harmonic support, moved mass instance to be called
          from Coeff_class, added ability to read style hints)
-Revision 3.6
-March 7th, 2024
+Revision 3.7
+June 27th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49913
@@ -385,7 +385,7 @@ class Molecule_File:
                 self.xz = float(line[1])
                 self.yz = float(line[2])
                 continue                   
-            elif line == 'Masses':
+            elif line == 'Masses' and self.natomtypes > 0:
                 self.mass_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.atom_type_labels_forward
@@ -393,7 +393,7 @@ class Molecule_File:
                 coeffs = self.masses
                 skip = 1
                 continue
-            elif line == 'Pair Coeffs':
+            elif line == 'Pair Coeffs' and self.natomtypes > 0:
                 self.pair_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.atom_type_labels_forward
@@ -401,7 +401,7 @@ class Molecule_File:
                 coeffs = self.pair_coeffs
                 skip = 1
                 continue
-            elif line == 'Bond Coeffs':
+            elif line == 'Bond Coeffs' and self.nbondtypes > 0:
                 self.bond_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.bond_type_labels_forward
@@ -409,7 +409,7 @@ class Molecule_File:
                 coeffs = self.bond_coeffs
                 skip = 1
                 continue
-            elif line == 'Angle Coeffs':
+            elif line == 'Angle Coeffs' and self.nangletypes > 0:
                 self.angle_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.angle_type_labels_forward
@@ -417,7 +417,7 @@ class Molecule_File:
                 coeffs = self.angle_coeffs
                 skip = 1
                 continue
-            elif line == 'Dihedral Coeffs':
+            elif line == 'Dihedral Coeffs' and self.ndihedraltypes > 0:
                 self.dihedral_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.dihedral_type_labels_forward
@@ -425,7 +425,7 @@ class Molecule_File:
                 coeffs = self.dihedral_coeffs
                 skip = 1
                 continue
-            elif line == 'Improper Coeffs':
+            elif line == 'Improper Coeffs' and self.nimpropertypes > 0:
                 self.improper_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.improper_type_labels_forward
@@ -433,7 +433,7 @@ class Molecule_File:
                 coeffs = self.improper_coeffs
                 skip = 1
                 continue
-            elif line == 'BondBond Coeffs':
+            elif line == 'BondBond Coeffs' and self.nangletypes > 0:
                 self.bondbond_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.angle_type_labels_forward
@@ -441,7 +441,7 @@ class Molecule_File:
                 coeffs = self.bondbond_coeffs
                 skip = 1
                 continue
-            elif line == 'BondAngle Coeffs':
+            elif line == 'BondAngle Coeffs' and self.nangletypes > 0:
                 self.bondangle_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.angle_type_labels_forward
@@ -449,7 +449,7 @@ class Molecule_File:
                 coeffs = self.bondangle_coeffs
                 skip = 1
                 continue
-            elif line == 'AngleAngle Coeffs':
+            elif line == 'AngleAngle Coeffs' and self.nimpropertypes > 0:
                 self.angleangle_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.improper_type_labels_forward
@@ -457,7 +457,7 @@ class Molecule_File:
                 coeffs = self.angleangle_coeffs
                 skip = 1
                 continue
-            elif line == 'AngleAngleTorsion Coeffs':
+            elif line == 'AngleAngleTorsion Coeffs' and self.ndihedraltypes > 0:
                 self.angleangletorsion_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.dihedral_type_labels_forward
@@ -465,7 +465,7 @@ class Molecule_File:
                 coeffs = self.angleangletorsion_coeffs
                 skip = 1
                 continue
-            elif line == 'EndBondTorsion Coeffs':
+            elif line == 'EndBondTorsion Coeffs' and self.ndihedraltypes > 0:
                 self.endbondtorsion_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.dihedral_type_labels_forward
@@ -473,7 +473,7 @@ class Molecule_File:
                 coeffs = self.endbondtorsion_coeffs
                 skip = 1
                 continue
-            elif line == 'MiddleBondTorsion Coeffs':
+            elif line == 'MiddleBondTorsion Coeffs' and self.ndihedraltypes > 0:
                 self.middlebondtorsion_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.dihedral_type_labels_forward
@@ -481,7 +481,7 @@ class Molecule_File:
                 coeffs = self.middlebondtorsion_coeffs
                 skip = 1
                 continue
-            elif line == 'BondBond13 Coeffs':
+            elif line == 'BondBond13 Coeffs' and self.ndihedraltypes > 0:
                 self.bondbond13_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.dihedral_type_labels_forward
@@ -489,7 +489,7 @@ class Molecule_File:
                 coeffs = self.bondbond13_coeffs
                 skip = 1
                 continue
-            elif line == 'AngleTorsion Coeffs':
+            elif line == 'AngleTorsion Coeffs' and self.ndihedraltypes > 0:
                 self.angletorsion_coeffs_style_hint = get_style_hint(whole_line)
                 coeff_flag = True
                 forward_map = self.dihedral_type_labels_forward

@@ -206,4 +206,8 @@ Date               Developer   Description
 26June2024         JDK         - atom_typing.py: adjusted velocity transfer bug.
 
 27June2024         JDK         - LUNAR.py: LUNAR manuscript was published so updated README.md and citation
-                                           page in LUNAR.py GUI.																
+                                           page in LUNAR.py GUI.		
+
+27June2024         JDK         - src/read_lmp.py: Bug fix for when reading a LAMMPS datafile with an "empty
+                                                  section", for example an "Improper Coeffs" section that
+                                                  no improper coeffs are supplied.												  
