@@ -525,6 +525,12 @@ class constructor:
             molecules = dict(sorted(molecules.items(), key=lambda x:abs(x[1][1]), reverse=True )) # [0=keys;1=values][1=index position in value tuple]
             molecules = dict(sorted(molecules.items(), key=lambda x:abs(x[1][0]), reverse=True )) # [0=keys;1=values][0=index position in value tuple]
             
+            # Check to see if box is large enough full encapsulate any newly added molecule
+            max_molecule_span = max([molecules[i][0] for i in molecules])
+            min_box_dimension = min([self.lx, self.ly])
+            if max_molecule_span > min_box_dimension:
+                log.warn(f'WARNING max molecule length is {max_molecule_span} and minimum box dimension is {min_box_dimension}, which may result in incorrect periodically spanning molecules')
+            
             # Generate "dup2file" and "dup2grid" as if we where to add molecules to a cubic lattice
             dupID = 0 # to keep track of duplicationIDs (starts from 1)
             dup2file = {} # { dupID : fileID used in location }
