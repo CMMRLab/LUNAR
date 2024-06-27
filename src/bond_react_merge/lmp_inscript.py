@@ -176,46 +176,40 @@ def bond_react(filename, newfile, version, merge, atom_style, new, pairids, temp
         
         # Method to check and write LAMMPS datafiles every crosslink density degree
         # variable         trxn equal v_rxn1+v_rxn2
-        f.write('\n\n#------------Generalized Method to write LAMMPS datafiles as a function of crosslink density------------\n')
-        f.write('# Caclulate crosslink density\n')
-        f.write('#{:<13} {}{} equal f_myrxn[{}]\n'.format('variable', 'rxn', 1, 1))
-        f.write('#{:<13} {}{} equal f_myrxn[{}]\n'.format('variable', 'rxn', 2, 2))
+        f.write('\n\n#------------Generalized Method to write LAMMPS datafiles as a function of conversion density------------\n')
+        f.write('# Setup for incremental file writing\n')
+        f.write('#{:<13} {:<10} equal {:<3} # {}\n'.format('variable', 'increment', 2.5, 'set increment to write LAMMPS datafiles in'))
+        f.write('#{:<13} {:<10} equal {:<3} # {}\n'.format('variable', 'previous', 0, 'set previous converions value (for sequential crosslinking)'))
         f.write('\n')
-        f.write('#{:<13} {} equal v_rxn1+v_rxn2 # Sum all rxns\n'.format('variable', 'trxn'))
-        f.write('#{:<13} {} equal 100*(v_trxn/250) # Assume 250 is max count of the sum of rxn1 and rxn2\n'.format('variable', 'pxld'))
-        
-        f.write('\n# Set run flags to "turn on" and "shut off" after writing a file\n')
-        nflags = 9; flag_increment = 10;
-        for i in range(1, nflags+1):
-            pxld = i*flag_increment
-            f.write('#{:<13} {}{} equal {} # {}% fileflag\n'.format('variable', 'pxld', pxld, 0, pxld))
-            
-        f.write('\n# Set check frequency (every N-timesteps check if v_pxld is eligable to be written)\n')
+        f.write('# Caclulate conversion\n')
+        f.write('#{:<13} {} equal f_myrxn[{}] # {}\n'.format('variable', 'rxn1', 1, 'count of reaction1'))
+        f.write('#{:<13} {} equal f_myrxn[{}] # {}\n'.format('variable', 'rxn2', 2, 'count of reaction2'))
+        f.write('#{:<13} {} equal v_rxn1+v_rxn2 # Sum all rxns\n'.format('variable', 'srxn'))
+        f.write('#{:<13} {} equal 250           # Max possible number of reactions\n'.format('variable', 'mrxn'))
+        f.write('#{:<13} {} equal 100*(v_srxn/v_mrxn)+v_previous # Define conversion\n'.format('variable', 'conv'))
+        f.write('\n') 
+        f.write('# Set check frequency (every N-timesteps check if v_pxld is eligable to be written)\n')
         f.write('#{:<13} {:<5} equal {:<5} # {}\n'.format('variable', 'check', 100, 'check every N-timesteps (if to small check may not occur as quick as the reactions are progressing)'))
-        f.write('#{:<13} {:<5} equal {:<5} # {}\n'.format('variable', 'Run', 2, 'run time in ns'))
-        f.write('#{:<13} {:<5} equal {:<15} # {}\n'.format('variable', 'i', '(v_Run*1000000/dt)/v_check', 'calculate number of for loop iterations'))
-        
-        f.write('\n# Run simulation using LAMMPS for loop\n')
+        f.write('#{:<13} {:<5} equal {:<5} # {}\n'.format('variable', 'Run', 1, 'run time in ns'))
+        f.write('#{:<13} {:<5} equal {:<15} # {}\n'.format('variable', 'r', '(v_Run*1000000/dt)/v_check', 'calculate number of for loop iterations'))
+        f.write('\n')
+        f.write('# Run simulation using LAMMPS for loop\n')
+        f.write('#variable previousID equal round(v_previous/v_increment)\n')
         f.write('#label loop\n')
-        f.write('#variable a loop $i\n')
+        f.write('#variable a loop $r\n')
         f.write('#run ${check}\n')
-        
-        f.write('\n# crosslink density percent check\n')
-        for i in range(1, nflags+1):
-            pxld = i*flag_increment
-            lo = str('${pxld}>=') + str(pxld-1)
-            hi = str('${pxld}<=') + str(pxld+3)
-            g = str('${pxld') + str(pxld) + str('}==0')
-            datafile = str('${myid}_pxld_${pxld}.data')
-            writedata = 'write_data {}'.format(datafile)
-            flag = '{:<13} xld{} equal 1'.format('variable', pxld)
-            f.write('#if "{:<12} && {} && {}" then "{}" "{}" # {}%\n'.format(lo, hi, g, writedata, flag, pxld))
-            
-        f.write('\n#next a\n')
+        f.write('\n')
+        f.write('#variable integer   equal floor(v_conv%v_increment) # will be zero when it is time to write a file\n')
+        f.write('#variable presentID equal round(v_conv/v_increment) # will be used to only write one file within increment range\n')
+        f.write('#if "${integer} == 0 && ${presentID} != ${previousID}" then &\n')
+        f.write('#    "write_data ${myid}_conversion_${conv}.data" &\n')
+        f.write('#    "variable previousID equal ${presentID}"\n')
+        f.write('\n')
+        f.write('#next a\n')
         f.write('#jump SELF loop\n')
         f.write('#label break\n')
         f.write('#print "***ALL DONE***"\n')
-        f.write('#write_data  ${myid}_pxld_${pxld}_end_of_loop.data')
+        f.write('#write_data  ${myid}_conversion_${conv}_end_of_loop.data')
     return
 
 

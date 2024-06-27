@@ -203,11 +203,16 @@ Date               Developer   Description
 26June2024         JDK         - atom_typing.py and all2lmp.py: Updated mol2lmp.py to be able to read .mol
                                                                 files in V2000 or V3000 format.	
 
-26June2024         JDK         - atom_typing.py: adjusted velocity transfer bug.
+26June2024         JDK         - atom_typing.py: Adjusted velocity transfer bug.
 
 27June2024         JDK         - LUNAR.py: LUNAR manuscript was published so updated README.md and citation
                                            page in LUNAR.py GUI.		
 
 27June2024         JDK         - src/read_lmp.py: Bug fix for when reading a LAMMPS datafile with an "empty
                                                   section", for example an "Improper Coeffs" section that
-                                                  no improper coeffs are supplied.												  
+                                                  no improper coeffs are supplied.	
+
+27June2024         JDK         - bond_react_merge.py: Updated the "in.fix_bond_react.script" that is written
+                                                      each time the code is run to include a more scalable
+                                                      example of how to write LAMMPS datafiles out in
+                                                      increments of conversion.													  
