@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-June 11th, 2024
+June 27th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -25,6 +25,7 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+from tkinter.scrolledtext import ScrolledText
 from tkinter import Toplevel
 import tkinter as tk
 import math
@@ -326,43 +327,52 @@ class LUNAR:
                           sb.charges, sb.masses, self.GUI_zoom)
         return
     
+    # Function to pop-up scrollable text
+    def popup(self, out, title='Outputs', width=150, height=30):
+        page = Toplevel(self.root)
+        page.title(title)
+        outputs = ScrolledText(page, height=height, width=width, font=('consolas', '12', 'normal'))
+        outputs.pack()
+        outputs.insert(tk.INSERT, '\n'.join(out))
+        outputs.config(state=tk.DISABLED)
+        page.resizable(width=False, height=False)
+        return
+    
+    
     # Def citations page
     def citation(self):
-        cite = Toplevel(self.root)
-        cite.title('cite')
-        txt = """
-LUNAR: Automated Input Generation and Analysis for Reactive LAMMPS Simulations at
-https://chemrxiv.org/engage/chemrxiv/article-details/662bd85021291e5d1dcc8380
-"""
-        tk.Label(cite, text=txt, anchor="w", justify="left").pack(padx=30, pady=30)
+        txt = ['']
+        txt.append('LUNAR: Automated Input Generation and Analysis for Reactive LAMMPS Simulations')
+        txt.append('at https://doi.org/10.1021/acs.jcim.4c00730')
+        self.popup(txt, title='cite', width=80, height=5)
+        return
         
     # Def about page
     def about(self):
-        aboutpage = Toplevel(self.root)
-        aboutpage.title('about')
-        txt = """  
-LUNAR is a set of codes developed by Josh Kemppainen during his Ph.D. at Michigan Technological
-University. The LUNAR codes aim at simplifying the MD model-building process required to use 
-LAMMPS and features found within LAMMPS such as fix bond/react (aka REACTER). The LUNAR codes
-allow for a heuristic method of learning the basics of MD inputs and offer the ability to change
-force fields from bond order -> fix bond or fix bond -> fix bond or fix bond ->  bond order 
-within a single consistent set of codes.   
+        txt = []
+        txt.append('LUNAR is a set of codes developed by Josh Kemppainen during his Ph.D. at Michigan Technological')
+        txt.append('University. The LUNAR codes aim at simplifying the MD model-building process required to use')
+        txt.append('LAMMPS and features found within LAMMPS such as fix bond/react (aka REACTER). The LUNAR codes')
+        txt.append('allow for a heuristic method of learning the basics of MD inputs and offer the ability to change')
+        txt.append('force fields from bond order -> fix bond or fix bond -> fix bond or fix bond ->  bond order')
+        txt.append('within a single consistent set of codes.')
+        txt.append('')
+        txt.append('LUNAR is a medium-difficulty method of building inputs to LAMMPS which makes it suitable for') 
+        txt.append('beginners learning MD and LAMMPS, but also offers the flexibility for more experienced')
+        txt.append('individuals to build models exactly as they wish.')
+        txt.append('')
+        txt.append('LUNAR is coded entirely in Python v3 and all codes assume Python 3.7 or greater. If you need')
+        txt.append('assistance learning LUNAR or would like more features added to LUNAR reach out to Josh at:')
+        txt.append('    jdkemppa@mtu.edu')
+        txt.append('')
+        txt.append('If you are a developer and would like to add a package to LUNAR you may wish to do so yourself')
+        txt.append('or get in contact with Josh to discuss the best integration method. It would be great to add')
+        txt.append('more charging methods built into LUNAR and also allow for a wider range of force fields, so if')
+        txt.append('If you have expertise in these fields and would like a collaboration please reach out to Josh at:')
+        txt.append('    jdkemppa@mtu.edu')
+        self.popup(txt, title='about', width=100, height=25)
 
-LUNAR is a medium-difficulty method of building inputs to LAMMPS which makes it suitable for 
-beginners learning MD and LAMMPS, but also offers the flexibility for more experienced 
-individuals to build models exactly as they wish.
 
-LUNAR is coded entirely in Python v3 and all codes assume Python 3.7 or greater. If you need
-assistance learning LUNAR or would like more features added to LUNAR reach out to Josh at:
-    jdkemppa@mtu.edu
-
-If you are a developer and would like to add a package to LUNAR you may wish to do so yourself
-or get in contact with Josh to discuss the best integration method. It would be great to add
-more charging methods built into LUNAR and also allow for a wider range of force fields, so if
-If you have expertise in these fields and would like a collaboration please reach out to Josh at:
-    jdkemppa@mtu.edu
-              """
-        tk.Label(aboutpage, text=txt, anchor="w", justify="left").pack(padx=30, pady=30)
     
     # Closing command    
     def closing(self):
