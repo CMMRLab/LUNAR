@@ -322,7 +322,7 @@ class inputs:
                           '-write-moleculefiles', '-edge', '-molecule', '-type-labels', '-newfile']
         
         # set shortcut_tags mapping
-        shortcut_tags = {'-f':'-files', '-d':'-dir', '-as':'-atomstyle', '-m':'-map' ,'-wmf':'-write-moleculefiles',
+        shortcut_tags = {'-f':'-files', '-d':'-dir', '-as':'-atomstyle', '-m':'-map' ,'-wmf':'-write-moleculefiles', '-wrd':'-write-rxn-datafiles',
                          '-wrm':'-write-rxn-mol2files', '-wmd':'-write-mol-datafiles', '-e':'-edge', '-mol':'-molecule', '-tl': '-type-labels',
                          '-nf':'-newfile'}
         

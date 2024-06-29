@@ -192,7 +192,7 @@ Date               Developer   Description
                                                    "random" method).			
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 27June2024)
+LUNAR (version 29June2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -215,4 +215,6 @@ Date               Developer   Description
 27June2024         JDK         - bond_react_merge.py: Updated the "in.fix_bond_react.script" that is written
                                                       each time the code is run to include a more scalable
                                                       example of how to write LAMMPS datafiles out in
-                                                      increments of conversion.													  
+                                                      increments of conversion.		
+
+29June2024         JDK         - bond_react_merge.py: Fixed "-wrd" command line override shortcut flag.													  
