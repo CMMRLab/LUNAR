@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.1
-Feruary 26th, 2024
+June 30th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -42,12 +42,14 @@ def string_coeffs(coeff):
 
 # Function to find most frequent occurance in list
 def most_frequent(List):
-    counter = 0; num = List[0];
-    for i in List:
-        curr_frequency = List.count(i)
-        if(curr_frequency> counter):
-            counter = curr_frequency
-            num = i
+    if List:
+        counter = 0; num = List[0];
+        for i in List:
+            curr_frequency = List.count(i)
+            if(curr_frequency> counter):
+                counter = curr_frequency
+                num = i
+    else: num = None
     return num
 
 # Function to check for possbile bond_react_merge_prep tuple('N/A's) to set at bottom of lists
@@ -67,7 +69,7 @@ def update_TypeIDs(m, new, log):
     for i in m.atoms:
         new_type = 0   
         atom = m.atoms[i]
-        str_type = m.pair_coeffs[atom.type].type
+        str_type = m.masses[atom.type].type
         new_type = int(new.atom_types_map[str_type])
         if new_type == 0: log.error(f'ERROR atomID {i} from file {m.filename} failed to update TypeID')
         atom.type = new_type
@@ -186,7 +188,7 @@ class merged:
         #############################################################
         # 1st loop through is to try to find all unique coeff types #
         ############################################################# 
-        unique_pair_coeffs = set([]); unique_bond_coeffs = set([]); unique_angle_coeffs = set([])
+        unique_pair_coeffs = set([]); unique_masses = set([]); unique_bond_coeffs = set([]); unique_angle_coeffs = set([])
         unique_dihedral_coeffs = set([]); unique_improper_coeffs = set([])
         
         # Unique style hints logger
@@ -198,7 +200,7 @@ class merged:
                               'BondBond13_Coeffs': [], 'AngleTorsion_Coeffs': [], 'AngleAngle_Coeffs': []}
         
         # nparms logger to set default zeros for each coeff type (force field specific)
-        nparms_in_coeff = {'pair':[], 'bond':[], 'angle':[], 'dihedral':[], 'improper':[]}
+        nparms_in_coeff = {'mass':[], 'pair':[], 'bond':[], 'angle':[], 'dihedral':[], 'improper':[]}
         
         # log to tally types
         ntypes_log = {'atom':0, 'bond':0, 'angle':0, 'dihedral':0, 'improper':0}
@@ -231,6 +233,14 @@ class merged:
             ntypes_log['angle'] += nangletypes;  ntypes_log['dihedral'] += ndihedraltypes;
             ntypes_log['improper'] += nimpropertypes;
             log.out('| {:^70} | {:^10} | {:^10} | {:^10} | {:^10} | {:^10} |'.format(os.path.basename(filename)[0:70], natomtypes, nbondtypes, nangletypes, ndihedraltypes, nimpropertypes))
+            
+            # Find unique masses
+            masses = file.masses
+            for i in masses:
+                coeff = masses[i]
+                types = coeff.type
+                unique_masses.add(types)
+                nparms_in_coeff['mass'].append(len(coeff.coeffs))
             
             # Find unique pair coeffs
             pair_coeffs = file.pair_coeffs
@@ -349,7 +359,7 @@ class merged:
         # (all2lmp already sorted each individual type as best as possible)   #
         #######################################################################
         # Atom types
-        atom_types_lst = sorted(list(unique_pair_coeffs)); atom_types_dict = {};
+        atom_types_lst = sorted(list(unique_masses)); atom_types_dict = {};
         atom_types_lst = move_NA2bottom(atom_types_lst, 'N/A', rm_flag=False)
         
         # Bonds types
@@ -468,22 +478,26 @@ class merged:
             self.masses[atom_types_dict[i]] = c
             
             c1 = Coeff_class()
-            c1.coeffs = [0,0]; c1.type = i; c1.consistency = set();
-            self.pair_coeffs[atom_types_dict[i]] = c1
+            nparms = most_frequent(nparms_in_coeff['pair'])
+            if nparms is not None:
+                c1.coeffs = nparms*[0]; c1.type = i; c1.consistency = set();
+                self.pair_coeffs[atom_types_dict[i]] = c1
         
         # Intialize all bond types dicts
         for i in bond_types_lst:
-            nparms = most_frequent(nparms_in_coeff['bond'])             
-            c2 = Coeff_class()
-            c2.coeffs = nparms*[0]; c2.type = string_parameter_type(i); c2.consistency = set();
-            self.bond_coeffs[bond_types_dict[i]] = c2
+            nparms = most_frequent(nparms_in_coeff['bond'])  
+            if nparms is not None:
+                c2 = Coeff_class()
+                c2.coeffs = nparms*[0]; c2.type = string_parameter_type(i); c2.consistency = set();
+                self.bond_coeffs[bond_types_dict[i]] = c2
 
         # Intialize all angle types dicts            
         for i in angle_types_lst:
             nparms = most_frequent(nparms_in_coeff['angle'])  
-            c3 = Coeff_class()
-            c3.coeffs = nparms*[0]; c3.type = string_parameter_type(i); c3.consistency = set();
-            self.angle_coeffs[angle_types_dict[i]] = c3
+            if nparms is not None:
+                c3 = Coeff_class()
+                c3.coeffs = nparms*[0]; c3.type = string_parameter_type(i); c3.consistency = set();
+                self.angle_coeffs[angle_types_dict[i]] = c3
             
             c4 = Coeff_class()
             c4.coeffs = [0,0,0]; c4.type = string_parameter_type(i); c4.consistency = set();
@@ -495,10 +509,11 @@ class merged:
          
         # Intialize all dihedral types dicts
         for i in dihedral_types_lst:
-            nparms = most_frequent(nparms_in_coeff['dihedral'])  
-            c6 = Coeff_class()
-            c6.coeffs = nparms*[0]; c6.type = string_parameter_type(i); c6.consistency = set();
-            self.dihedral_coeffs[dihedral_types_dict[i]] = c6
+            nparms = most_frequent(nparms_in_coeff['dihedral']) 
+            if nparms is not None:
+                c6 = Coeff_class()
+                c6.coeffs = nparms*[0]; c6.type = string_parameter_type(i); c6.consistency = set();
+                self.dihedral_coeffs[dihedral_types_dict[i]] = c6
             
             c7 = Coeff_class()
             c7.coeffs = [0,0,0]; c7.type = string_parameter_type(i); c7.consistency = set();
@@ -522,10 +537,11 @@ class merged:
 
         # Intialize all improper types dicts
         for i in improper_types_lst:
-            nparms = most_frequent(nparms_in_coeff['improper'])  
-            c12 = Coeff_class()
-            c12.coeffs = nparms*[0]; c12.type = string_parameter_type(i); c12.consistency = set();
-            self.improper_coeffs[improper_types_dict[i]] = c12
+            nparms = most_frequent(nparms_in_coeff['improper']) 
+            if nparms is not None:
+                c12 = Coeff_class()
+                c12.coeffs = nparms*[0]; c12.type = string_parameter_type(i); c12.consistency = set();
+                self.improper_coeffs[improper_types_dict[i]] = c12
             
             c13 = Coeff_class()
             c13.coeffs = [0,0,0,0,0,0]; c13.type = string_parameter_type(i); c13.consistency = set();

@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.9
-June 17th, 2024
+June 31st, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -26,6 +26,7 @@ def is_even(number):
         return True
     else: return False
     
+    
 #-------------------------------------------------------------#
 # Function to generate x, y, and z lattices from domain flags #
 #-------------------------------------------------------------#
@@ -39,6 +40,7 @@ def generate_lattices_from_domain(ni):
             n = int((ni-1)/2); nspan = 0;
             lattices = [i for i in range(-n, n+1)]
     return lattices, nspan
+
 
 #--------------------------------------------------#
 # Function to find gridIDs in a specified region   #
@@ -113,22 +115,6 @@ def update_linked_lst(sys, m, xshift, yshift, zshift, inside_box, linked_lst, do
         domainID = random_insertion.assign_atom_a_domainID(newx, newy, newz, atoms2domain)
         linked_lst[domainID].add(newID)
     return linked_lst
-
-
-#------------------------------------------------------#
-# Function to call to run random insertion in parallel #
-#------------------------------------------------------#
-def random_insertion_multi_processing(inputs):
-    # extract out inputs
-    sys, m, linked_lst, domain, domain_graph, tolerance, mix_sigma, xshift, yshift, zshift, phi, theta, psi, mixing_rule, boundary_conditions = inputs
-    
-    # Check for overlap and determine if any part of the molecule is outside of the box
-    overlap, inside_box, insert_molecule = random_insertion.check_for_overlap_and_inside_box(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta,
-                                                                                             psi, tolerance, mix_sigma, mixing_rule, boundary_conditions)
-    
-    # Generate list of outputs
-    outputs = [overlap, inside_box, insert_molecule, xshift, yshift, zshift, phi, theta, psi]
-    return outputs
 
 
 #----------------------------------------------------------------------------------------------------#
@@ -563,15 +549,19 @@ class constructor:
                 atomsizes = set()
                 for fileID in files:
                     m = files[fileID]
-                    for i in m.atoms:
-                        atom = m.atoms[i]
-                        pair_coeff = m.pair_coeffs[atom.type].coeffs
-                        sigma = pair_coeff[tolerance]
-                        atomsizes.add(sigma)
+                    if m.pair_coeffs:
+                        for i in m.atoms:
+                            atom = m.atoms[i]
+                            pair_coeff = m.pair_coeffs[atom.type].coeffs
+                            sigma = pair_coeff[tolerance]
+                            atomsizes.add(sigma)
+                            if sigma == 0: log.error(f'ERROR sigma in {m.filename} was found to be zero. The sigma value must be greater then zero.')
+                    else: log.error(f'ERROR trying to use a Pair Coeff mixing rule, but read-in file {m.filename} does not have Pair Coeffs section')
                         
             # Generate domain_region (set roughly optimized domain_size based on box dimensions)
             start_time = time.time()
             domain_size = 1.75*max(atomsizes)
+            if domain_size == 0: domain_size = 6.0
             domain_region, domain_graph, atoms2domain = random_insertion.generate_domain(self, domain_size, scaled_images, pflag, log)
             execution_time = (time.time() - start_time)
             if pflag: log.out('Time in seconds to generate domain and domain connectivity: ' + str(execution_time))
@@ -905,8 +895,8 @@ class constructor:
             self.pair_coeffs_style_hint = m.pair_coeffs_style_hint
             for i in m.masses:
                 new_type = i + self.coeff_offsets[m.filename]['atom']
-                self.masses[new_type] = m.masses[i]
-                self.pair_coeffs[new_type] = m.pair_coeffs[i]
+                if i in m.masses: self.masses[new_type] = m.masses[i]
+                if i in m.pair_coeffs: self.pair_coeffs[new_type] = m.pair_coeffs[i]
                 if m.atom_type_labels_forward:
                     self.atom_type_labels_reverse[new_type] = m.atom_type_labels_reverse[i]
                     self.atom_type_labels_forward[m.atom_type_labels_reverse[i]] = new_type

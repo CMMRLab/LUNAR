@@ -1,0 +1,127 @@
+
+
+Running cell_builder v1.9 / 17 June 2024
+Using Python version 3.11.7 (main, Dec  8 2023, 18:56:58) [GCC 11.4.0]
+WARNING consistent number of atom types between files. Perhaps  force_field_joining method "merge" was not meant to be used.
+WARNING consistent number of bond types between files. Perhaps  force_field_joining method "merge" was not meant to be used.
+WARNING consistent number of angle types between files. Perhaps  force_field_joining method "merge" was not meant to be used.
+WARNING consistent number of dihedral types between files. Perhaps  force_field_joining method "merge" was not meant to be used.
+WARNING consistent number of improper types between files. Perhaps  force_field_joining method "merge" was not meant to be used.
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                                filename                                |   natom    |   nbond    |   nangle   | ndihedral  |  improper  |
+|                      (Truncated to 70 characters)                      |   types    |   types    |   types    |   types    |   types    |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                           detda_ReaxFF.data                            |     3      |     0      |     0      |     0      |     0      |
+|                           dgebf_ReaxFF.data                            |     3      |     0      |     0      |     0      |     0      |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                          Total possible sum:                           |     6      |     0      |     0      |     0      |     0      |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                           Total unique sum:                            |     0      |     0      |     0      |     0      |     0      |
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+----------------------------------------------
+        Random molecule insertion info
+----------------------------------------------
+Using 9 x 9 x 9 sub domains of size 3.33 x 3.33 x 3.33 to perform domain decomposition
+Finding domain to use cell linked list algorithm for interatomic distance calculations ...
+    progress: 100 %
+Finding cell linked graph for interatomic distance calculations ...
+    progress: 100 %
+Time in seconds to generate domain and domain connectivity: 0.01306772232055664
+
+
+Attempting to insert each molecule 10000 times
+Using tolerance: 2.0
+
+
+Generating new simulation cell ....
+    progress:  6  %,  time:     0.0014 seconds,  density: 0.03840 g/cc,  failed:   0,  attempts (min;max;avg): 1;1;1.00
+    progress: 13  %,  time:     0.0027 seconds,  density: 0.07679 g/cc,  failed:   0,  attempts (min;max;avg): 1;1;1.00
+    progress: 20  %,  time:     0.0043 seconds,  density: 0.11519 g/cc,  failed:   0,  attempts (min;max;avg): 2;2;2.00
+    progress: 26  %,  time:     0.0059 seconds,  density: 0.15358 g/cc,  failed:   0,  attempts (min;max;avg): 1;1;1.00
+    progress: 33  %,  time:     0.0080 seconds,  density: 0.19198 g/cc,  failed:   0,  attempts (min;max;avg): 2;6;4.00
+    progress: 40  %,  time:     0.0103 seconds,  density: 0.23038 g/cc,  failed:   0,  attempts (min;max;avg): 1;7;4.00
+    progress: 46  %,  time:     0.0179 seconds,  density: 0.26877 g/cc,  failed:   0,  attempts (min;max;avg): 15;23;19.00
+    progress: 53  %,  time:     0.0240 seconds,  density: 0.30717 g/cc,  failed:   0,  attempts (min;max;avg): 6;21;13.50
+    progress: 60  %,  time:     0.0310 seconds,  density: 0.34556 g/cc,  failed:   0,  attempts (min;max;avg): 17;18;17.50
+    progress: 66  %,  time:     0.0507 seconds,  density: 0.38396 g/cc,  failed:   0,  attempts (min;max;avg): 34;102;68.00
+    progress: 73  %,  time:     0.0647 seconds,  density: 0.40587 g/cc,  failed:   0,  attempts (min;max;avg): 44;46;45.00
+    progress: 80  %,  time:     0.1226 seconds,  density: 0.42779 g/cc,  failed:   0,  attempts (min;max;avg): 6;401;203.50
+    progress: 86  %,  time:     0.1302 seconds,  density: 0.44970 g/cc,  failed:   0,  attempts (min;max;avg): 10;45;27.50
+    progress: 93  %,  time:     0.1579 seconds,  density: 0.47161 g/cc,  failed:   0,  attempts (min;max;avg): 105;121;113.00
+    progress: 100 %,  time:     0.2374 seconds,  density: 0.49352 g/cc,  failed:   0,  attempts (min;max;avg): 322;366;344.00
+Time in seconds to insert molecules into simulation cell: 0.23746037483215332
+Inserted 10 of 10 molecules from EXAMPLES/cell_builder/detda_ReaxFF.data
+Inserted 20 of 20 molecules from EXAMPLES/cell_builder/dgebf_ReaxFF.data
+
+
+Finding energy coeffs ....
+
+
+
+-----------------------------------------------------
+   Cell building and randomization parameters used
+-----------------------------------------------------
+unwrap atoms by iflags:                  True
+locally group atoms:                    False
+force field joining:                    merge
+distance scale:                           1.2
+duplicate:                                 10
+max rotations:             {'x': 360.0, 'y': 360.0, 'z': 360.0}
+seed:                                   12345
+domain:                       30A x 30A x 30A
+System files used:        
+   EXAMPLES/cell_builder/detda_ReaxFF.data qty: 1
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+   EXAMPLES/cell_builder/dgebf_ReaxFF.data qty: 2
+       atom TypeIDs offset      0
+       bond TypeIDs offset      0
+       angle TypeIDs offset     0
+       dihedral TypeIDs offset  0
+       improper TypeIDs offset  0
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:            1170 
+nbonds:              0  
+nangles:             0  
+ndihedrals:          0  
+nimpropers:          0  
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         30.00000  angstrom  
+Ly:         30.00000  angstrom  
+Lz:         30.00000  angstrom  
+volume:    2.7000E-20 cm^3      
+mass:      1.3325E-20 grams     
+density:    0.49352   g/cc      
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+Writing in.ReaxFF_epoxy script
+
+
+All outputs can be found in /mnt/c/Users/jdkem/Desktop/GitHub/LUNAR/EXAMPLES/cell_builder directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.2659595012664795
+
+
+Number of WARNING(s) and ERROR(s)
+  5 WARNING(s)
+  0 ERROR(s)

@@ -192,7 +192,7 @@ Date               Developer   Description
                                                    "random" method).			
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 29June2024)
+LUNAR (version 30June2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -217,4 +217,7 @@ Date               Developer   Description
                                                       example of how to write LAMMPS datafiles out in
                                                       increments of conversion.		
 
-29June2024         JDK         - bond_react_merge.py: Fixed "-wrd" command line override shortcut flag.													  
+29June2024         JDK         - bond_react_merge.py: Fixed "-wrd" command line override shortcut flag.	
+
+30June2024         JDK         - cell_builder.py: Made compatible with ReaxFF datafiles or other "interatomic"
+                                                  potential types of LAMMPS datafiles.											  
