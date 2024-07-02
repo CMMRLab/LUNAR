@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-June 30th, 2024
+Revision 1.2
+July 2nd, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -499,13 +499,14 @@ class merged:
                 c3.coeffs = nparms*[0]; c3.type = string_parameter_type(i); c3.consistency = set();
                 self.angle_coeffs[angle_types_dict[i]] = c3
             
-            c4 = Coeff_class()
-            c4.coeffs = [0,0,0]; c4.type = string_parameter_type(i); c4.consistency = set();
-            self.bondbond_coeffs[angle_types_dict[i]] = c4
-            
-            c5 = Coeff_class()
-            c5.coeffs = [0,0,0,0]; c5.type = string_parameter_type(i); c5.consistency = set();
-            self.bondangle_coeffs[angle_types_dict[i]] = c5
+            if self.ff_class == 2:
+                c4 = Coeff_class()
+                c4.coeffs = [0,0,0]; c4.type = string_parameter_type(i); c4.consistency = set();
+                self.bondbond_coeffs[angle_types_dict[i]] = c4
+                
+                c5 = Coeff_class()
+                c5.coeffs = [0,0,0,0]; c5.type = string_parameter_type(i); c5.consistency = set();
+                self.bondangle_coeffs[angle_types_dict[i]] = c5
          
         # Intialize all dihedral types dicts
         for i in dihedral_types_lst:
@@ -515,25 +516,26 @@ class merged:
                 c6.coeffs = nparms*[0]; c6.type = string_parameter_type(i); c6.consistency = set();
                 self.dihedral_coeffs[dihedral_types_dict[i]] = c6
             
-            c7 = Coeff_class()
-            c7.coeffs = [0,0,0]; c7.type = string_parameter_type(i); c7.consistency = set();
-            self.angleangletorsion_coeffs[dihedral_types_dict[i]] = c7
-            
-            c8 = Coeff_class()
-            c8.coeffs = [0,0,0,0,0,0,0]; c8.type = string_parameter_type(i); c8.consistency = set();
-            self.endbondtorsion_coeffs[dihedral_types_dict[i]] = c8
-            
-            c9 = Coeff_class()
-            c9.coeffs = [0,0,0,0,0,0,0]; c9.type = string_parameter_type(i); c9.consistency = set();
-            self.middlebondtorsion_coeffs[dihedral_types_dict[i]] = c9
-            
-            c10 = Coeff_class()
-            c10.coeffs = [0,0,0]; c10.type = string_parameter_type(i); c10.consistency = set();
-            self.bondbond13_coeffs[dihedral_types_dict[i]] = c10
-            
-            c11 = Coeff_class()
-            c11.coeffs = [0,0,0,0,0,0,0,0]; c11.type = string_parameter_type(i); c11.consistency = set();
-            self.angletorsion_coeffs[dihedral_types_dict[i]] = c11
+            if self.ff_class == 2:
+                c7 = Coeff_class()
+                c7.coeffs = [0,0,0]; c7.type = string_parameter_type(i); c7.consistency = set();
+                self.angleangletorsion_coeffs[dihedral_types_dict[i]] = c7
+                
+                c8 = Coeff_class()
+                c8.coeffs = [0,0,0,0,0,0,0]; c8.type = string_parameter_type(i); c8.consistency = set();
+                self.endbondtorsion_coeffs[dihedral_types_dict[i]] = c8
+                
+                c9 = Coeff_class()
+                c9.coeffs = [0,0,0,0,0,0,0]; c9.type = string_parameter_type(i); c9.consistency = set();
+                self.middlebondtorsion_coeffs[dihedral_types_dict[i]] = c9
+                
+                c10 = Coeff_class()
+                c10.coeffs = [0,0,0]; c10.type = string_parameter_type(i); c10.consistency = set();
+                self.bondbond13_coeffs[dihedral_types_dict[i]] = c10
+                
+                c11 = Coeff_class()
+                c11.coeffs = [0,0,0,0,0,0,0,0]; c11.type = string_parameter_type(i); c11.consistency = set();
+                self.angletorsion_coeffs[dihedral_types_dict[i]] = c11
 
         # Intialize all improper types dicts
         for i in improper_types_lst:
@@ -543,9 +545,10 @@ class merged:
                 c12.coeffs = nparms*[0]; c12.type = string_parameter_type(i); c12.consistency = set();
                 self.improper_coeffs[improper_types_dict[i]] = c12
             
-            c13 = Coeff_class()
-            c13.coeffs = [0,0,0,0,0,0]; c13.type = string_parameter_type(i); c13.consistency = set();
-            self.angleangle_coeffs[improper_types_dict[i]] = c13
+            if self.ff_class == 2:
+                c13 = Coeff_class()
+                c13.coeffs = [0,0,0,0,0,0]; c13.type = string_parameter_type(i); c13.consistency = set();
+                self.angleangle_coeffs[improper_types_dict[i]] = c13
 
         
         ################################################
@@ -650,141 +653,144 @@ class merged:
                 if len(self.improper_coeffs[new_type].consistency) > 1:
                     log.error('\nERROR Improper Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
 
-            
-            ########################
-            # Find bondbond coeffs #
-            ########################
-            if file.bondbond_coeffs:
-                for j in file.bondbond_coeffs:
-                    coeff = file.bondbond_coeffs[j]
-                    coeffs = coeff.coeffs
-                    types = split_coeff(coeff.type)
-                    new_type = angle_types_dict[types]
-                    self.bondbond_coeffs[new_type].coeffs = coeffs
+            #####################
+            # class2 potentials #
+            #####################
+            if self.ff_class == 2:
+                ########################
+                # Find bondbond coeffs #
+                ########################
+                if file.bondbond_coeffs:
+                    for j in file.bondbond_coeffs:
+                        coeff = file.bondbond_coeffs[j]
+                        coeffs = coeff.coeffs
+                        types = split_coeff(coeff.type)
+                        new_type = angle_types_dict[types]
+                        self.bondbond_coeffs[new_type].coeffs = coeffs
+                            
+                        # check for consistency
+                        self.bondbond_coeffs[new_type].consistency.add(tuple(coeffs))
+                        if len(self.bondbond_coeffs[new_type].consistency) > 1:
+                            log.error('\nERROR BondBond Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
+    
+                            
+                #########################
+                # Find bondangle coeffs #
+                #########################
+                if file.bondangle_coeffs:
+                    for j in file.bondangle_coeffs:
+                        coeff = file.bondangle_coeffs[j]
+                        coeffs = coeff.coeffs
+                        types = split_coeff(coeff.type)
+                        new_type = angle_types_dict[types]
+                        self.bondangle_coeffs[new_type].coeffs = coeffs
                         
-                    # check for consistency
-                    self.bondbond_coeffs[new_type].consistency.add(tuple(coeffs))
-                    if len(self.bondbond_coeffs[new_type].consistency) > 1:
-                        log.error('\nERROR BondBond Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
-
+                        # check for consistency
+                        self.bondangle_coeffs[new_type].consistency.add(tuple(coeffs))
+                        if len(self.bondangle_coeffs[new_type].consistency) > 1:
+                            log.error('\nERROR BondAngle Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
+        
+                            
+                #################################
+                # Find angleangletorsion coeffs #
+                #################################
+                if file.angleangletorsion_coeffs:
+                    for j in file.angleangletorsion_coeffs:
+                        coeff = file.angleangletorsion_coeffs[j]
+                        coeffs = coeff.coeffs
+                        types = split_coeff(coeff.type)
+                        new_type = dihedral_types_dict[types]
+                        self.angleangletorsion_coeffs[new_type].coeffs = coeffs
                         
-            #########################
-            # Find bondangle coeffs #
-            #########################
-            if file.bondangle_coeffs:
-                for j in file.bondangle_coeffs:
-                    coeff = file.bondangle_coeffs[j]
-                    coeffs = coeff.coeffs
-                    types = split_coeff(coeff.type)
-                    new_type = angle_types_dict[types]
-                    self.bondangle_coeffs[new_type].coeffs = coeffs
-                    
-                    # check for consistency
-                    self.bondangle_coeffs[new_type].consistency.add(tuple(coeffs))
-                    if len(self.bondangle_coeffs[new_type].consistency) > 1:
-                        log.error('\nERROR BondAngle Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
+                        # check for consistency
+                        self.angleangletorsion_coeffs[new_type].consistency.add(tuple(coeffs))
+                        if len(self.angleangletorsion_coeffs[new_type].consistency) > 1:
+                            log.error('\nERROR AngleAngleTorsion Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
+                            
+    
+                ##############################
+                # Find endbondtorsion coeffs #
+                ##############################
+                if file.endbondtorsion_coeffs:
+                    for j in file.endbondtorsion_coeffs:
+                        coeff = file.endbondtorsion_coeffs[j]
+                        coeffs = coeff.coeffs
+                        types = split_coeff(coeff.type)
+                        new_type = dihedral_types_dict[types]
+                        self.endbondtorsion_coeffs[new_type].coeffs = coeffs
+        
+                        # check for consistency
+                        self.endbondtorsion_coeffs[new_type].consistency.add(tuple(coeffs))
+                        if len(self.endbondtorsion_coeffs[new_type].consistency) > 1:
+                            log.error('\nERROR EndBondTorsion Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
+                        
+                        
+                #################################
+                # Find middlebondtorsion coeffs #
+                #################################
+                if file.middlebondtorsion_coeffs:
+                    for j in file.middlebondtorsion_coeffs:
+                        coeff = file.middlebondtorsion_coeffs[j]
+                        coeffs = coeff.coeffs
+                        types = split_coeff(coeff.type)
+                        new_type = dihedral_types_dict[types]
+                        self.middlebondtorsion_coeffs[new_type].coeffs = coeffs
+                        
+                        # check for consistency
+                        self.middlebondtorsion_coeffs[new_type].consistency.add(tuple(coeffs))
+                        if len(self.middlebondtorsion_coeffs[new_type].consistency) > 1:
+                            log.error('\nERROR MiddleBondTorsion Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))            
     
                         
-            #################################
-            # Find angleangletorsion coeffs #
-            #################################
-            if file.angleangletorsion_coeffs:
-                for j in file.angleangletorsion_coeffs:
-                    coeff = file.angleangletorsion_coeffs[j]
-                    coeffs = coeff.coeffs
-                    types = split_coeff(coeff.type)
-                    new_type = dihedral_types_dict[types]
-                    self.angleangletorsion_coeffs[new_type].coeffs = coeffs
-                    
-                    # check for consistency
-                    self.angleangletorsion_coeffs[new_type].consistency.add(tuple(coeffs))
-                    if len(self.angleangletorsion_coeffs[new_type].consistency) > 1:
-                        log.error('\nERROR AngleAngleTorsion Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
-                        
-
-            ##############################
-            # Find endbondtorsion coeffs #
-            ##############################
-            if file.endbondtorsion_coeffs:
-                for j in file.endbondtorsion_coeffs:
-                    coeff = file.endbondtorsion_coeffs[j]
-                    coeffs = coeff.coeffs
-                    types = split_coeff(coeff.type)
-                    new_type = dihedral_types_dict[types]
-                    self.endbondtorsion_coeffs[new_type].coeffs = coeffs
+                ##########################
+                # Find bondbond13 coeffs #
+                ##########################
+                if file.bondbond13_coeffs:
+                    for j in file.bondbond13_coeffs:
+                        coeff = file.bondbond13_coeffs[j]
+                        coeffs = coeff.coeffs
+                        types = split_coeff(coeff.type)
+                        new_type = dihedral_types_dict[types]
+                        self.bondbond13_coeffs[new_type].coeffs = coeffs
+                                            
+                        # check for consistency
+                        self.bondbond13_coeffs[new_type].consistency.add(tuple(coeffs))
+                        if len(self.bondbond13_coeffs[new_type].consistency) > 1:
+                            log.error('\nERROR BondBond13 Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
     
-                    # check for consistency
-                    self.endbondtorsion_coeffs[new_type].consistency.add(tuple(coeffs))
-                    if len(self.endbondtorsion_coeffs[new_type].consistency) > 1:
-                        log.error('\nERROR EndBondTorsion Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
-                    
-                    
-            #################################
-            # Find middlebondtorsion coeffs #
-            #################################
-            if file.middlebondtorsion_coeffs:
-                for j in file.middlebondtorsion_coeffs:
-                    coeff = file.middlebondtorsion_coeffs[j]
-                    coeffs = coeff.coeffs
-                    types = split_coeff(coeff.type)
-                    new_type = dihedral_types_dict[types]
-                    self.middlebondtorsion_coeffs[new_type].coeffs = coeffs
-                    
-                    # check for consistency
-                    self.middlebondtorsion_coeffs[new_type].consistency.add(tuple(coeffs))
-                    if len(self.middlebondtorsion_coeffs[new_type].consistency) > 1:
-                        log.error('\nERROR MiddleBondTorsion Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))            
-
-                    
-            ##########################
-            # Find bondbond13 coeffs #
-            ##########################
-            if file.bondbond13_coeffs:
-                for j in file.bondbond13_coeffs:
-                    coeff = file.bondbond13_coeffs[j]
-                    coeffs = coeff.coeffs
-                    types = split_coeff(coeff.type)
-                    new_type = dihedral_types_dict[types]
-                    self.bondbond13_coeffs[new_type].coeffs = coeffs
-                                        
-                    # check for consistency
-                    self.bondbond13_coeffs[new_type].consistency.add(tuple(coeffs))
-                    if len(self.bondbond13_coeffs[new_type].consistency) > 1:
-                        log.error('\nERROR BondBond13 Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
-
-                    
-            ############################
-            # Find angletorsion coeffs #
-            ############################
-            if file.angletorsion_coeffs:
-                for j in file.angletorsion_coeffs:
-                    coeff = file.angletorsion_coeffs[j]
-                    coeffs = coeff.coeffs
-                    types = split_coeff(coeff.type)
-                    new_type = dihedral_types_dict[types]
-                    self.angletorsion_coeffs[new_type].coeffs = coeffs
-                    
-                    # check for consistency
-                    self.angletorsion_coeffs[new_type].consistency.add(tuple(coeffs))
-                    if len(self.angletorsion_coeffs[new_type].consistency) > 1:
-                        log.error('\nERROR AngleTorsion Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
-                    
                         
-            ##########################
-            # Find angleangle coeffs #
-            ##########################
-            if file.angleangle_coeffs:
-                for j in file.angleangle_coeffs:
-                    coeff = file.angleangle_coeffs[j]
-                    coeffs = coeff.coeffs
-                    types = split_coeff(coeff.type)
-                    new_type = improper_types_dict[types]
-                    self.angleangle_coeffs[new_type].coeffs = coeffs
-                    
-                    # check for consistency
-                    self.angleangle_coeffs[new_type].consistency.add(tuple(coeffs))
-                    if len(self.angleangle_coeffs[new_type].consistency) > 1:
-                        log.error('\nERROR AngleAngle Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
+                ############################
+                # Find angletorsion coeffs #
+                ############################
+                if file.angletorsion_coeffs:
+                    for j in file.angletorsion_coeffs:
+                        coeff = file.angletorsion_coeffs[j]
+                        coeffs = coeff.coeffs
+                        types = split_coeff(coeff.type)
+                        new_type = dihedral_types_dict[types]
+                        self.angletorsion_coeffs[new_type].coeffs = coeffs
+                        
+                        # check for consistency
+                        self.angletorsion_coeffs[new_type].consistency.add(tuple(coeffs))
+                        if len(self.angletorsion_coeffs[new_type].consistency) > 1:
+                            log.error('\nERROR AngleTorsion Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
+                        
+                            
+                ##########################
+                # Find angleangle coeffs #
+                ##########################
+                if file.angleangle_coeffs:
+                    for j in file.angleangle_coeffs:
+                        coeff = file.angleangle_coeffs[j]
+                        coeffs = coeff.coeffs
+                        types = split_coeff(coeff.type)
+                        new_type = improper_types_dict[types]
+                        self.angleangle_coeffs[new_type].coeffs = coeffs
+                        
+                        # check for consistency
+                        self.angleangle_coeffs[new_type].consistency.add(tuple(coeffs))
+                        if len(self.angleangle_coeffs[new_type].consistency) > 1:
+                            log.error('\nERROR AngleAngle Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
                         
 
         ###########################            
@@ -796,16 +802,17 @@ class merged:
         self.angle_coeffs = dict(OrderedDict(sorted(self.angle_coeffs.items())))
         self.dihedral_coeffs = dict(OrderedDict(sorted(self.dihedral_coeffs.items())))
         self.improper_coeffs = dict(OrderedDict(sorted(self.improper_coeffs.items())))
-        try:
-            self.bondbond_coeffs = dict(OrderedDict(sorted(self.bondbond_coeffs.items())))
-            self.bondangle_coeffs = dict(OrderedDict(sorted(self.bondangle_coeffs.items())))
-            self.angleangletorsion_coeffs = dict(OrderedDict(sorted(self.angleangletorsion_coeffs.items())))
-            self.endbondtorsion_coeffs = dict(OrderedDict(sorted(self.endbondtorsion_coeffs.items())))
-            self.middlebondtorsion_coeffs = dict(OrderedDict(sorted(self.middlebondtorsion_coeffs.items())))
-            self.bondbond13_coeffs = dict(OrderedDict(sorted(self.bondbond13_coeffs.items())))
-            self.angletorsion_coeffs = dict(OrderedDict(sorted(self.angletorsion_coeffs.items())))
-            self.angleangle_coeffs = dict(OrderedDict(sorted(self.angleangle_coeffs.items())))
-        except: pass
+        if self.ff_class == 2:
+            try:
+                self.bondbond_coeffs = dict(OrderedDict(sorted(self.bondbond_coeffs.items())))
+                self.bondangle_coeffs = dict(OrderedDict(sorted(self.bondangle_coeffs.items())))
+                self.angleangletorsion_coeffs = dict(OrderedDict(sorted(self.angleangletorsion_coeffs.items())))
+                self.endbondtorsion_coeffs = dict(OrderedDict(sorted(self.endbondtorsion_coeffs.items())))
+                self.middlebondtorsion_coeffs = dict(OrderedDict(sorted(self.middlebondtorsion_coeffs.items())))
+                self.bondbond13_coeffs = dict(OrderedDict(sorted(self.bondbond13_coeffs.items())))
+                self.angletorsion_coeffs = dict(OrderedDict(sorted(self.angletorsion_coeffs.items())))
+                self.angleangle_coeffs = dict(OrderedDict(sorted(self.angleangle_coeffs.items())))
+            except: pass
 
 
 # Function to printout merged coeffs
