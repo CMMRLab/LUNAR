@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.3
-June 11th, 2024
+July 3rd, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -388,7 +388,7 @@ class cell_builder_GUI:
             perform_calculation = False
         if perform_calculation:
             # setup text box to add mass info to
-            mass = tk.Text(calc_frame, width=135, height=len(files)+2)
+            mass = tk.Text(calc_frame, width=155, height=len(files)+2)
             
             # start finding system mass
             system_mass_amu = 0
@@ -437,6 +437,25 @@ class cell_builder_GUI:
             density_gcm3 = '{:.4f}'.format(system_mass_grams/volume_cm3)
             cell_density.delete(0, 'end')
             cell_density.insert(0, density_gcm3)
+            
+        def insert_density():
+            density_amu_per_A3 = angstromcubed2cmcubed*float(density.get())/amu2grams
+            volume_A3 = system_mass_amu/density_amu_per_A3              
+            length = '{:.4f}'.format(volume_A3**(1/3))
+            volume = '{:.4f}'.format(volume_A3)
+            density_vol.delete(0, 'end')
+            density_vol.insert(0, volume)
+            density_li.delete(0, 'end')
+            density_li.insert(0, length)
+            self.domain.delete(0, 'end')
+            self.domain.insert(0, '{}A x {}A x {}A'.format(length, length, length))
+        def insert_cell():
+            volume_cm3 = float(cell_lx.get())*float(cell_ly.get())*float(cell_lz.get())*angstromcubed2cmcubed 
+            density_gcm3 = '{:.4f}'.format(system_mass_grams/volume_cm3)
+            cell_density.delete(0, 'end')
+            cell_density.insert(0, density_gcm3)
+            self.domain.delete(0, 'end')
+            self.domain.insert(0, '{}A x {}A x {}A'.format(cell_lx.get(), cell_ly.get(), cell_lz.get()))
 
         
         # Density calculation
@@ -463,6 +482,9 @@ class cell_builder_GUI:
         density_li.grid(column=6, row=0)
         density_li_label = tk.Label(density_control, text='Computed Lx x Ly x Lz (Å):', font=self.font_settings)
         density_li_label.grid(column=5, row=0)
+        
+        density_insert = tk.Button(density_control, text='insert into domain', font=self.font_settings, command=insert_density)
+        density_insert.grid(column=7, row=0)
         
         # Add padding to all frames in density_control
         for widget in density_control.winfo_children():
@@ -498,6 +520,9 @@ class cell_builder_GUI:
         cell_density.grid(column=8, row=0)
         cell_density_label = tk.Label(cell_control, text='Computed density (g/cc):', font=self.font_settings)
         cell_density_label.grid(column=7, row=0)
+        
+        density_insert = tk.Button(cell_control, text='insert into domain', font=self.font_settings, command=insert_cell)
+        density_insert.grid(column=9, row=0)
         
         # Add padding to all frames in cell_control
         for widget in cell_control.winfo_children():

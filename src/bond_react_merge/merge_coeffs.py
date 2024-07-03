@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.2
-July 2nd, 2024
+July 3rd, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -193,14 +193,17 @@ class merged:
         
         # Unique style hints logger
         self.unique_style_hints = {'Masses': [], 'Pair_Coeffs': [], 'Bond_Coeffs': [],
-                              'Angle_Coeffs': [], 'Dihedral_Coeffs': [],
-                              'Improper_Coeffs': [], 'BondBond_Coeffs': [],
-                              'BondAngle_Coeffs': [], 'AngleAngleTorsion_Coeffs': [],
-                              'EndBondTorsion_Coeffs': [], 'MiddleBondTorsion_Coeffs': [],
-                              'BondBond13_Coeffs': [], 'AngleTorsion_Coeffs': [], 'AngleAngle_Coeffs': []}
+                                  'Angle_Coeffs': [], 'Dihedral_Coeffs': [],
+                                  'Improper_Coeffs': [], 'BondBond_Coeffs': [],
+                                  'BondAngle_Coeffs': [], 'AngleAngleTorsion_Coeffs': [],
+                                  'EndBondTorsion_Coeffs': [], 'MiddleBondTorsion_Coeffs': [],
+                                  'BondBond13_Coeffs': [], 'AngleTorsion_Coeffs': [], 'AngleAngle_Coeffs': []}
         
         # nparms logger to set default zeros for each coeff type (force field specific)
-        nparms_in_coeff = {'mass':[], 'pair':[], 'bond':[], 'angle':[], 'dihedral':[], 'improper':[]}
+        nparms_in_coeff = {'mass':[], 'pair':[], 'bond':[], 'angle':[], 'dihedral':[], 'improper':[],
+                           'bondbond':[], 'bondangle':[], 'angletorsion':[], 'angleangletorsion':[],
+                           'endbondtorsion':[], 'middlebondtorsion':[], 'bondbond13':[], 'angleangle':[]
+                           }
         
         # log to tally types
         ntypes_log = {'atom':0, 'bond':0, 'angle':0, 'dihedral':0, 'improper':0}
@@ -241,6 +244,7 @@ class merged:
                 types = coeff.type
                 unique_masses.add(types)
                 nparms_in_coeff['mass'].append(len(coeff.coeffs))
+                check_comments(coeff.type, 1, file.filename, 'Masses', log)
             
             # Find unique pair coeffs
             pair_coeffs = file.pair_coeffs
@@ -249,8 +253,7 @@ class merged:
                 types = coeff.type
                 unique_pair_coeffs.add(types)
                 nparms_in_coeff['pair'].append(len(coeff.coeffs))
-                #check_comments(coeff.type, 1, file.filename, 'Pair Coeffs', log)
-                #check_comments(file.masses[i].type, 1, file.filename, 'Masses', log)
+                check_comments(coeff.type, 1, file.filename, 'Pair Coeffs', log)
                 
             # Find unique bond coeffs
             bond_coeffs = file.bond_coeffs
@@ -273,6 +276,9 @@ class merged:
                 try: # Check crossterms
                     check_comments(file.bondbond_coeffs[i].type, 3, file.filename, 'BondBond Coeffs', log)
                     check_comments(file.bondangle_coeffs[i].type, 3, file.filename, 'BondAngle Coeffs', log)
+                    
+                    nparms_in_coeff['bondbond'].append(len(file.bondbond_coeffs[i].coeffs))
+                    nparms_in_coeff['bondangle'].append(len(file.bondangle_coeffs[i].coeffs))
                 except: pass
                     
             # Find unique dihedral coeffs
@@ -286,11 +292,16 @@ class merged:
                 
                 try: # Check crossterms
                     check_comments(file.angleangletorsion_coeffs[i].type, 4, file.filename, 'AngleAngleTorsion Coeffs', log)
-                    check_comments(file.angleangletorsion_coeffs[i].type, 4, file.filename, 'AngleAngleTorsion Coeffs', log)
                     check_comments(file.endbondtorsion_coeffs[i].type, 4, file.filename, 'EndBondTorsion Coeffs', log)
                     check_comments(file.middlebondtorsion_coeffs[i].type, 4, file.filename, 'MiddleBondTorsion Coeffs', log)
                     check_comments(file.bondbond13_coeffs[i].type, 4, file.filename, 'BondBond13 Coeffs', log)
                     check_comments(file.angletorsion_coeffs[i].type, 4, file.filename, 'AngleTorsion Coeffs', log)
+                    
+                    nparms_in_coeff['angleangletorsion'].append(len(file.angleangletorsion_coeffs[i].coeffs))
+                    nparms_in_coeff['endbondtorsion'].append(len(file.endbondtorsion_coeffs[i].coeffs))
+                    nparms_in_coeff['middlebondtorsion'].append(len(file.middlebondtorsion_coeffs[i].coeffs))
+                    nparms_in_coeff['bondbond13'].append(len(file.bondbond13_coeffs[i].coeffs))
+                    nparms_in_coeff['angletorsion'].append(len(file.angletorsion_coeffs[i].coeffs))
                 except: pass
                 
             # Find unique improper coeffs 
@@ -304,6 +315,8 @@ class merged:
                 
                 try: # Check crossterms
                     check_comments(file.angleangle_coeffs[i].type, 5, file.filename, 'AngleAngle Coeffs', log)
+                    
+                    nparms_in_coeff['angleangle'].append(len(file.angleangle_coeffs[i].coeffs))
                 except: pass
     
             # Find unique style hints 
@@ -321,6 +334,7 @@ class merged:
             self.unique_style_hints['BondBond13_Coeffs'].append(file.bondbond13_coeffs_style_hint)
             self.unique_style_hints['AngleTorsion_Coeffs'].append(file.angletorsion_coeffs_style_hint)
             self.unique_style_hints['AngleAngle_Coeffs'].append(file.angleangle_coeffs_style_hint)
+            
             
                 
         # print ending of table from intialization
@@ -468,6 +482,10 @@ class merged:
         self.angletorsion_coeffs_style_hint = most_frequent(self.unique_style_hints['AngleTorsion_Coeffs'])
         
         
+        for i in nparms_in_coeff:
+            print(i, nparms_in_coeff[i])
+        
+        
         ####################################################
         # Intialize all dicts as zeros and update later on #
         ####################################################
@@ -499,13 +517,16 @@ class merged:
                 c3.coeffs = nparms*[0]; c3.type = string_parameter_type(i); c3.consistency = set();
                 self.angle_coeffs[angle_types_dict[i]] = c3
             
-            if self.ff_class == 2:
+            nparms = most_frequent(nparms_in_coeff['bondbond'])
+            if self.ff_class == 2 and nparms is not None:
                 c4 = Coeff_class()
-                c4.coeffs = [0,0,0]; c4.type = string_parameter_type(i); c4.consistency = set();
+                c4.coeffs = nparms*[0]; c4.type = string_parameter_type(i); c4.consistency = set();
                 self.bondbond_coeffs[angle_types_dict[i]] = c4
-                
+
+            nparms = most_frequent(nparms_in_coeff['bondangle'])
+            if self.ff_class == 2 and nparms is not None:
                 c5 = Coeff_class()
-                c5.coeffs = [0,0,0,0]; c5.type = string_parameter_type(i); c5.consistency = set();
+                c5.coeffs = nparms*[0]; c5.type = string_parameter_type(i); c5.consistency = set();
                 self.bondangle_coeffs[angle_types_dict[i]] = c5
          
         # Intialize all dihedral types dicts
@@ -516,25 +537,34 @@ class merged:
                 c6.coeffs = nparms*[0]; c6.type = string_parameter_type(i); c6.consistency = set();
                 self.dihedral_coeffs[dihedral_types_dict[i]] = c6
             
-            if self.ff_class == 2:
+            nparms = most_frequent(nparms_in_coeff['angleangletorsion'])
+            if self.ff_class == 2 and nparms is not None:
                 c7 = Coeff_class()
-                c7.coeffs = [0,0,0]; c7.type = string_parameter_type(i); c7.consistency = set();
+                c7.coeffs = nparms*[0]; c7.type = string_parameter_type(i); c7.consistency = set();
                 self.angleangletorsion_coeffs[dihedral_types_dict[i]] = c7
                 
+            nparms = most_frequent(nparms_in_coeff['endbondtorsion'])
+            if self.ff_class == 2 and nparms is not None:
                 c8 = Coeff_class()
-                c8.coeffs = [0,0,0,0,0,0,0]; c8.type = string_parameter_type(i); c8.consistency = set();
+                c8.coeffs = nparms*[0]; c8.type = string_parameter_type(i); c8.consistency = set();
                 self.endbondtorsion_coeffs[dihedral_types_dict[i]] = c8
                 
+            nparms = most_frequent(nparms_in_coeff['middlebondtorsion'])
+            if self.ff_class == 2 and nparms is not None:
                 c9 = Coeff_class()
-                c9.coeffs = [0,0,0,0,0,0,0]; c9.type = string_parameter_type(i); c9.consistency = set();
+                c9.coeffs = nparms*[0]; c9.type = string_parameter_type(i); c9.consistency = set();
                 self.middlebondtorsion_coeffs[dihedral_types_dict[i]] = c9
                 
+            nparms = most_frequent(nparms_in_coeff['bondbond13'])
+            if self.ff_class == 2 and nparms is not None:
                 c10 = Coeff_class()
-                c10.coeffs = [0,0,0]; c10.type = string_parameter_type(i); c10.consistency = set();
+                c10.coeffs = nparms*[0]; c10.type = string_parameter_type(i); c10.consistency = set();
                 self.bondbond13_coeffs[dihedral_types_dict[i]] = c10
                 
+            nparms = most_frequent(nparms_in_coeff['angletorsion'])
+            if self.ff_class == 2 and nparms is not None:
                 c11 = Coeff_class()
-                c11.coeffs = [0,0,0,0,0,0,0,0]; c11.type = string_parameter_type(i); c11.consistency = set();
+                c11.coeffs = nparms*[0]; c11.type = string_parameter_type(i); c11.consistency = set();
                 self.angletorsion_coeffs[dihedral_types_dict[i]] = c11
 
         # Intialize all improper types dicts
@@ -545,9 +575,10 @@ class merged:
                 c12.coeffs = nparms*[0]; c12.type = string_parameter_type(i); c12.consistency = set();
                 self.improper_coeffs[improper_types_dict[i]] = c12
             
-            if self.ff_class == 2:
+            nparms = most_frequent(nparms_in_coeff['angleangle'])
+            if self.ff_class == 2 and nparms is not None:
                 c13 = Coeff_class()
-                c13.coeffs = [0,0,0,0,0,0]; c13.type = string_parameter_type(i); c13.consistency = set();
+                c13.coeffs = nparms*[0]; c13.type = string_parameter_type(i); c13.consistency = set();
                 self.angleangle_coeffs[improper_types_dict[i]] = c13
 
         

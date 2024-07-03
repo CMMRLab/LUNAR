@@ -223,11 +223,15 @@ Date               Developer   Description
                                                   potential types of LAMMPS datafiles.	
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 2July2024)
+LUNAR (version 3July2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-2July2024          JDK         - bond_react_merge.py and cell_builder.py with force_field_joining = 'merge':
+3July2024          JDK         - bond_react_merge.py and cell_builder.py with force_field_joining = 'merge':
                                  Fixed the issue of writing crossterms with ZERO's for class1 FFs, that dont
                                  have crossterm interations, such as the non-crossterm version of CVFF, OLSA,
-                                 DREIDING, etc.								 
+                                 DREIDING, etc.	
+
+3July2024          JDK         - cell_builder.py: For the "random" method, the compute density pop-up in the
+                                                  GUI was added onto, to allow for the insertion of the cell
+                                                  dimensions to the "domain" entry via the click of a button								  
