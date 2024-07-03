@@ -59,3 +59,8 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 ## Terms of use
 - You agree to acknowledge the use of the LUNAR in any reports or publications of results obtained with the LUNAR by citing "LUNAR: Automated Input Generation and Analysis for Reactive LAMMPS Simulations" at https://doi.org/10.1021/acs.jcim.4c00730.
 - LUNAR is not responsible for the validity contents of any linked website and does not accept any liability for actions or consequences applying LUNAR codes.
+
+## Additional resources
+- Tutorials and workshops related to LUNAR and LAMMPS will be posted at: https://www.youtube.com/@CMMRLab-LUNAR.
+- Files generated during posted tutorials on YouTube will be posted at: https://github.com/CMMRLab/LUNAR_tutorials/tree/main.
+- Feel free to add comments on the YouTube channel of questions.
