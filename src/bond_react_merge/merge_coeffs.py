@@ -482,10 +482,6 @@ class merged:
         self.angletorsion_coeffs_style_hint = most_frequent(self.unique_style_hints['AngleTorsion_Coeffs'])
         
         
-        for i in nparms_in_coeff:
-            print(i, nparms_in_coeff[i])
-        
-        
         ####################################################
         # Intialize all dicts as zeros and update later on #
         ####################################################
