@@ -1,7 +1,7 @@
 
 
 Running auto_morse_bond v1.9 / 2 April 2024
-Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+Using Python version 3.11.5 (tags/v3.11.5:cce6ba9, Aug 24 2023, 14:38:34) [MSC v.1936 64 bit (AMD64)]
 Read in EXAMPLES/auto_morse_bond/detda_typed_IFF.data LAMMPS datafile
 Finding molecules ....
 Finding rings ....
@@ -62,7 +62,7 @@ id        BO: 1, 2, 3, 0; parms: file, classN;        Count        r0      Avera
 
 
 ----Inputs used for find_rings----
-elements2walk:  ['C', 'H', 'O', 'N', 'S', 'F', 'Si']
+elements2walk:  ['Ag', 'Al', 'Ar', 'As', 'At', 'Au', 'B', 'Ba', 'Be', 'Bi', 'Br', 'C', 'Ca', 'Cl', 'Co', 'Cr', 'Cs', 'Cu', 'D', 'F', 'FI', 'Fe', 'Fr', 'Ga', 'Ge', 'H', 'He', 'I', 'In', 'K', 'Kr', 'L', 'Li', 'Lp', 'Lv', 'Mc', 'Mg', 'Mn', 'Mo', 'N', 'Na', 'Ne', 'Nh', 'Ni', 'O', 'Og', 'P', 'Pb', 'Pd', 'Po', 'Pt', 'Ra', 'Rb', 'Rn', 'S', 'Sb', 'Se', 'Si', 'Sn', 'Sr', 'TI', 'Te', 'Ti', 'Ts', 'V', 'W', 'Xe', 'mg']
 rings2check:  [3, 4, 5, 6]
 fused-rings:  False
 fused2check:  [5, 6]
@@ -126,7 +126,7 @@ zeroing of xterms leading to usage of IFF-RX0 requiring smaller hydrogen atom to
 14 of 14 (100.00%) BondBond13 coeffs had r0s that were effected by the morse bond update
 
 
-All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\auto_morse_bond directory
+All outputs can be found in C:\Users\jdkem\Desktop\GitHub\LUNAR\EXAMPLES\auto_morse_bond directory
 
 
 *NOTE: To use the shifted morse bond potential, modification to the LAMMPS source code
@@ -136,7 +136,7 @@ is required! You must subtract out d0[type] from ebond in src/MOLECULE/bond_mors
 Normal program termination
 
 
-Execution time in seconds: 0.6389994621276855
+Execution time in seconds: 1.3589999675750732
 
 
 Number of WARNING(s) and ERROR(s)

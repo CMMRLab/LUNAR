@@ -37,62 +37,72 @@
 !      those pair of atoms. Josh will try to have most use cases already set, but is limited due to the expeirmental 
 !      dissociation energies available. If you want to add more and need help reach out to Josh.  
 !
-! Version 1.0 7/28/2023
+! Version 1.1 7/11/2024
 
 #parameters
 
-! Itype    Jtype     D (kJ/mol)    BO (1,2,3, or 1.5)    use (T or F)    alpha (min or float) ! comments
-!------    -----     ----------    ------------------    ------------    -------------------- ! ---------------------------------------------------------------------------------------------------------------------------------
-GRAPHENE  GRAPHENE    518.8154             1.5                T                  2.4          ! C-C aromatic graphene/CNT.        From IFF-R_tutorial PowerPoint posted 12/12/2022 by Dr. Hendrik Heinz (124 Kcal/mol = 518.8154 kJ/mol)
- C,6,*     C,6,*      627.5993             1.5                T                  min          ! C-C aromatic bond.                From IFF-R_tutorial PowerPoint posted 12/12/2022 by Dr. Hendrik Heinz (150 Kcal/mol = 627.5993 KJ/mol)
- C,5,*     C,6,*      627.5993             1.5                T                  min          ! C-C aromatic bond.                From IFF-R_tutorial PowerPoint posted 12/12/2022 by Dr. Hendrik Heinz (150 Kcal/mol = 627.5993 KJ/mol)
- C,5,*     C,5,*      627.5993             1.5                T                  min          ! C-C aromatic bond.                From IFF-R_tutorial PowerPoint posted 12/12/2022 by Dr. Hendrik Heinz (150 Kcal/mol = 627.5993 KJ/mol)
- C,0,2     C,0,2      835                   3                 T                  min          ! C-C triple bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,1     C,0,2      835                   3                 T                  min          ! C-C triple bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,2     C,0,3      602                   2                 T                  min          ! C-C double bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,3     C,0,3      602                   2                 T                  min          ! C-C double bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,*,4     C,*,4      346                   1                 T                  min          ! C-C single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,*,3     C,*,4      346                   1                 T                  min          ! C-C single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,2     O,0,1      1072                  3                 T                  min          ! C-O triple bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,3     O,0,1      799                   2                 T                  min          ! C-O double bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,5,*     O,5,*      578.5                1.5                T                  min          ! C-O aromatic bond.                NO DATA available SO average double and single energies to approxiamte (799+358)/2 = 578.5 KJ/mol
- C,6,*     O,6,*      578.5                1.5                T                  min          ! C-O aromatic bond.                NO DATA available SO average double and single energies to approxiamte (799+358)/2 = 578.5 KJ/mol
- C,6,*     O,*,*      358                   1                 T                  min          ! C-O single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,5,*     O,*,*      358                   1                 T                  min          ! C-O single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,2     O,0,2      358                   1                 T                  min          ! C-O single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,3     O,0,2      358                   1                 T                  min          ! C-O single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,4     O,0,2      358                   1                 T                  min          ! C-O single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,3,*     O,3,*      358                   1                 T                  min          ! C-O single bond (epoxide).        From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,2     N,0,*      887                   3                 T                  min          ! C-N triple bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,3     N,0,*      615                   2                 T                  min          ! C-N double bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,5,*     N,5,*      460                  1.5                T                  min          ! C-N aromatic bond.                NO DATA available SO average double and single energies to approxiamte (615+305)/2 = 460 KJ/mol
- C,6,*     N,6,*      460                  1.5                T                  min          ! C-N aromatic bond.                NO DATA available SO average double and single energies to approxiamte (615+305)/2 = 460 KJ/mol
- C,6,*     N,5,*      305                   1                 T                  min          ! C-N single bond between rings.    From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,5,*     N,6,*      305                   1                 T                  min          ! C-N single bond between rings.    From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,5,*     N,6,*      305                   1                 T                  min          ! C-N single bond between rings.    From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,4     N,0,*      305                   1                 T                  min          ! C-N single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,6,*     N,0,3      460.24                1                 T                  min          ! Car-N amine bond.                 From IFF-R_tutorial PowerPoint posted 12/12/2022 by Dr. Hendrik Heinz (110 Kcal/mol = 460.24 KJ/mol)
- C,5,*     N,0,3      460.24                1                 T                  min          ! Car-N amine bond.                 From IFF-R_tutorial PowerPoint posted 12/12/2022 by Dr. Hendrik Heinz (110 Kcal/mol = 460.24 KJ/mol)
- C,0,2     S,0,*      573                   2                 T                  min          ! C-S double bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,3     S,0,*      573                   2                 T                  min          ! C-S double bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,0,4     S,0,*      272                   1                 T                  min          ! C-S single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- C,5,*     S,0,*      313.8                 1                 T                  min          ! Car-S single bond.                From From IFF-R_tutorial PowerPoint posted 12/12/2022 by Dr. Hendrik Heinz (75 Kcal/mol = 313.8 KJ/mol)
- C,6,*     S,0,*      313.8                 1                 T                  min          ! Car-S single bond.                From From IFF-R_tutorial PowerPoint posted 12/12/2022 by Dr. Hendrik Heinz (75 Kcal/mol = 313.8 KJ/mol)
- C,*,*     Si,*,*     318                   1                 T                  min          ! C-Si single bond.                 From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- O,0,1     O,0,1      494                   2                 T                  min          ! O-O double bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- O,0,1     O,0,*      142                   1                 T                  min          ! O-O single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- O,*,*     S,*,*      522                   2                 T                  min          ! O-S double bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html 
- O,*,*     Si,*,*     452                   1                 T                  min          ! O-Si single bond.                 From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html 
- O,*,1     N,*,*      607                   2                 T                  min          ! O-N Double bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html 
- O,*,2     N,*,*      201                   1                 T                  min          ! O-N Single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html 
- N,*,2     N,*,2      942                   3                 T                  min          ! N-N triple bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- N,*,2     N,*,3      418                   2                 T                  min          ! N-N double bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- N,*,3     N,*,3      167                   1                 T                  min          ! N-N single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html
- N,*,3     N,*,4      167                   1                 T                  min          ! N-N single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html 
- N,*,*     Si,*,4     355                   1                 T                  min          ! N-Si single bond.                 From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html 
- S,*,2     S,*,2      425                   2                 T                  min          ! S-S double bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html 
- S,*,2     S,*,3      425                   2                 T                  min          ! S-S double bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html 
- S,*,3     S,*,3      226                   1                 T                  min          ! S-S single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html 
- S,*,3     S,*,4      226                   1                 T                  min          ! S-S single bond.                  From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html  
- S,*,*     Si,*,*     293                   1                 T                  min          ! S-Si single bond.                 From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html 
- Si,*,*    Si,*,*     222                   1                 T                  min          ! Si-Si single bond.                From http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html 
+! Itype    Jtype    D (kJ/mol)  BO (1,2,3,1.5)  use (T or F)  alpha (min or float)   ref    ! comments
+!------    -----    ----------  --------------  ------------  --------------------   ---    ! ------------------------------------------------------------
+GRAPHENE  GRAPHENE  518.8154         1.5             T                2.4             1     ! C-C aromatic graphene/CNT (124 Kcal/mol = 518.8154 kJ/mol).
+ C,6,*     C,6,*    627.5993         1.5             T                min             1     ! C-C aromatic bond (150 Kcal/mol = 627.5993 KJ/mol).
+ C,5,*     C,6,*    627.5993         1.5             T                min             1     ! C-C aromatic bond (150 Kcal/mol = 627.5993 KJ/mol).
+ C,5,*     C,5,*    627.5993         1.5             T                min             1     ! C-C aromatic bond (150 Kcal/mol = 627.5993 KJ/mol).
+ C,0,2     C,0,2    835              3               T                min             2     ! C-C triple bond.
+ C,0,1     C,0,2    835              3               T                min             2     ! C-C triple bond.
+ C,0,2     C,0,3    602              2               T                min             2     ! C-C double bond.
+ C,0,3     C,0,3    602              2               T                min             2     ! C-C double bond.
+ C,*,4     C,*,4    346              1               T                min             2     ! C-C single bond.
+ C,*,3     C,*,4    346              1               T                min             2     ! C-C single bond.
+ C,0,2     O,0,1    1072             3               T                min             2     ! C-O triple bond.
+ C,0,3     O,0,1    799              2               T                min             2     ! C-O double bond.
+ C,5,*     O,5,*    578.5            1.5             T                min             2     ! C-O aromatic bond. NO DATA, SO average BO 1&2 D's (799+358)/2.
+ C,6,*     O,6,*    578.5            1.5             T                min             2     ! C-O aromatic bond. NO DATA, SO average BO 1&2 D's (799+358)/2.
+ C,6,*     O,*,*    358              1               T                min             2     ! C-O single bond.
+ C,5,*     O,*,*    358              1               T                min             2     ! C-O single bond.
+ C,0,2     O,0,2    358              1               T                min             2     ! C-O single bond.
+ C,0,3     O,0,2    358              1               T                min             2     ! C-O single bond.
+ C,0,4     O,0,2    358              1               T                min             2     ! C-O single bond.
+ C,3,*     O,3,*    358              1               T                min             2     ! C-O single bond (epoxide).
+ C,0,2     N,0,*    887              3               T                min             2     ! C-N triple bond.
+ C,0,3     N,0,*    615              2               T                min             2     ! C-N double bond.
+ C,5,*     N,5,*    460              1.5             T                min             2     ! C-N aromatic bond. NO DATA, SO average BO 1&2 D's (615+305)/2.
+ C,6,*     N,6,*    460              1.5             T                min             2     ! C-N aromatic bond. NO DATA, SO average BO 1&2 D's (615+305)/2.
+ C,6,*     N,5,*    305              1               T                min             2     ! C-N single bond between rings.
+ C,5,*     N,6,*    305              1               T                min             2     ! C-N single bond between rings.
+ C,5,*     N,6,*    305              1               T                min             2     ! C-N single bond between rings.
+ C,0,4     N,0,*    305              1               T                min             2     ! C-N single bond.
+ C,6,*     N,0,3    460.24           1               T                min             1     ! Car-N amine bond (110 Kcal/mol = 460.24 KJ/mol).
+ C,5,*     N,0,3    460.24           1               T                min             1     ! Car-N amine bond (110 Kcal/mol = 460.24 KJ/mol).
+ C,0,2     S,0,*    573              2               T                min             2     ! C-S double bond.
+ C,0,3     S,0,*    573              2               T                min             2     ! C-S double bond.
+ C,0,4     S,0,*    272              1               T                min             2     ! C-S single bond.
+ C,5,*     S,0,*    313.8            1               T                min             1     ! Car-S single bond (75 Kcal/mol = 313.8 KJ/mol).
+ C,6,*     S,0,*    313.8            1               T                min             1     ! Car-S single bond (75 Kcal/mol = 313.8 KJ/mol).
+ C,*,*     Si,*,*   318              1               T                min             2     ! C-Si single bond.
+ O,0,1     O,0,1    494              2               T                min             2     ! O-O double bond.
+ O,0,1     O,0,*    142              1               T                min             2     ! O-O single bond.
+ O,*,*     S,*,*    522              2               T                min             2     ! O-S double bond.
+ O,*,*     Si,*,*   452              1               T                min             2     ! O-Si single bond.
+ O,*,1     N,*,*    607              2               T                min             2     ! O-N Double bond.
+ O,*,2     N,*,*    201              1               T                min             2     ! O-N Single bond.
+ N,*,2     N,*,2    942              3               T                min             2     ! N-N triple bond.
+ N,*,2     N,*,3    418              2               T                min             2     ! N-N double bond.
+ N,*,3     N,*,3    167              1               T                min             2     ! N-N single bond.
+ N,*,3     N,*,4    167              1               T                min             2     ! N-N single bond.
+ N,*,*     Si,*,4   355              1               T                min             2     ! N-Si single bond.
+ S,*,2     S,*,2    425              2               T                min             2     ! S-S double bond.
+ S,*,2     S,*,3    425              2               T                min             2     ! S-S double bond.
+ S,*,3     S,*,3    226              1               T                min             2     ! S-S single bond.
+ S,*,3     S,*,4    226              1               T                min             2     ! S-S single bond.
+ S,*,*     Si,*,*   293              1               T                min             2     ! S-Si single bond.
+ Si,*,*    Si,*,*   222              1               T                min             2     ! Si-Si single bond.
+ H,*,*     H,*,*    432              1               T                min             2     ! H-H single bond.
+ H,*,*     C,*,*    411              1               T                min             2     ! H-C single bond.
+ H,*,*     O,*,*    459              1               T                min             2     ! H-O single bond.
+ H,*,*     N,*,*    386              1               T                min             2     ! H-N single bond.
+ H,*,*     S,*,*    363              1               T                min             2     ! H-S single bond.
+ H,*,*     Si,*,*   318              1               T                min             2     ! H-Si single bond.
+ 
+! References
+! [1] IFF-R_tutorial PowerPoint posted 12/12/2022 by Dr. Hendrik Heinz
+! [2] http://www.wiredchemist.com/chemistry/data/bond_energies_lengths.html

@@ -239,6 +239,10 @@ Date               Developer   Description
 3July2024          JDK         - README.md: Generated a YouTube channel for LUNAR and added the "Additional
                                             resources" to README.md.	
 
-7July2024          JDK         - bond_react_merge.py: Added an additional sort to bond coeffs to mitigate
-                                 the number of permuations to arise. This elimanates order inputs vs outputs
-                                 coupling.								 
+7July2024          JDK         - bond_react_merge.py: Added an additional sort to bond coeffs to mitigate the
+                                                      number of permuations to arise. This elimanates order
+                                                      inputs vs outputs coupling.	
+
+7July2024          JDK         - auto_morse_bond_update.py:	Added H-* bonding parameters in
+                                                            frc_files/Morse_parameters.txt and cleaned up the
+                                                            format.															
