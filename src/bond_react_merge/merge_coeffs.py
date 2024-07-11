@@ -398,7 +398,7 @@ class merged:
         dihedral_types_lst = move_NA2bottom(dihedral_types_lst, ('N/A', 'N/A', 'N/A', 'N/A'), rm_flag=False)
         
         # Improper types Sort by 4th index last since this will be nb==3 or nb!=3 which is 
-        # for distinguish between improper coeffs (nb!==3) and angleangle coeffs (nb==3)
+        # for distinguish between improper coeffs (nb==3) and angleangle coeffs (nb!=3)
         improper_types_lst = list(unique_improper_coeffs); improper_types_dict = {};
         improper_types_lst = sorted(improper_types_lst, key=lambda x: x[3])
         improper_types_lst = sorted(improper_types_lst, key=lambda x: x[2])
