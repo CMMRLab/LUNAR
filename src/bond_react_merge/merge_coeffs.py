@@ -378,8 +378,8 @@ class merged:
         
         # Bonds types
         bond_types_lst = list(unique_bond_coeffs); bond_types_dict = {};
-        bond_types_lst = sorted(unique_bond_coeffs, key=lambda x: x[1])
-        bond_types_lst = sorted(unique_bond_coeffs, key=lambda x: x[0])
+        bond_types_lst = sorted(bond_types_lst, key=lambda x: x[1])
+        bond_types_lst = sorted(bond_types_lst, key=lambda x: x[0])
         bond_types_lst = move_NA2bottom(bond_types_lst, ('N/A', 'N/A'), rm_flag=False)
         
         # Angles types

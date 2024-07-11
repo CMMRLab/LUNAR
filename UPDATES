@@ -223,7 +223,7 @@ Date               Developer   Description
                                                   potential types of LAMMPS datafiles.	
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 3July2024)
+LUNAR (version 7July2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -237,4 +237,8 @@ Date               Developer   Description
                                                   dimensions to the "domain" entry via the click of a button.
 
 3July2024          JDK         - README.md: Generated a YouTube channel for LUNAR and added the "Additional
-                                            resources" to README.md.								  
+                                            resources" to README.md.	
+
+7July2024          JDK         - bond_react_merge.py: Added an additional sort to bond coeffs to mitigate
+                                 the number of permuations to arise. This elimanates order inputs vs outputs
+                                 coupling.								 
