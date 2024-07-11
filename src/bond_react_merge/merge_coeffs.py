@@ -406,6 +406,7 @@ class merged:
         improper_types_lst = sorted(improper_types_lst, key=lambda x: x[0])
         improper_types_lst = sorted(improper_types_lst, key=lambda x: x[4], reverse=True)
         improper_types_lst = move_NA2bottom(improper_types_lst, ('N/A', 'N/A', 'N/A', 'N/A', 'nb!=3'), rm_flag=False)
+        improper_types_lst = move_NA2bottom(improper_types_lst, ('N/A', 'N/A', 'N/A', 'N/A', 'nb==3'), rm_flag=False)
         
         
         ###########################
