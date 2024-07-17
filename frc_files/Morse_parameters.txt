@@ -47,61 +47,67 @@ GRAPHENE  GRAPHENE  518.8154         1.5             T                2.4       
  C,6,*     C,6,*    627.5993         1.5             T                min             1     ! C-C aromatic bond (150 Kcal/mol = 627.5993 KJ/mol).
  C,5,*     C,6,*    627.5993         1.5             T                min             1     ! C-C aromatic bond (150 Kcal/mol = 627.5993 KJ/mol).
  C,5,*     C,5,*    627.5993         1.5             T                min             1     ! C-C aromatic bond (150 Kcal/mol = 627.5993 KJ/mol).
- C,0,2     C,0,2    835              3               T                min             2     ! C-C triple bond.
- C,0,1     C,0,2    835              3               T                min             2     ! C-C triple bond.
- C,0,2     C,0,3    602              2               T                min             2     ! C-C double bond.
- C,0,3     C,0,3    602              2               T                min             2     ! C-C double bond.
- C,*,4     C,*,4    346              1               T                min             2     ! C-C single bond.
- C,*,3     C,*,4    346              1               T                min             2     ! C-C single bond.
- C,0,2     O,0,1    1072             3               T                min             2     ! C-O triple bond.
- C,0,3     O,0,1    799              2               T                min             2     ! C-O double bond.
- C,5,*     O,5,*    578.5            1.5             T                min             2     ! C-O aromatic bond. NO DATA, SO average BO 1&2 D's (799+358)/2.
- C,6,*     O,6,*    578.5            1.5             T                min             2     ! C-O aromatic bond. NO DATA, SO average BO 1&2 D's (799+358)/2.
- C,6,*     O,*,*    358              1               T                min             2     ! C-O single bond.
- C,5,*     O,*,*    358              1               T                min             2     ! C-O single bond.
- C,0,2     O,0,2    358              1               T                min             2     ! C-O single bond.
- C,0,3     O,0,2    358              1               T                min             2     ! C-O single bond.
- C,0,4     O,0,2    358              1               T                min             2     ! C-O single bond.
- C,3,*     O,3,*    358              1               T                min             2     ! C-O single bond (epoxide).
- C,0,2     N,0,*    887              3               T                min             2     ! C-N triple bond.
- C,0,3     N,0,*    615              2               T                min             2     ! C-N double bond.
- C,5,*     N,5,*    460              1.5             T                min             2     ! C-N aromatic bond. NO DATA, SO average BO 1&2 D's (615+305)/2.
- C,6,*     N,6,*    460              1.5             T                min             2     ! C-N aromatic bond. NO DATA, SO average BO 1&2 D's (615+305)/2.
- C,6,*     N,5,*    305              1               T                min             2     ! C-N single bond between rings.
- C,5,*     N,6,*    305              1               T                min             2     ! C-N single bond between rings.
- C,5,*     N,6,*    305              1               T                min             2     ! C-N single bond between rings.
- C,0,4     N,0,*    305              1               T                min             2     ! C-N single bond.
- C,6,*     N,0,3    460.24           1               T                min             1     ! Car-N amine bond (110 Kcal/mol = 460.24 KJ/mol).
- C,5,*     N,0,3    460.24           1               T                min             1     ! Car-N amine bond (110 Kcal/mol = 460.24 KJ/mol).
- C,0,2     S,0,*    573              2               T                min             2     ! C-S double bond.
- C,0,3     S,0,*    573              2               T                min             2     ! C-S double bond.
- C,0,4     S,0,*    272              1               T                min             2     ! C-S single bond.
- C,5,*     S,0,*    313.8            1               T                min             1     ! Car-S single bond (75 Kcal/mol = 313.8 KJ/mol).
- C,6,*     S,0,*    313.8            1               T                min             1     ! Car-S single bond (75 Kcal/mol = 313.8 KJ/mol).
- C,*,*     Si,*,*   318              1               T                min             2     ! C-Si single bond.
- O,0,1     O,0,1    494              2               T                min             2     ! O-O double bond.
- O,0,1     O,0,*    142              1               T                min             2     ! O-O single bond.
- O,*,*     S,*,*    522              2               T                min             2     ! O-S double bond.
- O,*,*     Si,*,*   452              1               T                min             2     ! O-Si single bond.
- O,*,1     N,*,*    607              2               T                min             2     ! O-N Double bond.
- O,*,2     N,*,*    201              1               T                min             2     ! O-N Single bond.
- N,*,2     N,*,2    942              3               T                min             2     ! N-N triple bond.
- N,*,2     N,*,3    418              2               T                min             2     ! N-N double bond.
- N,*,3     N,*,3    167              1               T                min             2     ! N-N single bond.
- N,*,3     N,*,4    167              1               T                min             2     ! N-N single bond.
- N,*,*     Si,*,4   355              1               T                min             2     ! N-Si single bond.
- S,*,2     S,*,2    425              2               T                min             2     ! S-S double bond.
- S,*,2     S,*,3    425              2               T                min             2     ! S-S double bond.
- S,*,3     S,*,3    226              1               T                min             2     ! S-S single bond.
- S,*,3     S,*,4    226              1               T                min             2     ! S-S single bond.
- S,*,*     Si,*,*   293              1               T                min             2     ! S-Si single bond.
- Si,*,*    Si,*,*   222              1               T                min             2     ! Si-Si single bond.
- H,*,*     H,*,*    432              1               T                min             2     ! H-H single bond.
- H,*,*     C,*,*    411              1               T                min             2     ! H-C single bond.
- H,*,*     O,*,*    459              1               T                min             2     ! H-O single bond.
- H,*,*     N,*,*    386              1               T                min             2     ! H-N single bond.
- H,*,*     S,*,*    363              1               T                min             2     ! H-S single bond.
- H,*,*     Si,*,*   318              1               T                min             2     ! H-Si single bond.
+ C,0,2     C,0,2    835.0000         3               T                min             2     ! C-C triple bond.
+ C,0,1     C,0,2    835.0000         3               T                min             2     ! C-C triple bond.
+ C,0,2     C,0,3    602.0000         2               T                min             2     ! C-C double bond.
+ C,0,3     C,0,3    602.0000         2               T                min             2     ! C-C double bond.
+ C,*,4     C,*,4    346.0000         1               T                min             2     ! C-C single bond.
+ C,*,3     C,*,4    346.0000         1               T                min             2     ! C-C single bond.
+ C,0,2     O,0,1    1072.0000        3               T                min             2     ! C-O triple bond.
+ C,0,3     O,0,1    799.0000         2               T                min             2     ! C-O double bond.
+ C,5,*     O,5,*    578.5000         1.5             T                min             2     ! C-O aromatic bond. NO DATA, SO average BO 1&2 D's (799+358)/2.
+ C,6,*     O,6,*    578.5000         1.5             T                min             2     ! C-O aromatic bond. NO DATA, SO average BO 1&2 D's (799+358)/2.
+ C,6,*     O,*,*    358.0000         1               T                min             2     ! C-O single bond.
+ C,5,*     O,*,*    358.0000         1               T                min             2     ! C-O single bond.
+ C,0,2     O,0,2    358.0000         1               T                min             2     ! C-O single bond.
+ C,0,3     O,0,2    358.0000         1               T                min             2     ! C-O single bond.
+ C,0,4     O,0,2    358.0000         1               T                min             2     ! C-O single bond.
+ C,3,*     O,3,*    358.0000         1               T                min             2     ! C-O single bond (epoxide).
+ C,0,2     N,0,*    887.0000         3               T                min             2     ! C-N triple bond.
+ C,0,3     N,0,*    615.0000         2               T                min             2     ! C-N double bond.
+ C,5,*     N,5,*    460.0000         1.5             T                min             2     ! C-N aromatic bond. NO DATA, SO average BO 1&2 D's (615+305)/2.
+ C,6,*     N,6,*    460.0000         1.5             T                min             2     ! C-N aromatic bond. NO DATA, SO average BO 1&2 D's (615+305)/2.
+ C,6,*     N,5,*    305.0000         1               T                min             2     ! C-N single bond between rings.
+ C,5,*     N,6,*    305.0000         1               T                min             2     ! C-N single bond between rings.
+ C,5,*     N,6,*    305.0000         1               T                min             2     ! C-N single bond between rings.
+ C,0,4     N,0,*    305.0000         1               T                min             2     ! C-N single bond.
+ C,6,*     N,0,3    460.2400         1               T                min             1     ! Car-N amine bond (110 Kcal/mol = 460.24 KJ/mol).
+ C,5,*     N,0,3    460.2400         1               T                min             1     ! Car-N amine bond (110 Kcal/mol = 460.24 KJ/mol).
+ C,0,2     S,0,*    573.0000         2               T                min             2     ! C-S double bond.
+ C,0,3     S,0,*    573.0000         2               T                min             2     ! C-S double bond.
+ C,0,4     S,0,*    272.0000         1               T                min             2     ! C-S single bond.
+ C,5,*     S,0,*    313.8000         1               T                min             1     ! Car-S single bond (75 Kcal/mol = 313.8 KJ/mol).
+ C,6,*     S,0,*    313.8000         1               T                min             1     ! Car-S single bond (75 Kcal/mol = 313.8 KJ/mol).
+ C,*,*     Si,*,*   318.0000         1               T                min             2     ! C-Si single bond.
+ O,0,1     O,0,1    494.0000         2               T                min             2     ! O-O double bond.
+ O,0,1     O,0,*    142.0000         1               T                min             2     ! O-O single bond.
+ O,*,*     S,*,*    522.0000         2               T                min             2     ! O-S double bond.
+ O,*,*     Si,*,*   452.0000         1               T                min             2     ! O-Si single bond.
+ O,*,1     N,*,*    607.0000         2               T                min             2     ! O-N Double bond.
+ O,*,2     N,*,*    201.0000         1               T                min             2     ! O-N Single bond.
+ N,*,2     N,*,2    942.0000         3               T                min             2     ! N-N triple bond.
+ N,*,2     N,*,3    418.0000         2               T                min             2     ! N-N double bond.
+ N,*,3     N,*,3    167.0000         1               T                min             2     ! N-N single bond.
+ N,*,3     N,*,4    167.0000         1               T                min             2     ! N-N single bond.
+ N,*,*     Si,*,4   355.0000         1               T                min             2     ! N-Si single bond.
+ S,*,2     S,*,2    425.0000         2               T                min             2     ! S-S double bond.
+ S,*,2     S,*,3    425.0000         2               T                min             2     ! S-S double bond.
+ S,*,3     S,*,3    226.0000         1               T                min             2     ! S-S single bond.
+ S,*,3     S,*,4    226.0000         1               T                min             2     ! S-S single bond.
+ S,*,*     Si,*,*   293.0000         1               T                min             2     ! S-Si single bond.
+ Si,*,*    Si,*,*   222.0000         1               T                min             2     ! Si-Si single bond.
+ H,*,*     H,*,*    432.0000         1               T                min             2     ! H-H single bond.
+ H,*,*     C,*,*    411.0000         1               T                min             2     ! H-C single bond.
+ H,*,*     O,*,*    459.0000         1               T                min             2     ! H-O single bond.
+ H,*,*     N,*,*    386.0000         1               T                min             2     ! H-N single bond.
+ H,*,*     S,*,*    363.0000         1               T                min             2     ! H-S single bond.
+ H,*,*     Si,*,*   318.0000         1               T                min             2     ! H-Si single bond.
+ F,*,*     H,*,*    565.0000         1               T                min             2     ! F-H single bond.
+ F,*,*     C,*,*    485.0000         1               T                min             2     ! F-C single bond.
+ F,*,*     O,*,*    190.0000         1               T                min             2     ! F-O single bond.
+ F,*,*     N,*,*    283.0000         1               T                min             2     ! F-N single bond.
+ F,*,*     S,*,*    284.0000         1               T                min             2     ! F-S single bond.
+ F,*,*     Si,*,*   565.0000         1               T                min             2     ! F-Si single bond.
  
 ! References
 ! [1] IFF-R_tutorial PowerPoint posted 12/12/2022 by Dr. Hendrik Heinz

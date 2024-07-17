@@ -223,7 +223,7 @@ Date               Developer   Description
                                                   potential types of LAMMPS datafiles.	
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 7July2024)
+LUNAR (version 17July2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -245,4 +245,7 @@ Date               Developer   Description
 
 7July2024          JDK         - auto_morse_bond_update.py:	Added H-* bonding parameters in
                                                             frc_files/Morse_parameters.txt and cleaned up the
-                                                            format.															
+                                                            format.					
+
+17July2024         JDK         - auto_morse_bond_update.py:	Added F-* bonding parameters in
+                                                            frc_files/Morse_parameters.txt.
