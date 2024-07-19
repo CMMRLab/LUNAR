@@ -223,7 +223,7 @@ Date               Developer   Description
                                                   potential types of LAMMPS datafiles.	
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 17July2024)
+LUNAR (version 19July2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -249,3 +249,7 @@ Date               Developer   Description
 
 17July2024         JDK         - auto_morse_bond_update.py:	Added F-* bonding parameters in
                                                             frc_files/Morse_parameters.txt.
+															
+19July2024         JDK         - atom_typing.py auto_morse_bond_update.py: Increased efficiency of the ring
+                                                                           analysis path finding code as it
+                                                                           proved to be slow for MXenes.

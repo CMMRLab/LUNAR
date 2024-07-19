@@ -11,6 +11,7 @@ Houghton, MI 49931
 # Import Necessary Libraries #
 ##############################
 import math
+import time
 
 
 #########################################################
@@ -73,11 +74,35 @@ def find_cycles(m, find_rings, log):
     elements2walk = find_rings['elements2walk']; rings2check = find_rings['rings2check'];
     maxringsize = math.ceil( 0.5*(max(rings2check)+1) ); cycles = set([]) # hold all unqiue cycles
     log.out('Finding rings ...')
-    for atomID in graph:
-        if len(graph[atomID]) <= 1 or m.atoms[atomID].element not in elements2walk: continue 
+    start_time = time.time()
+    time_per_atom = 0 # DETDA is about 0.0001 (if over 0.25 generate output log)
+    progress_increment = 5; count = 0; natoms = len(graph);
+    nevery = math.ceil(natoms*(progress_increment/100))
+    checked = {i:False for i in graph}
+    use_checked = False; log_progress = False
+    for n, atomID in enumerate(graph, 1):
+        # log progress
+        count += 1
+        if  time_per_atom > 0.25:
+            log_progress = True
+            use_checked = True
+        if log_progress and count % nevery == 0 or log_progress and count in [1, natoms]:
+            current_percent = int(100*count/natoms)
+            elapsed_time = '{:.4f}'.format(time.time() - start_time)
+            message = '    Taking longer then expected ... Completed: {} %. Elapsed time: {} seconds'.format(current_percent, elapsed_time)
+            log.out(message)
+        
+        # Find rings
+        if use_checked and checked[atomID]: continue
+        if len(graph[atomID]) == 1 or m.atoms[atomID].element not in elements2walk: continue 
         rgraph = reduced_graph(atomID, maxringsize, graph, m, elements2walk) # Find reduced graph for speedup
         for path in dfs(rgraph, start=atomID, end=atomID): # Find all cycles in the reduced graph (rgraph)
             if len(path) in rings2check and len(path) >= 2: cycles.add(tuple(sorted(path)))    
+            if use_checked:
+                for i in path:
+                    checked[i] = True
+        time_per_atom = (time.time() - start_time)/n
+    if use_checked: log.out('Ring analysis was slow. Sped-up by checking if atom was walked prior from previous paths.')
     return list(sorted(cycles)), graph
 
 
