@@ -439,7 +439,7 @@ class find:
                     
         # Warn user if the auto-detetection of deleteIDs found deleteIDs
         if self.deleteIDs:
-            log.warn(f'    WARNING It was detected that {post_filename} post-rxn has more then two molecules. This engaged the')
+            log.warn(f'    WARNING It was detected that {post_filename} post-rxn has more then one molecule. This engaged the')
             log.out(f'    auto-deleteIDs detection and the written {filename} contains deleteIDs for the following pre-rxn-ids:')
             for i in self.deleteIDs:
                 log.out('    {}'.format(self.deleteIDs[i]))
