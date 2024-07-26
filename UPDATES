@@ -223,7 +223,7 @@ Date               Developer   Description
                                                   potential types of LAMMPS datafiles.	
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 22July2024)
+LUNAR (version 26July2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -256,3 +256,5 @@ Date               Developer   Description
 																		   
 22July2024         JDK         - bond_react_merge.py: Fixed typo for map file generation of WARNING, for
                                                       DeleteID auto-detection.	
+													  
+26July2024         JDK         - sheet_builder.py: Fixed typo in "GUI Quick help page".

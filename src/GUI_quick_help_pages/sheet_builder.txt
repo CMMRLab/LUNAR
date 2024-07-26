@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 5/23/2024
+# Last edited 7/26/2024
 #
 ************
 * Overview *
@@ -203,9 +203,9 @@
   axis	
     A drop-down menu to set which axis the tube axis is aligned with. 
 	
-************************
-* Symmetric tubes mode *
-************************
+*********************
+* Chiral tubes mode *
+*********************
 
   basename
     An entry to set output basename of outputs for when running in 'chiral-tube' mode.
