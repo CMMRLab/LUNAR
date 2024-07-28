@@ -223,7 +223,7 @@ Date               Developer   Description
                                                   potential types of LAMMPS datafiles.	
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 26July2024)
+LUNAR (version 28July2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -258,3 +258,7 @@ Date               Developer   Description
                                                       DeleteID auto-detection.	
 													  
 26July2024         JDK         - sheet_builder.py: Fixed typo in "GUI Quick help page".
+
+28July2024         JDK         - src/write_lmp.py: Correct Bondbond vs Bondangle style hint (Wouldnt cause)
+                                                   any issues, but was inconsistent for those reading that
+                                                   file.

@@ -234,7 +234,7 @@ def file(m, filename, header, atom_style, include_type_labels, log, force_field_
             
         # Write bondangle coeffs
         if m.angle_coeffs and m.bondangle_coeffs:
-            if m.bondbond_coeffs_style_hint != 'N/A':
+            if m.bondangle_coeffs_style_hint != 'N/A':
                 f.write(f'\nBondAngle Coeffs  # {m.bondangle_coeffs_style_hint}\n\n')
             else:
                 f.write('\nBondAngle Coeffs\n\n')
