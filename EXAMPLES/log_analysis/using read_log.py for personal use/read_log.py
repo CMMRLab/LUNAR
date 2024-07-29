@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-February 16, 2024
+Revision 1.1
+June 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -21,7 +21,15 @@ Houghton, MI 49931
 # Function to check if value is an int
 def check_int(value):
     try: 
-        int(value)
+        val = int(value)
+        return True
+    except: 
+        return False
+    
+# Function to check if value is a float
+def check_float(value):
+    try: 
+        val = float(value)
         return True
     except: 
         return False
@@ -106,6 +114,14 @@ def line2digits(line, nline):
         digits.append(digit)
     return digits
 
+# Function to check every element in line can be converted to a float
+def checkline4floats(line):
+    booleans = {check_float(i) for i in line}
+    if False in booleans:
+        return False
+    else:
+        return True
+
 
 #####################################################################
 # Class to open and parse LAMMPS log file into data structures.     #
@@ -147,10 +163,12 @@ class file:
                     self.data[self.sectionID] = {i:[] for i in line} # {column-name:[]}
                     indexes = {n:i for n, i in enumerate(line)} # {index:column-name}
                     continue
-                # Break thermo data section if 'Loop time of' in string
+                # Break thermo data section if 'Loop time of' in string or if all data in-line could not be converted to a float
                 elif 'Loop time of' in string: data_flag = False
                 elif 'Loop' in string and 'time' in string and 'of' in string: data_flag = False
                 elif 'ERROR' in line: data_flag = False
+                elif line == '': data_flag = False
+                elif not checkline4floats(line): data_flag = False
                     
                 # Add data to self.data if data_flag
                 if data_flag:
@@ -167,3 +185,30 @@ class file:
         if pflag:
             print(f'  read sections: {" ".join([str(i) for i in self.sections])}')
             print(f'  with {self.nentries} log entries')
+            
+    # method to get all sections that user desires from log file
+    def get_data(self, sections, pflag=True):
+        # Find sectionIDs based on user specified string
+        sectionIDs = get_sections(self.sections, sections)
+        if pflag: print(f'  Loading {" ".join([str(i) for i in sectionIDs])} of {" ".join([str(i) for i in self.sections])} sections')
+        
+        # Find all column names in loaded sections and start joining data
+        columns = {column for ID in self.sections for column in self.data[ID]}
+        data = {} # {column-name:[lst of data]}
+        for ID in sectionIDs:
+            used = {column:False for column in columns}; ndatas = [];
+            for column in self.data[ID]:
+                used[column] = True
+                ndatas.append(len(self.data[ID][column]))
+                if column in data:
+                    data[column].extend(self.data[ID][column])
+                else: data[column] = self.data[ID][column]
+    
+            # Check for any unused columns and make zeros to append
+            for column in used:
+                if not used[column]:
+                    zeros = [0]*int(most_frequent(ndatas))
+                    if column in data:
+                        data[column].extend(zeros)
+                    else: data[column] = zeros
+        return data

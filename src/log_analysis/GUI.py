@@ -540,7 +540,7 @@ class GUI:
                 self.log.out('  keywords={}'.format(self.keywords_entry.get()))
                 self.log.out('  sections={}'.format(sections))
                 log = read_log.file(logfile, keywords=keywords)
-                data = read_log.get_data(log, sections, pflag=True) # {column-name:[lst of data]}
+                data = log.get_data(sections, pflag=True) # {column-name:[lst of data]}
                 self.columns = list(data.keys()) # update columns to push to xdata, ydata drop downs
             else: data = {}; self.log.GUI_error(f'ERROR lammps logfile {logfile} does not exist');
         except: data = {}; self.log.GUI_error('ERROR failed to read logfile and load data');
@@ -1167,7 +1167,7 @@ class GUI:
                     if sections == '': sections = 'all'
                 except: sections = 'all'
                 log = read_log.file(path, keywords=keywords)
-                data = read_log.get_data(log, sections, pflag=True) # {column-name:[lst of data]}
+                data = log.get_data(sections, pflag=True) # {column-name:[lst of data]}
                 self.columns = list(data.keys())
         return
     
@@ -1180,7 +1180,7 @@ class GUI:
                 keywords = self.keywords_entry.get().split(',')
                 sections = self.sections_entry.get()
                 log = read_log.file(logfile, keywords=keywords)
-                data2write = read_log.get_data(log, sections, pflag=True) # {column-name:[lst of data]}
+                data2write = log.get_data(sections, pflag=True) # {column-name:[lst of data]}
                 self.columns = list(data2write.keys()) # update columns to push to xdata, ydata drop downs
             else: data2write = {}; print(f'lammps logfile {logfile} does not exist');
         except: data2write = {}; print('ERROR failed to read logfile and load data')

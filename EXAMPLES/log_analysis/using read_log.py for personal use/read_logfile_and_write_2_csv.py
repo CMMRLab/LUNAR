@@ -61,7 +61,7 @@ print('         log.data[1]["Density"] = ', log.data[1]['Density'])
 # get data based on log class and sections string. pflag is True
 # or False and will print or not print sections being loaded.
 print('\n\nGet data from log class via get_data function:')
-data = read_log.get_data(log, sections, pflag=True) # {column-name:[lst of data]}
+data = log.get_data(sections, pflag=True) # {column-name:[lst of data]}
 print('\nAccess some data values via keys:')
 print('   - truncated data["Step"] = ', data['Step'][:6])
 print('   - truncated data["Temp"] = ', data['Temp'][:6])

@@ -259,6 +259,17 @@ Date               Developer   Description
 													  
 26July2024         JDK         - sheet_builder.py: Fixed typo in "GUI Quick help page".
 
+
+-------------------------------------------------------------------------------------------------------------
+LUNAR (version 29July2024)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
 28July2024         JDK         - src/write_lmp.py: Correct Bondbond vs Bondangle style hint (Wouldnt cause)
                                                    any issues, but was inconsistent for those reading that
                                                    file.
+												   
+29July2024         JDK         - log_analysis.py: Turned read_data.py/get_data() into a method inside of 
+                                                  file class, to make for shorter hand personal use. Updated
+                                                  files in LUNAR/EXAMPLES/log_analysis/using read_log.py for personal use
+                                                  directory.

@@ -185,3 +185,30 @@ class file:
         if pflag:
             print(f'  read sections: {" ".join([str(i) for i in self.sections])}')
             print(f'  with {self.nentries} log entries')
+            
+    # method to get all sections that user desires from log file
+    def get_data(self, sections, pflag=True):
+        # Find sectionIDs based on user specified string
+        sectionIDs = get_sections(self.sections, sections)
+        if pflag: print(f'  Loading {" ".join([str(i) for i in sectionIDs])} of {" ".join([str(i) for i in self.sections])} sections')
+        
+        # Find all column names in loaded sections and start joining data
+        columns = {column for ID in self.sections for column in self.data[ID]}
+        data = {} # {column-name:[lst of data]}
+        for ID in sectionIDs:
+            used = {column:False for column in columns}; ndatas = [];
+            for column in self.data[ID]:
+                used[column] = True
+                ndatas.append(len(self.data[ID][column]))
+                if column in data:
+                    data[column].extend(self.data[ID][column])
+                else: data[column] = self.data[ID][column]
+    
+            # Check for any unused columns and make zeros to append
+            for column in used:
+                if not used[column]:
+                    zeros = [0]*int(most_frequent(ndatas))
+                    if column in data:
+                        data[column].extend(zeros)
+                    else: data[column] = zeros
+        return data
