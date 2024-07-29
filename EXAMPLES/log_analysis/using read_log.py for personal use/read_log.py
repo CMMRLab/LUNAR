@@ -65,33 +65,6 @@ def get_sections(log_sections, sections):
                 else: print(f'  WARNING ID {i} is not an int. skipping.')
     return sorted(set(sectionIDs))
 
-# Function to get all sections that user desires from log file
-def get_data(log, sections, pflag=True):
-    # Find sectionIDs based on user specified string
-    sectionIDs = get_sections(log.sections, sections)
-    if pflag: print(f'  Loading {" ".join([str(i) for i in sectionIDs])} of {" ".join([str(i) for i in log.sections])} sections')
-    
-    # Find all column names in loaded sections and start joining data
-    columns = {column for ID in log.sections for column in log.data[ID]}
-    data = {} # {column-name:[lst of data]}
-    for ID in sectionIDs:
-        used = {column:False for column in columns}; ndatas = [];
-        for column in log.data[ID]:
-            used[column] = True
-            ndatas.append(len(log.data[ID][column]))
-            if column in data:
-                data[column].extend(log.data[ID][column])
-            else: data[column] = log.data[ID][column]
-
-        # Check for any unused columns and make zeros to append
-        for column in used:
-            if not used[column]:
-                zeros = [0]*int(most_frequent(ndatas))
-                if column in data:
-                    data[column].extend(zeros)
-                else: data[column] = zeros
-    return data
-
 
 ####################################################
 # Functions for parsing and converting thermo data #
