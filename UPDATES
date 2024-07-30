@@ -277,3 +277,7 @@ Date               Developer   Description
 30July2024         JDK         - all2lmp.py: Fixed compatibility bug for atomtype:NAME option for
                                              nta_file = 'types_from_pdb.nta', to use types/atomtype:NAME
                                              from .pdb atom-name column.
+											 
+30July2024         JDK         - sheet_builder.py: Added try except to command line manual for "base unit"
+                                                   representation as the "newline" character might cause
+                                                   a failure.												   
