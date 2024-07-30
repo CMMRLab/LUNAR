@@ -261,7 +261,7 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 29July2024)
+LUNAR (version 30July2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -273,3 +273,7 @@ Date               Developer   Description
                                                   file class, to make for shorter hand personal use. Updated
                                                   files in LUNAR/EXAMPLES/log_analysis/using read_log.py for personal use
                                                   directory.
+												  
+30July2024         JDK         - all2lmp.py: Fixed compatibility bug for atomtype:NAME option for
+                                             nta_file = 'types_from_pdb.nta', to use types/atomtype:NAME
+                                             from .pdb atom-name column.

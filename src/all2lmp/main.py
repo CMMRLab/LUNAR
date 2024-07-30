@@ -324,11 +324,12 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
             # get nta dict from atom names in .pdb if topofile is .pdb and nta_file string is 'types_from_pdb.nta'
             if topofile.endswith('pdb') and nta_file == 'types_from_pdb.nta':
                 log.out('Using atom name (columns 13-16 in .pdb for assigning atom types)')
-                nta = {}; edge = {}; charges = {}; neutralize = {'all': False, 'bond-inc': False, 'user-defined': False, 'zero': False}
+                nta = {}; name = {}; edge = {}; charges = {}; neutralize = {'all': False, 'bond-inc': False, 'user-defined': False, 'zero': False}
                 remove = {'angle-nta':[], 'dihedral-nta':[], 'improper-nta':[], 'angle-ID':[], 'dihedral-ID':[], 'improper-ID':[], 'zero':{'angle':False, 'dihedral':False, 'improper':False}}
                 for i in m.atoms:
                     atom = m.atoms[i]
                     nta[i] = atom.atom_name
+                    name[i] = atom.atom_name
                     
             # Read nta_file
             else:
