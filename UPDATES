@@ -261,7 +261,7 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 30July2024)
+LUNAR (version 1August2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -280,4 +280,8 @@ Date               Developer   Description
 											 
 30July2024         JDK         - sheet_builder.py: Added try except to command line manual for "base unit"
                                                    representation as the "newline" character might cause
-                                                   a failure.												   
+                                                   a failure.	
+
+1August2024        JDK         - auto_free_volume.py: Added log reset between file processing to stop 
+                                                      "appending" behavior of log files for different
+                                                      datafile analysis.													  

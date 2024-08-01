@@ -55,12 +55,6 @@ GUI_zoom = 100
 # Update files_directory as desired.                                                                            #
 #################################################################################################################
 files_directory = 'Manuscript/EPON_862/Replicate_packmol_liq'
-files_directory = 'Manuscript/L10/Replicate_old_method'
-files_directory = '../create_atoms_analysis/cyanate_ester'
-files_directory = '../create_atoms_analysis/epoxy'
-
-files_directory = '../LUNAR_subprojects/Manuscript/FFV_connections/cyanate_ester'
-
 
 ##################################################################################################################
 # Set the max voxel size in angstroms to discretize the 3D Simulation cell by. NOTE small voxels impose a very   #
@@ -236,25 +230,15 @@ CUDA_threads_per_block_voxels = 256
 # some of the *.data files that this code writes can get very large (IE a 1000 atom system with in gaseous state #
 # using a max_voxel_size = 0.1 has been seen to generate 2GB and larger files).                                  #
 ##################################################################################################################
-files2write = {'write_atoms_free': True,  # File containing the voxels assigned to the atoms and the free volume (name *_atoms_free.data)
-               'write_bonds_free': True,  # File containing atoms/bonds and the free volume voxels (name *_bonds_free.data)
-               'write_atoms_only': True,  # File containing the voxels assigned to the atoms with the LAMMPS atomTypeIDs set as element types (name *_atoms_only.data)
-               'write_free_only' : True,  # File containing the voxels assigned to thethe free volume (name *_free_only.data)
-               'write_all_voxels': False,  # File containing voxels that were generated before assigning any to the free volume or atom volume (name *_voxels_only.data)
-			   'write_spat_dis-x': True,  # File containing the spatial free volume distribution in X-dir (name *__spatial_distribution_direction_x.csv)
-               'write_spat_dis-y': True,  # File containing the spatial free volume distribution in Y-dir (name *__spatial_distribution_direction_y.csv)
-               'write_spat_dis-z': True,  # File containing the spatial free volume distribution in Z-dir (name *__spatial_distribution_direction_z.csv)
-               }
-
-# files2write = {'write_atoms_free': False,  # File containing the voxels assigned to the atoms and the free volume (name *_atoms_free.data)
-#                'write_bonds_free': False,  # File containing atoms/bonds and the free volume voxels (name *_bonds_free.data)
-#                'write_atoms_only': False,  # File containing the voxels assigned to the atoms with the LAMMPS atomTypeIDs set as element types (name *_atoms_only.data)
-#                'write_free_only' : False,  # File containing the voxels assigned to thethe free volume (name *_free_only.data)
-#                'write_all_voxels': False,  # File containing voxels that were generated before assigning any to the free volume or atom volume (name *_voxels_only.data)
-# 			   'write_spat_dis-x': False,  # File containing the spatial free volume distribution in X-dir (name *__spatial_distribution_direction_x.csv)
-#                'write_spat_dis-y': False,  # File containing the spatial free volume distribution in Y-dir (name *__spatial_distribution_direction_y.csv)
-#                'write_spat_dis-z': False,  # File containing the spatial free volume distribution in Z-dir (name *__spatial_distribution_direction_z.csv)
-#                }
+files2write = {'write_atoms_free':  False,  # File containing the voxels assigned to the atoms and the free volume (name *_atoms_free.data)
+                'write_bonds_free': False,  # File containing atoms/bonds and the free volume voxels (name *_bonds_free.data)
+                'write_atoms_only': False,  # File containing the voxels assigned to the atoms with the LAMMPS atomTypeIDs set as element types (name *_atoms_only.data)
+                'write_free_only' : False,  # File containing the voxels assigned to thethe free volume (name *_free_only.data)
+                'write_all_voxels': False,  # File containing voxels that were generated before assigning any to the free volume or atom volume (name *_voxels_only.data)
+			    'write_spat_dis-x': True,  # File containing the spatial free volume distribution in X-dir (name *__spatial_distribution_direction_x.csv)
+                'write_spat_dis-y': True,  # File containing the spatial free volume distribution in Y-dir (name *__spatial_distribution_direction_y.csv)
+                'write_spat_dis-z': True,  # File containing the spatial free volume distribution in Z-dir (name *__spatial_distribution_direction_z.csv)
+                }
 
 ##################################################################################################################
 # Python boolean variable to set the usage of computing the free volume voxel connectivity and then computing    #
@@ -366,6 +350,7 @@ vdw_radius = {'C':  1.70, # Ref1
 ### Import needed files and run ###
 ###################################
 if __name__ == "__main__":  
+    import src.io_functions as io_functions
     import src.free_volume.main as main
     import time
     import os
@@ -391,9 +376,9 @@ if __name__ == "__main__":
     start_time = time.time()
     topofiles = sorted([file for file in os.listdir(path) if file.endswith('.data')])
     for n, topofile in enumerate(topofiles, 1):
-        main.main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory,
-                  compute_free_volume_distributions, files2write, run_mode, probe_diameter, 
-                  vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, [])
+        log=io_functions.LUNAR_logger()
+        main.main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory, compute_free_volume_distributions,
+                  files2write, run_mode, probe_diameter, vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, [], log=log)
         print(f'{n} of {len(topofiles)} completed')
         cool_time = 5
         print(f'Starting {cool_time} second cooling period before moving to next file.')
