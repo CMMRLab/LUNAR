@@ -261,7 +261,7 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 1August2024)
+LUNAR (version 2August2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -285,3 +285,8 @@ Date               Developer   Description
 1August2024        JDK         - auto_free_volume.py: Added log reset between file processing to stop 
                                                       "appending" behavior of log files for different
                                                       datafile analysis.													  
+													  
+2August2024        JDK         - all2lmp.py: Updated message about missing parameters to provide better
+                                             guidance on missing parameters.
+											 
+2August2024        JDK         - read_lmp.py: Commented out a print() statement that was meant for debugging.

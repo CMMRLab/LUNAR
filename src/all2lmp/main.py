@@ -389,7 +389,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     ####################################################################################################
     # Compute density and volume along system quantities. Generate percetage table and use ignore flag #
     ####################################################################################################
-    ff_functions.compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, reset_charges, ignore_missing_parameters, log)
+    ff_functions.compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, reset_charges, ignore_missing_parameters, frc_file, log)
     
     ########################################################################
     # Setting up directories and where to write final files and results to #

@@ -1225,7 +1225,7 @@ class Molecule_File:
             comments = {self.pair_coeffs[i].type for i in self.pair_coeffs}
             if len(comments) == 1 and 'N/A' in comments:
                 for i in self.pair_coeffs:
-                    print(self.filename, self.pair_coeffs[i].type, self.atom_type_labels_reverse[i])
+                    #print(self.filename, self.pair_coeffs[i].type, self.atom_type_labels_reverse[i])
                     try: self.pair_coeffs[i].type = self.atom_type_labels_reverse[i]
                     except: print(f'WARNING - file pair coeffs have no comments, but has Type Labels, attempted to set pair coeff comment {i}, but failed. Comment left as N/A')
                     

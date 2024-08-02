@@ -384,7 +384,7 @@ def nta_edge_id_bond_incs_extend(id1, type1, edges, frc, use_auto_equivalence, l
 ##################################################
 # Function to compute system mass/volume/density #
 ##################################################
-def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, reset_charges, ignore_missing_parameters, log):
+def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, reset_charges, ignore_missing_parameters, frc_file, log):
     system_mass_sum = 0; amu2grams = 1/6.02214076e+23;
     for i in parameters.atoms:
         atom = parameters.atoms[i]
@@ -532,11 +532,15 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
                 if parameters.angletorsion_coeffs: zero_coeffs(parameters.angletorsion_coeffs, mass_flag=False)
                 if parameters.angleangle_coeffs: zero_coeffs(parameters.angleangle_coeffs, mass_flag=False)
         if ignore_printout:
-            log.out('\nUser is acknowledging that all2lmp.py can not supply a fully parameterized datafile')
-            log.out('and that the user will take the necessary steps to correct the datafile. Please note')
-            log.out('that it is possible that the inputs to all2lmp.py are incorrect causing this error')
-            log.out('and that a certain atom type maybe wrong, where it might be easier to correct the')
-            log.out('inputs to all2lmp.py rather then correct the outputs of all2lmp.py.')
+            log.out('\nUser is acknowledging that all2lmp.py can not supply a fully parameterized datafile as')
+            log.out(f'the {frc_file} doesnt contain all parameters')
+            log.out('to parameterize every interaction. The user is responsible for deciding on how to handle')
+            log.out('missing parameters in the written datafile. Please note that it is possible that the inputs')
+            log.out('to all2lmp.py are incorrect causing this message and that a certain atom type maybe wrong, ')
+            log.out('where it might be easier to correct the inputs to all2lmp.py rather then correct the outputs')
+            log.out('of all2lmp.py. Alternativley missing parameters are set to ZEROs, by all2lmp.py and it is')
+            log.out('possible that interaction doesnt require parameters. For instance not all systems require')
+            log.out('dihedral interactions.')
     return
 
 
