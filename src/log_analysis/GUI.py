@@ -834,7 +834,7 @@ class GUI:
                 size = data['size']
                 
                 # Skip lammps data if rm_lmp_data and label is 'LAMMMPS data'
-                if rm_lmp_data and label == 'LAMMMPS data': continue
+                if rm_lmp_data and label == 'LAMMPS data': continue
                 
                 # If shift, shift all data
                 if shift and shiftable:

@@ -261,7 +261,7 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 2August2024)
+LUNAR (version 5August2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -271,8 +271,8 @@ Date               Developer   Description
 												   
 29July2024         JDK         - log_analysis.py: Turned read_data.py/get_data() into a method inside of 
                                                   file class, to make for shorter hand personal use. Updated
-                                                  files in LUNAR/EXAMPLES/log_analysis/using read_log.py for personal use
-                                                  directory.
+                                                  files in LUNAR/EXAMPLES/log_analysis/using read_log.py for
+                                                  personal use directory.
 												  
 30July2024         JDK         - all2lmp.py: Fixed compatibility bug for atomtype:NAME option for
                                              nta_file = 'types_from_pdb.nta', to use types/atomtype:NAME
@@ -290,3 +290,6 @@ Date               Developer   Description
                                              guidance on missing parameters.
 											 
 2August2024        JDK         - read_lmp.py: Commented out a print() statement that was meant for debugging.
+
+5August2024        JDK         - log_analysis.py: Fixed "Remove LAMMPS data" method as it was not removing
+                                                  the LAMMPS raw data from the plot.
