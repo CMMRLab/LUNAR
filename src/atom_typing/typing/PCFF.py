@@ -762,7 +762,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # npc     14.00670       N          3        sp2 nitrogen in 5- or 6- membered ring and with a heavy atom
-            elif ring >= 5 and tf.count_heavies(elements1, heavies) > 0 or tf.count_heavies(elements2, heavies) > 0:  
+            elif ring >= 5 and tf.count_heavies(elements1, heavies) > 0 or ring >= 5 and tf.count_heavies(elements2, heavies) > 0:  
                 atom.nta_type = 'npc'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 

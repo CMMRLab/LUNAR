@@ -261,7 +261,7 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 5August2024)
+LUNAR (version 12August2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -293,3 +293,5 @@ Date               Developer   Description
 
 5August2024        JDK         - log_analysis.py: Fixed "Remove LAMMPS data" method as it was not removing
                                                   the LAMMPS raw data from the plot.
+												  
+12August2024        JDK         - atom_typing.py: Fixed npc atom typing for PCFF and PCFF-IFF force fields.
