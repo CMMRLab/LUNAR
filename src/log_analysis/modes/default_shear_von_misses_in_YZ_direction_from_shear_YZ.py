@@ -14,24 +14,17 @@ Purpose: Mode to von misses stress from shear sim
 #----------------------------------------------------------------------------------------------------------------#
 # This is special mode as it will show how to use strings to perform vectorized manipulation of arrays to compute#
 # a new array of data to plot. In general the 'xdata' or 'ydata' keys should be columns in the logfile, however  #
-# users may define a compute by setting a string as 'compute: MATH', where MATH is math that the Python eval()   #
-# function can handle. A little bit of understanding needs to be understood about how things are setup in the    #
-# code to make use of this option detailed below:                                                                #
-#   - data is setup in a dictionary as d = {'COLUMN-name': numpy.array(data from logfile)}                       #
-#   - numpy can perform vectorized math operations where the + or - or * or / or ** operations can be used       #
+# users may define a compute by setting a string as '${A} + ${B}/2 + 100', where A and B are columns in the log  #
+# file. This will perform vectorized math operations on those columns of data from the logfile.                  #
 #                                                                                                                #
-# As an example say a LAMMPS logfile had columns x and y, with x-values = [1,2,3] and y-values = [4,5,6]. The d  #
-# dictionary is setup as d = {'x': numpy.array([1,2,3]), 'y': numpy.array([4,5,6])}. Where any math operation    #
-# that is compatable with the eval() command and numpy vectorization can be used. You can google around for to   #
-# find this, but in general almost any basic math opertation is supported. Here are a few examples of setting    #
-# compute strings:                                                                                               #
-#    "compute: d['x']    + d['y']"        the code would compute a new array = [5,7,9].                          #
-#    "compute: d['x']**2 + d['y']"        the code would compute a new array = [5,9,15].                         #
-#    "compute: d['x']**2 / d['y']**2"     the code would compute a new array = [0.0625, 0.16, 0.25].             #
-#    "compute: d['x']**2 * d['y']**0.5"   the code would compute a new array = [2.0, 8.94, 22.05].               #
+# As an example say a LAMMPS logfile had columns x and y, with x-values = [1,2,3] and y-values = [4,5,6].        #
+#    "compute: ${x}    + ${y}"        the code would compute a new array = [5,7,9].                              #
+#    "compute: ${x}**2 + ${y}"        the code would compute a new array = [5,9,15].                             #
+#    "compute: ${x}**2 / ${y}**2"     the code would compute a new array = [0.0625, 0.16, 0.25].                 #
+#    "compute: ${x}**2 * ${y}**0.5"   the code would compute a new array = [2.0, 8.94, 22.05].                   #
 #                                                                                                                #
-# You may then set the 'xdata' and/or 'ydata' in the mode dictionaries as these "compute" strings, which will    #
-# tell the code to perform those math operations, using the data set by the columns of the logfile.              #
+# You may then set the 'xcompute' and/or 'ycompute' in the mode dictionaries as these "compute" strings, which   #
+# will tell the code to perform those math operations, using the data set by the columns of the logfile.         #
 #                                                                                                                #
 # This can be useful to compute a new array of data, where the most obvious case is the need to compute the von  #
 # mises stress criteria from a shear simulation. As in some research groups shear simulations are performed and  #
@@ -47,15 +40,15 @@ Purpose: Mode to von misses stress from shear sim
 # svm = ( ((s11-s22)**2 + (s22-s33)**2 + (s33-s11)**2 + 6*(s12**2 + s23**2 + s31**2))/2 )**0.5                   #
 #----------------------------------------------------------------------------------------------------------------#
 # Method 1: Use a "brute force" typing of string (this serves as an example)
-svm = "( ((d['f_sxx_ave']-d['f_syy_ave'])**2 + (d['f_syy_ave']-d['f_szz_ave'])**2 + (d['f_szz_ave']-d['f_sxx_ave'])**2 + 6*(d['f_sxy_ave']**2 + d['f_syz_ave']**2 + d['f_sxz_ave']**2))/2 )**0.5"
+svm = "( (( ${f_sxx_ave}-${f_syy_ave})**2 + (${f_syy_ave}-${f_szz_ave})**2 + (${f_szz_ave}-${f_sxx_ave})**2 + 6*(${f_sxy_ave}**2 + ${f_syz_ave}**2 + ${f_sxz_ave}**2))/2 )**0.5"
 
 # Method 2: Using formated strings, this method is prefered as it lets others change column names a bit easier
-s11 = "d['{}']".format('f_sxx_ave')
-s22 = "d['{}']".format('f_syy_ave')
-s33 = "d['{}']".format('f_szz_ave')
-s12 = "d['{}']".format('f_sxy_ave')
-s23 = "d['{}']".format('f_syz_ave')
-s31 = "d['{}']".format('f_sxz_ave')
+s11 = "{}{}{}".format('${', 'f_sxx_ave', '}')
+s22 = "{}{}{}".format('${', 'f_syy_ave', '}')
+s33 = "{}{}{}".format('${', 'f_szz_ave', '}')
+s12 = "{}{}{}".format('${', 'f_sxy_ave', '}')
+s23 = "{}{}{}".format('${', 'f_syz_ave', '}')
+s31 = "{}{}{}".format('${', 'f_sxz_ave', '}')
 svm = "( (({s11}-{s22})**2 + ({s22}-{s33})**2 + ({s33}-{s11})**2 + 6*({s23}**2 + {s31}**2 + {s12}**2))/2 )**0.5".format(s11=s11, s22=s22, s33=s33, s12=s12, s23=s23, s31=s31)
 
 # analysis list
@@ -68,11 +61,11 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=shear_modulus_yz_strain_rate=
         'keywords': ['Step', 'Temp'],
         'sections': '1',
         'xdata': 'v_etrueyz',
-        'ydata': f'compute: {svm}', # use variable from above since this is a long equation
+        'ydata': '',
         'xlabel': 'True Strain',
         'ylabel': 'Von Mises Stress (MPa)',
-        'xscale': '',
-        'yscale': '',
+        'xcompute': '',
+        'ycompute': f'{svm}', # use variable from above since this is a long equation,
         'analysis': analysis
         }
 

@@ -1,0 +1,72 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restricted to 145.
+#
+# Last edited 8/15/2024
+#
+*******************
+* Compute options *
+*******************
+
+  The X-data and Y-data drop down menus in the "Data2load" section allows for the ability to set the X-data and Y-data to plot based on the
+  column names in the loaded LAMMPS logfile. However it is sometimes desirable to be able to perform further calculations on the column data
+  from the LAMMPS logfile. These compute options allows for new X-data and Y-data to be computed prior to plotting and analyzing the X-data
+  and the Y-data.
+  
+  The computes using the column data names from the LAMMPS logfile is setup similar to how you may reference a variable in LAMMPS, where you
+  "wrap" the variable in between "${" and "}" characters. For example say you wanted to scale the "Step" data you can put
+    ${Steps}*(1/1000)
+  in either the X-compute or Y-compute entry. This will inform the code to perform vectorized multiplication for every data point in the Step
+  column data, by 1/1000. If the X-data dropdown menu contains a column name and the X-compute entry contains a compute, the compute will be
+  used over the X-data column name. Similarly if the Y-data dropdown menu contains a column name and the Y-compute entry contains a compute,
+  the compute will be used over the Y-data column name.
+  
+******************
+* Math operators *
+******************
+
+  The basic math operators are supported for these vectorized computes. See below for a map of syntax to the math operation:
+    The "+" character is used for addition. For example:
+      ${Step} + 100
+
+    The "-" character is used for subtraction. For example:
+      ${Step} - 100	
+  
+    The "*" character is used for multiplication. For example:
+      ${Step}*100
+		
+    The "/" character is used for division. For example:
+      ${Step}/100
+		
+    The "**N" character is used to raise something to the power N. For example:
+      ${Step}**2
+      ${Step}**(1/2)
+		
+		
+************************************
+* Examples of some useful computes *
+************************************
+
+  Say we want to convert the "Temp" column from Kelvin to Celsius, you can set a compute like:
+    ${Temp} - 273.15
+	
+  Say we want to convert the "Temp" column from Kelvin to Fahrenheit, you can set a compute like:
+    (${Temp} - 273.15)*(9/5) + 32
+	
+  Say we want to convert the "Press" column from atm to PSI, you can set a compute like:
+    ${Press}*14.696
+	
+  Say we want to convert the "Volume" column from angstrom^3 to specific volume, you can set a compute like:
+    1/${Volume}
+	
+  Say we wanted to compute von mises stress from LAMMPS variables, you can set a compute like:
+    (((${f_sxx}-${f_syy})**2 + (${f_syy}-${f_szz})**2 + (${f_szz}-${f_sxx})**2 + 6*(${f_sxy}**2 + ${f_syz}**2 + ${f_sxz}**2))/2)**0.5
+		
+

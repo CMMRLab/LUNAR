@@ -22,8 +22,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=bulk_modulus_v0_v1_calc_ts=0.
         'ydata': 'Volume',
         'xlabel': 'Time (ps)',
         'ylabel': 'Volume (A$^3$)',
-        'xscale': '1/2000',
-        'yscale': '',
+        'xcompute': '${Step}*(1/2000)',
+        'ycompute': '',
         'analysis': analysis
         }
 

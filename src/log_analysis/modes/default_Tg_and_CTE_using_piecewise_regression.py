@@ -24,8 +24,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/properties=Tg_and_CTE_heating_rate=50_
         'ydata': 'Volume',
         'xlabel': 'Temperature (K)',
         'ylabel': 'Volume (A$^3$)',
-        'xscale': '',
-        'yscale': '',
+        'xcompute': '',
+        'ycompute': '',
         'analysis': analysis
         }
 

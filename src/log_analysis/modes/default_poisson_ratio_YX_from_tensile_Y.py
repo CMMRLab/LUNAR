@@ -22,8 +22,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=tensile_modulus_y_strain_rate
         'ydata': 'v_etruex',
         'xlabel': 'True Strain (in Y)',
         'ylabel': 'True Strain (in X)',
-        'xscale': '',
-        'yscale': '',
+        'xcompute': '',
+        'ycompute': '',
         'analysis': analysis
         }
 

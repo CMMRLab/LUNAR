@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 4/13/2024
+# Last edited 8/15/2024
 #
 ************
 * Overview *
@@ -18,8 +18,7 @@
   LUNAR/log_analysis.py  is meant to provide a general purpose plotting and analysis tool for LAMMPS logfiles. The LAMMPS logfile can be setup
   using the LAMMPS "thermo_style    custom ..." command and can be written to based on the LAMMPS "thermo N" command. LUNAR/log_analysis.py is
   compatible with very complex log files with many sections defined. This code minimally requires the Python numpy and matplotlib packages,
-  where pwlf is required to use the "piecewise-regression" analysis method, and scipy is required to use the "hyperbola" anaylsis method or the
-  "spline-integration" method.
+  where pwlf and scipy can enable more methods (see the methods section below).
   
 **********
 * Inputs *
@@ -27,6 +26,7 @@
 
   Methods that use the "X-lo" and "X-hi" columns
     - "moving avrage"
+    - "Butterworth (low pass)"
     - "average"
     - "linear regression"
     - "hyperbola"
@@ -34,6 +34,8 @@
     - "spline-integration"
     - "minimum"
     - "maximum"
+    - "LAMMPS data (apply moving average)"
+    - "LAMMPS data (apply butterworth filter)"
     - all other methods can leave this column empty
     - NOTE: if not provided the GUI will default to using the minimum xdata for xlo and the maximum xdata for xhi
 
@@ -43,6 +45,49 @@
         entry is left empty. Examples:
           window=50  # group 50 data points and average into one data point
           window=75  # group 75 data points and average into one data point
+		  
+    - "Butterworth (low pass)"
+        This method implements a low pass butterworth  filter to attenuate the higher frequency thermal vibrations associated with most MD thermo-
+        dynamic data. The goal is the "reveal" a cleaned response of the data being filtered. It is worth researching the butterworth filter prior
+        to using this filtering method, however a breif discussion will be provided discussing the keyword inputs implemented for this method.
+        This method allows for two settings to be adjusted, the "order" of the filter and the "critical frequency (wn)" of the filter. The "order"
+        of the filter sets how "aggressive" the higher frequencies are attenuated near the "cutoff frequency" of the filter. For example see the
+        two magnitude responses below for the same "cutoff frequency", the "higher" order filter reduces the "gain" much more aggressively near the
+        "cutoff frequency".
+
+          Depicts the magnitude response               Depicts the magnitude response
+          of a "lower order" filter		               of a "higher order" filter
+
+          ^                                            ^
+         1|..........                                 1|..........
+          |          .                                 |         .
+          |           .                                |         .
+          |            .                               |         .
+          |             .                              |         .
+          |              ..........                    |         ...........
+         0+----------|-------------->                 0+---------|--------------->
+            frequency cutoff                             frequency cutoff
+					
+        wn=<float>, where <float> is a floating point number between 0 and 1 to set critical frequency, which is the point at which the gain drops to
+        1/sqrt(2) that of the passband (the "-3 dB point"). If you want to control the "true cutoff frequency" you may compute "wn" in the following
+        way:
+            wn = cutoff/nf; where "wn" is the input to the filter, "nf" is the Nyquist frequency, and "cutoff" is the cutoff frequency. 
+            nf = 0.5*fs; where "fs" is the sampling frequency (1/delta-x).
+            wn = cutoff/(0.5*fs)
+        The default wn is 0.01, if not supplied. Examples:
+          wn=0.1
+          wn=0.5
+		  
+        order=<int>, where <int> is the order of the low pass butterworth filter. See the images above for the effect of the order of the filter.  The
+        default order is 2, if not supplied. Examples:
+          order=2
+          order=3
+		  
+        NOTE: the "order" and "wn" can be set by stringing them together with the ";" character. For example:
+          order=2; wn=0.1
+          wn=0.5; order=3
+		
+        This method requires the Python scipy package (install via: pip install scipy)
                   
     - "linear regression"
         shift=<Boolean>, where <Boolean> is True or False. If shift=True all data that is plotted except the cursor (if plotted) will be shifted
@@ -111,7 +156,14 @@
 		  
     - "piecewise-regression"
         n=<int>, where <int> is the number of break points to use to perform a "piecewise-regression", sometimes termed as a segmented linear
-        regression.
+        regression. Examples:
+          n=1
+          n=2
+		
+        shift=<Boolean>, where <Boolean> is True or False. If shift=True all data that is plotted except the cursor (if plotted) will be shifted
+        by the first datapoint of the piecewise-regression. Examples:
+          shift=False
+          shift=True
 
         This method requires the Python pwlf package (install via: pip install pwlf)
 		
@@ -127,7 +179,23 @@
           window=50  # group 50 data points and average into one data point
           window=75  # group 75 data points and average into one data point
         After the moving average is applied the minimum or maximum Y-value on the moving average data will found and reported.
-                 
+
+    - "LAMMPS data (apply moving average)" or "LAMMPS data (apply butterworth filter)"
+        Can be used as a "global" method to clean the LAMMPS data before analyzing. The "LAMMPS data (apply moving average)" option means apply a 
+        moving average to the LAMMPS data before analyzing. This can be useful to reduce the "noise" in logged thermodynamic data. Please see the
+        "moving average" section for options to use in the "misc" column to define the operations of this method on the LAMMPS data. The default
+        "X-lo" and "X-hi" will be the minimum and maximum of the X-data if left blank and the default window will be 100 data points of left
+        blank.
+      
+        The "LAMMPS data (apply butterworth filter)" option means apply a low pass butterworth filter to the LAMMPS data before analyzing. This
+        can be useful to reduce the "noise" in logged thermodynamic data. Please see the "Butterworth (low pass)" section for options to use in
+        the "misc" column to define the operations of this method on the LAMMPS data. The default "X-lo" and "X-hi" will be the minimum and maximum
+        of the X-data if left blank. The default "wn" will be 0.01 and "order" will be 2 if left blanks.
+	  
+        NOTE only one instance of "LAMMPS data (apply moving average)" or "LAMMPS data (apply butterworth filter)" can be used at a time (not both
+        at once). Additionally even when using either LAMMPS data method, the raw LAMMPS data will still be plotted. To remove the raw LAMMPS data
+        from the plot while using either of these options use the "LAMMPS data (remove from plot)" option.
+
   All methods will use "Name" column, however if left empty the code will create the name as analysis-<N>, where <N> is the index of the analysis
   in the GUI.   
 

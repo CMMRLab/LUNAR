@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-May 13th, 2024
+Revision 1.1
+August 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -23,12 +23,6 @@ import numpy as np
 import math
 import time
 import os
-
-# Please note "from scipy import optimize" is imported in
-# the "fit_hyperbola" method since that analysis method
-# is the only one to use scipy and it will only be imported
-# if a user. uses that analysis method. Thus reducing the
-# "Top Level" dependancies of the code.
 
 
 
@@ -61,8 +55,8 @@ class GUI:
         self.sections = mode['sections']
         self.xlabel = mode['xlabel']
         self.ylabel = mode['ylabel']
-        self.xscale = mode['xscale']
-        self.yscale = mode['yscale']
+        self.xcompute = mode['xcompute']
+        self.ycompute = mode['ycompute']
         self.analysis = mode['analysis']
         
         # Initialize window
@@ -110,23 +104,23 @@ class GUI:
         self.inputs_frame.grid(row=0, column=0, padx=self.xpadding, pady=self.ypadding)
         
         # logfile selection button
-        self.logfile = tk.Entry(self.inputs_frame, width=int(1.43*self.maxwidth), font=self.font_settings)
+        self.logfile = tk.Entry(self.inputs_frame, width=int(1.45*self.maxwidth), font=self.font_settings)
         self.logfile.insert(0, mode['logfile'])
         self.logfile.grid(column=1, row=0, columnspan=4)
         self.logfile_button = tk.Button(self.inputs_frame, text='logfile', font=self.font_settings, command=self.logfile_path)
         self.logfile_button.grid(column=0, row=0)
         
         # modes
-        self.modefile = tk.Entry(self.inputs_frame, width=int(0.9*self.maxwidth), font=self.font_settings)
+        self.modefile = tk.Entry(self.inputs_frame, width=self.maxwidth, font=self.font_settings)
         self.modefile.insert(0, settings['mode'])
         self.modefile.grid(column=1, row=1)
         self.modefile_button = tk.Button(self.inputs_frame, text='mode file', font=self.font_settings, command=self.modefile_path)
         self.modefile_button.grid(column=0, row=1)        
         
-        # remove_PBC_bonds drop down menu
+        # load_replace_logfile drop down menu
         styles = [True, False]
         self.load_replace_logfile = ttk.Combobox(self.inputs_frame, values=styles, width=int(self.maxwidth/10), font=self.font_settings)
-        self.load_replace_logfile.current(styles.index(False))
+        self.load_replace_logfile.current(styles.index(settings['replace_logfile_when_loading_mode']))
         self.load_replace_logfile.grid(column=4, row=1)
         self.load_replace_logfile_label = tk.Label(self.inputs_frame, text='Replace logfile when loading mode', font=self.font_settings)
         self.load_replace_logfile_label.grid(column=3, row=1)
@@ -145,21 +139,21 @@ class GUI:
         
         # keywords
         keywords = ','.join(self.keywords)
-        self.keywords_entry = tk.Entry(self.load_frame, width=int(self.maxwidth/8), font=self.font_settings)
+        self.keywords_entry = tk.Entry(self.load_frame, width=int(self.maxwidth/5), font=self.font_settings)
         self.keywords_entry.insert(0, keywords)
         self.keywords_entry.grid(column=0, row=1)
         self.keywords_label = tk.Label(self.load_frame, text='keywords\n(comma seperated)', font=self.font_settings)
         self.keywords_label.grid(column=0, row=0)
         
         # sections entry
-        self.sections_entry = tk.Entry(self.load_frame, width=int(self.maxwidth/4.5), font=self.font_settings)
+        self.sections_entry = tk.Entry(self.load_frame, width=int(self.maxwidth/3), font=self.font_settings)
         self.sections_entry.insert(0, self.sections)
         self.sections_entry.grid(column=1, row=1)
         self.sections_label = tk.Label(self.load_frame, text='sections\n(all or 1 or 1,2,3 or 1-3 or 1,2,4-6 or ...)', font=self.font_settings)
         self.sections_label.grid(column=1, row=0)
         
         # xdata drop down menu
-        self.xdata_dropdown = ttk.Combobox(self.load_frame, values=self.columns, width=int(self.maxwidth/8), font=self.font_settings,
+        self.xdata_dropdown = ttk.Combobox(self.load_frame, values=self.columns, width=int(self.maxwidth/6), font=self.font_settings,
                                               postcommand=lambda: self.xdata_dropdown.configure(values=self.columns) )
         self.xdata_dropdown.current(self.columns.index(self.xdata))
         self.xdata_dropdown.grid(column=2, row=1)
@@ -167,43 +161,58 @@ class GUI:
         self.xdata_dropdown_label.grid(column=2, row=0)
         
         # ydata drop down menu
-        self.ydata_dropdown = ttk.Combobox(self.load_frame, values=self.columns, width=int(self.maxwidth/8), font=self.font_settings,
+        self.ydata_dropdown = ttk.Combobox(self.load_frame, values=self.columns, width=int(self.maxwidth/6), font=self.font_settings,
                                               postcommand=lambda: self.ydata_dropdown.configure(values=self.columns) )
         self.ydata_dropdown.current(self.columns.index(self.ydata))
         self.ydata_dropdown.grid(column=3, row=1)
         self.ydata_dropdown_label = tk.Label(self.load_frame, text='Y-data', font=self.font_settings)
         self.ydata_dropdown_label.grid(column=3, row=0)
         
-        # xscale
-        self.xscale_entry = tk.Entry(self.load_frame, width=int(self.maxwidth/6), font=self.font_settings)
-        self.xscale_entry.insert(0, self.xscale)
-        self.xscale_entry.grid(column=4, row=1)
-        self.xscale_label = tk.Label(self.load_frame, text='X-scale\n(float or fraction or empty)', font=self.font_settings)
-        self.xscale_label.grid(column=4, row=0)
-        
-        # yscale
-        self.yscale_entry = tk.Entry(self.load_frame, width=int(self.maxwidth/6), font=self.font_settings)
-        self.yscale_entry.insert(0, self.yscale)
-        self.yscale_entry.grid(column=5, row=1)
-        self.yscale_label = tk.Label(self.load_frame, text='Y-scale\n(float or fraction or empty)', font=self.font_settings)
-        self.yscale_label.grid(column=5, row=0)
-        
         # xlabel
-        self.xlabel_entry = tk.Entry(self.load_frame, width=int(self.maxwidth/5.5), font=self.font_settings)
+        self.xlabel_entry = tk.Entry(self.load_frame, width=int(self.maxwidth/4), font=self.font_settings)
         self.xlabel_entry.insert(0, self.xlabel)
-        self.xlabel_entry.grid(column=6, row=1)
+        self.xlabel_entry.grid(column=4, row=1)
         self.xlabel_label = tk.Label(self.load_frame, text='X-label\n(string)', font=self.font_settings)
-        self.xlabel_label.grid(column=6, row=0)
+        self.xlabel_label.grid(column=4, row=0)
         
         # ylabel
-        self.ylabel_entry = tk.Entry(self.load_frame, width=int(self.maxwidth/5.5), font=self.font_settings)
+        self.ylabel_entry = tk.Entry(self.load_frame, width=int(self.maxwidth/4), font=self.font_settings)
         self.ylabel_entry.insert(0, self.ylabel)
-        self.ylabel_entry.grid(column=7, row=1)
+        self.ylabel_entry.grid(column=5, row=1)
         self.ylabel_label = tk.Label(self.load_frame, text='Y-label\n(string)', font=self.font_settings)
-        self.ylabel_label.grid(column=7, row=0)
+        self.ylabel_label.grid(column=5, row=0)
         
         # Add padding to all frames in self.load_frame
         for widget in self.load_frame.winfo_children():
+            widget.grid_configure(padx=int(self.xpadding/2), pady=int(self.ypadding/3))
+            
+        #----------------#
+        # Computes frame #
+        #----------------#
+        # Initalize computes frame
+        self.computes_frame = tk.LabelFrame(self.frame, text='Computes', font=self.font_settings)
+        self.computes_frame.grid(row=2, column=0, sticky='news', padx=self.xpadding, pady=self.ypadding)
+            
+        # xcompute
+        self.xcompute_entry = tk.Entry(self.computes_frame, width=int(1.3*self.maxwidth), font=self.font_settings)
+        self.xcompute_entry.insert(0, self.xcompute)
+        self.xcompute_entry.grid(column=1, row=1)
+        self.xcompute_label = tk.Label(self.computes_frame, text='X-compute', font=self.font_settings)
+        self.xcompute_label.grid(column=0, row=1)
+        
+        # ycompute
+        self.ycompute_entry = tk.Entry(self.computes_frame, width=int(1.3*self.maxwidth), font=self.font_settings)
+        self.ycompute_entry.insert(0, self.ycompute)
+        self.ycompute_entry.grid(column=1, row=2)
+        self.ycompute_label = tk.Label(self.computes_frame, text='Y-compute', font=self.font_settings)
+        self.ycompute_label.grid(column=0, row=2)
+        
+        # Button to load compute help
+        self.compute_help = tk.Button(self.computes_frame, text='compute\nhelp', font=self.font_settings, width=int(self.maxwidth/9), command=self.compute_options)
+        self.compute_help.grid(column=3, row=1, columnspan=1, rowspan=2)
+        
+        # Add padding to all frames in self.computes_frame
+        for widget in self.computes_frame.winfo_children():
             widget.grid_configure(padx=int(self.xpadding/2), pady=int(self.ypadding/3))
             
         #----------------#
@@ -211,7 +220,7 @@ class GUI:
         #----------------#
         # Initalize analysis frame
         self.analysis_frame = tk.LabelFrame(self.frame, text='Analysis options', font=self.font_settings)
-        self.analysis_frame.grid(row=2, column=0, sticky='news', padx=self.xpadding, pady=self.ypadding)
+        self.analysis_frame.grid(row=3, column=0, sticky='news', padx=self.xpadding, pady=self.ypadding)
         
         # file selection labels
         self.method_label = tk.Label(self.analysis_frame, text='method', font=self.font_settings)
@@ -229,7 +238,10 @@ class GUI:
         # file selection button and qty
         self.nanalysis = len(self.analysis)
         self.supported_methods = ['average', 'linear regression', 'moving average', 'hyperbola', 'piecewise-regression', 
-                                  'spline-integration', 'cursor', 'remove LAMMPS data', 'minimum', 'maximum', 'skip'];
+                                  'spline-integration', 'cursor', 'minimum', 'maximum', 'butterworth (low pass)',
+                                  'LAMMPS data (remove from plot)',
+                                  'LAMMPS data (apply moving average)', 'LAMMPS data (apply butterworth filter)', 'skip']
+        self.supported_methods = sorted(self.supported_methods, key=lambda x: x[0].lower()) # sort list by first letter of each method (x[0].lower())
         self.methods = []; self.xlos = []; self.xhis = []; self.miscs = []; self.names = [];
         for n in range(1, self.nanalysis+1):
             method, xlo, xhi, misc, name = self.analysis[n-1]
@@ -241,17 +253,17 @@ class GUI:
             self.method.grid(column=0, row=n)
             self.methods.append(self.method)
             
-            self.xlo = tk.Entry(self.analysis_frame, width=int(self.maxwidth/4.5), font=self.font_settings)
+            self.xlo = tk.Entry(self.analysis_frame, width=int(self.maxwidth/5), font=self.font_settings)
             self.xlo.grid(column=1, row=n)
             self.xlo.insert(0, xlo)
             self.xlos.append(self.xlo)
             
-            self.xhi = tk.Entry(self.analysis_frame, width=int(self.maxwidth/4.5), font=self.font_settings)
+            self.xhi = tk.Entry(self.analysis_frame, width=int(self.maxwidth/5), font=self.font_settings)
             self.xhi.grid(column=2, row=n)
             self.xhi.insert(0, xhi)
             self.xhis.append(self.xhi)
             
-            self.misc = tk.Entry(self.analysis_frame, width=int(self.maxwidth/2.5), font=self.font_settings)
+            self.misc = tk.Entry(self.analysis_frame, width=int(self.maxwidth/2), font=self.font_settings)
             self.misc.grid(column=3, row=n)
             self.misc.insert(0, misc)
             self.miscs.append(self.misc)
@@ -273,7 +285,7 @@ class GUI:
         self.clear_button = tk.Button(self.analysis_frame, text='clear stack', font=self.font_settings, width=int(self.maxwidth/2.925), command=self.clear_all)
         self.clear_button.grid(column=3, row=self.nanalysis+1, columnspan=1)
         
-        # Button to clear all files
+        # Button load compute help
         self.analysis_help = tk.Button(self.analysis_frame, text='analysis help', font=self.font_settings, width=int(self.maxwidth/3.6), command=self.analysis_options)
         self.analysis_help.grid(column=4, row=self.nanalysis+1, columnspan=1)
             
@@ -286,7 +298,7 @@ class GUI:
         # Initalize execute frame #
         #-------------------------#
         self.execute_frame = tk.LabelFrame(self.frame, borderwidth=0, highlightthickness=0)
-        self.execute_frame.grid(column=0, row=3, padx=self.xpadding, pady=self.ypadding)
+        self.execute_frame.grid(column=0, row=4, padx=self.xpadding, pady=self.ypadding)
                 
         # data2csv
         self.data2csv_btn = tk.Button(self.execute_frame, width=int(self.maxwidth/2.4), text='write loaded data to csv', command=self.write2csv, font=self.font_settings)
@@ -391,8 +403,8 @@ class GUI:
                     
                     f.write("{:>8}{}: '{}',\n".format('',"'xlabel'", self.xlabel_entry.get()))
                     f.write("{:>8}{}: '{}',\n".format('',"'ylabel'", self.ylabel_entry.get()))
-                    f.write("{:>8}{}: '{}',\n".format('',"'xscale'", self.xscale_entry.get()))
-                    f.write("{:>8}{}: '{}',\n".format('',"'yscale'", self.yscale_entry.get()))
+                    f.write("{:>8}{}: '{}',\n".format('',"'xcompute'", self.xcompute_entry.get()))
+                    f.write("{:>8}{}: '{}',\n".format('',"'ycompute'", self.ycompute_entry.get()))
                     f.write("{:>8}{}: {}\n".format('',"'analysis'", 'analysis'))
                     f.write("{:>8}{}\n\n".format('', '}'))
                 os.chdir(self.pwd)
@@ -404,7 +416,8 @@ class GUI:
         save_frame.resizable(width=False, height=False)
         
         filename = tk.Entry(save_frame, width=67, font=self.font_settings)
-        filename.insert(0, '')
+        filename.insert(0, 'FML_analysis_description')
+        filename.bind("<Button-1>", lambda a: filename.delete(0, tk.END))
         filename.grid(column=1, row=0)
         filename_label = tk.Label(save_frame, text='filename (no .py extension)', font=self.font_settings)
         filename_label.grid(column=0, row=0)
@@ -413,9 +426,6 @@ class GUI:
         about.insert(tk.END, 'Date: XX/YY/ZZZZ\n')
         about.insert(tk.END, 'Author: John Doe\n')
         about.insert(tk.END, 'Purpose: Mode to find xxx\n')
-        # about.insert(tk.END, 'Date: 05/13/2024\n')
-        # about.insert(tk.END, 'Author: Josh Kemppainen\n')
-        # about.insert(tk.END, 'Purpose: Mode to find xxx\n')
         about.grid(column=1, row=1)
         about_label = tk.Label(save_frame, text='about mode', font=self.font_settings)
         about_label.grid(column=0, row=1)
@@ -480,12 +490,12 @@ class GUI:
         self.xdata_dropdown.current(self.columns.index(self.xdata))
         self.ydata_dropdown.current(self.columns.index(self.ydata))
         
-        self.xscale = mode['xscale']
-        self.yscale = mode['yscale']
-        self.xscale_entry.delete(0, tk.END)
-        self.yscale_entry.delete(0, tk.END)
-        self.xscale_entry.insert(0, self.xscale)
-        self.yscale_entry.insert(0, self.yscale)
+        self.xcompute = mode['xcompute']
+        self.ycompute = mode['ycompute']
+        self.xcompute_entry.delete(0, tk.END)
+        self.ycompute_entry.delete(0, tk.END)
+        self.xcompute_entry.insert(0, self.xcompute)
+        self.ycompute_entry.insert(0, self.ycompute)
         
         self.xlabel = mode['xlabel']
         self.ylabel = mode['ylabel']
@@ -544,18 +554,6 @@ class GUI:
                 self.columns = list(data.keys()) # update columns to push to xdata, ydata drop downs
             else: data = {}; self.log.GUI_error(f'ERROR lammps logfile {logfile} does not exist');
         except: data = {}; self.log.GUI_error('ERROR failed to read logfile and load data');
-        
-        # Function to evalute strings as numpy array math
-        def string2math(data, string):
-            d = {i:np.array(data[i]) for i in data} # d will be used in list(eval(string))
-            nzeros = max([len(i) for i in data])
-            try: 
-                new_data = list(eval(string))
-                self.log.out(f'{string} was succesfully evaluted')
-                return new_data
-            except:
-                self.log.GUI_error(f'ERROR could not evalute {string} in internal compute.')
-                return nzeros*[0]
             
         # create plot
         if data:            
@@ -565,41 +563,34 @@ class GUI:
             self.log.out('  xdata={}'.format(xdata))
             self.log.out('  ydata={}'.format(ydata))
             
-            # Check for 'compute:' string in xdata or ydata
-            if 'compute:' in xdata and xdata not in data:
-                string4eval = xdata.replace('compute:', '')
-                x = string2math(data, string4eval)
-                xdata = 'compute'
+            # Perform compute on data
+            xcompute = self.xcompute_entry.get()
+            ycompute = self.ycompute_entry.get()
+            if xcompute:
+                x, message = misc_funcs.compute_thermo_data(data, xcompute)
+                self.log.out('  xcompute={}'.format(xcompute))
+                self.log.out('  {}'.format(message))
+                xdata = 'xcompute'
             else: x = data[xdata] 
-            if 'compute:' in ydata and ydata not in data:
-                string4eval = ydata.replace('compute:', '')
-                y = string2math(data, string4eval)
-                ydata = 'compute'
+            if ycompute:
+                y, message = misc_funcs.compute_thermo_data(data, ycompute)
+                self.log.out('  ycompute={}'.format(ycompute))
+                self.log.out('  {}'.format(message))
+                ydata = 'ycompute'
             else: y = data[ydata] 
             
-            # Scale data
-            xscale = 1; yscale = 1;
-            if self.xscale_entry.get():
-                try: xscale = misc_funcs.convert_to_float(self.xscale_entry.get())
-                except: xscale = 1
-            if self.yscale_entry.get():
-                try: yscale = misc_funcs.convert_to_float(self.yscale_entry.get())
-                except: yscale = 1
-            if xscale != 1: x = [i*xscale for i in x]
-            if yscale != 1: y = [i*yscale for i in y]
-            self.log.out('  xscale={}'.format(self.xscale_entry.get()))
-            self.log.out('  yscale={}'.format(self.yscale_entry.get()))
+            # Log Labels
             self.log.out('  xlabel={}'.format(self.xlabel_entry.get()))
             self.log.out('  xlabel={}'.format(self.ylabel_entry.get()))
             
-            # Close any currently open plots
+            # Intialize fig and try to close any currently open plots
             try: plt.close()
             except: pass
             
             # function to build data2plot dict. The following meaings:
             #    x = list/array of xdata to plot
             #    y = list/array of xdata to plot
-            #    style = 'marker' or 'line' or 'both'
+            #    style = 'marker' or 'line' or 'both' or 'horizontal' or 'vertical'
             #    marker = marker style
             #    line = line style
             #    size = int (for 'point' or 'line' style)
@@ -616,14 +607,23 @@ class GUI:
                 plot_setup['label'] = label
                 plot_setup['shiftable'] = shiftable
                 return plot_setup
-        
-            # Save LAMMPS data to plot
-            rm_lmp_data = False
-            lmpdata = plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label='LAMMPS data', shiftable=True)
-            data2plot = [lmpdata]
+            
+            # Function to format analysis for log file
+            def format_analysis(method, xlo, xhi, misc, name):
+                text = '\n\n--------------------------------------------------------------------------------------\n'
+                txt = 'method={}; xlo={}; xhi={}; misc={}; name="{}"'.format(method, xlo, xhi, misc, name)
+                chunks = len(text)
+                nchunks = math.ceil(len(txt)/chunks)
+                chunk_size = math.ceil(len(txt)/nchunks)
+                tmp = [ txt[i:i+chunk_size] for i in range(0, chunks, chunk_size) ]
+                for i in tmp:
+                    text += '{}\n'.format(i)
+                text += '--------------------------------------------------------------------------------------'
+                return text
             
             # Get any anaylsis that users may want
-            analysis = [];
+            analysis = []; apply_moving_average = False; apply_butterworth_filter = False;
+            LAMMPS_data_misc = ''; LAMMPS_data_xlo = ''; LAMMPS_data_xhi = '';
             for n, (i, j, k, l, m)  in enumerate(zip(self.methods, self.xlos, self.xhis, self.miscs, self.names)):
                 try: 
                     method = i.get(); xlo = j.get(); xhi = k.get(); misc = l.get(); name = m.get();
@@ -635,21 +635,64 @@ class GUI:
                         xlo = 'min-of-xdata'
                     if method != '' and xhi != '': 
                         try: xhi = float(xhi)
-                        except: xlo = 'max-of-xdata'; self.log.GUI_error(f'ERROR xhi {xhi} is not a float, using maximum of xdata instead')
+                        except: xhi = 'max-of-xdata'; self.log.GUI_error(f'ERROR xhi {xhi} is not a float, using maximum of xdata instead')
                     else: 
                         xhi = 'max-of-xdata'
-                    if name == '' and method != 'remove LAMMPS data':
+                    if name == '' and method not in ['LAMMPS data (remove from plot)', 'LAMMPS data (apply moving average)', 'LAMMPS data (apply butterworth filter)']:
                         name = 'analysis-{}'.format(n)
                         self.log.warn(f'WARNING name was left empty, imposing {name}')
+                    if method == 'LAMMPS data (apply moving average)':
+                        apply_moving_average = True; LAMMPS_data_misc = misc;
+                        LAMMPS_data_xlo = xlo; LAMMPS_data_xhi = xhi; continue
+                    if method == 'LAMMPS data (apply butterworth filter)':
+                        apply_butterworth_filter = True; LAMMPS_data_misc = misc;
+                        LAMMPS_data_xlo = xlo; LAMMPS_data_xhi = xhi; continue
                     analysis.append([method, xlo, xhi, misc, name])
                 except: pass
+
             
-            # Function to format analysis for log file
-            def format_analysis(method, xlo, xhi, misc, name):
-                text = '\n\n--------------------------------------------------------------------------------------\n'
-                text += 'method={}; xlo={}; xhi={}; misc={}; name="{}"\n'.format(method, xlo, xhi, misc, name)
-                text += '--------------------------------------------------------------------------------------'
-                return text
+            # Save LAMMPS data to plot
+            rm_lmp_data = False
+            lmpdata = plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label='LAMMPS data', shiftable=True)
+            data2plot = [lmpdata]
+            
+            # Apply moving average or filter to LAMMPS data based on inputs
+            if apply_moving_average and apply_butterworth_filter:
+                self.log.GUI_error('ERROR can not use both "LAMMPS data (apply moving average)" and "LAMMPS data (apply butterworth filter)" at a time')
+            else:
+                try: LAMMPS_data_xlo = float(LAMMPS_data_xlo)
+                except: LAMMPS_data_xlo = min(x)
+                try: LAMMPS_data_xhi = float(LAMMPS_data_xhi)
+                except: LAMMPS_data_xhi = max(x)
+                
+                if apply_moving_average:
+                    LAMMPS_data_label = 'LAMMPS data w/moving average'
+                    setting = self.get_misc_setting(LAMMPS_data_misc)
+                    misc = LAMMPS_data_misc
+                    if 'window' in LAMMPS_data_misc:
+                        window = setting['window']
+                    else: 
+                        window = 100;
+                        misc = ' default-window=100';
+                    
+                    self.log.out('  Implementing: LAMMPS data (apply moving average) with {} settings'.format(misc))
+                    x, y = self.moving_average(x, y, LAMMPS_data_xlo, LAMMPS_data_xhi, window)
+                    data2plot.append(plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=LAMMPS_data_label, shiftable=True))
+                if apply_butterworth_filter:
+                    LAMMPS_data_label = 'LAMMPS data w/butterworth filter'
+                    setting = self.get_misc_setting(LAMMPS_data_misc)
+                    misc = LAMMPS_data_misc
+                    if 'order' in setting:
+                        order = setting['order']
+                    else: order=2; misc += ' default-order=2;';
+                    
+                    if 'wn' in setting:
+                        wn = setting['wn']
+                    else: wn=0.01; misc += ' default-wn=0.01;';
+                    
+                    self.log.out('  Implementing: LAMMPS data (apply butterworth filter) with {} settings'.format(misc))
+                    x, y = self.butterworth_lowpass(x, y, LAMMPS_data_xlo, LAMMPS_data_xhi, wn, order)
+                    data2plot.append(plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=LAMMPS_data_label, shiftable=True))
             
             # Start performing any analysis if present
             shift=False; shift_amount = 0; # Defaults
@@ -662,7 +705,7 @@ class GUI:
                         xhi = max(x)
                         self.log.out('  xhi was not provided, using maximum of xdata {}'.format(xhi))
                     
-                    if method == 'remove LAMMPS data':
+                    if method == 'LAMMPS data (remove from plot)':
                         rm_lmp_data = True
                     
                     if method == 'average':
@@ -672,6 +715,38 @@ class GUI:
                         self.log.out('  {}'.format(label))
                         avgdata = plot_parms(x=reduced_x, y=reduced_y, style='point', marker='.', line='-', size=4, label=label, shiftable=True)
                         data2plot.append(avgdata)
+                        
+                    if method == 'moving average':
+                        setting = self.get_misc_setting(misc)
+                        if 'window' in setting:
+                            window = setting['window']
+                        else: 
+                            window = 100;
+                            misc += ' default-window=100';
+                        x_movavg, y_movavg = self.moving_average(x, y, xlo, xhi, window)
+                        label = '{} ({})'.format(name, misc)
+                        self.log.out(format_analysis(method, xlo, xhi, misc, name))
+                        self.log.out('  {}'.format(label))
+                        movavgdata = plot_parms(x=x_movavg, y=y_movavg, style='point', marker='.', line='-', size=4, label=label, shiftable=True)
+                        data2plot.append(movavgdata)
+                        
+                    if method == 'butterworth (low pass)':
+                        if 'order' in misc or 'cutoff':
+                            setting = self.get_misc_setting(misc)
+                            if 'order' in setting:
+                                order = setting['order']
+                            else: order=2; misc += ' default-order=2;';
+                            
+                            if 'wn' in setting:
+                                wn = setting['wn']
+                            else: wn=0.01; misc += ' default-wn=0.01;';
+
+                        label = '{} wn = {}; cutoff = {}'.format(name, order, wn)
+                        self.log.out('  {}'.format(label))
+                        xfilter, yfilter = self.butterworth_lowpass(x, y, xlo, xhi, wn, order)
+                        self.log.out(format_analysis(method, xlo, xhi, misc, name))
+                        bwfdata = plot_parms(x=xfilter, y=yfilter, style='point', marker='.', line='-', size=4, label=label, shiftable=True)
+                        data2plot.append(bwfdata)
                     
                     if method == 'linear regression':
                         if 'shift' in misc or 'extend':
@@ -681,7 +756,7 @@ class GUI:
                             else: shift=False; misc = 'default-shift=False';
                         else: 
                             shift=False
-                            misc = 'default-shift=False'
+                            misc += ' default-shift=False'
                         b0, b1, xreg, yreg = self.linear_regression(x, y, xlo, xhi)
                         self.log.out(format_analysis(method, xlo, xhi, misc, name))
                         if shift: 
@@ -703,20 +778,6 @@ class GUI:
                         else:
                             regdata = plot_parms(x=xreg, y=yreg, style='line', marker='.', line='-', size=3, label=label, shiftable=True)
                         data2plot.append(regdata)
-                    
-                    if method == 'moving average':
-                        setting = self.get_misc_setting(misc)
-                        if 'window' in setting:
-                            window = setting['window']
-                        else: 
-                            window = 100;
-                            misc = 'default-window=100';
-                        x_movavg, y_movavg = self.moving_average(x, y, xlo, xhi, window)
-                        label = '{} ({})'.format(name, misc)
-                        self.log.out(format_analysis(method, xlo, xhi, misc, name))
-                        self.log.out('  {}'.format(label))
-                        movavgdata = plot_parms(x=x_movavg, y=y_movavg, style='point', marker='.', line='-', size=4, label=label, shiftable=True)
-                        data2plot.append(movavgdata)
                         
                     if method in ['minimum', 'maximum']:
                         setting = self.get_misc_setting(misc)
@@ -724,7 +785,7 @@ class GUI:
                             window = setting['window']
                         else: 
                             window = 100;
-                            misc = 'default-window=100';
+                            misc += ' default-window=100';
                         x_movavg, y_movavg = self.moving_average(x, y, xlo, xhi, window)
                         label = '{} ({})'.format(name, misc)
                         movavgdata = plot_parms(x=x_movavg, y=y_movavg, style='point', marker='.', line='-', size=4, label=label, shiftable=True)
@@ -733,23 +794,44 @@ class GUI:
                         self.log.out('  {}'.format(label))
                         
                         x_movavg = list(x_movavg); y_movavg = list(y_movavg)
-                        if method == 'minimum': y = min(y_movavg)
-                        if method == 'maximum': y = max(y_movavg)
-                        x =  x_movavg[y_movavg.index(y)]
-                        label = '{} (x={}, y={})'.format(name, x, y)
-                        minmaxdata = plot_parms(x=x, y=y, style='point', marker='o', line='-', size=8, label=label, shiftable=False)
+                        if method == 'minimum': yy = min(y_movavg)
+                        if method == 'maximum': yy = max(y_movavg)
+                        xx =  x_movavg[y_movavg.index(yy)]
+                        label = '{} (x={}, y={})'.format(name, xx, yy)
+                        minmaxdata = plot_parms(x=xx, y=yy, style='point', marker='o', line='-', size=8, label=label, shiftable=True)
                         data2plot.append(minmaxdata)
                         self.log.out('  {}'.format(label))
-                        
                     
                     if method == 'cursor':
                         setting = self.get_misc_setting(misc)
-                        if 'x' in setting and 'y' in setting:
-                            label = '{} ({})'.format(name, misc)
-                            self.log.out(format_analysis(method, xlo, xhi, misc, name))
-                            self.log.out('  {}'.format(label))
-                            cursordata = plot_parms(x=setting['x'], y=setting['y'], style='point', marker='+', line='-', size=4, label=label, shiftable=False)
-                            data2plot.append(cursordata)
+                        if 'x' in setting or 'y' in setting:
+                            if 'x' in setting:
+                                xvalue = setting['x']
+                            else: xvalue = None
+                            
+                            if 'y' in setting:
+                                yvalue = setting['y']
+                            else: yvalue = None
+                            
+                            # Set style and marker based on if x or y or x & y are set
+                            plot_and_log = True
+                            if xvalue is not None and yvalue is not None:
+                                cursor_style = 'point'
+                                cursor_marker = '+'
+                            elif xvalue is not None:
+                                cursor_style = 'vertical'
+                                cursor_marker = ':'
+                            elif yvalue is not None:
+                                cursor_style = 'horizontal'
+                                cursor_marker = ':'
+                            else: plot_and_log = False
+                            
+                            if plot_and_log:
+                                label = '{} ({})'.format(name, misc)
+                                self.log.out(format_analysis(method, xlo, xhi, misc, name))
+                                self.log.out('  {}'.format(label))
+                                cursordata = plot_parms(x=xvalue, y=yvalue, style=cursor_style, marker=cursor_marker, line='-', size=4, label=label, shiftable=False)
+                                data2plot.append(cursordata)
                     
                     if method == 'hyperbola':
                         minimum_convergence=None
@@ -783,24 +865,36 @@ class GUI:
                         setting = self.get_misc_setting(misc)
                         if 'n' in setting:
                             n = setting['n']
-                            xout, yout, xbreaks, ybreaks, slopes = self.piecewise_regression(x, y, xlo, xhi, n)
-                            self.log.out(format_analysis(method, xlo, xhi, misc, name))
+                        else: n = 1; misc += ' default-n=1';
+                        if 'shift' in setting:
+                            shift = setting['shift']
+                        else: shift = False; misc += ' default-shift=False';
                             
-                            label = '{} (n-breakpoints={})'.format(name, n)
-                            self.log.out(f'  {label}')
-                            piecewisedata = plot_parms(x=xout, y=yout, style='line', marker='.', line='-', size=3, label=label, shiftable=False)
-                            data2plot.append(piecewisedata)
-                            
-                            label = '{} slopes and points: \n'.format(name)
-                            for i, j in slopes:
-                                slope = slopes[(i, j)]
-                                label += '   slope between (p{}, p{}) = {}\n'.format(i, j, slope)
-                                label += '    p{} = ({}, {})\n'.format(i, xbreaks[i], ybreaks[i])
-                                label += '    p{} = ({}, {})\n'.format(j, xbreaks[j], ybreaks[j])
-                            self.log.out(f'  {label}')
-                            breakdata = plot_parms(x=xbreaks, y=ybreaks, style='point', marker='.', line='-', size=10, label=label, shiftable=False)
-                            data2plot.append(breakdata)
-                        else: self.log.GUI_error('ERROR piecewise-regression did not provide a "n" number of breakpoints value')
+                        xout, yout, xbreaks, ybreaks, slopes = self.piecewise_regression(x, y, xlo, xhi, n)
+                        self.log.out(format_analysis(method, xlo, xhi, misc, name))
+                        
+                        shift_amount = 0
+                        if shift:
+                            b0 = ybreaks[0]
+                            if b0 < 0:
+                                shift_amount = abs(b0)
+                            else: shift_amount = -abs(b0)
+                            self.log.out(f'  Shifting all Y-data by {-shift_amount}')
+                        
+                        label = '{} (n-breakpoints={})'.format(name, n)
+                        self.log.out(f'  {label}')
+                        piecewisedata = plot_parms(x=xout, y=yout, style='line', marker='.', line='-', size=3, label=label, shiftable=True)
+                        data2plot.append(piecewisedata)
+                        
+                        label = '{} slopes and points: \n'.format(name)
+                        for i, j in slopes:
+                            slope = slopes[(i, j)]
+                            label += '   slope between (p{}, p{}) = {}\n'.format(i, j, slope)
+                            label += '    p{} = ({}, {})\n'.format(i, xbreaks[i], ybreaks[i]+shift_amount)
+                            label += '    p{} = ({}, {})\n'.format(j, xbreaks[j], ybreaks[j]+shift_amount)
+                        self.log.out(f'  {label}')
+                        breakdata = plot_parms(x=xbreaks, y=ybreaks, style='point', marker='.', line='-', size=10, label=label, shiftable=True)
+                        data2plot.append(breakdata)
                         
                     if method == 'spline-integration':
                         setting = self.get_misc_setting(misc)
@@ -823,31 +917,46 @@ class GUI:
                         
             # Generate plot
             fig, ax = plt.subplots()
+            colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+            color_index = 0
             for data in data2plot:
-                x = data['x']
-                y = data['y']
+                xx = data['x']
+                yy = data['y']
                 label = data['label']
                 style = data['style']
                 shiftable = data['shiftable']
                 marker = data['marker']
                 line = data['line']
                 size = data['size']
+                color = colors[color_index]
                 
-                # Skip lammps data if rm_lmp_data and label is 'LAMMMPS data'
+                # Skip lammps data if rm_lmp_data and label is 'LAMMPS data'
                 if rm_lmp_data and label == 'LAMMPS data': continue
                 
                 # If shift, shift all data
                 if shift and shiftable:
-                    y = [i+shift_amount for i in y]
+                    try: yy = [i+shift_amount for i in yy]
+                    except: 
+                        try: yy += shift_amount
+                        except: pass
                 
                 # Plot data with or without line width size
                 if style == 'line':
-                    plt.plot(x, y, line, lw=size, label=label)
+                    plt.plot(xx, yy, line, color=color, lw=size, label=label)
                 elif style == 'point':
-                    plt.plot(x, y, marker, ms=size, label=label)
+                    plt.plot(xx, yy, marker, color=color, ms=size, label=label)
                 elif style == 'both':
-                    plt.plot(x, y, marker, ls='-', ms=size, label=label)
+                    plt.plot(xx, yy, marker, color=color, ls='-', ms=size, label=label)
+                elif style == 'vertical':
+                    plt.axvline(xx, color=color, ls=marker, lw=size, label=label)
+                elif style == 'horizontal':
+                    plt.axhline(yy, color=color, ls=marker, lw=size, label=label)
                 else: raise Exception(f'ERROR {style} not supported')
+                
+                # increment color index and rest to zero if to large
+                color_index += 1
+                if color_index + 1 > len(colors):
+                    color_index = 0
             
             # Set labels
             if self.xlabel_entry.get():
@@ -880,10 +989,10 @@ class GUI:
         #self.popup(self.log.logged, title='Outputs', width=150)
         return
     
-    # Def about page
+    # Analysis quick help page
     def analysis_options(self):
         try: # Try to get text from GUI_help_page.txt file
-            txt = os.path.join(self.pwd, 'src/GUI_quick_help_pages/log_analysis.txt')
+            txt = os.path.join(self.pwd, 'src/GUI_quick_help_pages/log_analysis_methods.txt')
             logged = []
             with open(txt, 'r') as f:
                 for line in f:
@@ -893,13 +1002,34 @@ class GUI:
                     line = line.rstrip()
                     logged.append(line)
         except: # except something failed
-            logged.append('FAILED to read LUNAR/src/GUI_quick_help_pages/log_analysis.txt document.')
-            logged.append('Most likely cause is the cell_builder.txt file was renamed in the')
+            logged.append('FAILED to read LUNAR/src/GUI_quick_help_pages/log_analysis_methods..txt document.')
+            logged.append('Most likely cause is the log_analysis_methods.txt file was renamed in the')
             logged.append('LUNAR/src/GUI_quick_help_pages/ directory or directory names were changed.')
-        self.popup(logged, title='Quick help')
+        self.popup(logged, title='Analysis help')
+        return
+
+    # Compute quick help page
+    def compute_options(self):
+        try: # Try to get text from GUI_help_page.txt file
+            txt = os.path.join(self.pwd, 'src/GUI_quick_help_pages/log_analysis_computes.txt')
+            logged = []
+            with open(txt, 'r') as f:
+                for line in f:
+                    if line.startswith('#'): continue
+                    # Strip comment's and split by whitespace
+                    line = line.split('#')[0]
+                    line = line.rstrip()
+                    logged.append(line)
+        except: # except something failed
+            logged.append('FAILED to read LUNAR/src/GUI_quick_help_pages/log_analysis_computes.txt document.')
+            logged.append('Most likely cause is the log_analysis_computes.txt file was renamed in the')
+            logged.append('LUNAR/src/GUI_quick_help_pages/ directory or directory names were changed.')
+        self.popup(logged, title='Compute help')
         return
     
-    # Function to get misc dict of key/value pair
+    ###############################################
+    # Function to get misc dict of key/value pair #
+    ###############################################
     def get_misc_setting(self, misc):
         setting = {} # {keyword:float or int or Boolean}
         tmp1 = misc.split(';')
@@ -907,21 +1037,26 @@ class GUI:
             tmp3 = tmp2.split('=')
             if len(tmp3) >= 2:
                 i = tmp3[0].strip()
-                j = eval(tmp3[1])
+                try: j = eval(tmp3[1])
+                except: j = str(tmp3[1])
                 setting[i] = j
         return setting
     
-    # average analysis function
+    #############################
+    # average analysis function #
+    #############################
     def average(self, x, y, xlo, xhi):
         reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
         if reduced_x and reduced_y:
             average_y = misc_funcs.avg(reduced_y)
         else:
             average_y = 0
-            self.log.GUI_error(f'ERROR no LAMMPS data in xrange {xlo} - {xhi}')
+            self.log.GUI_error(f'ERROR (average) no LAMMPS data in xrange {xlo} - {xhi}')
         return reduced_x, reduced_y, average_y
     
-    # moving average function
+    #########################################################
+    # The method below implements a moving average function #
+    #########################################################
     def moving_average(self, x, y, xlo, xhi, window):
         reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
         if reduced_x and reduced_y:
@@ -929,10 +1064,25 @@ class GUI:
             y_movavg = misc_funcs.moving_average(reduced_y, window)
         else:
             x_movavg = [0, 1]; y_movavg = [0, 1]
-            self.log.GUI_error(f'ERROR no LAMMPS data in xrange {xlo} - {xhi}')
-        return x_movavg, y_movavg
+            self.log.GUI_error(f'ERROR (moving average) no LAMMPS data in xrange {xlo} - {xhi}')
+        return list(x_movavg), list(y_movavg)
     
-    # linear regression function
+    ############################################################
+    # The method below implements a lowpass butterworth filter #
+    ############################################################
+    def butterworth_lowpass(self, x, y, xlo, xhi, cutoff, order):
+        reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
+        if reduced_x and reduced_y:
+            yfilter = misc_funcs.butter_lowpass_filter(reduced_x, reduced_y, cutoff, order)
+        else:
+            yfilter = [i for i in reduced_y]
+            self.log.GUI_error(f'ERROR (butterworth low pass) no LAMMPS data in xrange {xlo} - {xhi}')
+        return list(reduced_x), list(yfilter)
+    
+    
+    #########################################################
+    # The method below implements a linear regression model #
+    #########################################################
     def linear_regression(self, x, y, xlo, xhi):
         reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
         if reduced_x and reduced_y:
@@ -941,10 +1091,12 @@ class GUI:
             yreg = [i * b1 + b0 for i in xreg]
         else:
             xreg = [0, 1]; yreg = [0, 1]
-            self.log.GUI_error(f'ERROR no LAMMPS data in xrange {xlo} - {xhi}')
+            self.log.GUI_error(f'ERROR (linear regression) no LAMMPS data in xrange {xlo} - {xhi}')
         return b0, b1, xreg, yreg
     
-    # spline-integration
+    ####################################################
+    # The method below implements a spline-integration #
+    ####################################################
     def spline_integration(self, x, y, xlo, xhi, window, shift):
         from scipy.interpolate import InterpolatedUnivariateSpline
         x_movavg, y_movavg = self.moving_average(x, y, xlo, xhi, window)
@@ -964,103 +1116,36 @@ class GUI:
             yout = list(spl(xs))
         else:
             xout = [0, 1]; yout = [0, 1]; area = 0;
-            self.log.GUI_error(f'ERROR no LAMMPS data in xrange {xlo} - {xhi}')
+            self.log.GUI_error(f'ERROR (spline-integration) no LAMMPS data in xrange {xlo} - {xhi}')
         return xout, yout, area, shift_amount
     
-    ############################################################################
-    # The method below implements a "piecewise regression" on the data. where  #
-    # n is the number of breakpoints between the start and end point of the    #
-    # input data.                                                              #
-    #                                                                          #
-    # This method uses both numpy and pwlf. numpy is a global requirement, but #
-    # pwlf is not, so import within the method to avoid dependancies if this   #
-    # option is not planned to be used.                                        #
-    ############################################################################
+    ####################################################################
+    # The method below implements a "piecewise regression" on the data #
+    ####################################################################
     def piecewise_regression(self, x, y, xlo, xhi, n):
-        import pwlf
         reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
         if reduced_x and reduced_y:
-            reduced_x = np.array(reduced_x); reduced_y = np.array(reduced_y);
-            
-            # Perform peicewise regression
-            my_pwlf = pwlf.PiecewiseLinFit(reduced_x, reduced_y)
-            xbreaks = my_pwlf.fit(n+1)
-            ybreaks = my_pwlf.predict(np.array(xbreaks))
-            xout = np.linspace(reduced_x.min(), reduced_x.max(), 100)
-            yout = my_pwlf.predict(xout)
-            
-            # Compute the slopes
-            def slope(x1, y1, x2, y2):
-                m = (y2-y1)/(x2-x1)
-                return m
-            npoints = min([len(xbreaks), len(ybreaks)])-1
-            slopes = {(i, i+1):slope(xbreaks[i], ybreaks[i], xbreaks[i+1], ybreaks[i+1]) for i in range(npoints)}
+            xout, yout, xbreaks, ybreaks, slopes = misc_funcs.piecewise_regression(reduced_x, reduced_y, xlo, xhi, n)
         else:
             xout = [0, 1]; yout = [0, 1]; slopes = {(0,1):1}
             xbreaks = [0, 1]; ybreaks = [0, 1];
-            self.log.GUI_error(f'ERROR no LAMMPS data in xrange {xlo} - {xhi}')
+            self.log.GUI_error(f'ERROR (peicewise-regression) no LAMMPS data in xrange {xlo} - {xhi}')
         return xout, yout, xbreaks, ybreaks, slopes
     
     ######################################################################################
     # The method below implements the Tg/CTE hyperbola fit from the following paper:     #
     # Uncertainty quantification in molecular dynamics studies of the glass transition   #
     # temperature - Paul N. Patrone, Andrew Dienstfrey, ... - Polymer Volume 87 - 2016   #
-    #                                                                                    #
-    # Hyperbola fit for Tg sims. Parameters optimized by scipy.optmize.curve_fit:        #
-    # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html #
-    #    maxiter sets a cutoff for the maximum number of iterations                      #
-    #    intial_guess list of parameters 1-N or None, if None scipy intializes the guess #
     ######################################################################################
     def fit_hyperbola(self, x, y, xlo, xhi, minimum_convergence=None, initial_guess=False, maxiter=10**4):
-        from scipy import optimize
         reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
         if reduced_x and reduced_y:        
-            # define default outputs (in-case something goes wrong)
-            xout = list(reduced_x); yout = len(reduced_x)*[0];
-            params = [0, 0, 0, 0, 0]; center = [0, 0];
-            slopes = [0, 0]; transition = [0, 0];
-            #convergence = []
-            
-            # Convert to float64 and then lists to numpy arrays
-            xx = np.array(reduced_x); yy = np.array(reduced_y);
-            
-            # Setup intial guess
-            p0 = None
-            if initial_guess:
-                slopeguess= (yy[-1]-yy[0])/(xx[-1]-xx[0])
-                p0 = (np.mean(xx),np.mean(yy), slopeguess, slopeguess, np.log((xx[-1]-xx[0])**2/100))
-    
-            # Define the hyperbola equation (eqn 1 in paper)
-            def hyberbola(t, t0, v0, a, b, c):
-                h0 = 0.5*(t-t0) + np.sqrt( ((t-t0)*(t-t0))/4 + np.exp(c) )
-                v = v0 + a*(t-t0) + b*h0
-                return v
-            
-            # Find best fit    t0          v0        a        b        c
-            parm_bounds = ((np.min(xx), np.min(yy), -np.inf, -np.inf, -np.inf), # lower
-                           (np.max(xx), np.max(yy),  np.inf,  np.inf,  np.inf)) # upper
-            param, param_cov = optimize.curve_fit(hyberbola, xx, yy, p0=p0, method='trf', bounds=parm_bounds, maxfev=maxiter)
-            t0, v0, a, b, c = param # extract out fitting coeffs
-            
-            # update defaults
-            params = list(param)
-            yout = list(hyberbola(xout, *param))
-            center = [t0, v0]
-            slopes = [a, (a+b)]
-            
-            # Compute convergence (eqn 4 in paper)
-            #try: convergence = 1/2 + (x-t0)/(2*np.sqrt( (x-t0)*(x-t0) + 4*np.exp(c) ))
-            #except: pass
-            
-            # Find where function is transitioning (eqn 5 in paper)
-            if minimum_convergence is not None:
-                dtemp = (np.exp(c/2)*(2*minimum_convergence-1))/(np.sqrt(minimum_convergence*(1-minimum_convergence)))
-                transition = [t0-dtemp, t0+dtemp]
+            xout, yout, params, center, slopes, transition = misc_funcs.fit_hyperbola(x, y, xlo, xhi, minimum_convergence, initial_guess, maxiter)
         else:
             xout = [0, 1]; yout = [0, 1]; slopes = [0, 1]
             center = [0, 0]; params = [0, 0, 0, 0, 0];
             transition = [];
-            self.log.GUI_error(f'ERROR no LAMMPS data in xrange {xlo} - {xhi}')
+            self.log.GUI_error(f'ERROR no (hyperbola) LAMMPS data in xrange {xlo} - {xhi}')
         return xout, yout, params, center, slopes, transition
     
     # Function to add to analysis options
@@ -1083,17 +1168,17 @@ class GUI:
         self.method.grid(column=0, row=self.nanalysis)
         self.methods.append(self.method)
         
-        self.xlo = tk.Entry(self.analysis_frame, width=int(self.maxwidth/4.5), font=self.font_settings)
+        self.xlo = tk.Entry(self.analysis_frame, width=int(self.maxwidth/5), font=self.font_settings)
         self.xlo.grid(column=1, row=self.nanalysis)
         #self.xlo.insert(0, 0)
         self.xlos.append(self.xlo)
         
-        self.xhi = tk.Entry(self.analysis_frame, width=int(self.maxwidth/4.5), font=self.font_settings)
+        self.xhi = tk.Entry(self.analysis_frame, width=int(self.maxwidth/5), font=self.font_settings)
         self.xhi.grid(column=2, row=self.nanalysis)
         #self.xhi.insert(0, 1)
         self.xhis.append(self.xhi)
         
-        self.misc = tk.Entry(self.analysis_frame, width=int(self.maxwidth/2.5), font=self.font_settings)
+        self.misc = tk.Entry(self.analysis_frame, width=int(self.maxwidth/2), font=self.font_settings)
         self.misc.grid(column=3, row=self.nanalysis)
         self.misc.insert(0, '')
         self.miscs.append(self.misc)

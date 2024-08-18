@@ -261,7 +261,7 @@ Date               Developer   Description
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 12August2024)
+LUNAR (version 18August2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
@@ -294,4 +294,24 @@ Date               Developer   Description
 5August2024        JDK         - log_analysis.py: Fixed "Remove LAMMPS data" method as it was not removing
                                                   the LAMMPS raw data from the plot.
 												  
-12August2024        JDK         - atom_typing.py: Fixed npc atom typing for PCFF and PCFF-IFF force fields.
+12August2024       JDK         - atom_typing.py: Fixed npc atom typing for PCFF and PCFF-IFF force fields.
+
+18August2024       JDK         - log_analysis.py:
+                                    * Removed the "X-scale" and Y-scale" entries.
+                                    * Added "X-compute" and "Y-compute" entries to perform vectorized
+                                      computes using LAMMPS style of accessing variables by wrapping
+                                      column names between "${" and "}" characters (i.e. ${Step}/1000).
+                                      The vectorized math operations follow python syntax, which is
+                                      detailed in the "compute help" popup page on the GUI.
+                                    * Added a butterworth filter that will apply to the LAMMPS thermo
+                                      data, but all "methods" will still only apply to the LAMMPS thermo
+                                      data. This could be useful for "seeing" trends in noisy data.
+                                    * Added "LAMMPS data (apply moving average)" and "LAMMPS data (apply
+                                      butterworth filter)" to methods to allow for cleaning of LAMMPS
+                                      thermo data using moving average or butterworth filter, where any
+                                      other analysis method's will then "operate" on the cleaned LAMMPS
+                                      thermo data.
+                                    * Adjusted cursor to allow either x or y or x;y pairing, where if only
+                                      x is specifed a vertical line will be plotted, if only y is specifed
+                                      a horizontal line will be plotted and if both x and y are supplied
+                                      a data point will be plotted.									  

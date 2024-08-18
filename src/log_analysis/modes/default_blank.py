@@ -20,8 +20,8 @@ mode = {'logfile': 'UPDATE-ME',
         'ydata': '',
         'xlabel': '',
         'ylabel': '',
-        'xscale': '',
-        'yscale': '',
+        'xcompute': '',
+        'ycompute': '',
         'analysis': analysis
         }
 

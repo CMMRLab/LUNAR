@@ -24,8 +24,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=shear_modulus_xy_strain_rate=
         'ydata': 'f_sxy_ave',
         'xlabel': 'True Strain',
         'ylabel': 'True Stress (MPa)',
-        'xscale': '',
-        'yscale': '',
+        'xcompute': '',
+        'ycompute': '',
         'analysis': analysis
         }
 

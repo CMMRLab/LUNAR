@@ -21,8 +21,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=density_ts=0.5.log.lammps',
         'ydata': 'Density',
         'xlabel': 'Time (ps)',
         'ylabel': 'Density ($g/cm^3$)',
-        'xscale': '1/2000',
-        'yscale': '',
+        'xcompute': '${Step}*(1/2000)',
+        'ycompute': '',
         'analysis': analysis
         }
 

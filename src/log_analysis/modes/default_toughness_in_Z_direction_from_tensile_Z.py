@@ -21,8 +21,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=tensile_modulus_z_strain_rate
         'ydata': 'f_szz_ave',
         'xlabel': 'True Strain',
         'ylabel': 'True Stress (MPa)',
-        'xscale': '',
-        'yscale': '',
+        'xcompute': '',
+        'ycompute': '',
         'analysis': analysis
         }
 
