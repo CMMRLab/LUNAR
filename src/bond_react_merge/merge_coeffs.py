@@ -582,6 +582,22 @@ class merged:
         ################################################
         # Loop through all files and merge coeff types #
         ################################################
+        # function to check count of nom-equal types
+        def check_for_different_params(parms_set):
+            count = 0
+            if len(parms_set) > 1:
+                ref_parms = [i for i in most_frequent(list(parms_set))]
+                for parms in parms_set:
+                    if len(parms) != len(ref_parms):
+                        count += len(parms)
+                    else:
+                        for n, i in enumerate(parms):
+                            if i != ref_parms[n]:
+                                count += 1
+            if count == 0:
+                return False
+            else:
+                return True
         for i in merge:
             file = merge[i]
             filename = os.path.basename(file.filename)
@@ -598,7 +614,7 @@ class merged:
                 
                 # check for consistency
                 self.masses[new_type].consistency.add(tuple(mass))
-                if len(self.masses[new_type].consistency) > 1:
+                if check_for_different_params(self.masses[new_type].consistency):
                     log.error('\nERROR Masses {:<4} parameter {:<6}\nfrom {} differs from other read in files.'.format(types, mass, filename))
 
                         
@@ -614,7 +630,7 @@ class merged:
                 
                 # check for consistency
                 self.pair_coeffs[new_type].consistency.add(tuple(coeffs))
-                if len(self.pair_coeffs[new_type].consistency) > 1:
+                if check_for_different_params(self.pair_coeffs[new_type].consistency):
                     log.error('\nERROR Pair Coeffs {:<4} parameters {}\nfrom {} differs from other read in files.'.format(types, string_coeffs(coeffs), filename))
                     
                     
@@ -630,7 +646,7 @@ class merged:
                 
                 # check for consistency
                 self.bond_coeffs[new_type].consistency.add(tuple(coeffs))
-                if len(self.bond_coeffs[new_type].consistency) > 1:
+                if check_for_different_params(self.bond_coeffs[new_type].consistency):
                     log.error('\nERROR Bond Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
 
 
@@ -646,7 +662,7 @@ class merged:
 
                 # check for consistency
                 self.angle_coeffs[new_type].consistency.add(tuple(coeffs))
-                if len(self.angle_coeffs[new_type].consistency) > 1:
+                if check_for_different_params(self.angle_coeffs[new_type].consistency):
                     log.error('\nERROR Angle Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
 
             
@@ -662,7 +678,7 @@ class merged:
 
                 # check for consistency
                 self.dihedral_coeffs[new_type].consistency.add(tuple(coeffs))
-                if len(self.dihedral_coeffs[new_type].consistency) > 1:
+                if check_for_different_params(self.dihedral_coeffs[new_type].consistency):
                     log.error('\nERROR Dihedral Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
 
                     
@@ -678,7 +694,7 @@ class merged:
 
                 # check for consistency
                 self.improper_coeffs[new_type].consistency.add(tuple(coeffs))
-                if len(self.improper_coeffs[new_type].consistency) > 1:
+                if check_for_different_params(self.improper_coeffs[new_type].consistency):
                     log.error('\nERROR Improper Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
 
             #####################
@@ -698,7 +714,7 @@ class merged:
                             
                         # check for consistency
                         self.bondbond_coeffs[new_type].consistency.add(tuple(coeffs))
-                        if len(self.bondbond_coeffs[new_type].consistency) > 1:
+                        if check_for_different_params(self.bondbond_coeffs[new_type].consistency):
                             log.error('\nERROR BondBond Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
     
                             
@@ -715,7 +731,7 @@ class merged:
                         
                         # check for consistency
                         self.bondangle_coeffs[new_type].consistency.add(tuple(coeffs))
-                        if len(self.bondangle_coeffs[new_type].consistency) > 1:
+                        if check_for_different_params(self.bondangle_coeffs[new_type].consistency):
                             log.error('\nERROR BondAngle Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
         
                             
@@ -732,7 +748,7 @@ class merged:
                         
                         # check for consistency
                         self.angleangletorsion_coeffs[new_type].consistency.add(tuple(coeffs))
-                        if len(self.angleangletorsion_coeffs[new_type].consistency) > 1:
+                        if check_for_different_params(self.angleangletorsion_coeffs[new_type].consistency):
                             log.error('\nERROR AngleAngleTorsion Coeffs {:<16} parameters {}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
                             
     
@@ -749,7 +765,7 @@ class merged:
         
                         # check for consistency
                         self.endbondtorsion_coeffs[new_type].consistency.add(tuple(coeffs))
-                        if len(self.endbondtorsion_coeffs[new_type].consistency) > 1:
+                        if check_for_different_params(self.endbondtorsion_coeffs[new_type].consistency):
                             log.error('\nERROR EndBondTorsion Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
                         
                         
@@ -766,7 +782,7 @@ class merged:
                         
                         # check for consistency
                         self.middlebondtorsion_coeffs[new_type].consistency.add(tuple(coeffs))
-                        if len(self.middlebondtorsion_coeffs[new_type].consistency) > 1:
+                        if check_for_different_params(self.middlebondtorsion_coeffs[new_type].consistency):
                             log.error('\nERROR MiddleBondTorsion Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))            
     
                         
@@ -783,7 +799,7 @@ class merged:
                                             
                         # check for consistency
                         self.bondbond13_coeffs[new_type].consistency.add(tuple(coeffs))
-                        if len(self.bondbond13_coeffs[new_type].consistency) > 1:
+                        if check_for_different_params(self.bondbond13_coeffs[new_type].consistency):
                             log.error('\nERROR BondBond13 Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
     
                         
@@ -800,7 +816,7 @@ class merged:
                         
                         # check for consistency
                         self.angletorsion_coeffs[new_type].consistency.add(tuple(coeffs))
-                        if len(self.angletorsion_coeffs[new_type].consistency) > 1:
+                        if check_for_different_params(self.angletorsion_coeffs[new_type].consistency):
                             log.error('\nERROR AngleTorsion Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
                         
                             
@@ -817,7 +833,7 @@ class merged:
                         
                         # check for consistency
                         self.angleangle_coeffs[new_type].consistency.add(tuple(coeffs))
-                        if len(self.angleangle_coeffs[new_type].consistency) > 1:
+                        if check_for_different_params(self.angleangle_coeffs[new_type].consistency):
                             log.error('\nERROR AngleAngle Coeffs {:<16} parameters\n{}\nfrom {} differs from other read in files.'.format(coeff.type, string_coeffs(coeffs), filename))
                         
 

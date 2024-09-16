@@ -302,7 +302,6 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
                         for j in preN_tagged[filetag].masses:
                             if preN_tagged[filetag].masses[j].type == i:
                                 log.warn('  offending filetag {} -> {}'.format(filetag, preN_tagged[filetag].filename))
-                    sys.exit()
                 if i not in dataN_types and i in postN_types:
                     log.warn(f'WARNING atom type {i} in a preN tagged file does not exist in any dataN tagged file, but exists in a postN tagged file.')
                 
