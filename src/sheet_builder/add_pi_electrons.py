@@ -84,12 +84,17 @@ def add(atoms, bonds, box, pi_electrons, log):
         graph[id1].append(id2)
         graph[id2].append(id1)
         
+    # Find type_offset to increment new pi-electron types
+    current_types = sorted(list({atoms[i].type for i in atoms}))
+    type_offset = max(current_types)
+        
     # Start adding pi-electrons
     atoms_count = len(atoms); bonds_count = len(bonds); 
     bond_length = 0.65 # cg1-cge bond length = 0.6500
     for id1 in graph:
         atom1 = atoms[id1]
-        electron = pi_electrons[atom1.type]
+        try: electron = pi_electrons[atom1.type]
+        except: electron = ''
         
         # Get atom1 postion
         x1 = atom1.x; y1 = atom1.y; z1 = atom1.z;
@@ -126,7 +131,7 @@ def add(atoms, bonds, box, pi_electrons, log):
             pi_y1 = atom1.y + bond_length*normal[1]
             pi_z1 = atom1.z + bond_length*normal[2]
             molid = atom1.molid
-            typeint = atom1.type + 4
+            typeint = atom1.type + type_offset
             atoms[atoms_count] = create_atoms(molid, typeint, electron, pi_x1, pi_y1, pi_z1, atom1.ix, atom1.iy, atom1.iz)
             bonds_count += 1
             bonds.append(tuple(sorted([id1, atoms_count])))
@@ -137,12 +142,13 @@ def add(atoms, bonds, box, pi_electrons, log):
             pi_y1 = atom1.y - bond_length*normal[1]
             pi_z1 = atom1.z - bond_length*normal[2]
             molid = atom1.molid
-            typeint = atom1.type + 4
+            typeint = atom1.type + type_offset
             atoms[atoms_count] = create_atoms(molid, typeint, electron, pi_x1, pi_y1, pi_z1, atom1.ix, atom1.iy, atom1.iz)
             bonds_count += 1
             bonds.append(tuple(sorted([id1, atoms_count])))
             
     # Print number of created atoms and bonds
+    log.out('  Added the following:')
     log.out('  {:>6} atoms'.format(atoms_count - natoms))
     log.out('  {:>6} bonds'.format(bonds_count - nbonds))
     return atoms, bonds

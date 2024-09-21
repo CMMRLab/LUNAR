@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-June 4th, 2024
+Revision 1.1
+September 21st, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -101,7 +101,7 @@ find_bonds = True
 #                                                                                                            #
 # Update periodic_bonds as desired.                                                                          #
 ##############################################################################################################
-periodic_bonds = True
+periodic_bonds = False
 
 
 ##############################################################################################################
@@ -179,7 +179,7 @@ bond_length = 1.42
 #types = {1: 'B',       2: 'N',       3: 'N',       4: 'B'}
 #types = {1: 'cp',      2: 'cp',      3: 'cp',      4: 'cp'}
 #types = {1: 'bbn|bbe', 2: 'nbn|nbe', 3: 'bbn|bbe', 4: 'nbn|nbe'}
-types = {1: 'cg1|cge', 2:'cg1|cge',  3:'cg1|cge',  4:'cg1|cge'}
+types = {1: 'C', 2: 'C', 3: 'C', 4: 'C'}
 
 
 
@@ -219,7 +219,96 @@ masses = {'cg1': [10.011150, 'C'],
           'C':   [12.011000, 'C'],
           'B':   [10.810000, 'B'],
           'N':   [14.007000, 'N'],
+          'O':   [15.999400, 'O'],
+          'H':   [1.0080000, 'H']
           }
+
+
+###################################################################################################
+### Settings for adding different atom types (terminating of functional) to the sheets or tubes ###
+###################################################################################################
+##############################################################################################################
+# functional_atoms                                                                                           #
+#   An entry to supply a string to set how functional atoms are added to the sheet or tube and what the      #
+#   functional group is. The string format is as follows:                                                    #
+#     BondingType<MaxPercent>|Type1|Type2|TypeN, where "BondingType" is the atom type to add the function    #
+#     group to, "MaxPercent" is a float or integer type to set the maximum percent of atoms to functionalize #
+#     the "|" character seperates types, and the "TypeN" sets the atom to add.                               #
+#                                                                                                            #
+#     For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a carbon sheet or nanotube and the    #
+#     goal was to functionalize 5% of the carbon atoms with -OH functional group. Then the functional_atoms  #
+#     string would be 'C<5>|O|H', which would randomly add the -OH functional group to 5% of the C atoms.    #
+#                                                                                                            #
+#     Additionaly the functional_atoms string can handle multiple BondingType's by seperating them with the  #
+#     ";" character. So the generalized functional_atoms string becomes:                                     #
+#       BondingTypeA<MaxPercentA>|TypeA1|TypeAN; BondingTypeB<MaxPercentB>|TypeB1|TypeBN; ...                #
+#                                                                                                            #
+#       For example say types = {1:'B', 2:'N', 3:'B', 4:'N'} to generate a Boron-Nitride sheet or tube with  #
+#       alternating B/N atoms and the goal was to functionalize 10% of the Boron atoms with -OH functional   #
+#       group and to functionalize 20% of the Nitride atoms with -H functional group. Then the functional_   #
+#       atoms string would be 'B<10>|O|H; N<20>|H', which would randomly add the -OH functional group to 10% #
+#       of the B atoms and add the -H functional group to 20% of the N atoms.                                #
+#                                                                                                            #
+#     All examples above will place the atoms in a line along the orthagonal direction from the surface of   #
+#     tube, but say we wanted to added a functional group that resembles an epoxide ring (3 member ring with #
+#     two carbons and 1 oxygen). Then we can add a "|" character to the end of the functional_atoms string.  #
+#     This method currently only works for adding a single atom functional group like oxygen to the sheets   #
+#     or tubes.                                                                                              #
+#                                                                                                            #
+#       For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a carbon sheet or nanotube and the  #
+#       goal was to functionalize 30% of the carbon atoms with the epoxide ring oxygen. Then the             #
+#       functional_atoms string would be 'C<30>|O|', where the last character is the "|" character. This     #
+#       will tell the code to find a first neighbor from the random atom and center the oxygen atom between  #
+#       the first neighbor and itself. Finally, add two bonds to create the epoxide type ring. Note that     #
+#       each time the oxygen atom is added, it functionalizes two carbon atoms at a time. So say the sheet   #
+#       or tube had 100 carbon atoms and the functionalization MaxPercent was set to 30%, then only 15       #
+#       oxygen atoms will be added (not 30).                                                                 #
+#                                                                                                            #
+#   If the functional_atoms entry/string is left blank, this option will not be envoked. Additionally,       #
+#   this option requires find_bonds to be True.                                                              #
+#                                                                                                            #
+# functional_seed                                                                                            #
+#   An entry to supply a seed to the random number generate to define the random atoms the functional groups #
+#   will be added to. If the seed value is set to ZERO, the current system time from your computer is used   #
+#   to provide a seed to the random number generator.                                                        #
+#                                                                                                            #
+# Update functional_atoms and functional_seed as desired.                                                    #
+##############################################################################################################
+#functional_atoms = 'cg1<10>|O|; C<50>|O|'
+functional_atoms = ''
+functional_seed = 12345
+
+
+##############################################################################################################
+# terminating_atoms                                                                                          #
+#   An entry to supply a string to set how terminating atoms are added to the sheet or tube and what the     #
+#   termanting atoms are. This option requires that periodic_bonds is False, as this creates open valences   #
+#   on the "end" atoms of the sheet or tube. The string format is as follows:                                #
+#     BondingType|Type1|Type2|TypeN, where "BondingType" is the atom type to add the terminating atoms to,   #
+#     the "|" character seperates types, and the "TypeN" sets the atom to add.                               #
+#                                                                                                            #
+#     For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a carbon sheet or nanotube that is    #
+#     not periodically bonded and the goal was to terminate the open valences on the "edges" of the sheet or #
+#     tube with the -OH functional group. Then the termanting_atoms string would be 'C|O|H', which would     #
+#     terminate all "edge" atoms with the -OH group.                                                         #
+#                                                                                                            #
+#     Additionaly the terminating_atoms string can handle multiple BondingType's by seperating them with the #
+#     ";" character. So the generalized termanting_atoms string becomes:                                     #
+#       BondingTypeA|TypeA1|TypeAN; BondingTypeB|TypeB1|TypeBN; BondingTypeC|TypeC1|TypeCN; ...              #
+#                                                                                                            #
+#       For example say types = {1:'B', 2:'N', 3:'B', 4:'N'} to generate a Boron-Nitride sheet or tube with  #
+#       alternating B/N atoms that was not periodically bonded and the goal was to termanate the Boron atoms #
+#       with -H and to termanate the Nitride atoms with -OH, then the terminating_atoms string would be      #
+#       'B|H; N|O|H', which would termanate the "edge" Boron atoms with an -H and the "edge" Nitride atoms   #
+#       with a -OH group.                                                                                    #
+#                                                                                                            #
+#   If the terminating_atoms entry/string is left blank, this option will not be envoked. Additionally, this #
+#   option requires find_bonds to be True.                                                                   #
+#                                                                                                            #
+# Update terminating_atoms as desired.                                                                       #
+##############################################################################################################
+#terminating_atoms = 'cg1|H; C|H; cg1|H'
+terminating_atoms = ''
 
 
 
@@ -491,8 +580,9 @@ if __name__ == "__main__":
         sheet_builder_GUI(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype,
                           sheet_edgetype, types, bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing,
                           symmetric_ntubes, symmetric_length, diameter, n, m, chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds,
-                          charges, masses, GUI_zoom)
+                          charges, masses, functional_seed, functional_atoms, terminating_atoms, GUI_zoom)
     else:
         main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype, sheet_edgetype, types,
              bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_length, diameter, n, m,
-             chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, charges, masses, commandline_inputs=commandline_inputs)
+             chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, charges, masses, functional_seed, functional_atoms, terminating_atoms, 
+             commandline_inputs=commandline_inputs)

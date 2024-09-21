@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-June 4th, 2024
+September 21st, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -31,7 +31,7 @@ class sheet_builder_GUI:
     def __init__(self, sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype,
                  sheet_edgetype, types, bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing,
                  symmetric_ntubes, symmetric_length, diameter, n, m, chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds,
-                 charges, masses, GUI_zoom):
+                 charges, masses, functional_seed, functional_atoms, terminating_atoms, GUI_zoom):
         
         # Find present working directory
         self.pwd = os.getcwd()
@@ -145,6 +145,28 @@ class sheet_builder_GUI:
         self.periodic_bonds.grid(column=5, row=2)
         self.periodic_bonds_label = tk.Label(self.inputs_frame, text='periodic_bonds', font=font_settings)
         self.periodic_bonds_label.grid(column=4, row=2)
+        
+        # functional seed entry
+        self.functional_seed = tk.Entry(self.inputs_frame, width=int(maxwidth/10), font=font_settings)
+        self.functional_seed.insert(0, functional_seed)
+        self.functional_seed.grid(column=7, row=2)
+        self.functional_seed_label = tk.Label(self.inputs_frame, text='functional_seed', font=font_settings)
+        self.functional_seed_label.grid(column=6, row=2)
+        
+        # functional_atoms entry
+        self.functional_atoms = tk.Entry(self.inputs_frame, width=int(maxwidth/2.75), font=font_settings)
+        self.functional_atoms.insert(0, functional_atoms)
+        self.functional_atoms.grid(column=1, row=3, columnspan=3)
+        self.functional_atoms_label = tk.Label(self.inputs_frame, text='functional_atoms', font=font_settings)
+        self.functional_atoms_label.grid(column=0, row=3)
+        
+        # terminating_atoms entry
+        self.terminating_atoms = tk.Entry(self.inputs_frame, width=int(maxwidth/2.5), font=font_settings)
+        self.terminating_atoms.insert(0, terminating_atoms)
+        self.terminating_atoms.grid(column=5, row=3, columnspan=3)
+        self.terminating_atoms_label = tk.Label(self.inputs_frame, text='terminating_atoms', font=font_settings)
+        self.terminating_atoms_label.grid(column=4, row=3)
+        
         
         
         # Add padding to all frames in self.inputs_frame
@@ -398,7 +420,7 @@ class sheet_builder_GUI:
     
     # Closing command    
     def closing(self):
-        print('Terminating atom_removal GUI'); self.root.destroy();
+        print('Terminating sheet removal GUI'); self.root.destroy();
         return
     
     # Functon to run sheet_builder in 'sheet' mode
@@ -506,12 +528,21 @@ class sheet_builder_GUI:
         masses = self.masses
         commandline_inputs = []
         
+        try: functional_seed = int(self.functional_seed.get())
+        except:
+            functional_seed = 0
+            log.GUI_error(f'ERROR functional_seed is not an int {self.functional_seed.get()}')
+            valid_inputs = False 
+        functional_atoms = self.functional_atoms.get()
+        terminating_atoms = self.terminating_atoms.get()
+        
         # Run LUNAR/sheet_builder
         if valid_inputs:
             try:                
                 inputs = (sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype, sheet_edgetype, types,
                           bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_length, diameter, n, m,
-                          chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, charges, masses, commandline_inputs, log)
+                          chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, charges, masses, functional_seed, functional_atoms, terminating_atoms, 
+                          commandline_inputs, log)
                 
                 t1=threading.Thread(target=main, args=inputs)
                 t1.start()
@@ -563,6 +594,9 @@ class sheet_builder_GUI:
         chiral_tube_axis = self.chiral_tube_axis.get()
         find_bonds = boolean[self.find_bonds.get()]
         periodic_bonds = boolean[self.periodic_bonds.get()]
+        functional_seed = int(self.functional_seed.get())
+        functional_atoms = self.functional_atoms.get()
+        terminating_atoms = self.terminating_atoms.get()
         
         # Read current py script and re-write with new settings
         print('Updating settings in: {}, from current GUI settings'.format(self.filename))
@@ -620,6 +654,12 @@ class sheet_builder_GUI:
                     line = psm.parse_and_modify(line, find_bonds, stringflag=False, splitchar='=')
                 if line.startswith('periodic_bonds') and inputsflag:
                     line = psm.parse_and_modify(line, periodic_bonds, stringflag=False, splitchar='=')
+                if line.startswith('functional_seed') and inputsflag:
+                    line = psm.parse_and_modify(line, functional_seed, stringflag=False, splitchar='=')
+                if line.startswith('functional_atoms') and inputsflag:
+                    line = psm.parse_and_modify(line, functional_atoms, stringflag=True, splitchar='=')
+                if line.startswith('terminating_atoms') and inputsflag:
+                    line = psm.parse_and_modify(line, terminating_atoms, stringflag=True, splitchar='=')
                 if line.startswith('if __name__ == "__main__":'): inputsflag = False
                 f.write(line)
         return

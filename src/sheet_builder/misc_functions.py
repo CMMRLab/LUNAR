@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-June 4th, 2024
+Revision 1.1
+September 21st, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931

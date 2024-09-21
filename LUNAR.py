@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-June 27th, 2024
+September 21st, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -226,7 +226,7 @@ class LUNAR:
         # Run auto_morse_bond_GUI
         auto_morse_bond_GUI(amb.topofile, amb.morsefile, amb.parent_directory, amb.newfile, amb.mass_map, amb.min_bond_length, amb.coeffs2skip,
                             amb.radius_specs, amb.alpha_specs, amb.alpha_scale, amb.files2write, amb.atom_style, amb.zero_effected_xterms,
-                            amb.bondbreak_scale, amb.ff_class, amb.include_type_labels, amb.include_rcut, self.GUI_zoom)
+                            amb.bondbreak_scale, amb.ff_class, amb.include_type_labels, amb.class2xe_update, amb.include_rcut, self.GUI_zoom)
         return
     
     # cell_builder GUI Run
@@ -324,7 +324,7 @@ class LUNAR:
         sheet_builder_GUI(sb.sheet_basename, sb.symmetric_tube_basename, sb.chiral_tube_basename, sb.run_mode, sb.parent_directory, sb.length_in_perpendicular, sb.length_in_edgetype,
                           sb.sheet_edgetype, sb.types, sb.bond_length, sb.sheet_layer_spacing, sb.sheet_nlayers, sb.stacking, sb.plane, sb.tube_edgetype, sb.tube_layer_spacing,
                           sb.symmetric_ntubes, sb.symmetric_length, sb.diameter, sb.n, sb.m, sb.chiral_length, sb.symmetric_tube_axis, sb.chiral_tube_axis, sb.find_bonds, sb.periodic_bonds,
-                          sb.charges, sb.masses, self.GUI_zoom)
+                          sb.charges, sb.masses, sb.functional_seed, sb.functional_atoms, sb.terminating_atoms, self.GUI_zoom)
         return
     
     # Function to pop-up scrollable text

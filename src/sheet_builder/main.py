@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-June 4th, 2024
+Revision 1.1
+September 21st, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -10,6 +10,8 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+import src.sheet_builder.add_terminating_atoms as add_terminating_atoms
+import src.sheet_builder.add_functional_groups as add_functional_groups
 import src.sheet_builder.add_pi_electrons as add_pi_electrons
 import src.sheet_builder.misc_functions as misc_functions
 import src.sheet_builder.command_line as command_line
@@ -29,7 +31,8 @@ import os
 #####################################
 def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype, sheet_edgetype, types,
          bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_length, diameter, n, m,
-         chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, charges, masses, commandline_inputs=[], log=io_functions.LUNAR_logger()):
+         chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, charges, masses, functional_seed, functional_atoms, terminating_atoms,
+         commandline_inputs=[], log=io_functions.LUNAR_logger()):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
@@ -44,7 +47,7 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
         # call man page and exit if '-opt' or '-man' is provided at the command line
         command_line.print_man_page(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype, sheet_edgetype, types,
                                     bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_length, diameter, n, m,
-                                    chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds)
+                                    chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, functional_seed, functional_atoms, terminating_atoms)
         sys.exit()
         
     ###################################################################################
@@ -54,7 +57,7 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
         # call inputs for commandline over rides
         over_rides = command_line.inputs(commandline_inputs, sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype,
                                          sheet_edgetype, types, bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_length,
-                                         diameter, n, m, chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds)
+                                         diameter, n, m, chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, functional_seed, functional_atoms, terminating_atoms)
         
         # Set new inputs from over_rides class
         sheet_basename = over_rides.sheet_basename
@@ -83,13 +86,16 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
         chiral_tube_axis = over_rides.chiral_tube_axis
         find_bonds = over_rides.find_bonds
         periodic_bonds = over_rides.periodic_bonds
+        functional_seed = over_rides.functional_seed
+        functional_atoms = over_rides.functional_atoms
+        terminating_atoms = over_rides.terminating_atoms
     
     
     ###########################################
     # Initialize some preliminary information #
     ###########################################
     # set version and print starting information to screen
-    version = 'v1.0 / 4 June 2024'
+    version = 'v1.1 / 21 September 2024'
     log.out(f'\n\nRunning sheet_builder {version} in mode {run_mode}')
     log.out(f'Using Python version {sys.version}')
     
@@ -153,6 +159,33 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
         bonds = misc_functions.find_bonds(atoms, box, boundary, bond_length, tolerance, max_bonds_per_atom, domain_size, pflag, log)
         log.out(f'  Created: {len(bonds)} bonds')
     else: bonds = {}
+            
+    
+    ##################################################################################################
+    # Add terminating atoms (Prior to adding pi-electrons to know which are under coordinated atoms) #
+    ##################################################################################################    
+    terminating_atoms = terminating_atoms.strip() # remove any white space on ends
+    if terminating_atoms:
+        if find_bonds and not periodic_bonds:
+            log.out('\n\nAdding terminating atoms ...')
+            atoms, bonds, box = add_terminating_atoms.add(atoms, bonds, box, terminating_atoms, log)
+        elif not find_bonds:
+            log.warn(f'WARNING terminating_atoms = {terminating_atoms}, but find_bonds is False. Set find_bonds as True to add {terminating_atoms}.')
+        elif periodic_bonds:
+            log.warn(f'WARNING terminating_atoms = {terminating_atoms}, but periodic_bonds is True. Set periodic_bonds as False to add {terminating_atoms}.')
+            
+            
+    ###########################################################################
+    # Add functional groups (Prior to adding pi-electrons to allow for both   #
+    # functionalization and adding of pi-electrons to unfunctionalized atoms) #
+    ###########################################################################
+    functional_atoms = functional_atoms.strip() # remove any white space on ends
+    if functional_atoms:
+        if find_bonds:
+            log.out('\n\nAdding functional groups ...')
+            atoms, bonds, box = add_functional_groups.add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log)
+        else:
+            log.warn(f'WARNING functional_atoms = {functional_atoms}, but find_bonds is False. Set find_bonds as True to add {functional_atoms}.')
     
     
     #####################################################################
@@ -165,8 +198,8 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
             atoms, bonds = add_pi_electrons.add(atoms, bonds, box, pi_electrons, log)
         else:
             log.warn(f'WARNING pi-electrons of types = {str(pi_electrons)}, but find_bonds is False. Set find_bonds as True to add pi-electrons.')
-          
             
+                      
     ###############################################################
     # Attempting adding charges to the system, if they dont exist #
     # in the charges dictionary charges will remain as zeros      #

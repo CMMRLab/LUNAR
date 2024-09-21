@@ -315,3 +315,18 @@ Date               Developer   Description
                                       x is specifed a vertical line will be plotted, if only y is specifed
                                       a horizontal line will be plotted and if both x and y are supplied
                                       a data point will be plotted.									  
+									  
+-------------------------------------------------------------------------------------------------------------
+LUNAR (version 21September2024)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+16September2024    JDK         - frc_files/Morse_parameters.txt: Added a few more bond typing rules.
+
+16September2024    JDK         - bond_react_merge.py: Corrected a few warning and error check messages.
+
+21September2024    JDK         - sheet_builder.py: Added the ability to terminated "edge atoms" on generated
+                                                   sheets or tubes, if they are not periodically bonded and
+                                                   also added the ability to functionalize sheets or tubes based
+                                                   and monte carlo methods and max functionalization percentages.
+												   

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-June 4th, 2024
+Revision 1.1
+September 21st, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -34,7 +34,7 @@ import sys
 
 def print_man_page(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype, sheet_edgetype, types,
                    bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_length, diameter, n, m,
-                   chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds):
+                   chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, functional_seed, functional_atoms, terminating_atoms):
 
     
     # print general command line options
@@ -45,7 +45,7 @@ def print_man_page(sheet_basename, symmetric_tube_basename, chiral_tube_basename
     print('                         [-length-edge <float>] [-length-perp <float>] [-stacking <AA or AB or ABC>] [-sheet-spacing <float>] [-nlayers <int>]')
     print('                         [-sym-tube-name <string>] [-sym-axis <x or y or z>] [-tube-edge <armchair or zigzag>] [-sym-length <float>]')
     print('                         [-sym-diameter <float>] [-tube-spacing <float>] [-ntubes <int>] [-chi-tube-name <string>] [-n <int>] [-m <int>]')
-    print('                         [-chi-axis <x or y or z>] [-chi-length <float>] <-gui> <-opt>|<-man>')
+    print('                         [-chi-axis <x or y or z>] [-chi-length <float>] [-fseed <int>] [-fatoms <string>] [-tatoms <string>] <-gui> <-opt>|<-man>')
 
 
     print('\n*NOTE: If the command line input options are not used the hard coded inputs in the inputs section of the sheet_builder.py')
@@ -164,6 +164,89 @@ def print_man_page(sheet_basename, symmetric_tube_basename, chiral_tube_basename
     print('    is to open the "sheet_builder.py" file and manually adjust the charge dictionary. Example usage:')
     print('        python3 sheet_builder.py -type1 cp -type2 cp -type3 cp -type4 cp')
     print('        python3 sheet_builder.py -type1 cg1|cge -type2 cg1|cge -type3 cg1|cge -type4 cg1|cge')
+    
+    # print adding functional and terminating atoms
+    print('\n\n')
+    print('*********************************************************************************************')
+    print('* Options for adding different atoms to sheets and tubes (terminating or functionalization) *')
+    print('*********************************************************************************************')
+    
+    # print -fseed option
+    print(f'\n -fseed or -fs <int>   sheet_builder variable: functional_seed    hard coded: {functional_seed}')
+    print('   Command line option to set a seed to the random number generate to define the random atoms the functional')
+    print('   groups will be added to. If the seed value is set to ZERO, the current system time from your computer is')
+    print('   used to provide a seed to the random number generator. Example usage:')
+    print('        python3 sheet_builder.py -fseed 12345')
+    
+    # print -fatoms option
+    print(f'\n -fatoms or -fa <string>   sheet_builder variable: functional_atoms    hard coded: {functional_atoms}')
+    print("   Command line option to set how functional atoms are added to the sheet or tube and what the functional")
+    print("   group is. The string format is as follows:                                                               ")
+    print('     BondingType<MaxPercent>|Type1|Type2|TypeN, where "BondingType" is the atom type to add the function    ')
+    print('     group to, "MaxPercent" is a float or integer type to set the maximum percent of atoms to functionalize ')
+    print('     the "|" character seperates types, and the "TypeN" sets the atom to add.                               ')
+    print("                                                                                                            ")
+    print("     For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a carbon sheet or nanotube and the    ")
+    print("     goal was to functionalize 5% of the carbon atoms with -OH functional group. Then the functional_atoms  ")
+    print("     string would be 'C<5>|O|H', which would randomly add the -OH functional group to 5% of the C atoms.    ")
+    print("                                                                                                            ")
+    print("     Additionaly the functional_atoms string can handle multiple BondingType's by seperating them with the  ")
+    print('     ";" character. So the generalized functional_atoms string becomes:                                     ')
+    print("       BondingTypeA<MaxPercentA>|TypeA1|TypeAN; BondingTypeB<MaxPercentB>|TypeB1|TypeBN; ...                ")
+    print("                                                                                                            ")
+    print("       For example say types = {1:'B', 2:'N', 3:'B', 4:'N'} to generate a Boron-Nitride sheet or tube with  ")
+    print("       alternating B/N atoms and the goal was to functionalize 10% of the Boron atoms with -OH functional   ")
+    print("       group and to functionalize 20% of the Nitride atoms with -H functional group. Then the functional_   ")
+    print("       atoms string would be 'B<10>|O|H; N<20>|H', which would randomly add the -OH functional group to 10% ")
+    print("       of the B atoms and add the -H functional group to 20% of the N atoms.                                ")
+    print("                                                                                                            ")
+    print("     All examples above will place the atoms in a line along the orthagonal direction from the surface of   ")
+    print("     tube, but say we wanted to added a functional group that resembles an epoxide ring (3 member ring with ")
+    print('     two carbons and 1 oxygen). Then we can add a "|" character to the end of the functional_atoms string.  ')
+    print("     This method currently only works for adding a single atom functional group like oxygen to the sheets   ")
+    print("     or tubes.                                                                                              ")
+    print("                                                                                                            ")
+    print("       For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a carbon sheet or nanotube and the  ")
+    print("       goal was to functionalize 30% of the carbon atoms with the epoxide ring oxygen. Then the             ")
+    print("       functional_atoms string would be 'C<30>|O|', where the last character is the '|' character. This     ")
+    print("       will tell the code to find a first neighbor from the random atom and center the oxygen atom between  ")
+    print("       the first neighbor and itself. Finally, add two bonds to create the epoxide type ring. Note that     ")
+    print("       each time the oxygen atom is added, it functionalizes two carbon atoms at a time. So say the sheet   ")
+    print("       or tube had 100 carbon atoms and the functionalization MaxPercent was set to 30%, then only 15       ")
+    print("       oxygen atoms will be added (not 30).                                                                 ")
+    print("                                                                                                            ")
+    print("   If the functional_atoms entry/string is left blank, this option will not be envoked. Additionally,       ")
+    print("   this option requires find_bonds to be True.                                                              ")
+    print('  Example usage:')
+    print('    python3 sheet_builder.py -fatoms C<30>|O|')
+    
+    # print -tatoms option
+    print(f'\n -tatoms or -ta <string>   sheet_builder variable: terminating_atoms    hard coded: {terminating_atoms}')
+    print("   Command line option to set how terminating atoms are added to the sheet or tube and what the termanting  ")
+    print("   atoms are. This option requires that periodic_bonds is False, as this creates open valences on the       ")
+    print('   "end" atoms of the sheet or tube. The string format is as follows:                                       ')
+    print('     BondingType|Type1|Type2|TypeN, where "BondingType" is the atom type to add the terminating atoms to,   ')
+    print('     the "|" character seperates types, and the "TypeN" sets the atom to add.                               ')
+    print("                                                                                                            ")
+    print("     For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a carbon sheet or nanotube that is    ")
+    print('     not periodically bonded and the goal was to terminate the open valences on the "edges" of the sheet or ')
+    print("     tube with the -OH functional group. Then the termanting_atoms string would be 'C|O|H', which would     ")
+    print('     terminate all "edge" atoms with the -OH group.                                                         ')
+    print("                                                                                                            ")
+    print("     Additionaly the terminating_atoms string can handle multiple BondingType's by seperating them with the ")
+    print('     ";" character. So the generalized termanting_atoms string becomes:                                     ')
+    print("       BondingTypeA|TypeA1|TypeAN; BondingTypeB|TypeB1|TypeBN; BondingTypeC|TypeC1|TypeCN; ...              ")
+    print("                                                                                                            ")
+    print("       For example say types = {1:'B', 2:'N', 3:'B', 4:'N'} to generate a Boron-Nitride sheet or tube with  ")
+    print("       alternating B/N atoms that was not periodically bonded and the goal was to termanate the Boron atoms ")
+    print("       with -H and to termanate the Nitride atoms with -OH, then the terminating_atoms string would be      ")
+    print('       "B|H; N|O|H", which would termanate the "edge" Boron atoms with an -H and the "edge" Nitride atoms   ')
+    print("       with a -OH group.                                                                                    ")
+    print("                                                                                                            ")
+    print("   If the terminating_atoms entry/string is left blank, this option will not be envoked. Additionally, this ")
+    print("   option requires find_bonds to be True.                                                                   ")
+    print('  Example usage:')
+    print('    python3 sheet_builder.py -tatoms C|O|H')
     
     
     # print sheet options
@@ -358,7 +441,7 @@ def print_man_page(sheet_basename, symmetric_tube_basename, chiral_tube_basename
 class inputs:
     def __init__(self, commandline_inputs, sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype,
                  sheet_edgetype, types, bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_length,
-                 diameter, n, m, chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds):
+                 diameter, n, m, chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, functional_seed, functional_atoms, terminating_atoms):
         
         # Give access to inputs (update later on if command line over ride is given)
         self.commandline_inputs = commandline_inputs
@@ -389,6 +472,10 @@ class inputs:
         self.n = n
         self.m = m
         
+        self.functional_seed = functional_seed     # '-fseed' or '-fs'
+        self.functional_atoms = functional_atoms   # '-fatoms' or '-fa'
+        self.terminating_atoms = terminating_atoms # '-tatoms' or '-ta'
+        
         
         # Check that the given command line inputs are even for alternating tags/tag-inputs
         if (len(commandline_inputs) % 2) != 0:
@@ -407,13 +494,13 @@ class inputs:
         supported_tags = ['-dir', '-run-mode', '-find-bonds', '-pbc-bonds', '-bond-length', '-type1', '-type2', '-type3', '-type4',
                           '-sheet-name', '-plane', '-sheet-edge', '-length-edge', '-length-perp', '-stacking', '-sheet-spacing', '-nlayers',
                           '-sym-tube-name', '-sym-axis', '-tube-edge', '-sym-length', '-sym-diameter', '-tube-spacing', '-ntubes',
-                          '-chi-tube-name', '-chi-axis', '-chi-length', '-n', '-m']
+                          '-chi-tube-name', '-chi-axis', '-chi-length', '-n', '-m', '-fseed', '-fatoms', '-tatoms']
         
         # set shortcut_tags mapping
         shortcut_tags = {'-d':'-dir', '-run':'-run-mode', '-bonds':'-find-bonds', '-pbc':'-pbc-bonds', '-r0':'-bond-length', '-t1':'-type1', '-t2':'-type2', '-t3':'-type3', '-t4':'-type4',
                          '-sname':'-sheet-name', '-p':'-plane', '-sedge':'-sheet-edge', '-le':'-length-edge', '-lp':'-length-perp', '-s':'-stacking', '-ss':'-sheet-spacing', '-nl':'-nlayers',
                          '-stname':'-sym-tube-name', '-sa':'-sym-axis', '-tedge':'-tube-edge', '-sl':'-sym-length','-sd':'-sym-diameter', '-ts':'-tube-spacing', '-nt':'-ntubes',
-                         '-ctname':'-chi-tube-name', '-ca':'-chi-axis', '-cl':'-chi-length', '-n':'-n', '-m':'-m'}
+                         '-ctname':'-chi-tube-name', '-ca':'-chi-axis', '-cl':'-chi-length', '-n':'-n', '-m':'-m', '-fs':'-fseed', '-fa':'-fatoms', '-ta':'-tatoms'}
         
         # set default variables
         default_variables ={'-dir':self.parent_directory, '-run-mode':self.run_mode, '-find-bonds':self.find_bonds, '-pbc-bonds':self.periodic_bonds,
@@ -422,8 +509,8 @@ class inputs:
                             '-length-perp':self.length_in_perpendicular, '-stacking':self.stacking, '-sheet-spacing':self.sheet_layer_spacing, '-nlayers':self.sheet_nlayers,
                             '-sym-tube-name':self.symmetric_tube_basename, '-sym-axis':self.symmetric_tube_axis, '-tube-edge':self.tube_edgetype,
                             '-sym-length':self.symmetric_length, '-sym-diameter':self.diameter, '-tube-spacing':self.tube_layer_spacing, '-ntubes':self.symmetric_ntubes,
-                            '-chi-tube-name':self.chiral_tube_basename, '-chi-axis':self.chiral_tube_axis, '-chi-length':self.chiral_length, '-n':self.n,'-m':self.m
-                            }
+                            '-chi-tube-name':self.chiral_tube_basename, '-chi-axis':self.chiral_tube_axis, '-chi-length':self.chiral_length, '-n':self.n,'-m':self.m,
+                            '-fseed':self.functional_seed, '-fatoms':self.functional_atoms, '-tatoms':self.terminating_atoms}
         
         # set tag/tag-input pair as empty string and update
         tags = {i:'' for i in supported_tags}
@@ -513,6 +600,24 @@ class inputs:
         if tags['-type4']:
             self.types[4] = tags['-type4']
             print('Override confirmation for {:<18} Hard coded input is being overridden with this input: {}'.format('-type4', self.types[4]))
+            
+        #-------------------------------------------#
+        # Termination and functionalization options #
+        #-------------------------------------------#
+        # set new -fseed option and print confirmation
+        if tags['-fseed']:
+            self.functional_seed = int(tags['-fseed'])
+            print('Override confirmation for {:<18} Hard coded input is being overridden with this input: {}'.format('-fseed', self.functional_seed))
+            
+        # set new -fatoms option and print confirmation
+        if tags['-fatoms']:
+            self.functional_atoms = tags['-fatoms']
+            print('Override confirmation for {:<18} Hard coded input is being overridden with this input: {}'.format('-fatoms', self.functional_atoms))
+            
+        # set new -tatoms option and print confirmation
+        if tags['-tatoms']:
+            self.terminating_atoms = tags['-tatoms']
+            print('Override confirmation for {:<18} Hard coded input is being overridden with this input: {}'.format('-tatoms', self.terminating_atoms))
             
         #---------------#
         # Sheet options #
