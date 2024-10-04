@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-June 17th, 2024
+Revision 1.3
+October 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -145,7 +145,7 @@ def print_man_page(topofiles, force_field_joining, duplicate, distance_scale, ne
     print('        python3 cell_builder.py -seed 12345')
         
     # print -reset-molids option
-    print(f'\n -reset-molids or -rm <files|clusters|skip>   cell_builder variable: reset_molids    hard coded: {reset_molids}')
+    print(f'\n -reset-molids or -rm <files|clusters|skip|str(int)>   cell_builder variable: reset_molids    hard coded: {reset_molids}')
     print('    Command line option to reset molids based on different methods, where the following options are available:')
     print('        skip     will use the molIDs set in the files that are read in. If the file format supplied to cell_builder.py')
     print('                 does not have molIDs, every atom molID will default to one.')
@@ -164,6 +164,11 @@ def print_man_page(topofiles, force_field_joining, duplicate, distance_scale, ne
     print('                 largest number of atoms is identified as cluster one, then molIDs are incremented and are assigned to each')
     print('                 of the remaining clusters (i.e., the largest cluster of atoms will have molID 1, and then the smallest')
     print('                 cluster will have a molID of NCLUSTERS found).')
+    print()
+    print("   str(int)   where str(int) means you supply and integer in string format (i.e. '1', '2', '3'). When this   ")
+    print("              method is used, all atoms that will be added to the system will be assigned this molID. This   ")
+    print('              can be useful for easy grouping when "combining" files in LAMMPS as you can control the molIDs ')
+    print("              from this step.                                                                                ")
     print()
     print('    Depending on the different analysis and/or visualization the different reset_molid options may be useful, since they')
     print('    can be used to identity groups of atoms, which can be tedious depending on the type of modeling that is being used.')

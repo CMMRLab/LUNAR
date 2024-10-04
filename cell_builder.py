@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.9
-June 17th, 2024
+Revision 1.10
+October 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -403,6 +403,11 @@ include_type_labels = False
 #              molIDs are incremented and are assigned to each of the remaining clusters (i.e., the largest   #
 #              cluster of atoms will have molID 1, and then the smallest cluster will have a molID of         #
 #              NCLUSTERS found).                                                                              #
+#                                                                                                             #
+#   str(int)   where str(int) means you supply and integer in string format (i.e. '1', '2', '3'). When this   #
+#              method is used, all atoms that will be added to the system will be assigned this molID. This   #
+#              can be useful for easy grouping when "combining" files in LAMMPS as you can control the molIDs #
+#              from this step.                                                                                #
 #                                                                                                             #
 # Depending on the different analysis and/or visualization the different reset_molid options may be useful,   #
 # since they can be used to identity groups of atoms, which can be tedious depending on the type of modeling  #

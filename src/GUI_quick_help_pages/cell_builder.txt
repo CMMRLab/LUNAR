@@ -104,6 +104,10 @@
                  are incremented and are assigned to each of the remaining clusters (i.e., the largest cluster of atoms will have molID 1, and
                  then the smallest cluster will have a molID of NCLUSTERS found).
 				 
+      str(int) where str(int) means you supply and integer in string format (i.e. '1', '2', '3'). When this method is used, all atoms that will
+               be added to the system will be assigned this molID. This can be useful for easy grouping when "combining" files in LAMMPS as you
+               can control the molIDs from this step.
+				 
   unwrap_atoms_via_image_flags
     A drop-down menu to select the Boolean to unwrap atoms by image flags or not to unwrap atoms by image flags. If your system has all image
     flags as zeros the atom positions will remain the same, however, if they are none zero the atoms will be displaced by the image flag
@@ -150,15 +154,22 @@
         
                         If group_monomers_locally is True, 'Ni x Nj x Nk' must be greater than duplicate value, to allow for enough lattice 
                         points. If there is not enough lattice points, the code will exit with an ERROR. Additionally, by default during the
-                         initial grouping of monomers a 'cubic' lattice will be used.
+                        initial grouping of monomers a 'cubic' lattice will be used. For example say you wanted at 4 molecules in the x-direction
+                        6 in the y-direction and 8 in the z-direction, the input to domain would be '4x6x8' or '4 x 6 x 8'.
 						
       'LxA x LyA x LzA' where 'Lx' is the box size in the X-direction and 'A' differentiates it from Ni, 'Ly' is the box size in the Y-direction
                         and 'A' differentiates it from Nj, and 'Lz' is the box size in the Z-direction and 'A' differentiates it from Nz. This
                         method will randomly place molecules (not on a lattice) and randomly rotate molecules. This method can be computationally
                         intensive. However it can create systems nearing densities of 0.55 g/cc in under a few minutes (depending on the random
-                        settings).
+                        settings). For example say you wanted a simulation cell with dimensions of 10 angstrom in the x-direction, 20 angstrom in
+                        the y-direction and 30 angstrom in the z-direction, the input to domain would be '10Ax20Ax30A' or '10A x 20A x 30A'. You
+                        can also use the "compute density" button to help determine what size box you would like and what the resulting density 
+                        would be.
 
-      'A x A x A'       where the three 'A' means simulation box is being defined with files of QTY or ZEROs.
+      'A x A x A'       where the three 'A' means simulation box is being defined with files of QTY or ZEROs. Where if a topofile has a QTY of ZERO
+                        it means the simulation cell dimensions are set by pre-existing systems. The 'A x A x A' input just tells the code to try
+                        randomly inserting molecules into a pre-existing system. If you have a pre-existing system and you want to add more molecules
+                        to it, you MUST read-in the topofile with a QTY of ZERO and then set domain to 'A x A x A'.
 	  
   boundary
     An entry in which to control the boundary of the simulation cell, when inserting molecules. The boundary variable is set up like the LAMMPS

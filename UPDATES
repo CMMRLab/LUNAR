@@ -21,12 +21,17 @@ Date               Developer   Description
 4October2024    JDK            - Format of this "UPDATE" file was revised to be "order" top-to-bottom, where
                                  the top is the most recent updates and the bottom is the oldest updates.
 								 
-4October2024    JDK            - all2lmp: Added a new ff_class "ilmp" for interatomic potentials like ReaxFF, REBO,
+4October2024    JDK            - all2lmp.py: Added a new ff_class "ilmp" for interatomic potentials like ReaxFF, REBO,
                                           ... but for when the topofile is a LAMMPS datafile. These potentials where
                                           previously supported with the "i" ff_class and still can be. However if the
                                           input is a LAMMPS datafile, the "i" class resets atomTypeIDs. The "ilmp"
                                           ff_class can now be used for when the topofile is a LAMMPS datafile where
                                           the existing atomTypeIDs are maintatined between inputs and outputs.
+										  
+4October2024    JDK            - cell_builder.py: Added a new ability to assign all atoms in the generated system
+                                                  to a single molID. This can be useful for generating different
+                                                  "sub systems" with cell_builder and then "assembled" in LAMMPS
+                                                  if the end goal is easy grouping of the "sub systems".
 
 
 -------------------------------------------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.9
-June 31st, 2024
+Revision 1.10
+October 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -779,6 +779,8 @@ class constructor:
             elif reset_molids == 'skip':
                 try: molid = atom.molid
                 except: molid = 1
+            elif reset_molids.isdigit():
+                molid = int(reset_molids)
             else: log.error(f'ERROR request unsupported reset_molids {reset_molids} option.')
             
             # Save atom info
