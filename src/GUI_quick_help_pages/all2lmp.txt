@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 6/5/2024
+# Last edited 10/4/2024
 #
 ************
 * Overview *
@@ -105,11 +105,15 @@
         2 = class2 (PCFF, PCFF-IFF, COMPASS)
         d = DREIDING
         i = interatomic for potentials like: ReaxFF, REBO, AIREBO, SNAP, ...
+        ilmp = interatomic with the same meaning as 'i' ff_class, but the topofile is a LAMMPS datafile. When using 'ilmp' the atomTypeIDs set by
+               the read-in LAMMPS datafile are maintained, where as when using 'i' and reading in a LAMMPS datafile, the atomTypeIDs are reset.
+               This can be useful for when converting from a fix bond force field like PCFF to ReaxFF, where you want to keep the atomTypeID
+               distinction based on the PCFF atom types. 
         s1 = skeleton datafile with no coeffs in class1 format
         s2 = skeleton datafile with no coeffs in class2 format		
     s1 and s2 notes:
       Note, that when using either s1 or s2, the frc_file that is listed is not used and can be left as any frc file.
-    i notes: 
+    i and ilmp notes: 
       Note that when using i, the nta_file that is listed is not used and can be left as any nta file. The element types and masses will be
       derived from the all2lmp_interatomic.frc file.
     It is important that ff_class and frc_file is consistent. If the ff_class definition and frc_file is inconsistent, the code will exit with

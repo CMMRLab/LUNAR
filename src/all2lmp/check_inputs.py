@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-June 5th, 2024
+Revision 1.2
+October 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -47,7 +47,7 @@ def safety(topofile, nta_file, frc_file, assumed, parent_dir, newfile, atom_styl
         log.error('{} {} {} {}'.format('ERROR atom_style: ', atom_style, 'not supported. Currently supported atom styles: ', '  '.join(atomstyles)))
         
     # Check if FF class is supported
-    ff_classes = [0, 1, 2, 'i', 'd', 's1', 's2']
+    ff_classes = [0, 1, 2, 'i', 'ilmp', 'd', 's1', 's2']
     if ff_class not in ff_classes:
         return_boolean = False
         log.error('{} {} {} {}'.format('ERROR ff_class: ', ff_class, 'not supported. Currently supported FF classes: ', '  '.join([str(i) for i in ff_classes])))
@@ -64,8 +64,14 @@ def safety(topofile, nta_file, frc_file, assumed, parent_dir, newfile, atom_styl
     
     # Check if reset_molids is True or False
     if reset_molids not in [True, False]:
-        return_boolean = False
-        log.error('{} {} {}'.format('ERROR reset_molids: ', reset_molids, 'is not True or False, update to either'))
+        integer_input = False
+        try:
+            if reset_molids.isdigit():
+                integer_input = True
+        except: pass
+        if not integer_input:
+            return_boolean = False
+            log.error('{} {} {}'.format('ERROR reset_molids: ', reset_molids, 'is not True or False or an integer, update to either'))
 
     # Check if reset_charges is True or False
     if reset_charges not in [True, False]:

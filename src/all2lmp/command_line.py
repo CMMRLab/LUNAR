@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.3
-June 5th, 2023
+Revision 1.4
+October 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -201,7 +201,7 @@ def print_man_page(topofile, nta_file, frc_file, assumed, parent_dir, newfile, a
     print('        python3 all2lmp.py -atomstyle full')
     
     # print -class option
-    print(f'\n -class or -c <0|1|2|d|s1|s2|r>   all2lmp variable: ff_class    hard coded: {ff_class}')
+    print(f'\n -class or -c <0|1|2|d|s1|s2|i|ilmp>   all2lmp variable: ff_class    hard coded: {ff_class}')
     print('    Command line option to set the class of forcefield used. This will determine how the bonds/angles/diherdals/')
     print('    impropers are found, like wise how to coeffs are found and defined. There are 4 supported class types, 0, 1, 2')
     print('    and r, each of these MUST BE used with their correct .frc file. If the code detects the .frc file and class is')
@@ -213,15 +213,26 @@ def print_man_page(topofile, nta_file, frc_file, assumed, parent_dir, newfile, a
     print('      2 = class2 (for PCFF-IFF, PCFF, compass force field file in frc_files directory)')
     print('      d = DREIDING (for all2lmp_dreiding.frc force field file in frc_files directory. Specfic to all2lmp ONLY!)')
     print()
-    print('     s1 = skeleton datafile for class1; where skeleton means a complete LAMMPS datafile, but no coeffs in it (all')
-    print('          N-body coeffs will have atomIDs in the Bonds, Angles, Dihedrals, and Impropers section match the ordering')
-    print('          of the types in the coeff comment)')
+    print('      s1 = skeleton datafile for class1; where skeleton means a complete LAMMPS datafile, but no coeffs in it (all')
+    print('           N-body coeffs will have atomIDs in the Bonds, Angles, Dihedrals, and Impropers section match the ordering')
+    print('           of the types in the coeff comment)')
     print()
-    print('     s2 = skeleton datafile for class2; where skeleton means a complete LAMMPS datafile, but no coeffs in it (all')
-    print('          N-body coeffs will have atomIDs in the Bonds, Angles, Dihedrals, and Impropers section match the ordering')
-    print('          of the types in the coeff comment)')
+    print('      s2 = skeleton datafile for class2; where skeleton means a complete LAMMPS datafile, but no coeffs in it (all')
+    print('           N-body coeffs will have atomIDs in the Bonds, Angles, Dihedrals, and Impropers section match the ordering')
+    print('           of the types in the coeff comment)')
     print()
-    print('      i = for interatomic potentials like: ReaxFF, REBO, AIREBO, SNAP, ... (for .frc file specfic to all2lmp ONLY! contains elements and masses)')
+    print('      i = for interatomic potentials like: ReaxFF, REBO, AIREBO, SNAP, ... (for .frc file specfic to all2lmp ONLY!')
+    print('          contains elements and masses)')
+    print("      ilmp = interatomic with the same meaning as 'i' ff_class, but the topofile is a LAMMPS datafile. When using 'ilmp'")
+    print("               the atomTypeIDs set by the read-in LAMMPS datafile are maintained, where as when using 'i' and reading in")
+    print("               a LAMMPS datafile, the atomTypeIDs are reset. This can be useful for when converting from a fix bond force")
+    print("               field like PCFF to ReaxFF, where you want to keep the atomTypeID distinction based on the PCFF atom types.")
+    print()
+    print("  's1' and 's2' notes:")
+    print("      Note, that when using either s1 or s2, the frc_file that is listed is not used and can be left as any frc file.")
+    print("  'i' and 'ilmp' notes:")
+    print("      Note that when using i, the nta_file that is listed is not used and can be left as any nta file. The element types and")
+    print("      masses will be derived from the all2lmp_interatomic.frc file.")
     print('    Example usage:')
     print('        python3 all2lmp.py -class 2')
 
@@ -525,8 +536,8 @@ class inputs:
         
         # set new -class option and print confirmation
         if tags['-class']:
-            try: self.ff_class = int(tags['-class']) # try getting class 1 or 2
-            except: self.ff_class = str(tags['-class']) # try getting class 'r'
+            try: self.ff_class = int(tags['-class']) # try getting class 0 or 1 or 2
+            except: self.ff_class = str(tags['-class']) # try getting class 'i' or 'ilmp' or 'd' 
             print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-class', self.ff_class))
         
         # set new -auto-equivs option and print confirmation

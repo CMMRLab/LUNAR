@@ -14,85 +14,161 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 13May2024)
+LUNAR (version 4October2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-10May2024          JDK         - Added UPDATES log
-                               - atom_typing: Enforced include_nta_comments boolean for General:N atom types
-
-13May2024          JDK         - GUIs: Added traceback exception handling to GUI log
-                               - atom_removal: Added ability to remove atoms based on cluster-size or cluster
-                                               mass cutoffs 
-                               - log_analysis.py: Changed how "modes" are loaded
-                               - log_analysis.py: Added the ability for GUI to write "mode"
-                               - log_analysis.py: "Modes" can now be written and loaded
-                               - log_analysis.py: Added checkbox to GUI to replace logfile when loading mode 
-                               - log_analysis.py: Added minimum/maximum analysis methods
-                               - atom_typing.py: Now transfers Velocities
-                               - all2lmp.py: Now transfers Velocities
-                               - add_pi_electrons.py: Now transfers Velocities
-                               - atom_removal.py: Now transfers Velocities
-                               - auto_morse_bond_update.py: Now transfers Velocities
-                               - bond_react_merge.py: Now transfers Velocities
-                               - bond_react_merge.py_prep: Now transfers Velocities
-                               - atom_typing.py and all2lmp.py: Added if newfile == ':' the codes will not
-                                                                write any output files. This was added for
-                                                                those who want to call either main() function
-                                                                from within their own python script and return
-                                                                objects which contain this info (creates a
-                                                                speed up as less time is used on IO).
-                               - Updated manual to reflect changes
-							   
-							   
--------------------------------------------------------------------------------------------------------------
-LUNAR (version 16May2024)
-
-Date               Developer   Description
--------------------------------------------------------------------------------------------------------------
-14May2024          JDK         - auto_morse_bond_update.py GUI: Finished "Quick help" page 
-
-15May2024          JDK         - all2lmp.py: Made "equivs" compatible with new ATOMTYPE:NAME convention
-                               - Update examples in EXAMPLES/atom_typing_general/ folder
-                               - atom_typing.py: Added "path preserving" general atom types as
-                                                * general-pp:2
-                                                * general-pp:3
-                                                * general-pp:4
-                                              which will find all paths between the first neighbor and the
-                                              N-th neighbor (N=2,3,4) where the paths are then set in the
-                                              general atom type string
-                               - Added "automatic_tests" directory where bash scripts will slowly be added
-                                 to test each functionality of each code using the CLI to ensure any future
-                                 work doesnt break any current features
+4October2024    JDK            - Format of this "UPDATE" file was revised to be "order" top-to-bottom, where
+                                 the top is the most recent updates and the bottom is the oldest updates.
 								 
-16May2024          JDK         - add_pi_electrons.py: Pi-electron now inherits velocity from the atom it was
-                                                      added to
-16May2024          JDK         - log_analysis.py: Now has an intial_guess=<Boolean> option for the hyperbola
-                                                  fit
+4October2024    JDK            - all2lmp: Added a new ff_class "ilmp" for interatomic potentials like ReaxFF, REBO,
+                                          ... but for when the topofile is a LAMMPS datafile. These potentials where
+                                          previously supported with the "i" ff_class and still can be. However if the
+                                          input is a LAMMPS datafile, the "i" class resets atomTypeIDs. The "ilmp"
+                                          ff_class can now be used for when the topofile is a LAMMPS datafile where
+                                          the existing atomTypeIDs are maintatined between inputs and outputs.
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 30May2024)
+LUNAR (version 21September2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-18May2024          JDK         - atom_typing.py: Added command line over rides for bond finding options.
+16September2024    JDK         - frc_files/Morse_parameters.txt: Added a few more bond typing rules.
 
-20May2024          JDK         - GUIs: Brought back threading to have GUI run on a seperate thread from the 
-                                       main() functions. The threading is also compatible with traceback logs.	
+16September2024    JDK         - bond_react_merge.py: Corrected a few warning and error check messages.
 
-21May2024          JDK         - bond_react_merge_prep.py GUI: Added "Quick help" page	
-                   JDK         - add_pi_electrons.py GUI: Added "Quick help" page	
-                   JDK         - cluster_analysis.py GUI: Added "Quick help" page
-                   JDK         - auto_cluster_analysis.py GUI: Added "Quick help" page	
-                   JDK         - lmp2SYBYLmol2.py GUI: Added "Quick help" page	
-                   JDK         - atom_removal.py GUI: Added "Quick help" page		
-                   JDK         - free_volume.py GUI: Added "Quick help" page
-                   JDK         - Added atom_typing.py tests to "automatic_tests" directory		
+21September2024    JDK         - sheet_builder.py: Added the ability to terminated "edge atoms" on generated
+                                                   sheets or tubes, if they are not periodically bonded and
+                                                   also added the ability to functionalize sheets or tubes based
+                                                   and monte carlo methods and max functionalization percentages.
 
-23May2024          JDK         - Updated "Quick help" pages	
+					   
+-------------------------------------------------------------------------------------------------------------
+LUNAR (version 18August2024)
 
-30May2024          JDK         - Updated manual figures of GUIs to inlcude the "Quick help" buttons.	
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+28July2024         JDK         - src/write_lmp.py: Correct Bondbond vs Bondangle style hint (Wouldnt cause)
+                                                   any issues, but was inconsistent for those reading that
+                                                   file.
+												   
+29July2024         JDK         - log_analysis.py: Turned read_data.py/get_data() into a method inside of 
+                                                  file class, to make for shorter hand personal use. Updated
+                                                  files in LUNAR/EXAMPLES/log_analysis/using read_log.py for
+                                                  personal use directory.
+												  
+30July2024         JDK         - all2lmp.py: Fixed compatibility bug for atomtype:NAME option for
+                                             nta_file = 'types_from_pdb.nta', to use types/atomtype:NAME
+                                             from .pdb atom-name column.
+											 
+30July2024         JDK         - sheet_builder.py: Added try except to command line manual for "base unit"
+                                                   representation as the "newline" character might cause
+                                                   a failure.	
+
+1August2024        JDK         - auto_free_volume.py: Added log reset between file processing to stop 
+                                                      "appending" behavior of log files for different
+                                                      datafile analysis.													  
+													  
+2August2024        JDK         - all2lmp.py: Updated message about missing parameters to provide better
+                                             guidance on missing parameters.
+											 
+2August2024        JDK         - read_lmp.py: Commented out a print() statement that was meant for debugging.
+
+5August2024        JDK         - log_analysis.py: Fixed "Remove LAMMPS data" method as it was not removing
+                                                  the LAMMPS raw data from the plot.
+												  
+12August2024       JDK         - atom_typing.py: Fixed npc atom typing for PCFF and PCFF-IFF force fields.
+
+18August2024       JDK         - log_analysis.py:
+                                    * Removed the "X-scale" and Y-scale" entries.
+                                    * Added "X-compute" and "Y-compute" entries to perform vectorized
+                                      computes using LAMMPS style of accessing variables by wrapping
+                                      column names between "${" and "}" characters (i.e. ${Step}/1000).
+                                      The vectorized math operations follow python syntax, which is
+                                      detailed in the "compute help" popup page on the GUI.
+                                    * Added a butterworth filter that will apply to the LAMMPS thermo
+                                      data, but all "methods" will still only apply to the LAMMPS thermo
+                                      data. This could be useful for "seeing" trends in noisy data.
+                                    * Added "LAMMPS data (apply moving average)" and "LAMMPS data (apply
+                                      butterworth filter)" to methods to allow for cleaning of LAMMPS
+                                      thermo data using moving average or butterworth filter, where any
+                                      other analysis method's will then "operate" on the cleaned LAMMPS
+                                      thermo data.
+                                    * Adjusted cursor to allow either x or y or x;y pairing, where if only
+                                      x is specifed a vertical line will be plotted, if only y is specifed
+                                      a horizontal line will be plotted and if both x and y are supplied
+                                      a data point will be plotted.		
+												   
+												   
+-------------------------------------------------------------------------------------------------------------
+LUNAR (version 28July2024)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+2July2024          JDK         - bond_react_merge.py and cell_builder.py with force_field_joining = 'merge':
+                                 Fixed the issue of writing crossterms with ZERO's for class1 FFs, that dont
+                                 have crossterm interations, such as the non-crossterm version of CVFF, OLSA,
+                                 DREIDING, etc.	
+
+3July2024          JDK         - cell_builder.py: For the "random" method, the compute density pop-up in the
+                                                  GUI was added onto, to allow for the insertion of the cell
+                                                  dimensions to the "domain" entry via the click of a button.
+
+3July2024          JDK         - README.md: Generated a YouTube channel for LUNAR and added the "Additional
+                                            resources" to README.md.	
+
+7July2024          JDK         - bond_react_merge.py: Added an additional sort to bond coeffs to mitigate the
+                                                      number of permuations to arise. This elimanates order
+                                                      inputs vs outputs coupling.	
+
+7July2024          JDK         - auto_morse_bond_update.py:	Added H-* bonding parameters in
+                                                            frc_files/Morse_parameters.txt and cleaned up the
+                                                            format.					
+
+17July2024         JDK         - auto_morse_bond_update.py:	Added F-* bonding parameters in
+                                                            frc_files/Morse_parameters.txt.
+															
+19July2024         JDK         - atom_typing.py auto_morse_bond_update.py: Increased efficiency of the ring
+                                                                           analysis path finding code as it
+                                                                           proved to be slow for MXenes.
+																		   
+22July2024         JDK         - bond_react_merge.py: Fixed typo for map file generation of WARNING, for
+                                                      DeleteID auto-detection.	
+													  
+26July2024         JDK         - sheet_builder.py: Fixed typo in "GUI Quick help page".
+
+
+-------------------------------------------------------------------------------------------------------------
+LUNAR (version 30June2024)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+18June2024         JDK         - LUNAR.py: Made LUNAR.py compatible with the new cell_builder.py.
+
+18June2024         JDK         - atom_typing.py: Corrected a typo in the "Quick help" page.	
+
+26June2024         JDK         - atom_typing.py and all2lmp.py: Updated mol2lmp.py to be able to read .mol
+                                                                files in V2000 or V3000 format.	
+
+26June2024         JDK         - atom_typing.py: Adjusted velocity transfer bug.
+
+27June2024         JDK         - LUNAR.py: LUNAR manuscript was published so updated README.md and citation
+                                           page in LUNAR.py GUI.		
+
+27June2024         JDK         - src/read_lmp.py: Bug fix for when reading a LAMMPS datafile with an "empty
+                                                  section", for example an "Improper Coeffs" section that
+                                                  no improper coeffs are supplied.	
+
+27June2024         JDK         - bond_react_merge.py: Updated the "in.fix_bond_react.script" that is written
+                                                      each time the code is run to include a more scalable
+                                                      example of how to write LAMMPS datafiles out in
+                                                      increments of conversion.		
+
+29June2024         JDK         - bond_react_merge.py: Fixed "-wrd" command line override shortcut flag.	
+
+30June2024         JDK         - cell_builder.py: Made compatible with ReaxFF datafiles or other "interatomic"
+                                                  potential types of LAMMPS datafiles.	
 
 
 -------------------------------------------------------------------------------------------------------------
@@ -100,7 +176,7 @@ LUNAR (version 17June2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-3June2024          JDK         - all2lmp.py: Added 3-wildcard flag to be remove_things.py to all the ability
+3June2024          JDK         - all2lmp.py: Added 3-wildcard flag to remove_things.py to allow the ability
                                              to remove any dihedral interactions for IFF's pi-electrons	
 
 4June2024          JDK         - sheet_builder.py: NEW module to generate sheet(s), chiral-tubes, and
@@ -191,142 +267,84 @@ Date               Developer   Description
                                                    of the tricks found while optimizing the cell_builder 
                                                    "random" method).			
 
+
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 30June2024)
+LUNAR (version 30May2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-18June2024         JDK         - LUNAR.py: Made LUNAR.py compatible with the new cell_builder.py.
+18May2024          JDK         - atom_typing.py: Added command line over rides for bond finding options.
 
-18June2024         JDK         - atom_typing.py: Corrected a typo in the "Quick help" page.	
+20May2024          JDK         - GUIs: Brought back threading to have GUI run on a seperate thread from the 
+                                       main() functions. The threading is also compatible with traceback logs.	
 
-26June2024         JDK         - atom_typing.py and all2lmp.py: Updated mol2lmp.py to be able to read .mol
-                                                                files in V2000 or V3000 format.	
+21May2024          JDK         - bond_react_merge_prep.py GUI: Added "Quick help" page	
+                   JDK         - add_pi_electrons.py GUI: Added "Quick help" page	
+                   JDK         - cluster_analysis.py GUI: Added "Quick help" page
+                   JDK         - auto_cluster_analysis.py GUI: Added "Quick help" page	
+                   JDK         - lmp2SYBYLmol2.py GUI: Added "Quick help" page	
+                   JDK         - atom_removal.py GUI: Added "Quick help" page		
+                   JDK         - free_volume.py GUI: Added "Quick help" page
+                   JDK         - Added atom_typing.py tests to "automatic_tests" directory		
 
-26June2024         JDK         - atom_typing.py: Adjusted velocity transfer bug.
+23May2024          JDK         - Updated "Quick help" pages	
 
-27June2024         JDK         - LUNAR.py: LUNAR manuscript was published so updated README.md and citation
-                                           page in LUNAR.py GUI.		
+30May2024          JDK         - Updated manual figures of GUIs to inlcude the "Quick help" buttons.
 
-27June2024         JDK         - src/read_lmp.py: Bug fix for when reading a LAMMPS datafile with an "empty
-                                                  section", for example an "Improper Coeffs" section that
-                                                  no improper coeffs are supplied.	
-
-27June2024         JDK         - bond_react_merge.py: Updated the "in.fix_bond_react.script" that is written
-                                                      each time the code is run to include a more scalable
-                                                      example of how to write LAMMPS datafiles out in
-                                                      increments of conversion.		
-
-29June2024         JDK         - bond_react_merge.py: Fixed "-wrd" command line override shortcut flag.	
-
-30June2024         JDK         - cell_builder.py: Made compatible with ReaxFF datafiles or other "interatomic"
-                                                  potential types of LAMMPS datafiles.	
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 28July2024)
+LUNAR (version 16May2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-2July2024          JDK         - bond_react_merge.py and cell_builder.py with force_field_joining = 'merge':
-                                 Fixed the issue of writing crossterms with ZERO's for class1 FFs, that dont
-                                 have crossterm interations, such as the non-crossterm version of CVFF, OLSA,
-                                 DREIDING, etc.	
+14May2024          JDK         - auto_morse_bond_update.py GUI: Finished "Quick help" page 
 
-3July2024          JDK         - cell_builder.py: For the "random" method, the compute density pop-up in the
-                                                  GUI was added onto, to allow for the insertion of the cell
-                                                  dimensions to the "domain" entry via the click of a button.
-
-3July2024          JDK         - README.md: Generated a YouTube channel for LUNAR and added the "Additional
-                                            resources" to README.md.	
-
-7July2024          JDK         - bond_react_merge.py: Added an additional sort to bond coeffs to mitigate the
-                                                      number of permuations to arise. This elimanates order
-                                                      inputs vs outputs coupling.	
-
-7July2024          JDK         - auto_morse_bond_update.py:	Added H-* bonding parameters in
-                                                            frc_files/Morse_parameters.txt and cleaned up the
-                                                            format.					
-
-17July2024         JDK         - auto_morse_bond_update.py:	Added F-* bonding parameters in
-                                                            frc_files/Morse_parameters.txt.
-															
-19July2024         JDK         - atom_typing.py auto_morse_bond_update.py: Increased efficiency of the ring
-                                                                           analysis path finding code as it
-                                                                           proved to be slow for MXenes.
-																		   
-22July2024         JDK         - bond_react_merge.py: Fixed typo for map file generation of WARNING, for
-                                                      DeleteID auto-detection.	
-													  
-26July2024         JDK         - sheet_builder.py: Fixed typo in "GUI Quick help page".
-
-
+15May2024          JDK         - all2lmp.py: Made "equivs" compatible with new ATOMTYPE:NAME convention
+                               - Update examples in EXAMPLES/atom_typing_general/ folder
+                               - atom_typing.py: Added "path preserving" general atom types as
+                                                * general-pp:2
+                                                * general-pp:3
+                                                * general-pp:4
+                                              which will find all paths between the first neighbor and the
+                                              N-th neighbor (N=2,3,4) where the paths are then set in the
+                                              general atom type string
+                               - Added "automatic_tests" directory where bash scripts will slowly be added
+                                 to test each functionality of each code using the CLI to ensure any future
+                                 work doesnt break any current features
+								 
+16May2024          JDK         - add_pi_electrons.py: Pi-electron now inherits velocity from the atom it was
+                                                      added to
+16May2024          JDK         - log_analysis.py: Now has an intial_guess=<Boolean> option for the hyperbola
+                                                  fit
+								
+								
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 18August2024)
+LUNAR (version 13May2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-28July2024         JDK         - src/write_lmp.py: Correct Bondbond vs Bondangle style hint (Wouldnt cause)
-                                                   any issues, but was inconsistent for those reading that
-                                                   file.
-												   
-29July2024         JDK         - log_analysis.py: Turned read_data.py/get_data() into a method inside of 
-                                                  file class, to make for shorter hand personal use. Updated
-                                                  files in LUNAR/EXAMPLES/log_analysis/using read_log.py for
-                                                  personal use directory.
-												  
-30July2024         JDK         - all2lmp.py: Fixed compatibility bug for atomtype:NAME option for
-                                             nta_file = 'types_from_pdb.nta', to use types/atomtype:NAME
-                                             from .pdb atom-name column.
-											 
-30July2024         JDK         - sheet_builder.py: Added try except to command line manual for "base unit"
-                                                   representation as the "newline" character might cause
-                                                   a failure.	
+10May2024          JDK         - Added UPDATES log
+                               - atom_typing: Enforced include_nta_comments boolean for General:N atom types
 
-1August2024        JDK         - auto_free_volume.py: Added log reset between file processing to stop 
-                                                      "appending" behavior of log files for different
-                                                      datafile analysis.													  
-													  
-2August2024        JDK         - all2lmp.py: Updated message about missing parameters to provide better
-                                             guidance on missing parameters.
-											 
-2August2024        JDK         - read_lmp.py: Commented out a print() statement that was meant for debugging.
-
-5August2024        JDK         - log_analysis.py: Fixed "Remove LAMMPS data" method as it was not removing
-                                                  the LAMMPS raw data from the plot.
-												  
-12August2024       JDK         - atom_typing.py: Fixed npc atom typing for PCFF and PCFF-IFF force fields.
-
-18August2024       JDK         - log_analysis.py:
-                                    * Removed the "X-scale" and Y-scale" entries.
-                                    * Added "X-compute" and "Y-compute" entries to perform vectorized
-                                      computes using LAMMPS style of accessing variables by wrapping
-                                      column names between "${" and "}" characters (i.e. ${Step}/1000).
-                                      The vectorized math operations follow python syntax, which is
-                                      detailed in the "compute help" popup page on the GUI.
-                                    * Added a butterworth filter that will apply to the LAMMPS thermo
-                                      data, but all "methods" will still only apply to the LAMMPS thermo
-                                      data. This could be useful for "seeing" trends in noisy data.
-                                    * Added "LAMMPS data (apply moving average)" and "LAMMPS data (apply
-                                      butterworth filter)" to methods to allow for cleaning of LAMMPS
-                                      thermo data using moving average or butterworth filter, where any
-                                      other analysis method's will then "operate" on the cleaned LAMMPS
-                                      thermo data.
-                                    * Adjusted cursor to allow either x or y or x;y pairing, where if only
-                                      x is specifed a vertical line will be plotted, if only y is specifed
-                                      a horizontal line will be plotted and if both x and y are supplied
-                                      a data point will be plotted.									  
-									  
--------------------------------------------------------------------------------------------------------------
-LUNAR (version 21September2024)
-
-Date               Developer   Description
--------------------------------------------------------------------------------------------------------------
-16September2024    JDK         - frc_files/Morse_parameters.txt: Added a few more bond typing rules.
-
-16September2024    JDK         - bond_react_merge.py: Corrected a few warning and error check messages.
-
-21September2024    JDK         - sheet_builder.py: Added the ability to terminated "edge atoms" on generated
-                                                   sheets or tubes, if they are not periodically bonded and
-                                                   also added the ability to functionalize sheets or tubes based
-                                                   and monte carlo methods and max functionalization percentages.
-												   
+13May2024          JDK         - GUIs: Added traceback exception handling to GUI log
+                               - atom_removal: Added ability to remove atoms based on cluster-size or cluster
+                                               mass cutoffs 
+                               - log_analysis.py: Changed how "modes" are loaded
+                               - log_analysis.py: Added the ability for GUI to write "mode"
+                               - log_analysis.py: "Modes" can now be written and loaded
+                               - log_analysis.py: Added checkbox to GUI to replace logfile when loading mode 
+                               - log_analysis.py: Added minimum/maximum analysis methods
+                               - atom_typing.py: Now transfers Velocities
+                               - all2lmp.py: Now transfers Velocities
+                               - add_pi_electrons.py: Now transfers Velocities
+                               - atom_removal.py: Now transfers Velocities
+                               - auto_morse_bond_update.py: Now transfers Velocities
+                               - bond_react_merge.py: Now transfers Velocities
+                               - bond_react_merge.py_prep: Now transfers Velocities
+                               - atom_typing.py and all2lmp.py: Added if newfile == ':' the codes will not
+                                                                write any output files. This was added for
+                                                                those who want to call either main() function
+                                                                from within their own python script and return
+                                                                objects which contain this info (creates a
+                                                                speed up as less time is used on IO).
+                               - Updated manual to reflect changes

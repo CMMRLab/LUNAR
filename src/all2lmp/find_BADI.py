@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.4
-June 5th, 2023
+Revision 1.5
+October 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -46,10 +46,22 @@ class BADI:
                 self.impropers.extend(self.angleangles)
                 self.improper_types_lst.extend(self.angleangle_types_lst)  
                 
+        # If ff_class is 'ilmp' for interatomic force fields like reaxFF, REBO, AIREBO, SNAP,...reaxFF find atom types only
+        # the 'lmp' ending means the topofile comes from LAMMPS and implies keeping the LAMMPS atomTypeID ordering, instead
+        # of resetting all atomTypeIDs when using the 'i' ff_class.
+        if ff_class == 'ilmp':
+            self.atom_types_lst, self.atom_types_dict = atom_types_from_lmp_datafile(nta, name, m)
+            
+            # Will need to adjust name dictionary
+            for i in m.atoms:
+                atom = m.atoms[i]
+                name[i] = '{}{}'.format(name[i], atom.type)
+
         # If ff_class is 'i' for interatomic force fields like reaxFF, REBO, AIREBO, SNAP,...reaxFF find atom types only
-        if ff_class == 'i':
+        if ff_class == 'i': 
             self.atom_types_lst, self.atom_types_dict = atom_types(nta, name)
-        
+
+            
         
 ##############################
 # Function for finding bonds #
@@ -202,6 +214,47 @@ def atom_types(nta, name):
         atom_types_dict[i] = n + 1
         
     return atom_types_lst, atom_types_dict
+
+
+####################################################
+# Function to find most frequent occurance in list #
+####################################################
+def most_frequent(List):
+    return max(set(List), key = List.count)
+
+
+####################################################
+# Function for finding atom types from ReaxFF type #
+# of datafiles, while maintaining atomTypeIDs.     #
+####################################################
+def atom_types_from_lmp_datafile(nta, name, m):
+    # Set to add atom types to
+    atom_types_lst = []; atom_types_dict = {} # { atom type letters : atom type number(s) }
+    
+    # Need to find all currently defined atom types
+    atom_types = {i:set() for i in m.masses } # { atomTypeID:set(to put atom type names in)}
+    
+    # Find atom type symbols and how they map back to the LAMMPS atomTypeID
+    for i in name:
+        atom = m.atoms[i]
+        typeid = atom.type
+        symbol = '{}{}'.format(name[i], typeid)
+        atom_types[typeid].add(symbol)
+        
+    # Build inputs
+    atom_type_ids = sorted(list(atom_types.keys()))
+    for i in atom_type_ids:
+        if atom_types[i]: symbol = most_frequent(list(atom_types[i]))
+        else: symbol = 'NOTusedBYanyATOMS'
+        atom_types_lst.append(symbol)
+        
+        # This will be over written ... This variable however is a dummy
+        # vararible that will not be used in "fill_in_parameter.py" 
+        # find_interatomic_atom_parameters() function.
+        atom_types_dict[symbol] = i
+    
+    return atom_types_lst, atom_types_dict
+    
 
 
 ###################################

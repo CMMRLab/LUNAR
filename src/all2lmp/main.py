@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.19
-June 5th, 2024
+Revision 1.20
+October 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -91,7 +91,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     # Initialize some preliminary information #
     ###########################################
     # set version and print starting information to screen
-    version = 'v1.19 / 5 June 2024'
+    version = 'v1.20 / 4 October 2024'
     log.out(f'\n\nRunning all2lmp {version}')
     log.out(f'Using Python version {sys.version}')
     log.out('Trying Atom Equivalences if needed')
@@ -206,8 +206,8 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
             log.out(f'Read in {frc_file} forcefeild file')
         else: log.error(f'ERROR .frc file: {frc_file} does not exist')
         
-    # If ff_class is 'i' for interatomic force fields like ReaxFF, SNAP, REBO, ... build nta dictionary from m class 
-    if ff_class == 'i':
+    # If ff_class is 'i' or 'ilmp' for interatomic force fields like ReaxFF, SNAP, REBO, ... build nta dictionary from m class 
+    if ff_class in ['i', 'ilmp']:
         if os.path.isfile(frc_file):
             frc = interatomic_force_fields.forcefield_file(frc_file)
             log.out(f'Read in {frc_file} forcefield file')
@@ -346,8 +346,8 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
             remove = {'angle-nta':[], 'dihedral-nta':[], 'improper-nta':[], 'angle-ID':[], 'dihedral-ID':[], 'improper-ID':[], 'zero':{'angle':False, 'dihedral':False, 'improper':False}}
             log.out(f'nta dictionary came from msi {nta_file} file')
             
-    # If ff_class is 'i' for interatomic force fields like reaxFF, REBO, AIREBO, SNAP,... build nta dictionary from m class 
-    if ff_class == 'i':
+    # If ff_class is 'i' or 'ilmp' for interatomic force fields like reaxFF, REBO, AIREBO, SNAP,... build nta dictionary from m class 
+    if ff_class in ['i', 'ilmp']:
         nta, name, edge, charges, neutralize, remove = interatomic_force_fields.generate_nta(m, frc, reset_charges, log)
     
     # Read asssumed auto fill coeffs (aafc) file

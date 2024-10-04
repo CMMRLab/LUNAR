@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-June 5th, 2024
+October 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -136,7 +136,7 @@ class all2lmp_GUI:
         self.options_frame.grid(row=1, column=0, columnspan=2, sticky='news', padx=xpadding, pady=ypadding)
                 
         # ff_class drop down menu
-        styles = [0, 1, 2, 'i', 'd', 's1', 's2']
+        styles = [0, 1, 2, 'i', 'ilmp', 'd', 's1', 's2']
         self.ff_class = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/12), font=font_settings)
         self.ff_class.current(styles.index(ff_class))
         self.ff_class.grid(column=0, row=1)
@@ -338,7 +338,9 @@ class all2lmp_GUI:
     
     # Function to get filepath for topofile
     def topofile_path(self):
-        ftypes = (('all files', '*.*'), ('data files', '*.data *.data.gz'), ('mol files', '*.mol'), ('mol2 files', '*.mol2'), ('mdf files', '*.mdf'), ('sdf files', '*.sdf'), ('pdb files', '*.pdb'))
+        ftypes = (('all files', '*.*'), ('data files', '*.data *.data.gz'), ('mol files', '*.mol'),
+                  ('mol2 files', '*.mol2'), ('mdf files', '*.mdf'), ('sdf files', '*.sdf'),
+                  ('pdb files', '*.pdb'))
         path = filedialog.askopenfilename(initialdir=self.filepath, title='Open topofile?', filetypes=ftypes)
         if path:
             self.filepath = os.path.dirname(os.path.abspath(path))
@@ -348,7 +350,7 @@ class all2lmp_GUI:
     
     # Function to get directory
     def directory_path(self):
-        path =filedialog.askdirectory(initialdir=self.pwd)
+        path = filedialog.askdirectory(initialdir=self.pwd)
         if path:
             path = os.path.relpath(path)
             self.parent_directory.delete(0, tk.END); self.parent_directory.insert(0, path);
@@ -394,7 +396,7 @@ class all2lmp_GUI:
         valid_inputs = True
         
         # Get information from GUI
-        tk2ff = {'0':0, '1':1, '2':2, 'i':'i', 'd':'d', 's1':'s1', 's2':'s2'}
+        tk2ff = {'0':0, '1':1, '2':2, 'i':'i', 'ilmp':'ilmp', 'd':'d', 's1':'s1', 's2':'s2'}
         boolean = {'False':False, 'True':True}
         topofile = self.topofile.get()
         nta_file = self.nta_file.get()
@@ -407,7 +409,8 @@ class all2lmp_GUI:
         use_auto_equivalence = boolean[self.use_auto_equivalence.get()]
         use_morse_bonds = boolean[self.use_morse_bonds.get()]
         use_assumed_auto_fill = boolean[self.use_assumed_auto_fill.get()]
-        reset_molids = boolean[self.reset_molids.get()]
+        try: reset_molids = boolean[self.reset_molids.get()]
+        except: reset_molids = self.reset_molids.get()
         reset_charges = boolean[self.reset_charges.get()]
         write_txt_comments = boolean[self.write_txt_comments.get()]
         write_bond_react = boolean[self.write_bond_react.get()]
@@ -462,7 +465,7 @@ class all2lmp_GUI:
     # Function to update py script default settings
     def update_py_script(self):
         # Get information from GUI
-        tk2ff = {'0':0, '1':1, '2':2, 'i':'i', 'd':'d', 's1':'s1', 's2':'s2'}
+        tk2ff = {'0':0, '1':1, '2':2, 'i':'i', 'ilmp':'ilmp', 'd':'d', 's1':'s1', 's2':'s2'}
         boolean = {'False':False, 'True':True}
         topofile = io_functions.path_to_string(self.topofile.get())
         nta_file = io_functions.path_to_string(self.nta_file.get())
@@ -476,7 +479,8 @@ class all2lmp_GUI:
         use_auto_equivalence = boolean[self.use_auto_equivalence.get()]
         use_morse_bonds = boolean[self.use_morse_bonds.get()]
         use_assumed_auto_fill = boolean[self.use_assumed_auto_fill.get()]
-        reset_molids = boolean[self.reset_molids.get()]
+        try: reset_molids = boolean[self.reset_molids.get()]
+        except: reset_molids = self.reset_molids.get()
         reset_charges = boolean[self.reset_charges.get()]
         write_txt_comments = boolean[self.write_txt_comments.get()]
         write_bond_react = boolean[self.write_bond_react.get()]

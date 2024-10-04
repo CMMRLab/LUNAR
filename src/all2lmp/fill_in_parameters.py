@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.7
-June 5th, 2024
+Revision 1.8
+October 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -116,8 +116,8 @@ class get:
         # Find box dimensions which is done from the read in box dimensions of the file or reset_box_dims=True will search all atom coordinates and find min/max values to set box dimensions
         self.box = get_box(m, add2box, log)
         
-        # If ff_class is 'i' for interatomic force fields like reaxFF, REBO, AIREBO, SNAP,... find atom types only
-        if ff_class == 'i':
+        # If ff_class is 'i' or 'ilmp' for interatomic force fields like reaxFF, REBO, AIREBO, SNAP,... find atom types only
+        if ff_class in ['i', 'ilmp']:
             # Set total number of atoms/bonds/angles/dihedrals/impropers
             self.natoms = len(m.atoms); self.nbonds = 0;
             self.nangles = 0; self.ndihedrals = 0; self.nimpropers = 0;
@@ -128,7 +128,7 @@ class get:
             
             # Find atoms info such as setting up atoms charge, molid, x-pos, y-pos, z-pos, and image flags along with the masses and pair_coeffs
             self.atoms, self.velocities = find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_auto_equivalence, ff_class, skip_printouts, log)    
-            self.masses, self.mass_comment = find_interatomic_atom_parameters(frc, BADI, ff_class, log)
+            self.masses, self.mass_comment = find_interatomic_atom_parameters(frc, BADI, m, ff_class, log)
             
         
         # Find info of ff_class for class 0 or 1 or 2 or 'd' or 's1' or 's2'
@@ -289,11 +289,13 @@ def find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_a
                     log.warn('WARNING atom-id {} type {} does not exists in the force field file'.format(id1, new_atom_type))
         
         # Reset molids is user wants, else try getting from file, except set as 1
-        if reset_molids:
+        if reset_molids in [True, False]:
             molid = molids[id1]
         else:
             try: molid = atom.molid
             except: molid = 1
+            try: molid = int(reset_molids)
+            except: pass
             
         # try to get image flags, if not set as zero (future development could include re-imaging the atoms)
         try: ix = atom.ix; iy = atom.iy; iz = atom.iz;
@@ -357,7 +359,7 @@ def find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_a
 ##########################################
 # Function for finding reaxff atom types #
 ##########################################
-def find_interatomic_atom_parameters(frc, BADI, ff_class, log):
+def find_interatomic_atom_parameters(frc, BADI, m, ff_class, log):
     """
     Function to fill in interatomic force fields like reaxFF, REBO, AIREBO, SNAP,... specific masses
     """
@@ -371,11 +373,14 @@ def find_interatomic_atom_parameters(frc, BADI, ff_class, log):
     mass_comment = 'line1: pair_style reaxff NULL    line2: pair_coeff * * ffield.reax {}'.format(' '.join(BADI.atom_types_lst))
     
     # Find masses
-    for i in BADI.atom_types_lst:
+    for number, i in enumerate(BADI.atom_types_lst, 1):
         
         # atom number
-        number = BADI.atom_types_dict[i]
+        #number = BADI.atom_types_dict[i]
         mass_equiv = ''; mass_coeff_comment = '';
+        
+        # strip any numbers from i 
+        i = ''.join([j for j in i if j.isalpha()])
 
         # Find mass, try type 1st, then equiv, else set as zeros
         if i in frc.atom_types:
@@ -383,9 +388,16 @@ def find_interatomic_atom_parameters(frc, BADI, ff_class, log):
             mass = frc.atom_types[i].mass
             mass_coeff_comment = 'standard type used'    
         else:
-            mass = 0.0; mass_equiv = 'N/A';
-            mass_coeff_comment = 'UNABLE to find coeff parameters'
-            log.warn('WARNING unable to find atom info for Masses {} {}'.format(number, i))
+            # Try getting mass from currently defined masses
+            try: 
+                mass = m.masses[number].coeffs[0]
+                mass_equiv = 'N/A'
+                mass_coeff_comment = 'Using mass from previously defined mass'
+                log.warn('WARNING unable to find atom info for Masses {} {}, but using previously define mass for atomTypeID'.format(number, i))
+            except:
+                mass = 0.0; mass_equiv = 'N/A';
+                mass_coeff_comment = 'UNABLE to find coeff parameters'
+                log.warn('WARNING unable to find atom info for Masses {} {}'.format(number, i))
             
         # Save mass info into class
         t1 = Type()

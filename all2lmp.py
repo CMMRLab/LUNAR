@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.19
-June 5th, 2024
+Revision 1.20
+October 4th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -289,12 +289,22 @@ atom_style = 'full'
 #                      REBO, AIREBO, SNAP, ... {contains elements and mass info, simulation cell info, insertion of extra     #
 #                      elements as atom types to make reaxFF files consistant with one another if different elements are in   #
 #                      each file})                                                                                            #
+#   'ilmp' = interatomic with the same meaning as 'i' ff_class, but the topofile is a LAMMPS datafile. When using 'ilmp' the  #
+#            atomTypeIDs set by the read-in LAMMPS datafile are maintained, where as when using 'i' and reading in a LAMMPS   #
+#            datafile, the atomTypeIDs are reset. This can be useful for when converting from a fix bond force field like     #
+#            PCFF to ReaxFF, where you want to keep the atomTypeID distinction based on the PCFF atom types.                  #
 #   's1' = skeleton datafile for class1; where skeleton means a complete LAMMPS datafile, but no coeffs in it (all N-body     #
 #          coeffs will have atomIDs in the Bonds, Angles, Dihedrals, and Impropers section match the ordering of the types in #
 #          the coeff comment)                                                                                                 #
 #   's2' = skeleton datafile for class2; where skeleton means a complete LAMMPS datafile, but no coeffs in it (all N-body     #
 #          coeffs will have atomIDs in the Bonds, Angles, Dihedrals, and Impropers section match the ordering of the types in #
 #          the coeff comment)                                                                                                 #
+#                                                                                                                             #
+#  's1' and 's2' notes:                                                                                                       #
+#      Note, that when using either s1 or s2, the frc_file that is listed is not used and can be left as any frc file.        #
+#  'i' and 'ilmp' notes:                                                                                                      #
+#      Note that when using i, the nta_file that is listed is not used and can be left as any nta file. The element types and #
+#      masses will be derived from the all2lmp_interatomic.frc file.                                                          #
 #                                                                                                                             #
 # Examples:                                                                                                                   #
 #    ff_class = 1    # sets FF application for class1 FF's                                                                    #
