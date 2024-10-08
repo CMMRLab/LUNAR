@@ -409,17 +409,18 @@ class find:
                         else: additional_comment = ''
                         self.InitiatorIDs[IDs[0]] =  'links pre-rxn molecule molid 1 -> 2' + additional_comment
                         self.InitiatorIDs[IDs[1]] =  'links pre-rxn molecule molid 1 -> 2' + additional_comment
-          
-            #---------------------------------------------------------------------------------------------------#
-            # else warn that pre template does not have two molecules and user must update IntiatarIDs manually #
-            #---------------------------------------------------------------------------------------------------#
-            else: log.warn(f'   WARNING {pre_filename} does not contain two molecules. {filename} map file will need manual updating of InitiatorIDs')
             
             # Reset InitiatorIDs based on supplied BondingIDs (if present and not from Reduce)
             if len(BondingIDs) == 4 and len(Reduce) in [0, 2]:
                 self.InitiatorIDs = {} # Reset InitiatorIDs 
                 self.InitiatorIDs[BondingIDs[0]] =  'BondingID set in pre-rxn LAMMPS datafile HEADER for mol1'
                 self.InitiatorIDs[BondingIDs[1]] =  'BondingID set in pre-rxn LAMMPS datafile HEADER for mol2'
+                
+          
+        #---------------------------------------------------------------------------------------------------#
+        # else warn that pre template does not have two molecules and user must update IntiatarIDs manually #
+        #---------------------------------------------------------------------------------------------------#
+        else: log.warn(f'   WARNING {pre_filename} does not contain two molecules. {filename} map file will need manual updating of InitiatorIDs')
 
 
         #################################################################################################################
