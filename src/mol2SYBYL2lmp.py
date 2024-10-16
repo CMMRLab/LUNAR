@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-May 26th, 2023
+Revision 1.3
+October 16th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -88,8 +88,16 @@ class read_mol2:
                         atom_id = int(line_split[0])
                         try: charge = float(line_split[-1])
                         except: charge = 0.0
+                        
+                        # Get element symbol
+                        element = ''
+                        for char in line_split[1]:
+                            if char.isalpha(): element += char
+                            else: break
+                            
+                        # Save atom info
                         a = Atom_mol()
-                        a.element = ''.join([i for i in line_split[1] if i.isalpha()])
+                        a.element = element
                         a.x = float(line_split[2])
                         a.y = float(line_split[3])
                         a.z = float(line_split[4])

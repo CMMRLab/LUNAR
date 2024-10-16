@@ -14,10 +14,13 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 8October2024)
+LUNAR (version 16October2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+16October2024   JDK            - .mol2 file reader: fixed issues for weird .mol2 files that are generated via
+                                                    Materials Studio.
+
 8October2024    JDK            - bond_react_merge.py: Adjust a warning message for generate_map_file option.
 										  
 4October2024    JDK            - Format of this "UPDATE" file was revised to be "order" top-to-bottom, where

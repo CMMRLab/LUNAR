@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-January 5th, 2024
+Revision 1.3
+October 16th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -148,9 +148,13 @@ def merge(topofile, bondfile, mass_map, bondorder, maxbonded, boundary, vdw_radi
         class Coeff_class: pass  # .type .coeffs = []
         m.masses = {}
         for i in atomtypes:
+            try: coeffs = [mass_map[i][0]]
+            except: 
+                coeffs = [0]
+                log.error(f'ERROR element {i} is not in LUNAR/src/masses.py mass_map dictionary. Please add {i} to mass_map.')
             c = Coeff_class()
             c.type = i # set type as element
-            c.coeffs = [mass_map[i][0]] # set mass mass_map
+            c.coeffs = coeffs
             m.masses[atomtypes[i]] = c
         m.natomtypes = len(m.masses)
         
