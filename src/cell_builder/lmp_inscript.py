@@ -32,7 +32,7 @@ def divide_chunks(lst, n):
 # Function to write the generalized LAMMPS input script
 def write(newfile, version, atom_style, unique_style_hints, log):
     log.out(f'\n\nWriting {newfile} script')
-    with open(newfile+'.script', 'w') as f:
+    with open('in.'+newfile+'.script', 'w') as f:
         # Write header
         f.write('# LAMMPS generalized input script for reducing the simulation cell dimensions to obtain a\n')
         f.write('# desired system density. The force field section will be intialized from the style hints\n')

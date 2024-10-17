@@ -14,11 +14,14 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 16October2024)
+LUNAR (version 17October2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-16October2024   JDK            - .mol2 file reader: fixed issues for weird .mol2 files that are generated via
+17October2024   JDK            - cell_builder.py: Fixed in generated LAMMPS script to read generated LAMMPS
+                                                  data file name.
+													
+16October2024   JDK            - .mol2 file reader: Fixed issues for weird .mol2 files that are generated via
                                                     Materials Studio.
 
 8October2024    JDK            - bond_react_merge.py: Adjust a warning message for generate_map_file option.

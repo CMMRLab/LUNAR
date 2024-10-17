@@ -362,7 +362,7 @@ def main(topofiles, force_field_joining, duplicate, distance_scale, newfile, ato
     #newfile = '{}_seed_{}'.format(newfile, seed)
     header = '{} > cell_builder version: {}'.format(m.header, version)
     write_lmp.file(m, newfile+'.data', header, atom_style, include_type_labels, log)
-    lmp_inscript.write('in.'+newfile, version, atom_style, unique_style_hints, log)
+    lmp_inscript.write(newfile, version, atom_style, unique_style_hints, log)
     
     # If grouping file, write out lmp groups file
     if grouping_file: group_atoms.write(newfile, defined_groups, m, log, write_group_lmp_file=True)
