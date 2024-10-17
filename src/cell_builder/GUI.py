@@ -668,7 +668,7 @@ class cell_builder_GUI:
         include_type_labels = boolean[self.include_type_labels.get()]   
         reset_molids = self.reset_molids.get()
         unwrap_atoms_via_image_flags = boolean[self.unwrap_atoms_via_image_flags.get()]
-        try: duplicate = int(self.duplicate.get())
+        try: duplicate = int(float(self.duplicate.get()))
         except:
             log.GUI_error('ERROR duplicate is not an int')
             valid_inputs = False
@@ -691,7 +691,7 @@ class cell_builder_GUI:
         group_monomers_locally = boolean[self.group_monomers_locally.get()]
         force_field_joining = self.force_field_joining.get()
         domain = self.domain.get()
-        maxtry = int(self.maxtry.get())
+        maxtry = int(float(self.maxtry.get()))
         mixing_rule = self.mixing_rule.get()
         boundary = self.boundary.get()
         if '.' in self.tolerance.get():
@@ -703,7 +703,7 @@ class cell_builder_GUI:
         files = {} # {file/path : qty }
         for i, j  in zip(self.files, self.qtys):
             try: 
-                if j.get() != '' and i.get() != '': files[i.get()] = int(j.get())
+                if j.get() != '' and i.get() != '': files[i.get()] = int(float(j.get()))
                 elif j.get() != '' or i.get() != '': log.warn(f'WARNING incomplete information specified from GUI. file: {i.get()} qty: {j.get()}') 
             except: pass
 
@@ -741,7 +741,7 @@ class cell_builder_GUI:
         include_type_labels = boolean[self.include_type_labels.get()]   
         reset_molids = self.reset_molids.get()
         unwrap_atoms_via_image_flags = boolean[self.unwrap_atoms_via_image_flags.get()]
-        duplicate = int(self.duplicate.get())
+        duplicate = int(float(self.duplicate.get()))
         distance_scale = float(self.distance_scale.get())
         newfile = self.newfile.get()
         max_rotations = {'x': float(self.mxr.get()),
@@ -752,7 +752,7 @@ class cell_builder_GUI:
         force_field_joining = self.force_field_joining.get()
         domain = self.domain.get()
         
-        maxtry = int(self.maxtry.get())
+        maxtry = int(float(self.maxtry.get()))
         mixing_rule = self.mixing_rule.get()
         boundary = self.boundary.get()
         if '.' in self.tolerance.get():
