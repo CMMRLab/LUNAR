@@ -64,9 +64,8 @@ def remove_periodically_bonded_atomids(atoms, box, atomid, bonded):
     atom1 = atoms[atomid]; new_bonded = []
     x1 = atom1.x; y1 = atom1.y; z1 = atom1.z
     for i in bonded:
-        atom2 = atoms[i]
+        atom2 = atoms[i]; periodically_bonded = False
         x2 = atom2.x; y2 = atom2.y; z2 = atom2.z
-        periodically_bonded = False
         if abs(x1 - x2) > max_x: periodically_bonded = True 
         if abs(y1 - y2) > max_y: periodically_bonded = True 
         if abs(z1 - z2) > max_z: periodically_bonded = True 
@@ -102,9 +101,9 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
     max_x = lx/2; max_y = ly/2; max_z = lz/2;
     
     # Determine atoms to add
-    percents = {} # {BondingType : [MaxPercent, ...]}
-    ringed = {} # {BondingType : [True or False], ...}
-    groups = {} # {BondingType : [[list of group atoms], ... [Ndifferent groups]}
+    percents = {} # {BondingType : MaxPercent}
+    ringed = {} # {BondingType : True or False}
+    groups = {} # {BondingType : [list of group atoms]}
     for atom in functional_atoms.split(';'):
         types = atom.split('|')
         if len(types) >= 2:
