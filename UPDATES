@@ -14,10 +14,21 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 17October2024)
+LUNAR (version 23October2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+23October2024   JDK            - sheet_builder.py: Adjusted functional_atoms, to properly add epoxide type of
+                                                   functional groups to periodically bonded sheets. Prior version
+                                                   would have possibly added the second bond to close the ring
+                                                   to span the entire simulation cell due to periodicity.
+                                                   Additionally an example was added to the "Quick help" page 
+                                                   accessible from the GUI, to show how to trick sheet_builder to
+                                                   be able to add different types functional groups to the same
+                                                   bonding atoms. This trick is summarized as:
+												     types = {1: 'C:1', 2: 'C:2', 3: 'C:3', 4: 'C:4'}
+                                                     functional_atoms = 'C:1<40>|O|; C:2<20>|O|H; C:3<20>|N; C:4<20>|S'
+
 17October2024   JDK            - cell_builder.py: Allowed scientific notation (i.e. instead of giving an input 
                                                   of 1000, users can now input 1e3) to be used in GUI for 
                                                   duplicate and maxtry entries.

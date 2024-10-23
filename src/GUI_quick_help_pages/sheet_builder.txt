@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 9/21/2024
+# Last edited 10/23/2024
 #
 ************
 * Overview *
@@ -142,6 +142,16 @@
         and itself. Finally, add two bonds to create the epoxide type ring. Note that each time the oxygen atom is added, it functionalizes two 
         carbon atoms at a time. So say the sheet or tube had 100 carbon atoms and the functionalization MaxPercent was set to 30%, then only 15
         oxygen atoms will be added (not 30).
+		
+      This option is also currently limited to only being able to add one kind of functional group to each type (1-4). So say you wanted to model
+      a graphene sheet of all carbon atoms using the PCFF atom type "cp", but wanted to model functional groups of -O- and -OH. A work around is to
+      use all2lmp.py atom naming scheme summarized as: "AtomType:Name", where the ":"-character provides a delimiter from the true atom type and a
+      name a user can supply. You can uniquely name each of the types (1-4) with a ":name".
+        
+		For example you could set types {1:'cp:line', 2:'cp:line', 3:'cp:ring', 4:'cp:ring'} and then set the functionalization string as 
+        'cp:line<30>|O|H; cp:ring<10>|O|'. This will trick sheet_builder into recognizing the atoms as two different types "cp:line" and "cp:ring"
+        which will allow you to add two different functional groups to the sheet, while maintaining an atom type all2lmp.py can recognize and
+        automatically parameterize.		
 		
     If the functional_atoms entry/string is left blank, this option will not be envoked. Additionally, this option requires find_bonds to be True.
 

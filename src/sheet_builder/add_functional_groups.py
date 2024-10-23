@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-September 21st, 2024
+Revision 1.1
+October 23rd, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -47,6 +47,33 @@ def parse_bonding_type(string, log):
     bonding_type = bonding_type.strip()
     return bonding_type, percentage
 
+
+#########################################################################
+# Function to remove any periodically bonded atoms from the bonded list #
+#########################################################################
+def remove_periodically_bonded_atomids(atoms, box, atomid, bonded):
+    # Find box dimensions
+    lx = box['xhi'] - box['xlo']
+    ly = box['yhi'] - box['ylo']
+    lz = box['zhi'] - box['zlo']
+    
+    # set max_x, max_y, max_z w/ minimum image convention
+    max_x = lx/2; max_y = ly/2; max_z = lz/2;
+    
+    # Go through and check if the bond length in any direction is greater then the max_i
+    atom1 = atoms[atomid]; new_bonded = []
+    x1 = atom1.x; y1 = atom1.y; z1 = atom1.z
+    for i in bonded:
+        atom2 = atoms[i]
+        x2 = atom2.x; y2 = atom2.y; z2 = atom2.z
+        periodically_bonded = False
+        if abs(x1 - x2) > max_x: periodically_bonded = True 
+        if abs(y1 - y2) > max_y: periodically_bonded = True 
+        if abs(z1 - z2) > max_z: periodically_bonded = True 
+        if not periodically_bonded: new_bonded.append(i)
+    return new_bonded
+
+
 #####################################
 # Function to add terminating atoms #
 #####################################
@@ -75,9 +102,9 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
     max_x = lx/2; max_y = ly/2; max_z = lz/2;
     
     # Determine atoms to add
-    percents = {} # {BondingType : MaxPercent}
-    ringed = {} # {BondingType : True or False}
-    groups = {} # {BondingType : [list of group atoms]}
+    percents = {} # {BondingType : [MaxPercent, ...]}
+    ringed = {} # {BondingType : [True or False], ...}
+    groups = {} # {BondingType : [[list of group atoms], ... [Ndifferent groups]}
     for atom in functional_atoms.split(';'):
         types = atom.split('|')
         if len(types) >= 2:
@@ -92,7 +119,7 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
             tmp = atom.strip()
             if len(adding_types) and tmp.endswith('|'):
                 ringed[bonding_type] = True
-            else: ringed[bonding_type] = False            
+            else: ringed[bonding_type] = False  
             
     # Determine newtype integer and log found types
     current_types = sorted(list({atoms[i].type for i in atoms}))
@@ -135,11 +162,12 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
             quantities[bonding_type] = math.floor( (percent/100)*navailable )
             
     # Go through and start finding which atoms will be functionalized
+    all_functionalizable_ids = [i for row in list(functionalizable.values()) for i in row] # [atomIDs that are available for functionalizing]
     atoms2functionalize = {i:[] for i in quantities} # {BondingType : [list of atoms to functionalize]}
     rings2functionalize = {} # {atomID : neighboringID to create ring }
     for bonding_type in quantities:
         qty = quantities[bonding_type]
-        ids = functionalizable[bonding_type]#.copy()
+        ids = functionalizable[bonding_type]
         if ringed[bonding_type]:
             increment = 2
         else: increment = 1
@@ -148,10 +176,13 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
             atomid = ids[random_index]
             atoms2functionalize[bonding_type].append(atomid)
             del ids[random_index]
+            try: all_functionalizable_ids.remove(atomid)
+            except: pass
             
             # Find neighboring atom to use to create ring
             if ringed[bonding_type]:
-                bonded = [i for i in graph[atomid] if atoms[i].atomtype in groups and i in ids]
+                bonded = [i for i in graph[atomid] if atoms[i].atomtype in groups and i in all_functionalizable_ids]
+                bonded = remove_periodically_bonded_atomids(atoms, box, atomid, bonded)
                 if bonded:
                     random_index = random.randint(0, len(bonded)-1)
                     neighid = bonded[random_index]
@@ -160,6 +191,8 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
                     # Remove neighid from current ids if it is in ids
                     if neighid in ids:
                         ids.remove(neighid)
+                    try: all_functionalizable_ids.remove(neighid)
+                    except: pass
                     
                     # Go through and remove neighid from functionalizable
                     for i in functionalizable:

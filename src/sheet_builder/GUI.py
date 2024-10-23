@@ -65,7 +65,7 @@ class sheet_builder_GUI:
             self.defaults = {'family':self.font_type, 'size':self.font_size}
         self.xpadding = 20
         self.ypadding = 10
-        self.maxwidth = 110
+        self.maxwidth = 130
         
         # adjust based on GUI_SF
         GUI_SF = GUI_zoom/100
@@ -76,7 +76,7 @@ class sheet_builder_GUI:
         font_settings = (self.font_type, font_size)
         
         # Set up types to load in typeN drop down menu. If a type is provide by the user that is not in defaults, append user type
-        self.types = ['', 'C', 'B', 'N', 'cg1', 'cg1|cge', 'bbn', 'bbn|bbe', 'nbn', 'nbn|nbe']
+        self.types = ['', 'C', 'B', 'N', 'cp', 'cg1', 'cg1|cge', 'bbn', 'bbn|bbe', 'nbn', 'nbn|nbe']
         for i in types:
             if types[i] not in self.types: 
                 self.types.append(types[i])
