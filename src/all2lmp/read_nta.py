@@ -52,14 +52,14 @@ def atoms(nta_file, m, log):
             line_split = line.split()
 
             # Setting flags
-            if line == '':# or not any(chr.isdigit() for chr in line):
-                atomtypes_flag = False
-                edgeatoms_flag = False
-                charges_flag = False
-                neutralize_flag = False
-                equivs_flag = False
-                remove_flag = False
-            elif 'style' in line:
+            # if line == '':# or not any(chr.isdigit() for chr in line):
+            #     atomtypes_flag = False
+            #     edgeatoms_flag = False
+            #     charges_flag = False
+            #     neutralize_flag = False
+            #     equivs_flag = False
+            #     remove_flag = False
+            if 'style' in line:
                 style = line_split[1] # should be in second index location
                 atomtypes_flag = True
                 edgeatoms_flag = False

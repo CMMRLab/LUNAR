@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.15
-April 3rd, 2024
+Revision 1.16
+November 2nd, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -43,7 +43,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
     #log.configure(level='debug')
     
     # set version and print starting information to screen
-    version = 'v1.15 / 3 April 2024'
+    version = 'v1.16 / 2 November 2024'
     log.out(f'\n\nRunning bond_react_merge {version}')
     log.out(f'Using Python version {sys.version}')
 
@@ -345,7 +345,6 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
                     auto_gen_map_file.write_map(filename+'_commented.txt', pre2post, title, version, comment_flag=True)
                     auto_gen_map_file.write_map(filename+'_uncommented.txt', pre2post, title, version, comment_flag=False)
                     
-                    
                     # Apply any molecule_file_options if lst is not empty
                     if molecule_file_options:
                         try: pre, post = molecule_file_options_builder.add2molecules(molecule_file_options, pre, post, pre2post, newfile, log)
@@ -373,7 +372,17 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
                             log.warn('    WARNING map_near_edge_rxn_charges failed for an unknown reason. Most likely reason is that a dataN tagged')
                             log.out('    file had multiple molecules in it and the code assumes each dataN tagged file only has a single molecule in')
                             log.out('    in. Edge atom charges will have to be updated by the user manually for these set of files.') 
-                else: log.warn('    WARNING generate_map_file was used but code messed up the logic somewhere')
+                    
+                    # Check that charge between pre-reaction and post-reaction are the same (in some cases they will differ, but usualy it means something was wrong in the templates)
+                    pre_charge = sum([pre.atoms[i].charge for i in pre.atoms])
+                    post_charge = sum([post.atoms[i].charge for i in post.atoms])
+                    diff = abs(pre_charge - post_charge) 
+                    if diff > 1e-8:
+                        log.warn('  WARNING pre-reaction net-charge={} and post-reaction net-charge={}.'.format(pre_charge, post_charge))
+                        log.out('  This typically means there is any issue with charge in one or both templates, but not always.')
+
+                    
+                else: log.warn('    WARNING generate_map_file was used but pre and post reactions have different Ntag. Tags (pre,post) = ({},{})'.format(pair[0], pair[1]))
             else: log.warn(f'WARNING generate_map_file was used but N-tag: {i} does NOT have exactly two pairs: {str(pair)}')
     
     

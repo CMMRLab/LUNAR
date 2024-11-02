@@ -14,6 +14,21 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
+LUNAR (version 2November2024)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+2November2024   JDK            - bond_react_merge.py: Added a WARNING check for if the net charge differs from
+                                                      the pre-reaction template to the post-reaction template.
+                                                      Majority of the time the net charge should be the same,
+                                                      where there are only rare cases they will be different.
+                                                      Thus this check was set as a WARNING.
+
+2November2024   JDK            - all2lmp.py: Adjusted the read_nta.py methods to allow for users to add spaces
+                                             whereever they like "within" each section. This will help users
+                                             setup a file that is more "readable" to them and their tastes.
+
+-------------------------------------------------------------------------------------------------------------
 LUNAR (version 23October2024)
 
 Date               Developer   Description
