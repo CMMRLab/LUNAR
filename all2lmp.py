@@ -307,7 +307,7 @@ atom_style = 'full'
 #      masses will be derived from the all2lmp_interatomic.frc file.                                                          #
 #                                                                                                                             #
 # Examples:                                                                                                                   #
-#    ff_class = 1    # sets FF application for class1 FF's                                                                    #
+#    ff_class = '1'  # sets FF application for class1 FF's                                                                    #
 #    ff_class = 'i'  # sets FF application for interatomic potentials like: ReaxFF, REBO, AIREBO, SNAP, ...                   #
 #    ff_class = 's2' # generates a class2 LAMMPS datafile with no energy coeffs, but in class2 format                         #
 #                                                                                                                             #
