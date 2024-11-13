@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.8
-October 4th, 2024
+Revision 1.9
+November 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -70,7 +70,8 @@ class get:
         
         # Perform an atom types check to warn user if atom-type does not exists if .frc file
         log.out('\n\n\nGetting force field parameters for the read in system')
-        if ff_class in [0, 1, 2, 'r', 'd']: atom_types_check(nta, frc, ignore_missing_parameters, log)
+        if ff_class in [0, 1, 2, 'r', 'd', '0', '1', '2']: 
+            atom_types_check(nta, frc, ignore_missing_parameters, log)
         
         # Option to skip print outs. For development only!!! (True to skip False to print out)
         skip_printouts = False 
@@ -132,7 +133,7 @@ class get:
             
         
         # Find info of ff_class for class 0 or 1 or 2 or 'd' or 's1' or 's2'
-        if ff_class in [0, 1, 2, 'd', 's1', 's2']:
+        if ff_class in [0, 1, 2, 'd', 's1', 's2', '0', '1', '2']:
                 
             # Set total number of atoms/bonds/angles/dihedrals/impropers
             self.natoms = len(m.atoms)
@@ -174,7 +175,7 @@ class get:
             self.impropers = find_impropers(nta, BADI, self.improper_map, m, sort_remap_atomids, ff_class, log)
             
             # Find cross terms based on ordering from *_map dictionaries if sort_remap_atomids: else the ordering will be from default ordering of intial pass through to find coeff types
-            if ff_class in [2, 's2']:
+            if ff_class in [2, 's2', '2']:
                 self.bondbond_coeffs = find_bondbond_parameters(frc, BADI, self.angle_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
                 self.bondangle_coeffs = find_bondangle_parameters(frc, BADI, self.angle_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
                 self.angleangletorsion_coeffs = find_angleangletorsion_parameters(frc, BADI, self.dihedral_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
@@ -273,23 +274,23 @@ def find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_a
         velocities[id1] = velocity
         
         # Check if atom type exists in .frc file
-        if ff_class in [0, 1, 2, 'd', 'r']:
+        if ff_class in [0, 1, 2, 'd', 'r', '0', '1', '2']:
             if new_atom_type in frc.atom_types:
                 try: # Try finding connections and printing to user (not all .frc files have connections)
                     atom_connections = frc.atom_types[new_atom_type].connection
                 
                     # Warn if inconsistent # of connects if .frc file has connections column (n.u. stands for not used - from ReaxFF nomenclature)
                     if atom_connections != 'n.u.' and len(BADI.graph[id1]) != atom_connections and new_atom_type != 'cg1': # reduce errors for cg1 with 2IFF if cge is used
-                        if not skip_printouts and ff_class in [0, 1, 2, 'r', 'd']: log.warn('WARNING inconsistent # of connects on atom-id {} type {}'.format(id1, new_atom_type))
+                        if not skip_printouts and ff_class in [0, 1, 2, 'r', 'd', '0', '1', '2']: log.warn('WARNING inconsistent # of connects on atom-id {} type {}'.format(id1, new_atom_type))
                 except: pass
             
             # Else warn that atom type does not exists in force field file
             else:
-                if not skip_printouts and ff_class in [0, 1, 2, 'r', 'd']:
+                if not skip_printouts and ff_class in [0, 1, 2, 'r', 'd', '0', '1', '2']:
                     log.warn('WARNING atom-id {} type {} does not exists in the force field file'.format(id1, new_atom_type))
         
         # Reset molids is user wants, else try getting from file, except set as 1
-        if reset_molids in [True, False]:
+        if reset_molids:
             molid = molids[id1]
         else:
             try: molid = atom.molid
@@ -304,11 +305,11 @@ def find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_a
         # try getting element; except set element as atom type
         try: new_atom_element = frc.atom_types[new_atom_type].element
         except: 
-            if ff_class in [0, 1, 2, 'r', 'd']: log.warn(f'WARNING element type for atomID {id1} type {new_atom_type} could not be found. This will create an error in bond_react_merge.py for map file generation')
+            if ff_class in [0, 1, 2, 'r', 'd', '0', '1', '2']: log.warn(f'WARNING element type for atomID {id1} type {new_atom_type} could not be found. This will create an error in bond_react_merge.py for map file generation')
             new_atom_element = new_atom_type # set as new_atom_type just in case
     
         # Reset charge via bond-increments if user wants, else use charge from file
-        if reset_charges and ff_class in [0, 1, 2]:
+        if reset_charges and ff_class in [0, 1, 2, '0', '1', '2']:
             charge, bond_incs = ff_functions.charge_from_bond_increments(id1, BADI.graph, nta, frc, use_auto_equivalence, skip_printouts, log)
             
             # If atomid in edge dict loop through user defined edge types to sum charges, add extended_charge to charge and print usage status
@@ -459,21 +460,21 @@ def find_atom_parameters(frc, BADI, use_auto_equivalence, ff_class, skip_printou
 
               
     # Set comments, equivs/auto coeff dicts and equivs/auto mapping dicts
-    if ff_class == 0:
+    if ff_class in [0, '0']:
         mass_comment = 'class1' # class1 Header comment
         pair_comment = 'lj/cut/coul/long' # class1 Header comment
         equivalents = frc.equivalences # class1 equivalents dict
         auto_equivs = frc.auto_equivalences # class1 auto-equivalents dict
         pair_equivalent_coeffs = frc.pair_coeffs_12_6 # class1 equivalent coeffs
         pair_auto_equiv_coeffs = frc.pair_coeffs_12_6 # class1 auto-equivalent coeffs
-    if ff_class == 1:
+    if ff_class in [1, '1']:
         mass_comment = 'class1' # class1 Header comment
         pair_comment = 'lj/cut/coul/long' # class1 Header comment
         equivalents = frc.equivalences # class1 equivalents dict
         auto_equivs = frc.auto_equivalences # class1 auto-equivalents dict
         pair_equivalent_coeffs = frc.pair_coeffs_12_6 # class1 equivalent coeffs
         pair_auto_equiv_coeffs = frc.pair_coeffs_12_6 # class1 auto-equivalent coeffs
-    elif ff_class == 2:
+    elif ff_class in [2, '2']:
         mass_comment = 'class2' # class2 Header comment
         pair_comment = 'lj/class2/coul/long' # class2 Header comment
         equivalents = frc.equivalences # class2 equivalents dict
@@ -570,19 +571,19 @@ def find_atom_parameters(frc, BADI, use_auto_equivalence, ff_class, skip_printou
             pair_coeff_comment = 'standard type used'
             
             
-            if ff_class == 0:                
+            if ff_class in [0, '0']:                
                 A = pair_coeff.A; B = pair_coeff.B;  
                 if A > 0: one = (B*B)/(4.0*A);
                 else: one = 0.0
                 if B > 0: two = (A/B)**(1.0/6.0);
                 else: two = 0.0
-            elif ff_class == 1:                
+            elif ff_class in [1, '1']:                
                 A = pair_coeff.A; B = pair_coeff.B;  
                 if A > 0: one = (B*B)/(4.0*A);
                 else: one = 0.0 
                 if B > 0: two = (A/B)**(1.0/6.0);
                 else: two = 0.0
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 one = pair_coeff.eps; two = pair_coeff.r;
             elif ff_class == 'd':                
                 A = pair_coeff.A; B = pair_coeff.B;  
@@ -599,19 +600,19 @@ def find_atom_parameters(frc, BADI, use_auto_equivalence, ff_class, skip_printou
                 pair_coeff = pair_equivalent_coeffs[pair_equiv]
                 pair_coeff_comment = 'equivalent type used'
                 
-                if ff_class == 0:                
+                if ff_class in [0, '0']:                
                     A = pair_coeff.A; B = pair_coeff.B;  
                     if A > 0: one = (B*B)/(4.0*A);
                     else: one = 0.0
                     if B > 0: two = (A/B)**(1.0/6.0);
                     else: two = 0.0
-                elif ff_class == 1:                
+                elif ff_class in [1, '1']:                
                     A = pair_coeff.A; B = pair_coeff.B;  
                     if A > 0: one = (B*B)/(4.0*A);
                     else: one = 0.0 
                     if B > 0: two = (A/B)**(1.0/6.0);
                     else: two = 0.0
-                elif ff_class == 2:
+                elif ff_class in [2, '2']:
                     one = pair_coeff.eps; two = pair_coeff.r;
                 elif ff_class == 'd':                
                     A = pair_coeff.A; B = pair_coeff.B;  
@@ -633,13 +634,13 @@ def find_atom_parameters(frc, BADI, use_auto_equivalence, ff_class, skip_printou
                 pair_coeff = pair_auto_equiv_coeffs[pair_equiv]
                 pair_coeff_comment = 'auto equivalent type used'
                 
-                if ff_class == 0:                
+                if ff_class in [0, '0']:                
                     A = pair_coeff.A; B = pair_coeff.B;  
                     one = (B*B)/(4.0*A); two = (A/B)**(1.0/6.0);
-                elif ff_class == 1:                
+                elif ff_class in [1, '1']:                
                     A = pair_coeff.A; B = pair_coeff.B;  
                     one = (B*B)/(4.0*A); two = (A/B)**(1.0/6.0);
-                elif ff_class == 2:
+                elif ff_class in [2, '2']:
                     one = pair_coeff.eps; two = pair_coeff.r;
                 elif ff_class == 'd':                
                     A = pair_coeff.A; B = pair_coeff.B;  
@@ -719,13 +720,13 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
     bond_map = {} # { Ordered tuple(type1, type2) : numeric id }
     
     # Set comments, equivs/auto coeff dicts and equivs/auto mapping dicts
-    if ff_class == 0:
+    if ff_class in [0, '0']:
         bond_comment = 'harmonic' # class1 Header comment
         equivalents = frc.equivalences # class1 equivalents dict
         auto_equivs = frc.auto_equivalences # class1 auto-equivalents dict
         equivalent_coeffs = frc.quadratic_bonds # class1 equivalent coeffs (both equiv and auto-equiv types will be in this dict)
         auto_equiv_coeffs = frc.quadratic_bonds_auto # class1 auto-equivalent coeffs
-    if ff_class == 1 or ff_class == 'd':
+    if ff_class in [1, '1', 'd']:
         bond_comment = 'harmonic' # class1 Header comment
         equivalents = frc.equivalences # class1 equivalents dict
         auto_equivs = frc.auto_equivalences # class1 auto-equivalents dict
@@ -739,7 +740,7 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
             auto_equivs = frc.auto_equivalences # class1 auto-equivalents dict
             equivalent_coeffs = frc.morse_bonds # class1 equivalent coeffs (both equiv and auto-equiv types will be in this dict)
             auto_equiv_coeffs = frc.morse_bonds_auto # class1 auto-equivalent coeffs
-    elif ff_class == 2:
+    elif ff_class in [2, '2']:
         bond_comment = 'class2' # class2 Header comment
         equivalents = frc.equivalences # class2 equivalents dict
         auto_equivs = frc.auto_equivalences # class2 auto-equivalents dict
@@ -847,14 +848,14 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
         # Save bond_coeff info into class for equivalent form
         if equivalent_flag and not auto_equivalent_flag:
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 coeff = [bond_coeff.k2, bond_coeff.r0]
-            elif ff_class == 1 or ff_class == 'd':
+            elif ff_class in [1, '1', 'd']:
                 if not use_morse_bonds:
                     coeff = [bond_coeff.k2, bond_coeff.r0]
                 else:
                     coeff = [bond_coeff.d, bond_coeff.alpha, bond_coeff.r0]
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = [bond_coeff.r0, bond_coeff.k2, bond_coeff.k3, bond_coeff.k4]
                     
             t = Type()
@@ -869,14 +870,14 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
         # Save bond_coeff info into class for auto equivalent form
         elif auto_equivalent_flag and not equivalent_flag:
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 coeff = [bond_coeff.k2, bond_coeff.r0]
-            elif ff_class == 1 or ff_class == 'd':
+            elif ff_class in [1, '1', 'd']:
                 if not use_morse_bonds:
                     coeff = [bond_coeff.k2, bond_coeff.r0]
                 else:
                     coeff = [bond_coeff.d, bond_coeff.alpha, bond_coeff.r0]
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = [bond_coeff.r0, bond_coeff.k2, 0.0, 0.0]
             
             t = Type()
@@ -896,14 +897,14 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
             if assumed_equivalent_flag:
                 
                 # Set coeff based on FF class
-                if ff_class == 0:
+                if ff_class in [0, '0']:
                     coeff = [bond_coeff.k2, bond_coeff.r0]
-                elif ff_class == 1 or ff_class == 'd':
+                elif ff_class in [1, '1', 'd']:
                     if not use_morse_bonds:
                         coeff = [bond_coeff.k2, bond_coeff.r0]
                     else:
                         coeff = [bond_coeff.d, bond_coeff.alpha, bond_coeff.r0]
-                elif ff_class == 2:
+                elif ff_class in [2, '2']:
                     coeff = [bond_coeff.r0, bond_coeff.k2, bond_coeff.k3, bond_coeff.k4]
                 
                 t = Type()
@@ -918,14 +919,14 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
             # elif auto equivalent coeffs where used (set order as type1, type2)
             elif assumed_auto_equivalent_flag:
                 # Set coeff based on FF class
-                if ff_class == 0:
+                if ff_class in [0, '0']:
                     coeff = [bond_coeff.k2, bond_coeff.r0]
-                elif ff_class == 1 or ff_class == 'd':
+                elif ff_class in [1, '1', 'd']:
                     if not use_morse_bonds:
                         coeff = [bond_coeff.k2, bond_coeff.r0]
                     else:
                         coeff = [bond_coeff.d, bond_coeff.alpha, bond_coeff.r0]       
-                elif ff_class == 2:
+                elif ff_class in [2, '2']:
                     coeff = [bond_coeff.r0, bond_coeff.k2, 0.0, 0.0]
                 
                 t = Type()
@@ -946,14 +947,14 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
                 if not skip_printouts: log.warn('WARNING unable to find bond info for Bond Coeff {} {} {}'.format(number, type1, type2))
                 
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 coeff = 2*[0.0]
-            elif ff_class == 1 or ff_class == 'd':
+            elif ff_class in [1, '1', 'd']:
                 if not use_morse_bonds:
                     coeff = 2*[0.0]
                 else:
                     coeff = 3*[0.0]
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = 4*[0.0]
             
             # set order as type1, type2
@@ -1061,19 +1062,19 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
     angle_map = {} # { Ordered tuple(type1, type2, type3) : numeric id }
         
     # Set comments, equivs/auto coeff dicts and equivs/auto mapping dicts
-    if ff_class == 0:
+    if ff_class in [0, '0']:
         angle_comment = 'harmonic' # class1 Header comment
         equivalents = frc.equivalences # class1 equivalents dict
         auto_equivs = frc.auto_equivalences # class1 auto-equivalents dict
         equivalent_coeffs = frc.quadratic_angles # class1 equivalent coeffs (both equiv and auto-equiv types will be in this dict)
         auto_equiv_coeffs = frc.quadratic_angles_auto # class1 auto-equivalent coeffs
-    elif ff_class == 1 or ff_class == 'd':
+    elif ff_class in [1, '1', 'd']:
         angle_comment = 'harmonic' # class1 Header comment
         equivalents = frc.equivalences # class1 equivalents dict
         auto_equivs = frc.auto_equivalences # class1 auto-equivalents dict
         equivalent_coeffs = frc.quadratic_angles # class1 equivalent coeffs (both equiv and auto-equiv types will be in this dict)
         auto_equiv_coeffs = frc.quadratic_angles_auto # class1 auto-equivalent coeffs
-    elif ff_class == 2:
+    elif ff_class in [2, '2']:
         angle_comment = 'class2' # class2 Header comment
         equivalents = frc.equivalences # class2 equivalents dict
         auto_equivs = frc.auto_equivalences # class2 auto-equivalents dict
@@ -1186,11 +1187,11 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
         if equivalent_flag and not auto_equivalent_flag:
             
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 coeff = [angle_coeff.k2, angle_coeff.theta0]
-            elif ff_class == 1 or ff_class == 'd':
+            elif ff_class in [1, '1', 'd']:
                 coeff = [angle_coeff.k2, angle_coeff.theta0]
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = [angle_coeff.theta0, angle_coeff.k2, angle_coeff.k3, angle_coeff.k4]
             
             t = Type()
@@ -1206,11 +1207,11 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
         elif auto_equivalent_flag and not equivalent_flag:
             
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 coeff = [angle_coeff.k2, angle_coeff.theta0]
-            elif ff_class == 1 or ff_class == 'd':
+            elif ff_class in [1, '1', 'd']:
                 coeff = [angle_coeff.k2, angle_coeff.theta0]
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = [angle_coeff.theta0, angle_coeff.k2, 0.0, 0.0]
             
             t = Type()
@@ -1230,11 +1231,11 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
             if assumed_equivalent_flag:
                 
                 # Set coeff based on FF class
-                if ff_class == 0:
+                if ff_class in [0, '0']:
                     coeff = [angle_coeff.k2, angle_coeff.theta0]
-                elif ff_class == 1:
+                elif ff_class in [1, '1', 'd']:
                     coeff = [angle_coeff.k2, angle_coeff.theta0]
-                elif ff_class == 2:
+                elif ff_class in [2, '2']:
                     coeff = [angle_coeff.theta0, angle_coeff.k2, angle_coeff.k3, angle_coeff.k4]
                 
                 t = Type()
@@ -1250,11 +1251,11 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
             elif assumed_auto_equivalent_flag:
                 
                 # Set coeff based on FF class
-                if ff_class == 0:
+                if ff_class in [0, '0']:
                     coeff = [angle_coeff.k2, angle_coeff.theta0]
-                elif ff_class == 1 or ff_class == 'd':
+                elif ff_class in [1, '1', 'd']:
                     coeff = [angle_coeff.k2, angle_coeff.theta0]
-                elif ff_class == 2:
+                elif ff_class in [2, '2']:
                     coeff = [angle_coeff.theta0, angle_coeff.k2, 0.0, 0.0]
                 
                 t = Type()
@@ -1275,11 +1276,11 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
                 if not skip_printouts: log.warn('WARNING unable to find angle info for Angle Coeff {} {} {} {}'.format(number, type1, type2, type3))
                 
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 coeff = 2*[0.0]
-            elif ff_class == 1 or ff_class == 'd':
+            elif ff_class in [1, '1', 'd']:
                 coeff = 2*[0.0]
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = 4*[0.0]
             
             # set order as type1, type2, type3
@@ -1404,19 +1405,19 @@ def find_dihedral_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
     dihedral_map = {} # { Ordered tuple(type1, type2, type3, type4) : numeric id }
  
     # Set comments, equivs/auto coeff dicts and equivs/auto mapping dicts
-    if ff_class == 0:
+    if ff_class in [0, '0']:
         dihedral_comment = 'opls' # opls Header comment
         equivalents = frc.equivalences # class1 equivalents dict
         auto_equivs = frc.auto_equivalences # class1 auto-equivalents dict
         equivalent_coeffs = frc.torsion_1_opls # class1 equivalent coeffs
         auto_equiv_coeffs = frc.torsion_1_opls # class1 auto-equivalent coeffs
-    elif ff_class == 1 or ff_class == 'd':
+    elif ff_class in [1, '1', 'd']:
         dihedral_comment = 'harmonic' # class1 Header comment
         equivalents = frc.equivalences # class1 equivalents dict
         auto_equivs = frc.auto_equivalences # class1 auto-equivalents dict
         equivalent_coeffs = frc.torsion_1 # class1 equivalent coeffs
         auto_equiv_coeffs = frc.torsion_1_auto # class1 auto-equivalent coeffs
-    elif ff_class == 2:
+    elif ff_class in [2, '2']:
         dihedral_comment = 'class2'  # class2 Header comment
         equivalents = frc.equivalences # class2 equivalents dict
         auto_equivs = frc.auto_equivalences # class2 auto-equivalents dict
@@ -1530,11 +1531,11 @@ def find_dihedral_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
         if equivalent_flag and not auto_equivalent_flag:
             
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 coeff = [dihedral_coeff.k1, dihedral_coeff.k2, dihedral_coeff.k3, dihedral_coeff.k4]
-            elif ff_class == 1 or ff_class == 'd':
+            elif ff_class in [1, '1', 'd']:
                 coeff = ff_functions.dihedral_autoequiv(dihedral_coeff)
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = [dihedral_coeff.v1, dihedral_coeff.phi1, dihedral_coeff.v2, dihedral_coeff.phi2, dihedral_coeff.v3, dihedral_coeff.phi3]
             
             t = Type()
@@ -1550,11 +1551,11 @@ def find_dihedral_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
         elif auto_equivalent_flag and not equivalent_flag:
             
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 coeff = [dihedral_coeff.k1, dihedral_coeff.k2, dihedral_coeff.k3, dihedral_coeff.k4]
-            elif ff_class == 1 or ff_class == 'd':
+            elif ff_class in [1, '1', 'd']:
                 coeff = ff_functions.dihedral_autoequiv(dihedral_coeff)
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = ff_functions.dihedral_autoequiv2equiv(dihedral_coeff)
             
             t = Type()
@@ -1574,11 +1575,11 @@ def find_dihedral_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
             if assumed_equivalent_flag:
                 
                 # Set coeff based on FF class
-                if ff_class == 0:
+                if ff_class in [0, '0']:
                     coeff = [dihedral_coeff.k1, dihedral_coeff.k2, dihedral_coeff.k3, dihedral_coeff.k4]
-                elif ff_class == 1 or ff_class == 'd':
+                elif ff_class in [1, '1', 'd']:
                     coeff = ff_functions.dihedral_autoequiv(dihedral_coeff)
-                elif ff_class == 2:
+                elif ff_class in [2, '2']:
                     coeff = [dihedral_coeff.v1, dihedral_coeff.phi1, dihedral_coeff.v2, dihedral_coeff.phi2, dihedral_coeff.v3, dihedral_coeff.phi3]
                 
                 t = Type()
@@ -1594,11 +1595,11 @@ def find_dihedral_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
             elif assumed_auto_equivalent_flag:
                 
                 # Set coeff based on FF class
-                if ff_class == 0:
+                if ff_class in [0, '0']:
                     coeff = [dihedral_coeff.k1, dihedral_coeff.k2, dihedral_coeff.k3, dihedral_coeff.k4]
-                elif ff_class == 1:
+                elif ff_class in [1, '1', 'd']:
                     coeff = ff_functions.dihedral_autoequiv(dihedral_coeff)
-                elif ff_class == 2:
+                elif ff_class in [2, '2']:
                     coeff = ff_functions.dihedral_autoequiv2equiv(dihedral_coeff)
                 
                 t = Type()
@@ -1619,11 +1620,11 @@ def find_dihedral_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
                 if not skip_printouts: log.warn('WARNING unable to find dihedral info for Dihedral Coeff {} {} {} {} {}'.format(number, type1, type2, type3, type4))
                 
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 coeff = 4*[0.0]
-            elif ff_class == 1 or ff_class == 'd':
+            elif ff_class in [1, '1', 'd']:
                 coeff = [0.0, 1, 0] # int vs float will be used when writing coeffs
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = 6*[0.0]
             
             # set order as type1, type2, type3, type4
@@ -1747,19 +1748,19 @@ def find_improper_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
     improper_map = {} # { Ordered tuple(type1, type2, type3, type4) : numeric id }
     
     # Set comments, equivs/auto coeff dicts and equivs/auto mapping dicts
-    if ff_class == 0:
+    if ff_class in [0, '0']:
         improper_comment = 'cvff' # class1 Header comment
         equivalents = frc.equivalences # class1 equivalents dict
         auto_equivs = frc.auto_equivalences # class1 auto-equivalents dict
         equivalent_coeffs = frc.out_of_plane # class1 equivalent coeffs (both equiv and auto-equiv types will be in this dict)
         auto_equiv_coeffs = frc.out_of_plane_auto # class1 equivalent coeffs (both equiv and auto-equiv types will be in this dict)
-    elif ff_class == 1:
+    elif ff_class in [1, '1']:
         improper_comment = 'cvff' # class1 Header comment
         equivalents = frc.equivalences # class1 equivalents dict
         auto_equivs = frc.auto_equivalences # class1 auto-equivalents dict
         equivalent_coeffs = frc.out_of_plane # class1 equivalent coeffs (both equiv and auto-equiv types will be in this dict)
         auto_equiv_coeffs = frc.out_of_plane_auto # class1 equivalent coeffs (both equiv and auto-equiv types will be in this dict)
-    elif ff_class == 2:
+    elif ff_class in [2, '2']:
         improper_comment = 'class2'  # class2 Header comment
         equivalents = frc.equivalences # class2 equivalents dict
         auto_equivs = frc.auto_equivalences # class2 auto-equivalents dict
@@ -1931,11 +1932,11 @@ def find_improper_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
         if skip_flag:
             
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 coeff = [0.0, 1, 0] # int vs float will be used when writing final file
-            if ff_class == 1:
+            if ff_class in [1, '1']:
                 coeff = [0.0, 1, 0] # int vs float will be used when writing final file
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = 2*[0.0]
             elif ff_class == 'd':
                 coeff = 2*[0.0]
@@ -1955,17 +1956,17 @@ def find_improper_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
         elif equivalent_flag and not auto_equivalent_flag:
             
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 chi0 = improper_coeff.chi0;
                 if chi0 == 180: chi_int = -1;
                 else: chi_int = 1
                 coeff = [improper_coeff.kchi, chi_int, improper_coeff.n]
-            elif ff_class == 1:
+            elif ff_class in [1, '1']:
                 chi0 = improper_coeff.chi0;
                 if chi0 == 180: chi_int = -1;
                 else: chi_int = 1
                 coeff = [improper_coeff.kchi, chi_int, improper_coeff.n]
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = [improper_coeff.kchi, improper_coeff.chi0]
             elif ff_class == 'd':
                 coeff = [improper_coeff.kl, improper_coeff.phi0]
@@ -1984,17 +1985,17 @@ def find_improper_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
         elif auto_equivalent_flag and not equivalent_flag:
                         
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 chi0 = improper_coeff.chi0;
                 if chi0 == 180: chi_int = -1;
                 else: chi_int = 1
                 coeff = [improper_coeff.kchi, chi_int, improper_coeff.n]
-            elif ff_class == 1:
+            elif ff_class in [1, '1']:
                 chi0 = improper_coeff.chi0;
                 if chi0 == 180: chi_int = -1;
                 else: chi_int = 1
                 coeff = [improper_coeff.kchi, chi_int, improper_coeff.n]
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = [improper_coeff.kchi, improper_coeff.chi0]
             elif ff_class == 'd':
                 coeff = [improper_coeff.kl, improper_coeff.phi0]
@@ -2017,17 +2018,17 @@ def find_improper_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
             if assumed_equivalent_flag:
                 
                 # Set coeff based on FF class
-                if ff_class == 0:
+                if ff_class in [0, '0']:
                     chi0 = improper_coeff.chi0;
                     if chi0 == 180: chi_int = -1;
                     else: chi_int = 1
                     coeff = [improper_coeff.kchi, chi_int, improper_coeff.n]
-                elif ff_class == 1:
+                elif ff_class in [1, '1']:
                     chi0 = improper_coeff.chi0;
                     if chi0 == 180: chi_int = -1;
                     else: chi_int = 1
                     coeff = [improper_coeff.kchi, chi_int, improper_coeff.n]
-                elif ff_class == 2:
+                elif ff_class in [2, '2']:
                     coeff = [improper_coeff.kchi, improper_coeff.chi0]
                 elif ff_class == 'd':
                     coeff = [improper_coeff.kl, improper_coeff.phi0]
@@ -2046,17 +2047,17 @@ def find_improper_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
             elif assumed_auto_equivalent_flag:
                 
                 # Set coeff based on FF class
-                if ff_class == 0:
+                if ff_class in [0, '0']:
                     chi0 = improper_coeff.chi0;
                     if chi0 == 180: chi_int = -1;
                     else: chi_int = 1
                     coeff = [improper_coeff.kchi, chi_int, improper_coeff.n]
-                elif ff_class == 1:
+                elif ff_class in [1, '1']:
                     chi0 = improper_coeff.chi0;
                     if chi0 == 180: chi_int = -1;
                     else: chi_int = 1
                     coeff = [improper_coeff.kchi, chi_int, improper_coeff.n]
-                elif ff_class == 2:
+                elif ff_class in [2, '2']:
                     coeff = [improper_coeff.kchi, improper_coeff.chi0]
                 elif ff_class == 'd':
                     coeff = [improper_coeff.kl, improper_coeff.phi0]
@@ -2080,11 +2081,11 @@ def find_improper_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
                 if not skip_printouts: log.warn('WARNING unable to find improper info for Improper Coeff {} {} {} {} {}'.format(number, type1, type2, type3, type4))
 
             # Set coeff based on FF class
-            if ff_class == 0:
+            if ff_class in [0, '0']:
                 coeff = [0.0, 1, 0] # int vs float will be used when writing final file
-            if ff_class == 1:
+            if ff_class in [1, '1']:
                 coeff = [0.0, 1, 0] # int vs float will be used when writing final file
-            elif ff_class == 2:
+            elif ff_class in [2, '2']:
                 coeff = 2*[0.0]
             elif ff_class == 'd':
                 coeff = 2*[0.0]

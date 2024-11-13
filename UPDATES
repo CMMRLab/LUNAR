@@ -14,10 +14,18 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 2November2024)
+LUNAR (version 13November2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+13November2024   JDK           - all2lmp.py: Adjusted the "ff_class" variable from taking both string and int
+                                             types to only taking string types (i.e. for class2 force fields
+                                             ff_class will now be ff_class = '2' instead of ff_class = 2). 
+                                             This was done to help with consistency of types, such that all
+                                             ff_class options are now strings. The code is still backwards 
+                                             compatibile for using int's, but is recommended to use strings
+                                             for all ff_class options.
+
 2November2024   JDK            - bond_react_merge.py: Added a WARNING check for if the net charge differs from
                                                       the pre-reaction template to the post-reaction template.
                                                       Majority of the time the net charge should be the same,

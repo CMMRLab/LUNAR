@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-October 4th, 2024
+Revision 1.3
+November 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -47,7 +47,7 @@ def safety(topofile, nta_file, frc_file, assumed, parent_dir, newfile, atom_styl
         log.error('{} {} {} {}'.format('ERROR atom_style: ', atom_style, 'not supported. Currently supported atom styles: ', '  '.join(atomstyles)))
         
     # Check if FF class is supported
-    ff_classes = [0, 1, 2, 'i', 'ilmp', 'd', 's1', 's2']
+    ff_classes = ['0', '1', '2', 'i', 'ilmp', 'd', 's1', 's2']
     if ff_class not in ff_classes:
         return_boolean = False
         log.error('{} {} {} {}'.format('ERROR ff_class: ', ff_class, 'not supported. Currently supported FF classes: ', '  '.join([str(i) for i in ff_classes])))

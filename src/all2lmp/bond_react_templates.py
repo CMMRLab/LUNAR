@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-April 5th, 2023
+Revision 1.2
+November 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -172,7 +172,7 @@ def write_ecoeffs(doc_title, parameters, ff_class, version, include_type_labels)
             f.write('{} {:^12.8f} {:^2}\n'.format(ID, mass.coeffs, comment))
         
         # Write pair coeffs
-        if ff_class in [0, 1, 2, 'd', 's1', 's2']:
+        if ff_class in [0, 1, 2, 'd', 's1', 's2', '0', '1', '2']:
             f.write(f'\nPair Coeffs  # {parameters.pair_comment}\n\n')
             for i in parameters.pair_coeffs: 
                 pair = parameters.pair_coeffs[i]; ID = '{t:<{s}}'.format(t=str(i), s=3)

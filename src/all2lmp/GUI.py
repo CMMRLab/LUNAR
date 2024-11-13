@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-October 4th, 2024
+November 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -136,7 +136,7 @@ class all2lmp_GUI:
         self.options_frame.grid(row=1, column=0, columnspan=2, sticky='news', padx=xpadding, pady=ypadding)
                 
         # ff_class drop down menu
-        styles = [0, 1, 2, 'i', 'ilmp', 'd', 's1', 's2']
+        styles = ['0', '1', '2', 'i', 'ilmp', 'd', 's1', 's2']
         self.ff_class = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/12), font=font_settings)
         self.ff_class.current(styles.index(ff_class))
         self.ff_class.grid(column=0, row=1)
@@ -396,7 +396,6 @@ class all2lmp_GUI:
         valid_inputs = True
         
         # Get information from GUI
-        tk2ff = {'0':0, '1':1, '2':2, 'i':'i', 'ilmp':'ilmp', 'd':'d', 's1':'s1', 's2':'s2'}
         boolean = {'False':False, 'True':True}
         topofile = self.topofile.get()
         nta_file = self.nta_file.get()
@@ -405,7 +404,7 @@ class all2lmp_GUI:
         parent_directory = self.parent_directory.get() 
         atom_style = self.atom_style.get()
         newfile = self.newfile.get()
-        ff_class = tk2ff[self.ff_class.get()]
+        ff_class = self.ff_class.get()
         use_auto_equivalence = boolean[self.use_auto_equivalence.get()]
         use_morse_bonds = boolean[self.use_morse_bonds.get()]
         use_assumed_auto_fill = boolean[self.use_assumed_auto_fill.get()]
@@ -465,7 +464,6 @@ class all2lmp_GUI:
     # Function to update py script default settings
     def update_py_script(self):
         # Get information from GUI
-        tk2ff = {'0':0, '1':1, '2':2, 'i':'i', 'ilmp':'ilmp', 'd':'d', 's1':'s1', 's2':'s2'}
         boolean = {'False':False, 'True':True}
         topofile = io_functions.path_to_string(self.topofile.get())
         nta_file = io_functions.path_to_string(self.nta_file.get())
@@ -474,7 +472,7 @@ class all2lmp_GUI:
         parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
         atom_style = self.atom_style.get()
         newfile = self.newfile.get()
-        ff_class = tk2ff[self.ff_class.get()]
+        ff_class = self.ff_class.get()
         
         use_auto_equivalence = boolean[self.use_auto_equivalence.get()]
         use_morse_bonds = boolean[self.use_morse_bonds.get()]
@@ -525,7 +523,7 @@ class all2lmp_GUI:
                 if line.startswith('newfile') and inputsflag:
                     line = psm.parse_and_modify(line, newfile, stringflag=True, splitchar='=')
                 if line.startswith('ff_class') and inputsflag:
-                    line = psm.parse_and_modify(line, ff_class, stringflag=False, splitchar='=')
+                    line = psm.parse_and_modify(line, ff_class, stringflag=True, splitchar='=')
                 if line.startswith('use_auto_equivalence') and inputsflag:
                     line = psm.parse_and_modify(line, use_auto_equivalence, stringflag=False, splitchar='=')
                 if line.startswith('use_morse_bonds') and inputsflag:

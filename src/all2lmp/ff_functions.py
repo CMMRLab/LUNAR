@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-December 1st, 2023
+Revision 1.3
+November 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -428,7 +428,7 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
     log.out('{:<18} {:^5}'.format('nangles: ', parameters.nangles))
     log.out('{:<18} {:^5}'.format('ndihedrals: ', parameters.ndihedrals))
     log.out('{:<18} {:^5}'.format('nimpropers: ', parameters.nimpropers))
-    if ff_class == 2 and not any(remove_booleans):
+    if ff_class in [2, '2'] and not any(remove_booleans):
         log.out('{:<2}{:<16} {:^5}'.format('-', 'oop: ', len(BADI.impropers) - len(BADI.angleangles) ))
         log.out('{:<2}{:<16} {:^5}'.format('-', 'angleangle: ', len(BADI.angleangles) ))
     
@@ -440,7 +440,7 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
     log.out('{:<18} {:^5}'.format('nangletypes:', parameters.nangletypes))
     log.out('{:<18} {:^5}'.format('ndihedraltypes:', parameters.ndihedraltypes))
     log.out('{:<18} {:^5}'.format('nimpropertypes:', parameters.nimpropertypes))
-    if ff_class == 2 and not any(remove_booleans):
+    if ff_class in [2, '2'] and not any(remove_booleans):
         log.out('{:<2}{:<16} {:^5}'.format('-', 'oop: ', len(BADI.improper_types_dict) ))
         log.out('{:<2}{:<16} {:^5}'.format('-', 'angleangle: ', len(BADI.angleangle_types_dict) ))
     
@@ -458,7 +458,7 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
     log.out('Parameterization percentage breakdown')
     log.out('-------------------------------------')
     percents = {} # { 'Coeff name' : float value of percent parameterized }
-    if ff_class in [0, 1, 2, 'd']:
+    if ff_class in [0, 1, 2, 'd', '0', '1', '2']:
         if parameters.masses: percents['Masses'] = calculate_percent_found(parameters.masses)
         if parameters.pair_coeffs: percents['Pair Coeffs'] =calculate_percent_found(parameters.pair_coeffs)
         if parameters.bond_coeffs: percents['Bond Coeffs'] = calculate_percent_found(parameters.bond_coeffs)
@@ -466,7 +466,7 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
         if parameters.dihedral_coeffs: percents['Dihedral Coeffs'] = calculate_percent_found(parameters.dihedral_coeffs)
         if parameters.improper_coeffs: percents['Improper Coeffs'] = calculate_percent_found(parameters.improper_coeffs)
         percents['Average MPBADI Coeffs'] = sum(list(percents.values()))/len(percents)
-        if ff_class == 2:
+        if ff_class in [2, '2']:
             if parameters.bondbond_coeffs: percents['BondBond Coeffs'] = calculate_percent_found(parameters.bondbond_coeffs)
             if parameters.bondangle_coeffs: percents['BondAngle Coeffs'] = calculate_percent_found(parameters.bondangle_coeffs)
             if parameters.angleangletorsion_coeffs: percents['AngleAngleTorsion Coeffs'] = calculate_percent_found(parameters.angleangletorsion_coeffs)
@@ -509,7 +509,7 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
                 dict2zero[i].match = 'N/A'
                 dict2zero[i].comments = 'ZEROED'
         return None
-    if ff_class in [0, 1, 2, 'd'] and percents['Average (without Bond-incs)'] < 100:
+    if ff_class in [0, 1, 2, 'd', '0', '1', '2'] and percents['Average (without Bond-incs)'] < 100:
         ignore_printout = True
         if not ignore_missing_parameters:
             ignore_printout = False
@@ -522,7 +522,7 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
             if parameters.angle_coeffs: zero_coeffs(parameters.angle_coeffs, mass_flag=False)
             if parameters.dihedral_coeffs: zero_coeffs(parameters.dihedral_coeffs, mass_flag=False)
             if parameters.improper_coeffs: zero_coeffs(parameters.improper_coeffs, mass_flag=False)
-            if ff_class == 2:
+            if ff_class in [2, '2']:
                 if parameters.bondbond_coeffs: zero_coeffs(parameters.bondbond_coeffs, mass_flag=False)
                 if parameters.bondangle_coeffs: zero_coeffs(parameters.bondangle_coeffs, mass_flag=False)
                 if parameters.angleangletorsion_coeffs: zero_coeffs(parameters.angleangletorsion_coeffs, mass_flag=False)

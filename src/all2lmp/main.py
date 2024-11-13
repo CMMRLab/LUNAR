@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.20
-October 4th, 2024
+Revision 1.21
+November 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -91,7 +91,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     # Initialize some preliminary information #
     ###########################################
     # set version and print starting information to screen
-    version = 'v1.20 / 4 October 2024'
+    version = 'v1.21 / 13 November 2024'
     log.out(f'\n\nRunning all2lmp {version}')
     log.out(f'Using Python version {sys.version}')
     log.out('Trying Atom Equivalences if needed')
@@ -188,8 +188,8 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
 
         
         # Check for consistency between check_ff and ff_class
-        ff2class = {'PCFF-IFF':2, 'PCFF':2, 'compass':2, 'CVFF-IFF':1,
-                    'CVFF':1, 'Clay-FF':1, 'DREIDING':'d', 'OPLS-AA':0}
+        ff2class = {'PCFF-IFF': '2', 'PCFF': '2', 'compass': '2', 'CVFF-IFF': '1',
+                    'CVFF': '1', 'Clay-FF': '1', 'DREIDING':'d', 'OPLS-AA': '0'}
         if ff_class != ff2class[check_ff]:
             ff_class = ff2class[check_ff]
             log.out(f'      WARNING inconsistency between ff_name and ff_class. ff_name = {check_ff}.')
@@ -200,7 +200,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     # Read frc file and check frc file based on FF class #
     ######################################################
     # Find info of ff_class for class 1 or 2
-    if ff_class in [0, 1, 2, 'd']:
+    if ff_class in [0, 1, 2, 'd', '0', '1', '2']:
         if os.path.isfile(frc_file):
             frc = read_frc.forcefield_file(frc_file, log)
             log.out(f'Read in {frc_file} forcefeild file')
@@ -226,17 +226,17 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     # Check frc type for fix-bond FF's (read in with read_frc.forcefield_file)
     if frc.type == 'fix-bond':
         # Warn if FF class is 1 by looking if 12-6 is empty
-        if ff_class == 0 and len(frc.torsion_1_opls) == 0:
+        if ff_class in [0, '0'] and len(frc.torsion_1_opls) == 0:
             log.error('\n\nERROR Inconsistent data in force field file for Class0 FF: Zero 12-6 pair coeffs or Zero torsion_1 opls - Use a class0 .frc file\n')
     
         # Warn if FF class is 1 by looking if 12-6 is empty
-        if ff_class == 1 and len(frc.pair_coeffs_12_6) == 0:
+        if ff_class in [1, '1'] and len(frc.pair_coeffs_12_6) == 0:
             log.error('\n\nERROR Inconsistent data in force field file for Class1 FF: Zero 12-6 pair coeffs - Use a class1 .frc file\n')
-        elif ff_class == 1 and len(frc.torsion_1_opls) > 0:
+        elif ff_class in [1, '1'] and len(frc.torsion_1_opls) > 0:
             log.error('\n\nERROR Inconsistent data in force field file for Class1 FF: Non-Zero torsion_1 opls - Use a class1 .frc file\n')
         
         # Warn if FF class is 2 by looking if pair coeffs 9-6 is empty
-        if ff_class == 2 and len(frc.pair_coeffs_9_6) == 0:
+        if ff_class == [2, '2'] and len(frc.pair_coeffs_9_6) == 0:
             log.error('\n\nERROR Inconsistent data in force field file for Class2 FF: Zero 9-6 pair coeffs - Use a class2 .frc file\n')
             
         # Warn if FF class is 1 by looking if 12-6 and out_of_plane_DREIDING is empty
@@ -312,7 +312,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     else: log.error(f'ERROR unsupported topofile extension {topofile}')
     
     # Read nta file if topofile had .data or .data or .mol or .mol2 or .pdb ending (nta = {atomid:atomtype}, edge={atomid:[lst of edge extend atomtypes]}) and class1 or class2 FF's
-    if ff_class in [0, 1, 2, 'd', 's1', 's2']:        
+    if ff_class in [0, 1, 2, 'd', 's1', 's2', '0', '1', '2']:        
         # Read .nta file for .data, .dat, .mol, .sdf or .mol2  or .pdb file formats. Pass in m class for checking and to support style id or style type .nta files
         if topofile.endswith('data') or topofile.endswith('dat') or topofile.endswith('mol') or topofile.endswith('sdf') or topofile.endswith('mol2') or topofile.endswith('pdb') or topofile.endswith('data.gz') or topofile.endswith('dat.gz'):
             # update nta_file name if nta_file == 'topofile'
@@ -377,7 +377,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
     # If anything from remove dict use remove_things.post_processor to remove certain user-defined topology/parameters from the parameters class
     remove_booleans = [True for i in remove if remove[i] and i in ['angle-nta', 'angle-ID', 'dihedral-nta', 'dihedral-ID', 'improper-nta', 'improper-ID']]
     remove_booleans.extend([remove['zero'][i] for i in remove['zero']])
-    if any(remove_booleans) and ff_class in [0, 1, 2, 'd']:
+    if any(remove_booleans) and ff_class in [0, 1, 2, 'd', '0', '1', '2']:
         parameters = remove_things.post_processor(parameters, remove, ff_class, BADI, log)
     
     ##############################################

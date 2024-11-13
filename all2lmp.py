@@ -279,11 +279,11 @@ atom_style = 'full'
 
 
 ###############################################################################################################################
-# Python string or int variable to set what type of forcefield (FF) to apply to the system. *NOTE the FF type set here MUST   #
-# be consistent with the information inside the read in FF set by the frc_file variable.* The following options are available:#
-#    0   = class0      (int data type - FF files: opls-AA {EXPEIRMENTAL})                                                     #
-#    1   = class1      (int data type - FF files: cvff-IFF, cvff, clayff)                                                     #
-#    2   = class2      (int data type - FF files: PCFF-IFF, PCFF, compass)                                                    #
+# Python string variable to set what type of forcefield (FF) to apply to the system. *NOTE the FF type set here MUST BE       #
+# consistent with the information inside the read in FF set by the frc_file variable.* The following options are available:   #
+#   '0'  = class0      (int data type - FF files: opls-AA {EXPEIRMENTAL})                                                     #
+#   '1'  = class1      (int data type - FF files: cvff-IFF, cvff, clayff)                                                     #
+#   '2'  = class2      (int data type - FF files: PCFF-IFF, PCFF, compass)                                                    #
 #   'd'  = DREIDING    (str data type - FF file: all2lmp_dreiding.frc)                                                        #
 #   'i'  = interatomic (str data type - FF files: all2lmp all2lmp interatomic specfic .frc file, for potentials like ReaxFF,  #
 #                      REBO, AIREBO, SNAP, ... {contains elements and mass info, simulation cell info, insertion of extra     #
@@ -313,7 +313,7 @@ atom_style = 'full'
 #                                                                                                                             #
 # Update ff_class as required.                                                                                                #
 ###############################################################################################################################
-ff_class = 2
+ff_class = '2'
 
 
 ###############################################################################################################################

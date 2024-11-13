@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.4
-October 4th, 2024
+Revision 1.5
+November 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -536,8 +536,7 @@ class inputs:
         
         # set new -class option and print confirmation
         if tags['-class']:
-            try: self.ff_class = int(tags['-class']) # try getting class 0 or 1 or 2
-            except: self.ff_class = str(tags['-class']) # try getting class 'i' or 'ilmp' or 'd' 
+            self.ff_class = str(tags['-class'])
             print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-class', self.ff_class))
         
         # set new -auto-equivs option and print confirmation
