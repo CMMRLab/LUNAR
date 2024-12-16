@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.9
-November 13th, 2024
+Revision 1.10
+December 16th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -159,11 +159,11 @@ class get:
             self.masses, self.pair_coeffs, self.mass_comment, self.pair_comment = find_atom_parameters(frc, BADI, use_auto_equivalence, ff_class, skip_printouts, log)
             
             # Find bond_coeffs and then find bonds and reorder atomids to match bond coeff using sort_remap_atomids (Reordering is Not Necessary - might as well though for cleanliness)
-            self.bond_coeffs, self.bond_map, self.bond_comment = find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill, aafc, ff_class, use_morse_bonds, skip_printouts, log)
+            self.bond_coeffs, self.bond_map, self.bond_comment, self.r0s = find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill, aafc, ff_class, use_morse_bonds, skip_printouts, log)
             self.bonds = find_bonds(nta, BADI, self.bond_map, sort_remap_atomids, log)
             
             # Find angle_coeffs and then find angles and reorder atomids to match angle coeff using sort_remap_atomids (Reordering is Not Necessary - might as well though for cleanliness)
-            self.angle_coeffs, self.angle_map, self.angle_comment = find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill, aafc, ff_class, skip_printouts, log)
+            self.angle_coeffs, self.angle_map, self.angle_comment, self.theta0s = find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill, aafc, ff_class, skip_printouts, log)
             self.angles = find_angles(nta, BADI, self.angle_map, sort_remap_atomids, ff_class, log)
             
             # Find dihedral_coeffs and then find dihedrals and reorder atomids to match dihedral coeff using sort_remap_atomids (Reordering is Not Necessary - might as well though for cleanliness)   
@@ -176,14 +176,14 @@ class get:
             
             # Find cross terms based on ordering from *_map dictionaries if sort_remap_atomids: else the ordering will be from default ordering of intial pass through to find coeff types
             if ff_class in [2, 's2', '2']:
-                self.bondbond_coeffs = find_bondbond_parameters(frc, BADI, self.angle_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
-                self.bondangle_coeffs = find_bondangle_parameters(frc, BADI, self.angle_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
-                self.angleangletorsion_coeffs = find_angleangletorsion_parameters(frc, BADI, self.dihedral_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
-                self.endbondtorsion_coeffs = find_endbondtorsion_parameters(frc, BADI, self.dihedral_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
-                self.middlebondtorsion_coeffs = find_middlebondtorsion_parameters(frc, BADI, self.dihedral_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
-                self.bondbond13_coeffs = find_bondbond13_parameters(frc, BADI, self.dihedral_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
-                self.angletorsion_coeffs = find_angletorsion_parameters(frc, BADI, self.dihedral_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
-                self.angleangle_coeffs = find_angleangle_parameters(frc, BADI, self.improper_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
+                self.bondbond_coeffs = find_bondbond_parameters(frc, BADI, self.angle_map, self.r0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
+                self.bondangle_coeffs = find_bondangle_parameters(frc, BADI, self.angle_map, self.r0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
+                self.angleangletorsion_coeffs = find_angleangletorsion_parameters(frc, BADI, self.dihedral_map, self.theta0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
+                self.endbondtorsion_coeffs = find_endbondtorsion_parameters(frc, BADI, self.dihedral_map, self.r0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
+                self.middlebondtorsion_coeffs = find_middlebondtorsion_parameters(frc, BADI, self.dihedral_map, self.r0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
+                self.bondbond13_coeffs = find_bondbond13_parameters(frc, BADI, self.dihedral_map, self.r0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
+                self.angletorsion_coeffs = find_angletorsion_parameters(frc, BADI, self.dihedral_map, self.theta0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
+                self.angleangle_coeffs = find_angleangle_parameters(frc, BADI, self.improper_map, self.theta0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
         
 
 ################################################
@@ -718,6 +718,7 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
     # Bond coeffs dictionary
     bond_coeffs = {} # {bond type : list of coeffs}  {1: [340,1.5], 2: [450,1.2], ...}
     bond_map = {} # { Ordered tuple(type1, type2) : numeric id }
+    r0s = {} # { ('type1', 'type2') : r0, ('type2', 'type1') : r0, ... } # keys will be reversed at end
     
     # Set comments, equivs/auto coeff dicts and equivs/auto mapping dicts
     if ff_class in [0, '0']:
@@ -850,13 +851,17 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
             # Set coeff based on FF class
             if ff_class in [0, '0']:
                 coeff = [bond_coeff.k2, bond_coeff.r0]
+                r0s[order] = bond_coeff.r0
             elif ff_class in [1, '1', 'd']:
                 if not use_morse_bonds:
                     coeff = [bond_coeff.k2, bond_coeff.r0]
+                    r0s[order] = bond_coeff.r0
                 else:
                     coeff = [bond_coeff.d, bond_coeff.alpha, bond_coeff.r0]
+                    r0s[order] = bond_coeff.r0
             elif ff_class in [2, '2']:
                 coeff = [bond_coeff.r0, bond_coeff.k2, bond_coeff.k3, bond_coeff.k4]
+                r0s[order] = bond_coeff.r0
                     
             t = Type()
             t.type = order
@@ -872,13 +877,17 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
             # Set coeff based on FF class
             if ff_class in [0, '0']:
                 coeff = [bond_coeff.k2, bond_coeff.r0]
+                r0s[order] = bond_coeff.r0
             elif ff_class in [1, '1', 'd']:
                 if not use_morse_bonds:
                     coeff = [bond_coeff.k2, bond_coeff.r0]
+                    r0s[order] = bond_coeff.r0
                 else:
                     coeff = [bond_coeff.d, bond_coeff.alpha, bond_coeff.r0]
+                    r0s[order] = bond_coeff.r0
             elif ff_class in [2, '2']:
                 coeff = [bond_coeff.r0, bond_coeff.k2, 0.0, 0.0]
+                r0s[order] = bond_coeff.r0
             
             t = Type()
             t.type = order
@@ -899,13 +908,17 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
                 # Set coeff based on FF class
                 if ff_class in [0, '0']:
                     coeff = [bond_coeff.k2, bond_coeff.r0]
+                    r0s[order] = bond_coeff.r0
                 elif ff_class in [1, '1', 'd']:
                     if not use_morse_bonds:
                         coeff = [bond_coeff.k2, bond_coeff.r0]
+                        r0s[order] = bond_coeff.r0
                     else:
                         coeff = [bond_coeff.d, bond_coeff.alpha, bond_coeff.r0]
+                        r0s[order] = bond_coeff.r0
                 elif ff_class in [2, '2']:
                     coeff = [bond_coeff.r0, bond_coeff.k2, bond_coeff.k3, bond_coeff.k4]
+                    r0s[order] = bond_coeff.r0
                 
                 t = Type()
                 t.type = order
@@ -921,13 +934,17 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
                 # Set coeff based on FF class
                 if ff_class in [0, '0']:
                     coeff = [bond_coeff.k2, bond_coeff.r0]
+                    r0s[order] = bond_coeff.r0
                 elif ff_class in [1, '1', 'd']:
                     if not use_morse_bonds:
                         coeff = [bond_coeff.k2, bond_coeff.r0]
+                        r0s[order] = bond_coeff.r0
                     else:
-                        coeff = [bond_coeff.d, bond_coeff.alpha, bond_coeff.r0]       
+                        coeff = [bond_coeff.d, bond_coeff.alpha, bond_coeff.r0]    
+                        r0s[order] = bond_coeff.r0
                 elif ff_class in [2, '2']:
                     coeff = [bond_coeff.r0, bond_coeff.k2, 0.0, 0.0]
+                    r0s[order] = bond_coeff.r0
                 
                 t = Type()
                 t.type = order
@@ -949,13 +966,17 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
             # Set coeff based on FF class
             if ff_class in [0, '0']:
                 coeff = 2*[0.0]
+                r0s[order] = 0
             elif ff_class in [1, '1', 'd']:
                 if not use_morse_bonds:
                     coeff = 2*[0.0]
+                    r0s[order] = 0
                 else:
                     coeff = 3*[0.0]
+                    r0s[order] = 0
             elif ff_class in [2, '2']:
                 coeff = 4*[0.0]
+                r0s[order] = 0
             
             # set order as type1, type2
             order = (type1, type2)
@@ -967,7 +988,12 @@ def find_bond_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill,
             t.comments = 'UNABLE to find coeff parameters'
             bond_coeffs[number] = t
             bond_map[number] = order 
-    return bond_coeffs, bond_map, bond_comment
+    
+    # Generate the reverse permuation for easy
+    # accessability in crossterm parameterization 
+    reversed_r0s = {i[::-1]:r0s[i] for i in r0s}
+    r0s.update(reversed_r0s) 
+    return bond_coeffs, bond_map, bond_comment, r0s
 
 
 ##############################
@@ -1060,6 +1086,7 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
     # Angle coeffs dictionary
     angle_coeffs = {} # {angle type : list of coeffs}
     angle_map = {} # { Ordered tuple(type1, type2, type3) : numeric id }
+    theta0s = {} # { ('type1', 'type2', 'type3') : theta0, ('type3', 'type2', 'type1') : theta0, ... } # keys will be reversed at end
         
     # Set comments, equivs/auto coeff dicts and equivs/auto mapping dicts
     if ff_class in [0, '0']:
@@ -1189,10 +1216,13 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
             # Set coeff based on FF class
             if ff_class in [0, '0']:
                 coeff = [angle_coeff.k2, angle_coeff.theta0]
+                theta0s[order] = angle_coeff.theta0
             elif ff_class in [1, '1', 'd']:
                 coeff = [angle_coeff.k2, angle_coeff.theta0]
+                theta0s[order] = angle_coeff.theta0
             elif ff_class in [2, '2']:
                 coeff = [angle_coeff.theta0, angle_coeff.k2, angle_coeff.k3, angle_coeff.k4]
+                theta0s[order] = angle_coeff.theta0
             
             t = Type()
             t.type = order
@@ -1209,10 +1239,13 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
             # Set coeff based on FF class
             if ff_class in [0, '0']:
                 coeff = [angle_coeff.k2, angle_coeff.theta0]
+                theta0s[order] = angle_coeff.theta0
             elif ff_class in [1, '1', 'd']:
                 coeff = [angle_coeff.k2, angle_coeff.theta0]
+                theta0s[order] = angle_coeff.theta0
             elif ff_class in [2, '2']:
                 coeff = [angle_coeff.theta0, angle_coeff.k2, 0.0, 0.0]
+                theta0s[order] = angle_coeff.theta0
             
             t = Type()
             t.type = order
@@ -1233,10 +1266,13 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
                 # Set coeff based on FF class
                 if ff_class in [0, '0']:
                     coeff = [angle_coeff.k2, angle_coeff.theta0]
+                    theta0s[order] = angle_coeff.theta0
                 elif ff_class in [1, '1', 'd']:
                     coeff = [angle_coeff.k2, angle_coeff.theta0]
+                    theta0s[order] = angle_coeff.theta0
                 elif ff_class in [2, '2']:
                     coeff = [angle_coeff.theta0, angle_coeff.k2, angle_coeff.k3, angle_coeff.k4]
+                    theta0s[order] = angle_coeff.theta0
                 
                 t = Type()
                 t.type = order
@@ -1253,10 +1289,13 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
                 # Set coeff based on FF class
                 if ff_class in [0, '0']:
                     coeff = [angle_coeff.k2, angle_coeff.theta0]
+                    theta0s[order] = angle_coeff.theta0
                 elif ff_class in [1, '1', 'd']:
                     coeff = [angle_coeff.k2, angle_coeff.theta0]
+                    theta0s[order] = angle_coeff.theta0
                 elif ff_class in [2, '2']:
                     coeff = [angle_coeff.theta0, angle_coeff.k2, 0.0, 0.0]
+                    theta0s[order] = angle_coeff.theta0
                 
                 t = Type()
                 t.type = order
@@ -1278,10 +1317,13 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
             # Set coeff based on FF class
             if ff_class in [0, '0']:
                 coeff = 2*[0.0]
+                theta0s[order] = 0
             elif ff_class in [1, '1', 'd']:
                 coeff = 2*[0.0]
+                theta0s[order] = 0
             elif ff_class in [2, '2']:
                 coeff = 4*[0.0]
+                theta0s[order] = 0
             
             # set order as type1, type2, type3
             order = (type1, type2, type3)
@@ -1292,8 +1334,13 @@ def find_angle_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_fill
             t.coeffs = coeff
             t.comments = 'UNABLE to find coeff parameters'
             angle_coeffs[number] = t
-            angle_map[number] = order         
-    return angle_coeffs, angle_map, angle_comment
+            angle_map[number] = order    
+            
+    # Generate the reverse permuation for easy
+    # accessability in crossterm parameterization 
+    reversed_theta0s = {i[::-1]:theta0s[i] for i in theta0s}
+    theta0s.update(reversed_theta0s) 
+    return angle_coeffs, angle_map, angle_comment, theta0s
 
 
 ###############################
@@ -2200,7 +2247,7 @@ def find_impropers(nta, BADI, improper_map, m, sort_remap_atomids, ff_class, log
 #######################################
 # Function for finding bondbond types #
 ####################################### 
-def find_bondbond_parameters(frc, BADI, angle_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):    
+def find_bondbond_parameters(frc, BADI, angle_map, r0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):    
     """
     https://docs.lammps.org/99/force_fields.html   or    https://docs.lammps.org/Manual.html
     Bond-Bond (computed within class II angles)
@@ -2264,9 +2311,19 @@ def find_bondbond_parameters(frc, BADI, angle_map, use_auto_equivalence, sort_re
             bondbond_coeff = frc.bondbond[match]
             bondbond_flag = True
             
-        # Try finding r0_12 and r0_23
+        # Try finding r0_12 and r0_23 as msi2lmp would do
         r0_12, match_12, equiv_12 = ff_functions.get_crossterm_r0(type1, type2, log, use_auto_equivalence, frc)
         r0_23, match_23, equiv_23 = ff_functions.get_crossterm_r0(type2, type3, log, use_auto_equivalence, frc)
+        
+        # Check to see if r0's came back as zeros, if so use r0s from Bond parameterization (when assumed_auto_fill is used)
+        if r0_12 != r0s[(type1, type2)]:
+            r0_12 = r0s[(type1, type2)]
+            match_12 = ('{}-r0'.format(type1), '{}-r0'.format(type2))
+            equiv_12 = ('{}-r0'.format(type1), '{}-r0'.format(type2))
+        if r0_23 != r0s[(type2, type3)]:
+            r0_23 = r0s[(type2, type3)]
+            match_23 = ('{}-r0'.format(type2), '{}-r0'.format(type3))
+            equiv_23 = ('{}-r0'.format(type2), '{}-r0'.format(type3))
                             
         # Set comments for r0's 12 and 23
         c_12 = 'bond 12:   {:^4} {:^4} equivs:  {:^5} {:^5} match:  {:^5} {:^5}'.format(type1, type2, equiv_12[0], equiv_12[1], match_12[0], match_12[1])
@@ -2296,7 +2353,7 @@ def find_bondbond_parameters(frc, BADI, angle_map, use_auto_equivalence, sort_re
 ########################################
 # Function for finding bondangle types #
 ######################################## 
-def find_bondangle_parameters(frc, BADI, angle_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):    
+def find_bondangle_parameters(frc, BADI, angle_map, r0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):    
     """
     https://docs.lammps.org/99/force_fields.html   or    https://docs.lammps.org/Manual.html
 
@@ -2365,9 +2422,19 @@ def find_bondangle_parameters(frc, BADI, angle_map, use_auto_equivalence, sort_r
             bondangle_coeff = frc.bondangle[match]
             bondangle_flag = True
             
-        # Try finding r0_12 and r0_23
+        # Try finding r0_12 and r0_23 as msi2lmp would do
         r0_12, match_12, equiv_12 = ff_functions.get_crossterm_r0(type1, type2, log, use_auto_equivalence, frc)
         r0_23, match_23, equiv_23 = ff_functions.get_crossterm_r0(type2, type3, log, use_auto_equivalence, frc)
+        
+        # Check to see if r0's came back as zeros, if so use r0s from Bond parameterization (when assumed_auto_fill is used)
+        if r0_12 != r0s[(type1, type2)]:
+            r0_12 = r0s[(type1, type2)]
+            match_12 = ('{}-r0'.format(type1), '{}-r0'.format(type2))
+            equiv_12 = ('{}-r0'.format(type1), '{}-r0'.format(type2))
+        if r0_23 != r0s[(type2, type3)]:
+            r0_23 = r0s[(type2, type3)]
+            match_23 = ('{}-r0'.format(type2), '{}-r0'.format(type3))
+            equiv_23 = ('{}-r0'.format(type2), '{}-r0'.format(type3))
         
         # Set comments for r0's 12 and 23
         c_12 = 'bond 12:   {:^4} {:^4} equivs:  {:^5} {:^5} match:  {:^5} {:^5}'.format(type1, type2, equiv_12[0], equiv_12[1], match_12[0], match_12[1])
@@ -2414,7 +2481,7 @@ def find_bondangle_parameters(frc, BADI, angle_map, use_auto_equivalence, sort_r
 ################################################
 # Function for finding AngleAngleTorsion types #
 ################################################
-def find_angleangletorsion_parameters(frc, BADI, dihedral_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):
+def find_angleangletorsion_parameters(frc, BADI, dihedral_map, theta0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):
     """
     https://docs.lammps.org/99/force_fields.html   or    https://docs.lammps.org/Manual.html
 
@@ -2492,9 +2559,20 @@ def find_angleangletorsion_parameters(frc, BADI, dihedral_map, use_auto_equivale
             comment = 'UNABLE to find coeff parameters'; match = ['N/A', 'N/A', 'N/A', 'N/A']; equiv = ['N/A', 'N/A', 'N/A', 'N/A'];
             if not skip_printouts: log.warn('WARNING unable to find angleangletorsion info for Angleangletorsion Coeff {} {} {} {} {}'.format(number, type1, type2, type3, type4))
             
-        # Try finding theta0_123 and theta0_234
+        # Try finding theta0_123 and theta0_234 as msi2lmp would do
         theta0_123, match_123, equiv_123 = ff_functions.get_crossterm_theta0(type1, type2, type3, log, use_auto_equivalence, frc)
         theta0_234, match_234, equiv_234 = ff_functions.get_crossterm_theta0(type2, type3, type4, log, use_auto_equivalence, frc)
+
+        # Check to see if theta0's came back as zeros, if so use theta0s from Angle parameterization (when assumed_auto_fill is used)
+        if theta0_123 != theta0s[(type1, type2, type3)]:
+            theta0_123 = theta0s[(type1, type2, type3)]
+            match_123 = ('{}-theta0'.format(type1), '{}-theta0'.format(type2), '{}-theta0'.format(type3))
+            equiv_123 = ('{}-theta0'.format(type1), '{}-theta0'.format(type2), '{}-theta0'.format(type3))
+        if theta0_234 != theta0s[(type2, type3, type4)]:
+            theta0_234 = theta0s[(type2, type3, type4)]
+            match_234 = ('{}-theta0'.format(type2), '{}-theta0'.format(type3), '{}-theta0'.format(type4))
+            equiv_234 = ('{}-theta0'.format(type2), '{}-theta0'.format(type3), '{}-theta0'.format(type4))
+
 
         # theta0_123 and theta0_234 comments
         c_123 = 'angle 123:   {:^6} {:^6} {:^6} equivs:  {:^6} {:^6} {:^6} match:  {:^6} {:^6} {:^6}'.format(type1, type2, type3, equiv_123[0], equiv_123[1], equiv_123[2], match_123[0], match_123[1], match_123[2])
@@ -2517,7 +2595,7 @@ def find_angleangletorsion_parameters(frc, BADI, dihedral_map, use_auto_equivale
 #############################################
 # Function for finding EndBondTorsion types #
 #############################################
-def find_endbondtorsion_parameters(frc, BADI, dihedral_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log): 
+def find_endbondtorsion_parameters(frc, BADI, dihedral_map, r0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log): 
     """
     https://docs.lammps.org/99/force_fields.html   or    https://docs.lammps.org/Manual.html
 
@@ -2620,9 +2698,19 @@ def find_endbondtorsion_parameters(frc, BADI, dihedral_map, use_auto_equivalence
             comment = 'UNABLE to find coeff parameters'; match = ['N/A', 'N/A', 'N/A', 'N/A']; equiv = ['N/A', 'N/A', 'N/A', 'N/A'];
             if not skip_printouts: log.warn('WARNING unable to find endbondtorsion info for Endbondtorsion Coeff {} {} {} {} {}'.format(number, type1, type2, type3, type4))
             
-        # Try finding r0_12 and r0_34
+        # Try finding r0_12 and r0_34 as msi2lmp would do
         r0_12, match_12, equiv_12 = ff_functions.get_crossterm_r0(type1, type2, log, use_auto_equivalence, frc)
         r0_34, match_34, equiv_34 = ff_functions.get_crossterm_r0(type3, type4, log, use_auto_equivalence, frc)
+        
+        # Check to see if r0's came back as zeros, if so use r0s from Bond parameterization (when assumed_auto_fill is used)
+        if r0_12 != r0s[(type1, type2)]:
+            r0_12 = r0s[(type1, type2)]
+            match_12 = ('{}-r0'.format(type1), '{}-r0'.format(type2))
+            equiv_12 = ('{}-r0'.format(type1), '{}-r0'.format(type2))
+        if r0_34 != r0s[(type3, type4)]:
+            r0_34 = r0s[(type3, type4)]
+            match_34 = ('{}-r0'.format(type3), '{}-r0'.format(type4))
+            equiv_34 = ('{}-r0'.format(type3), '{}-r0'.format(type4))
     
         # Set comments for r0's 12 and 34
         c_12 = 'bond 12:   {:^4} {:^4} equivs:  {:^5} {:^5} match:  {:^5} {:^5}'.format(type1, type2, equiv_12[0], equiv_12[1], match_12[0], match_12[1])
@@ -2645,7 +2733,7 @@ def find_endbondtorsion_parameters(frc, BADI, dihedral_map, use_auto_equivalence
 ################################################
 # Function for finding MiddleBondTorsion types #
 ################################################
-def find_middlebondtorsion_parameters(frc, BADI, dihedral_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):
+def find_middlebondtorsion_parameters(frc, BADI, dihedral_map, r0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):
     """
     https://docs.lammps.org/99/force_fields.html   or    https://docs.lammps.org/Manual.html
     
@@ -2738,8 +2826,15 @@ def find_middlebondtorsion_parameters(frc, BADI, dihedral_map, use_auto_equivale
             comment = 'UNABLE to find coeff parameters'; match = ['N/A', 'N/A', 'N/A', 'N/A']; equiv = ['N/A', 'N/A', 'N/A', 'N/A'];
             if not skip_printouts: log.warn('WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff {} {} {} {} {}'.format(number, type1, type2, type3, type4))
             
-        # Try finding r0_23 and set comments
+        # Try finding r0_23 and set comments as msi2lmp would do
         r0_23, match_23, equiv_23 = ff_functions.get_crossterm_r0(type2, type3, log, use_auto_equivalence, frc)
+        
+        # Check to see if r0's came back as zeros, if so use r0s from Bond parameterization (when assumed_auto_fill is used)
+        if r0_23 != r0s[(type2, type3)]:
+            r0_23 = r0s[(type2, type3)]
+            match_23 = ('{}-r0'.format(type2), '{}-r0'.format(type3))
+            equiv_23 = ('{}-r0'.format(type2), '{}-r0'.format(type3))
+            
         c_23 = 'bond 23:   {:^4} {:^4} equivs:  {:^5} {:^5} match:  {:^5} {:^5}'.format(type2, type3, equiv_23[0], equiv_23[1], match_23[0], match_23[1])
         
         # Build final middlebondtorsion_coeff
@@ -2759,7 +2854,7 @@ def find_middlebondtorsion_parameters(frc, BADI, dihedral_map, use_auto_equivale
 #########################################
 # Function for finding BondBond13 types #
 #########################################
-def find_bondbond13_parameters(frc, BADI, dihedral_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):
+def find_bondbond13_parameters(frc, BADI, dihedral_map, r0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):
     """
     https://docs.lammps.org/99/force_fields.html   or    https://docs.lammps.org/Manual.html
     
@@ -2838,9 +2933,19 @@ def find_bondbond13_parameters(frc, BADI, dihedral_map, use_auto_equivalence, so
             comment = 'UNABLE to find coeff parameters'; match = ['N/A', 'N/A', 'N/A', 'N/A']; equiv = ['N/A', 'N/A', 'N/A', 'N/A'];
             if not skip_printouts: log.warn('WARNING unable to find bondbond13 info for Bondbond13 Coeff {} {} {} {} {}'.format(number, type1, type2, type3, type4))
             
-        # Try finding r0_12 and r0_34
+        # Try finding r0_12 and r0_34 as msi2lmp would do
         r0_12, match_12, equiv_12 = ff_functions.get_crossterm_r0(type1, type2, log, use_auto_equivalence, frc)
         r0_34, match_34, equiv_34 = ff_functions.get_crossterm_r0(type3, type4, log, use_auto_equivalence, frc)
+        
+        # Check to see if r0's came back as zeros, if so use r0s from Bond parameterization (when assumed_auto_fill is used)
+        if r0_12 != r0s[(type1, type2)]:
+            r0_12 = r0s[(type1, type2)]
+            match_12 = ('{}-r0'.format(type1), '{}-r0'.format(type2))
+            equiv_12 = ('{}-r0'.format(type1), '{}-r0'.format(type2))
+        if r0_34 != r0s[(type3, type4)]:
+            r0_34 = r0s[(type3, type4)]
+            match_34 = ('{}-r0'.format(type3), '{}-r0'.format(type4))
+            equiv_34 = ('{}-r0'.format(type3), '{}-r0'.format(type4))
     
         # Set comments for r0's 12 and 34
         c_12 = 'bond 12:   {:^4} {:^4} equivs:  {:^5} {:^5} match:  {:^5} {:^5}'.format(type1, type2, equiv_12[0], equiv_12[1], match_12[0], match_12[1])
@@ -2863,7 +2968,7 @@ def find_bondbond13_parameters(frc, BADI, dihedral_map, use_auto_equivalence, so
 ###########################################
 # Function for finding AngleTorsion types #
 ###########################################
-def find_angletorsion_parameters(frc, BADI, dihedral_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):
+def find_angletorsion_parameters(frc, BADI, dihedral_map, theta0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):
     """
     https://docs.lammps.org/99/force_fields.html   or    https://docs.lammps.org/Manual.html
     
@@ -2967,9 +3072,19 @@ def find_angletorsion_parameters(frc, BADI, dihedral_map, use_auto_equivalence, 
             comment = 'UNABLE to find coeff parameters'; match = ['N/A', 'N/A', 'N/A', 'N/A']; equiv = ['N/A', 'N/A', 'N/A', 'N/A'];
             if not skip_printouts: log.warn('WARNING unable to find angletorsion info for Angletorsion Coeff {} {} {} {} {}'.format(number, type1, type2, type3, type4))
             
-        # Try finding theta0_123 and theta0_234
+        # Try finding theta0_123 and theta0_234 as msi2lmp would do
         theta0_123, match_123, equiv_123 = ff_functions.get_crossterm_theta0(type1, type2, type3, log, use_auto_equivalence, frc)
         theta0_234, match_234, equiv_234 = ff_functions.get_crossterm_theta0(type2, type3, type4, log, use_auto_equivalence, frc)
+
+        # Check to see if theta0's came back as zeros, if so use theta0s from Angle parameterization (when assumed_auto_fill is used)
+        if theta0_123 != theta0s[(type1, type2, type3)]:
+            theta0_123 = theta0s[(type1, type2, type3)]
+            match_123 = ('{}-theta0'.format(type1), '{}-theta0'.format(type2), '{}-theta0'.format(type3))
+            equiv_123 = ('{}-theta0'.format(type1), '{}-theta0'.format(type2), '{}-theta0'.format(type3))
+        if theta0_234 != theta0s[(type2, type3, type4)]:
+            theta0_234 = theta0s[(type2, type3, type4)]
+            match_234 = ('{}-theta0'.format(type2), '{}-theta0'.format(type3), '{}-theta0'.format(type4))
+            equiv_234 = ('{}-theta0'.format(type2), '{}-theta0'.format(type3), '{}-theta0'.format(type4))
 
         # theta0_123 and theta0_234 comments
         c_123 = 'angle 123:   {:^6} {:^6} {:^6} equivs:  {:^6} {:^6} {:^6} match:  {:^6} {:^6} {:^6}'.format(type1, type2, type3, equiv_123[0], equiv_123[1], equiv_123[2], match_123[0], match_123[1], match_123[2])
@@ -2992,7 +3107,7 @@ def find_angletorsion_parameters(frc, BADI, dihedral_map, use_auto_equivalence, 
 #########################################
 # Function for finding angleangle types #
 #########################################
-def find_angleangle_parameters(frc, BADI, improper_map, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):
+def find_angleangle_parameters(frc, BADI, improper_map, theta0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log):
     """
     https://docs.lammps.org/99/force_fields.html   or    https://docs.lammps.org/Manual.html
 
@@ -3080,10 +3195,24 @@ def find_angleangle_parameters(frc, BADI, improper_map, use_auto_equivalence, so
         # Try matching angleangle in all 6 permuations. Attempts: 1) without equivalences, 2) with equivalences
         coeff_123, angleangle_flag, equivalent = ff_functions.get_angleangle_data(type1, type2, type3, type4, log, frc)
         
-        # Try finding theta0_123, theta0_124, and theta0_324
+        # Try finding theta0_123, theta0_124, and theta0_324 as msi2lmp would do
         theta0_123, match_123, equiv_123 = ff_functions.get_crossterm_theta0(type1, type2, type3, log, use_auto_equivalence, frc)
         theta0_124, match_124, equiv_124 = ff_functions.get_crossterm_theta0(type1, type2, type4, log, use_auto_equivalence, frc)
         theta0_324, match_324, equiv_324 = ff_functions.get_crossterm_theta0(type3, type2, type4, log, use_auto_equivalence, frc)
+        
+        # Check to see if theta0's came back as zeros, if so use theta0s from Angle parameterization (when assumed_auto_fill is used)
+        if theta0_123 != theta0s[(type1, type2, type3)]:
+            theta0_123 = theta0s[(type1, type2, type3)]
+            match_123 = ('{}-theta0'.format(type1), '{}-theta0'.format(type2), '{}-theta0'.format(type3))
+            equiv_123 = ('{}-theta0'.format(type1), '{}-theta0'.format(type2), '{}-theta0'.format(type3))
+        if theta0_124 != theta0s[(type1, type2, type4)]:
+            theta0_124 = theta0s[(type1, type2, type4)]
+            match_124 = ('{}-theta0'.format(type1), '{}-theta0'.format(type2), '{}-theta0'.format(type4))
+            equiv_124 = ('{}-theta0'.format(type1), '{}-theta0'.format(type2), '{}-theta0'.format(type4))
+        if theta0_324 != theta0s[(type3, type2, type4)]:
+            theta0_324 = theta0s[(type3, type2, type4)]
+            match_324 = ('{}-theta0'.format(type3), '{}-theta0'.format(type2), '{}-theta0'.format(type4))
+            equiv_324 = ('{}-theta0'.format(type3), '{}-theta0'.format(type2), '{}-theta0'.format(type4))
 
         # theta0_123, theta0_124, and theta0_324
         c_123 = 'angle 123:   {:^6} {:^6} {:^6} equivs:  {:^6} {:^6} {:^6} match:  {:^6} {:^6} {:^6}'.format(type1, type2, type3, equiv_123[0], equiv_123[1], equiv_123[2], match_123[0], match_123[1], match_123[2])

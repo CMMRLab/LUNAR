@@ -14,10 +14,17 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 13November2024)
+LUNAR (version 16December2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+16December2024   JDK           - all2lmp.py: Incorporated r0's and theta0's parameterization from "assumed"
+                                             and "assumed_auto_fill" into crossterm r0's and theta0's. Prior
+                                             to this if an r0 and theta0 from "assumed" and "assumed_auto_fill"
+                                             where filled into either a bond or angle, these parameters where
+                                             not being used in the crossterm. This is meant to help conversions
+                                             from ReaxFF to force fields like PCFF and COMPASS.
+
 13November2024   JDK           - all2lmp.py: Adjusted the "ff_class" variable from taking both string and int
                                              types to only taking string types (i.e. for class2 force fields
                                              ff_class will now be ff_class = '2' instead of ff_class = 2). 
