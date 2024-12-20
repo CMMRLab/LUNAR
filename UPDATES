@@ -14,10 +14,14 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 16December2024)
+LUNAR (version 19December2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+19December2024   JDK           - Every module: Updated log defaults in each main() function to allow for the
+                                               the ability to for loop through "the main()" function without
+                                               the need to clear the log between iterations.
+
 16December2024   JDK           - all2lmp.py: Incorporated r0's and theta0's parameterization from "assumed"
                                              and "assumed_auto_fill" into crossterm r0's and theta0's. Prior
                                              to this if an r0 and theta0 from "assumed" and "assumed_auto_fill"

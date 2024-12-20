@@ -51,10 +51,12 @@ import os
 ######################################################
 def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded, boundary,
          vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file, 
-         chargefile, include_comments_nta, log=io_functions.LUNAR_logger()):  
+         chargefile, include_comments_nta, log=None):  
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
+    if log is None:
+        log = io_functions.LUNAR_logger()
     log.configure(level='production')
     #log.configure(level='debug', print2console=False)
     

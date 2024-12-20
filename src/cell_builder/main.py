@@ -32,10 +32,12 @@ import os
 ##############################################
 def main(topofiles, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
          reset_molids, unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally,
-         seed, domain, maxtry, tolerance, mixing_rule, boundary, commandline_inputs=[], log=io_functions.LUNAR_logger()):
+         seed, domain, maxtry, tolerance, mixing_rule, boundary, commandline_inputs=[], log=None):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
+    if log is None:
+        log = io_functions.LUNAR_logger()
     log.configure(level='production')
     #log.configure(level='debug', print2console=False)
     

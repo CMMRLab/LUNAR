@@ -35,10 +35,12 @@ import os
 ##################################################
 def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mol2files, write_rxn_datafiles,
          write_moleculefiles, print_options, commandline_inputs, map_near_edge_rxn_charges, molecule_file_options,
-         include_type_labels, log=io_functions.LUNAR_logger()):
+         include_type_labels, log=None):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
+    if log is None:
+        log = io_functions.LUNAR_logger()
     log.configure(level='production')
     #log.configure(level='debug')
     

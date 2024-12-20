@@ -26,10 +26,12 @@ import os
 ############################################
 def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory, compute_free_volume_distributions,
          files2write, run_mode, probe_diameter, vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels,
-         commandline_inputs, log=io_functions.LUNAR_logger()):
+         commandline_inputs, log=None):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
+    if log is None:
+        log = io_functions.LUNAR_logger()
     log.configure(level='production')
     #log.configure(level='debug')
     

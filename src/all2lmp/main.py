@@ -43,10 +43,12 @@ import os
 ####################################################################
 def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_style, ff_class, use_auto_equivalence, use_assumed_auto_fill, reset_molids,
          reset_charges, write_txt_comments, write_bond_react, print_options, use_morse_bonds, include_type_labels, add2box, ignore_missing_parameters,
-         shift, rotate, commandline_inputs, log=io_functions.LUNAR_logger()):
+         shift, rotate, commandline_inputs, log=None):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
+    if log is None:
+        log = io_functions.LUNAR_logger()
     log.configure(level='production')
     #log.configure(level='debug', print2console=False)
 

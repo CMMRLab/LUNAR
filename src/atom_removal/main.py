@@ -33,10 +33,12 @@ import os
 ######################################################
 ### Main function to perform all atom-typing tasks ###
 ######################################################
-def main(topofile, parent_directory, newfile, atom_style, atoms2remove, include_type_labels, method='atomIDs', commandline_inputs=[], log=io_functions.LUNAR_logger()):
+def main(topofile, parent_directory, newfile, atom_style, atoms2remove, include_type_labels, method='atomIDs', commandline_inputs=[], log=None):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
+    if log is None:
+        log = io_functions.LUNAR_logger()
     log.configure(level='production')
     #log.configure(level='debug')
     

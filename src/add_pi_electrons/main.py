@@ -35,12 +35,14 @@ import os
 ### Main function to perform all adding pi-electrons task ###
 #############################################################
 def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons, parent_directory, newfile, 
-         include_type_labels, neighbor_charge_constraint, reset_simulation_cell, commandline_inputs=[], log=io_functions.LUNAR_logger()):
+         include_type_labels, neighbor_charge_constraint, reset_simulation_cell, commandline_inputs=[], log=None):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
+    if log is None:
+        log = io_functions.LUNAR_logger()
     log.configure(level='production')
-    #log.configure(level='debug')
+    #log.configure(level='debug', print2console=False
     
     #########################
     # Command Line Override #

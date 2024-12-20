@@ -35,10 +35,12 @@ import os
 ####################################################################
 ### Main function to perform all topology and FF assigning tasks ###
 ####################################################################
-def main(topofile, cta_file, newfile, atom_style, parent_directory, rm_unused_coeffs, commandline_inputs=[], log=io_functions.LUNAR_logger()):
+def main(topofile, cta_file, newfile, atom_style, parent_directory, rm_unused_coeffs, commandline_inputs=[], log=None):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
+    if log is None:
+        log = io_functions.LUNAR_logger()
     log.configure(level='production')
     #log.configure(level='debug')
     
