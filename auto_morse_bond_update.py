@@ -83,7 +83,7 @@ morsefile = 'frc_files/Morse_parameters.txt'
 # w/crossterms (X) zerod (0). This option only is for class2 FFs, if your file is in class1/harmonic      #
 # format this option can be True or False (since class1 has no xterms, this option does nothing).         #
 ###########################################################################################################
-zero_effected_xterms = True
+zero_effected_xterms = False
 
 
 ###########################################################################################################

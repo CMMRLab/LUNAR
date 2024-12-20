@@ -24,10 +24,12 @@ import os
 ###############################################
 class Info: pass # .size .mass .psize .pmass .atoms
 class analysis:
-    def __init__(self, topofile, N0, txtfile, fav, pflag=True, log=io_functions.LUNAR_logger()): 
+    def __init__(self, topofile, N0, txtfile, fav, pflag=True, log=None): 
         start_time = time.time()       
         
         # Configure log (default is level='production', switch to 'debug' if debuging)
+        if log is None:
+            log = io_functions.LUNAR_logger()
         log.configure(level='production')
         #log.configure(level='debug')
         

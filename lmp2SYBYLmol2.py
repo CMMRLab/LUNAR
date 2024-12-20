@@ -119,8 +119,7 @@ mass_map = masses.mass_map
 #################################
 ### Main conversion function ####
 #################################
-import src.io_functions as io_functions
-def main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=io_functions.LUNAR_logger()):
+def main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=None):
     ##############################
     # Import Necessary Libraries #
     ##############################
@@ -131,6 +130,8 @@ def main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=io_function
     import os
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
+    if log is None:
+        log = io_functions.LUNAR_logger()
     log.configure(level='production')
     #log.configure(level='debug')
     
