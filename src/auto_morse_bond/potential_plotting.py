@@ -26,7 +26,7 @@ def string_parameters(coeff):
     return string
 
 # https://docs.lammps.org/bond_class2.html
-def figure(m, radius, alpha_parameter, bond_info, basename, files2write, version, bondbreak_scale, ff_class):
+def figure(m, radius, bond_info, basename, files2write, version, bondbreak_scale, ff_class):
     ############################################################################################
     ### Plotting multiple figures to .pdf                                                    ###
     # https://www.delftstack.com/howto/matplotlib/how-to-save-plots-as-pdf-file-in-matplotlib/ #
@@ -75,23 +75,35 @@ def figure(m, radius, alpha_parameter, bond_info, basename, files2write, version
     # Loop through bond coeffs and plot/save info for writing LMP script
     break_points = {} # { coeffID : zero break point (if class2 = False)}
     bond_break = {} # { coeffID : bondbreak_scale*r0 (if class2 = False)}
-    for i in alpha_parameter.e_harmonic:
+    for i in m.alpha_parameter.e_harmonic:
         # Plot figure
-        ylo = -(abs(min(alpha_parameter.e_harmonic[i])) + 10)
+        ylo = -(abs(min(m.alpha_parameter.e_harmonic[i])) + 10)
         bond = m.alpha_parameter.morse_harmonic[i]; zero_point = 0; rmax = 0;
-        shifted_morse = alpha_parameter.e_harmonic[i]; morse_flag = False; 
+        shifted_morse = m.alpha_parameter.e_harmonic[i]; morse_flag = False; 
         break_points[i] = False; bond_break[i] = False; 
-        if ff_class == 1: 
-            k, r0 = m.bond_coeffs[i].coeffs
+        if ff_class == 1:
+            if len(m.bond_coeffs[i].coeffs) == 2:
+                k, r0 = m.bond_coeffs[i].coeffs
+            elif len(m.bond_coeffs[i].coeffs) == 3:
+                style, k, r0 = m.bond_coeffs[i].coeffs
+            else:
+                r0 = 1.4
         if ff_class == 2:
-            r0, k2, k3, k4 = m.bond_coeffs[i].coeffs 
+            if len(m.bond_coeffs[i].coeffs) == 4:
+                r0, k2, k3, k4 = m.bond_coeffs[i].coeffs 
+            if len(m.bond_coeffs[i].coeffs) == 5:
+                style, r0, k2, k3, k4 = m.bond_coeffs[i].coeffs 
+            else:
+                r0 = 1.4
         if 'morse' in bond:
-            morse_flag = True; zero_point = alpha_parameter.dpoint[i]
-            shifted_morse = [i-bond[1] for i in alpha_parameter.e_morse[i]]; 
-            break_points[i] = zero_point; rmax = bondbreak_scale*r0; bond_break[i] = rmax;
-            ylo = -( abs(min( shifted_morse + alpha_parameter.e_harmonic[i] + alpha_parameter.e_morse[i])) + 10 )
-        fig_i = retFig(radius, alpha_parameter.e_harmonic[i], alpha_parameter.e_morse[i], shifted_morse, zero_point, rmax,
-                       bondbreak_scale, i, alpha_parameter.morse_harmonic, ylo, morse_flag, ff_class)
+            morse_flag = True; zero_point = m.alpha_parameter.dpoint[i]
+            shifted_morse = [i-bond[1] for i in m.alpha_parameter.e_morse[i]]; 
+            break_points[i] = zero_point; rmax = bondbreak_scale*r0;
+            bond_break[i] = rmax;
+            ylo = -( abs(min( shifted_morse + m.alpha_parameter.e_harmonic[i] + m.alpha_parameter.e_morse[i])) + 10 )
+            
+        fig_i = retFig(radius, m.alpha_parameter.e_harmonic[i], m.alpha_parameter.e_morse[i], shifted_morse, zero_point, rmax,
+                       bondbreak_scale, i, m.alpha_parameter.morse_harmonic, ylo, morse_flag, ff_class)
         
         # Save figure if desired
         if files2write['write_pdffile']:

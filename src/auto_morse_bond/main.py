@@ -26,7 +26,6 @@ Houghton, MI 49931
 # Import Necessary Libraries #
 ##############################
 import src.auto_morse_bond.compute_bonds_distances as compute_bonds_distances
-import src.auto_morse_bond.class2xe_conversion as class2xe_conversion
 import src.auto_morse_bond.potential_plotting as potential_plotting
 import src.auto_morse_bond.alpha_parameter_min as alpha_parameter
 import src.auto_morse_bond.merge_input_files as merge_input_files
@@ -49,7 +48,7 @@ import os
 ### Main function to perform all atom-typing tasks ###
 ######################################################
 def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip, radius_specs, alpha_specs, alpha_scale, files2write, atom_style,
-         zero_effected_xterms, bondbreak_scale, ff_class, include_type_labels, class2xe_update, include_rcut, commandline_inputs=[], log=None):
+         zero_effected_xterms, bondbreak_scale, ff_class, include_type_labels, include_rcut, commandline_inputs=[], log=None):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
@@ -67,7 +66,7 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
         command_line.print_man_page(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip,
                                     radius_specs, alpha_specs, alpha_scale, files2write, atom_style,
                                     zero_effected_xterms, bondbreak_scale, ff_class, include_type_labels,
-                                    class2xe_update, include_rcut)
+                                    include_rcut)
         sys.exit()
         
     ###################################################################################
@@ -77,7 +76,7 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
         # call inputs for commandline over rides
         over_rides = command_line.inputs(topofile, morsefile, parent_directory, newfile, min_bond_length, coeffs2skip,
                                          alpha_scale, atom_style, zero_effected_xterms, bondbreak_scale,
-                                         ff_class, include_type_labels, class2xe_update, include_rcut, commandline_inputs)
+                                         ff_class, include_type_labels, include_rcut, commandline_inputs)
         
         # Set new inputs from over_rides class
         topofile = over_rides.topofile
@@ -92,7 +91,6 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
         alpha_scale = over_rides.alpha_scale
         zero_effected_xterms = over_rides.zero_effected_xterms
         bondbreak_scale = over_rides.bondbreak_scale
-        class2xe_update = over_rides.class2xe_update
         include_rcut = over_rides.include_rcut
 
 
@@ -161,7 +159,7 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
     #################################################
     radius = [round(n*radius_specs['increment']+radius_specs['start'], str(radius_specs['increment'])[::-1].find('.')) for n in range( int((radius_specs['end']-radius_specs['start'])/radius_specs['increment'])+1) ]
     m.bonds_lengths = compute_bonds_distances.compute(m)
-    m.bond_info = bond_info.topology(m, min_bond_length, coeffs2skip, ff_class, morsefile, class2xe_update, log)
+    m.bond_info = bond_info.topology(m, min_bond_length, coeffs2skip, ff_class, morsefile, log)
     m.alpha_parameter = alpha_parameter.fitting(m, m.bond_info, radius, alpha_specs, alpha_scale, ff_class, bondbreak_scale, include_rcut, log)
     
     
@@ -187,17 +185,10 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
     # Log any changes in potential styles to log to user
     potential_styles = [] # [(potential, style), ...]
     
-    # Check that zero_effected_xterms and class2_morse are not both True
-    if zero_effected_xterms and class2xe_update:
-        log.error('ERROR zero_effected_xterms and class2xe_update are both True. Only One can be used.')
     
     # Zero any effect crossterms if users desire
     if zero_effected_xterms and ff_class in [2, '2']: 
         m = zero_xterm_r0s.zero(m, log)
-        
-    # Convert class2 crossterms to class2xe variant
-    if class2xe_update and ff_class in [2, '2']:
-        m = class2xe_conversion.update(m, morsefile, potential_styles, include_rcut, log)
         
     # Update bond_coeffs.coeffs if only a single bond style is used
     bond_styles = {m.bond_coeffs[i].coeffs[0] for i in m.bond_coeffs} # will be 'harmonic' or 'class2' or 'morse'
@@ -252,17 +243,17 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
 
     # Plotting Morse and Harmonic potentials
     basename = io_functions.get_basename(topofile, newfile=newfile, character=':', pflag=True)
-    m.plotting = potential_plotting.figure(m, radius, m.alpha_parameter, m.bond_info, basename, files2write, version, bondbreak_scale, ff_class, bond2style, class2xe_update)
+    m.plotting = potential_plotting.figure(m, radius, m.bond_info, basename, files2write, version, bondbreak_scale, ff_class)
 
     # Write lammps datafile 
     if files2write['write_datafile']:
         header = '{} > auto_morse_bond version: {}'.format(m.header, version)
         write_lmp.file(m, basename+'.data', header, atom_style, include_type_labels, log)
         
-    # Write lammps datafile w/ force field parameters only
-    if files2write['write_forcefield']:
-        header = '{} > auto_morse_bond version: {}'.format(m.header, version)
-        write_lmp.file(m, basename+'.FF.data', header, atom_style, include_type_labels, log, force_field_only=True)
+    # # Write lammps datafile w/ force field parameters only
+    # if files2write['write_forcefield']:
+    #     header = '{} > auto_morse_bond version: {}'.format(m.header, version)
+    #     write_lmp.file(m, basename+'.FF.data', header, atom_style, include_type_labels, log, force_field_only=True)
     
     
     # Print file locations
