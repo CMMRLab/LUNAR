@@ -14,6 +14,14 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
+LUNAR (version 14January2025)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+14January2025   JDK            - all2lmp.py: Fixed a bug for reading .mdf files for car/mdf pairing of msi2lmp
+                                             when Material Studio decides to write the "@list backbone" sections.
+
+-------------------------------------------------------------------------------------------------------------
 LUNAR (version 19December2024)
 
 Date               Developer   Description

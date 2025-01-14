@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-July 12th, 2023
+Revision 1.2
+January 14th, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -281,6 +281,7 @@ class read_mdf:
             bonding_flag = False
             periodicity_flag = False
             group_flag = False
+            end_flag = False
             molecule_count = 0 # To count molecules (start at 0 since updated before reading molecule)
             
             # intialize indexes with defaults and update later on (use -1 and check for positve number later)
@@ -314,15 +315,18 @@ class read_mdf:
                     topology_flag = False
                     molecule_flag = True
                     molecule_count += 1
-                elif len(line_split) > 5:
+                elif len(line_split) > 5 and not end_flag:
                     molecule_flag = False
-                    bonding_flag = True
+                    bonding_flag = True                    
                 elif '@periodicity' in line_strip:
                     bonding_flag = False
                     periodicity_flag = True
                 elif '@group' in line_strip:
                     periodicity_flag = False
                     group_flag = True
+                elif '!' in line_strip or '#' in line_strip or '@' in line_strip or 'end' in line_strip:
+                    end_flag = True
+                    
                     
                 # Find title info from header
                 if header_flag:
@@ -348,104 +352,108 @@ class read_mdf:
 
                     # Find atom unique name by stringing together msiatomid+residue+molid with '-' character, this
                     # will set the unqiue string to be used to map from msi atomid's to LAMMPS numeric atomid's.
-                    msiatomid = line_split[0].split(':')[-1]; residue = line_split[0].split(':')[0];
-                    unique_name = '{}-{}-{}'.format(str(msiatomid), str(residue), str(molecule_count))
-                    
-                    # Just in case resname's are inconsitant between .mdf and .car file
-                    try:
-                        lmpatomid = msi2lmp_atomid_map[unique_name]
-                    except:
-                        print(f'resname is inconsistant bewteen .car and .mdf file. resname in .mdf file trying to be mapped onto .car file {residue} for atom: {msiatomid}')
-                        sys.exit()
-                    
-                    # Find element if updated index is positive else set as empty string
-                    if column_index['element'] >= 0:
-                        self.element = line_split[column_index['element']]
+                    split_zero = line_split[0].split(':')
+                    if len(split_zero) == 2:
+                        msiatomid = split_zero[-1]
+                        residue = split_zero[0]
+                        unique_name = '{}-{}-{}'.format(str(msiatomid), str(residue), str(molecule_count))
+    
                         
-                    # Find atom type if updated index is positive else set as empty string
-                    if column_index['atom_type'] >= 0:
-                        self.atom_type = line_split[column_index['atom_type']]
-  
-                    # Find charge group if updated index is positive else set as empty string
-                    if column_index['charge_group'] >= 0:
-                        self.charge_group = line_split[column_index['charge_group']]
-                        
-                    # Find isotope if updated index is positive else set as empty string
-                    if column_index['isotope'] >= 0:
-                        self.isotope = line_split[column_index['isotope']]
-                        
-                    # Find formal charge if updated index is positive else set as empty string
-                    if column_index['formal_charge'] >= 0:
-                        self.formal_charge = line_split[column_index['formal_charge']]
-
-                    # Find charge if updated index is positive else set as empty string
-                    if column_index['charge'] >= 0:
-                        self.charge = line_split[column_index['charge']]
-                        
-                    # Find switching atom if updated index is positive else set as empty string
-                    if column_index['switching_atom'] >= 0:
-                        self.switching_atom = line_split[column_index['switching_atom']]
-                        
-                    # Find oop flag if updated index is positive else set as empty string
-                    if column_index['oop_flag'] >= 0:
-                        self.oop_flag = line_split[column_index['oop_flag']]
-                        
-                    # Find chirality flag if updated index is positive else set as empty string
-                    if column_index['chirality_flag'] >= 0:
-                        self.chirality_flag = line_split[column_index['chirality_flag']]
-                        
-                    # Find occupancy if updated index is positive else set as empty string
-                    if column_index['occupancy'] >= 0:
-                        self.occupancy = line_split[column_index['occupancy']]
-                        
-                    # Find xray_temp_factor if updated index is positive else set as empty string
-                    if column_index['xray_temp_factor'] >= 0:
-                        self.xray_temp_factor = line_split[column_index['xray_temp_factor']]
-                        
-                    # Find connections if updated index is positive else set as empty string
-                    if column_index['connections'] >= 0:
-                        ind = column_index['connections']
-                        connections = [line_split[i] for i in range(ind, len(line_split), 1)]
-                    else:
-                        connections = []
-                    
-                    # Split connections that have the msi record keeping tags, except the residue ':' character to split later on
-                    split_connections = []; Connectivity_Record_Items = ['%', '#', '/', ','] # pg 39 Product Name - Current File Formats .pdf
-                    for bonded in connections:
-                        # Check that symmetry opertion is 1, if not raise Excetion
-                        try: symop = int(bonded.split('#')[1]) # try getting
-                        except: symop = 1 # If symop is non existent assume to be 1
-                        if symop != 1:
-                            print(f'ERROR this tool is not equipped to handle symmetry operations that are not 1. symop in file: {symop}')
+                        # Just in case resname's are inconsitant between .mdf and .car file
+                        try:
+                            lmpatomid = msi2lmp_atomid_map[unique_name]
+                        except:
+                            print(f'resname is inconsistant bewteen .car and .mdf file. resname in .mdf file trying to be mapped onto .car file {residue} for atom: {msiatomid}')
                             sys.exit()
                         
-                        # find msiatomid and string together
-                        msiatomid_bonded = ''
-                        for k in bonded:
-                            if k not in Connectivity_Record_Items:
-                              msiatomid_bonded += k
-                            else: break
-                    
-                        # Find residue_bonded if ':' in msiatomid_bonded
-                        if ':' in msiatomid_bonded:
-                            res_split = msiatomid_bonded.split(':')
-                            residue_bonded = res_split[0]
-                            msiatomid_bonded = res_split[1]
-                         # else set residue_bonded from residue above
-                        else: residue_bonded = residue
+                        # Find element if updated index is positive else set as empty string
+                        if column_index['element'] >= 0:
+                            self.element = line_split[column_index['element']]
+                            
+                        # Find atom type if updated index is positive else set as empty string
+                        if column_index['atom_type'] >= 0:
+                            self.atom_type = line_split[column_index['atom_type']]
+      
+                        # Find charge group if updated index is positive else set as empty string
+                        if column_index['charge_group'] >= 0:
+                            self.charge_group = line_split[column_index['charge_group']]
+                            
+                        # Find isotope if updated index is positive else set as empty string
+                        if column_index['isotope'] >= 0:
+                            self.isotope = line_split[column_index['isotope']]
+                            
+                        # Find formal charge if updated index is positive else set as empty string
+                        if column_index['formal_charge'] >= 0:
+                            self.formal_charge = line_split[column_index['formal_charge']]
+    
+                        # Find charge if updated index is positive else set as empty string
+                        if column_index['charge'] >= 0:
+                            self.charge = line_split[column_index['charge']]
+                            
+                        # Find switching atom if updated index is positive else set as empty string
+                        if column_index['switching_atom'] >= 0:
+                            self.switching_atom = line_split[column_index['switching_atom']]
+                            
+                        # Find oop flag if updated index is positive else set as empty string
+                        if column_index['oop_flag'] >= 0:
+                            self.oop_flag = line_split[column_index['oop_flag']]
+                            
+                        # Find chirality flag if updated index is positive else set as empty string
+                        if column_index['chirality_flag'] >= 0:
+                            self.chirality_flag = line_split[column_index['chirality_flag']]
+                            
+                        # Find occupancy if updated index is positive else set as empty string
+                        if column_index['occupancy'] >= 0:
+                            self.occupancy = line_split[column_index['occupancy']]
+                            
+                        # Find xray_temp_factor if updated index is positive else set as empty string
+                        if column_index['xray_temp_factor'] >= 0:
+                            self.xray_temp_factor = line_split[column_index['xray_temp_factor']]
+                            
+                        # Find connections if updated index is positive else set as empty string
+                        if column_index['connections'] >= 0:
+                            ind = column_index['connections']
+                            connections = [line_split[i] for i in range(ind, len(line_split), 1)]
+                        else:
+                            connections = []
                         
-                        # Find atom unique name by stringing together msiatomid+residue+molid with '-' character, this
-                        # will set the unqiue string to be used to map from msi atomid's to LAMMPS numeric atomid's.
-                        unique_name = '{}-{}-{}'.format(str(msiatomid_bonded), str(residue_bonded), str(molecule_count))
-                        split_connections.append(unique_name)
-
-                    # Find lmpatomids from msi connections to build bonds list
-                    lmpbondingids = [msi2lmp_atomid_map[i] for i in split_connections]
-                    
-                    # create bonds from lmpbondingids and lmpatomid
-                    for lmpbondingatomid in lmpbondingids:
-                        bond = tuple(sorted([lmpbondingatomid, lmpatomid]))
-                        self.bonds.add(bond)
+                        # Split connections that have the msi record keeping tags, except the residue ':' character to split later on
+                        split_connections = []; Connectivity_Record_Items = ['%', '#', '/', ','] # pg 39 Product Name - Current File Formats .pdf
+                        for bonded in connections:
+                            # Check that symmetry opertion is 1, if not raise Excetion
+                            try: symop = int(bonded.split('#')[1]) # try getting
+                            except: symop = 1 # If symop is non existent assume to be 1
+                            if symop != 1:
+                                print(f'ERROR this tool is not equipped to handle symmetry operations that are not 1. symop in file: {symop}')
+                                sys.exit()
+                            
+                            # find msiatomid and string together
+                            msiatomid_bonded = ''
+                            for k in bonded:
+                                if k not in Connectivity_Record_Items:
+                                  msiatomid_bonded += k
+                                else: break
+                        
+                            # Find residue_bonded if ':' in msiatomid_bonded
+                            if ':' in msiatomid_bonded:
+                                res_split = msiatomid_bonded.split(':')
+                                residue_bonded = res_split[0]
+                                msiatomid_bonded = res_split[1]
+                             # else set residue_bonded from residue above
+                            else: residue_bonded = residue
+                            
+                            # Find atom unique name by stringing together msiatomid+residue+molid with '-' character, this
+                            # will set the unqiue string to be used to map from msi atomid's to LAMMPS numeric atomid's.
+                            unique_name = '{}-{}-{}'.format(str(msiatomid_bonded), str(residue_bonded), str(molecule_count))
+                            split_connections.append(unique_name)
+    
+                        # Find lmpatomids from msi connections to build bonds list
+                        lmpbondingids = [msi2lmp_atomid_map[i] for i in split_connections]
+                        
+                        # create bonds from lmpbondingids and lmpatomid
+                        for lmpbondingatomid in lmpbondingids:
+                            bond = tuple(sorted([lmpbondingatomid, lmpatomid]))
+                            self.bonds.add(bond)
                     
                 # Find periodicity information
                 elif periodicity_flag:
