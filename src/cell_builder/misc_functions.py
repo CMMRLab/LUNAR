@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.8
-June 11th, 2024
+Revision 1.9
+February 14th, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -21,6 +21,12 @@ import os
 #    Rotations = {'x':10, 'y':15, 'z':20}            # {'x':max-rotation, ... }                 #
 #################################################################################################
 def get_dict(string, log):
+    # Setup the globals namespace to limit scope of what eval() can do
+    allowed_builtins = ['min','max','sum','abs','len','map','range','reversed']
+    copied_builtins = globals()['__builtins__'].copy()
+    globals_dict = {'__builtins__': {key:copied_builtins[key] for key in allowed_builtins} }
+    
+    # Setup default options
     Regions = {} # {'x':[lo-iflag, hi-iflag], 'y':[lo-iflag, hi-iflag], 'z':[lo-iflag, hi-iflag]} 
     Rotations = {} # {'x':max-rotation, 'y':max-rotation, 'z':max-rotation}
     Shift = {} # {'x':x-shift, 'y':y-shift, 'z':z-shift}
@@ -44,7 +50,7 @@ def get_dict(string, log):
         try:
             line = string.split('Shifts') # Find Shift string 
             string_dict = get_string_dict(line[-1])
-            Shift = eval(string_dict)
+            Shift = eval(string_dict, globals_dict)
         except: log.error(f'ERROR could not resolve Shifts = {line[-1]}')
     
     # Try getting Region
@@ -52,7 +58,7 @@ def get_dict(string, log):
         try:
             line = string.split('Regions') # Find Region string 
             string_dict = get_string_dict(line[-1])
-            Regions = eval(string_dict)
+            Regions = eval(string_dict, globals_dict)
         except: log.error(f'ERROR could not resolve Regions = {line[-1]}')
         
     # Try getting Rotations
@@ -60,7 +66,7 @@ def get_dict(string, log):
         try:
             line = string.split('Rotation') # Find Rotation string 
             string_dict = get_string_dict(line[-1])
-            Rotations = eval(string_dict)
+            Rotations = eval(string_dict, globals_dict)
         except: log.error(f'ERROR could not resolve Rotations = {line[-1]}')
     return Regions, Rotations, Shift
 

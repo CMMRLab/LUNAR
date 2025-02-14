@@ -22,10 +22,14 @@ Date               Developer   Description
                                              when Material Studio decides to write the "@list backbone" sections.
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 19December2024)
+LUNAR (version 2February2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+2February2025    JDK           - cell_builder.py: Limited the scope of what eval() does in src/cell_builder/
+                                                  misc_functions.py get_dict(), to be safe no matter what is 
+                                                  provided in the header of an input LAMMPS datafile.
+
 19December2024   JDK           - Every module: Updated log defaults in each main() function to allow for the
                                                the ability to for loop through "the main()" function without
                                                the need to clear the log between iterations.
