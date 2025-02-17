@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 5/21/2024
+# Last edited 2/17/2025
 #
 ************
 * Overview *
@@ -88,7 +88,65 @@
       blocks_per_grid_voxels  = math.ceil( natoms  / CUDA_threads_per_block_voxels )
     The threads per block should be in doubling multiples of 8 (i.e. 8, 16, 32, 64, 128, 256, 512, and 1024), where some GPUs may not be able
     to go up to 1024.
+	
+********************
+* Array processing *
+********************
 
+  This module can be run with "array processing", where Unix path expansion rules can be provided to the topofile string, to find filenames and
+  paths to process in a for loop. This is accomplished with the Python "glob" library, which means all "glob" options are supported. In addtion
+  a few extra syntax has been added for further functionality beyound "glob".
+  
+  A basic overview of "glob" is that the "*" character provides general wildcard matching, where the number of characters is arbitrary. The "?"
+  character provides "per index" wild card matching. The "glob" library does not support tilde expansion.
+  
+  One nice way of using "array processing" is to use the topofile button to select a file and modify the topofile string with "[" or "]" or "?"
+  or "*" characters. The EXAMPLES/array_processing/ from LUNAR's top level directory has the following tree structure:  
+
+    EXAMPLES
+    |---array_processing
+    |   |--- cnt-hexagonal-class1.car
+    |   |--- cnt-hexagonal-class1.mdf
+    |   |--- cnt-hexagonal-class2b.car
+    |   |--- cnt-hexagonal-class2b.mdf
+    |   |--- cnt-hexagonal-class2b_PCFF.data
+    |   |--- detda.mol
+    |   |--- detda_typed.data
+    |   |--- detda_typed.nta
+    |   |--- detda_typed_PCFF.data
+    |   |--- dgebf.data
+    |   |--- dgebf.mol
+    |   |--- dgebf.mol2
+    |   |--- dgebf.pdb
+    |   |--- dgebf_typed.data
+    |   |--- dgebf_typed.nta
+    |   |--- dgebf_typed_PCFF.data
+    |   |--- poly_tracking_replicate_1_time_0ps.data
+    |   |--- poly_tracking_replicate_1_time_0ps.reaxc
+    |   |--- poly_tracking_replicate_1_time_105ps.data
+    |   |--- poly_tracking_replicate_1_time_105ps.reaxc
+    |   |--- poly_tracking_replicate_1_time_210ps.data
+    |   |--- poly_tracking_replicate_1_time_210ps.reaxc
+    |   |--- poly_tracking_replicate_1_time_315ps.data
+    |   |--- poly_tracking_replicate_1_time_315ps.reaxc
+    |   |--- poly_tracking_replicate_1_time_410ps.data
+    |   |--- poly_tracking_replicate_1_time_410ps.reaxc
+    |   |--- poly_tracking_replicate_1_time_515ps.data
+    |   |--- poly_tracking_replicate_1_time_515ps.reaxc
+    |   |--- poly_tracking_replicate_1_time_515ps_typed.data
+    |   |--- poly_tracking_replicate_1_time_515ps_typed.nta
+    |   |--- poly_tracking_replicate_1_time_515ps_typed_PCFF.data
+	
+  A few examples are provided to show how "array_processing" can be used to select files to process in a for loop from the
+  EXAMPLES/array_processing/ directory.
+  
+    1. Assume we want to process all the files that end in *_PCFF.data, where there is a known .nta file for each file. We would set topofile as:
+        topofile = **EXAMPLES/array_processing/*_PCFF.data
+		 
+    2. The atom_typing and all2lmp pages have more robust examples to view.		 
+		 
+  Finally, the "array processing can be used for a large number of files that may take long durations. Therefore during an array processing run
+  a "ding" alert will be sounded once all files are processed.
 
 ***********
 * Options *

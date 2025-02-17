@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 6/18/2024
+# Last edited 2/17/2025
 #
 ************
 * Overview *
@@ -36,7 +36,9 @@
     element type is also enforced when finding bonds from a ReaxFF bond order file, which is controlled by the maxbonded dictionary in
     atom_typing.py.
 
-    If your system already has bonds defined you may set the bondfile entry to n.u. (not used).
+    If your system already has bonds defined you may set the bondfile entry to n.u. (not used). The bondfile name can be constructed based on
+    the basename of the topofile and an extension, by setting bondfile = 'topofile.ext'. For example, say topofile = 'furan.data' and the bond
+    file name is furan.bonds, setting bondfile = 'topofile.bonds', internally atom_typing will construct the bondfile name as 'furan.bonds'.
     
   parent_directory
     Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the
@@ -79,6 +81,102 @@
         The output filename(s) will be the same as the input filename(s). This can be a dangerous option as you may inadvertently overwrite a
         file and then may assume the file to contain certain information, but it contains other information. Recommended usage: rare and
         dangerous as this could lead to using incorrect files if not paying attention very carefully.
+		
+********************
+* Array processing *
+********************
+
+  This module can be run with "array processing", where Unix path expansion rules can be provided to the topofile string, to find filenames and
+  paths to process in a for loop. This is accomplished with the Python "glob" library, which means all "glob" options are supported. In addtion
+  a few extra syntax has been added for further functionality beyound "glob".
+  
+  A basic overview of "glob" is that the "*" character provides general wildcard matching, where the number of characters is arbitrary. The "?"
+  character provides "per index" wild card matching. The "glob" library does not support tilde expansion.
+  
+  If a bondfile needs to be passed in using "array processing" the only supported method is to set bondfile = 'topofile.ext', where 'ext' is 
+  the extension of your bondfile. This means in such cases the topofile and bondfile should have the same basename, where the only difference
+  between the two files is the extensions. 
+  
+  One nice way of using "array processing" is to use the topofile button to select a file and modify the topofile string with "[" or "]" or "?"
+  or "*" characters. The EXAMPLES/array_processing/ from LUNAR's top level directory has the following tree structure:  
+
+    EXAMPLES
+    |---array_processing
+    |   |--- cnt-hexagonal-class1.car
+    |   |--- cnt-hexagonal-class1.mdf
+    |   |--- cnt-hexagonal-class2b.car
+    |   |--- cnt-hexagonal-class2b.mdf
+    |   |--- cnt-hexagonal-class2b_PCFF.data
+    |   |--- detda.mol
+    |   |--- detda_typed.data
+    |   |--- detda_typed.nta
+    |   |--- dgebf.data
+    |   |--- dgebf.mol
+    |   |--- dgebf.mol2
+    |   |--- dgebf.pdb
+    |   |--- dgebf_typed.data
+    |   |--- dgebf_typed.nta
+    |   |--- poly_tracking_replicate_1_time_0ps.data
+    |   |--- poly_tracking_replicate_1_time_0ps.reaxc
+    |   |--- poly_tracking_replicate_1_time_105ps.data
+    |   |--- poly_tracking_replicate_1_time_105ps.reaxc
+    |   |--- poly_tracking_replicate_1_time_210ps.data
+    |   |--- poly_tracking_replicate_1_time_210ps.reaxc
+    |   |--- poly_tracking_replicate_1_time_315ps.data
+    |   |--- poly_tracking_replicate_1_time_315ps.reaxc
+    |   |--- poly_tracking_replicate_1_time_410ps.data
+    |   |--- poly_tracking_replicate_1_time_410ps.reaxc
+    |   |--- poly_tracking_replicate_1_time_515ps.data
+    |   |--- poly_tracking_replicate_1_time_515ps.reaxc
+    |   |--- poly_tracking_replicate_1_time_515ps_typed.data
+    |   |--- poly_tracking_replicate_1_time_515ps_typed.nta
+	
+  Notice that there exists .data and .reaxc files for paths of 'EXAMPLES/array_processing/poly_tracking_replicate_1_time_*.*', where the .data
+  extensions are ReaxFF LAMMPS datafiles and .reaxc files are LAMMPS ReaxFF bondorder files used to assign the bonds to that file. There also
+  is .car and .mdf files, which atom_typing currently can not read (as Materials studio provides atom type assigment) and thus no examples for
+  the atom_typing "array processing" will use those files. A few examples are provided to show how "array_processing" can be used to select files
+  to process in a for loop from the EXAMPLES/array_processing/ directory.
+  
+    1. Assume we want to process all the "poly_tracking_..." files. We would set topofile and bondfile as:
+        topofile = EXAMPLES/array_processing/poly_tracking_replicate_1_time_*.data
+        bondfile = topofile.reaxc
+		
+    2. Assume we want to process all the files with the .data extension. We would set the topofile and bondfile as:
+        topofile = **EXAMPLES/array_processing/*.data
+        bondfile = topofile.reaxc
+       In this case some topofile files (dgebf.data) do not have a ReaxFF bondorder file, however in this case the
+       dgebf.data file already has bonds in it, so setting the bondfile as 'topofile.reaxc', will be okay for the 
+       dgebf.data file. The '**'-starting characters in topofile makes this a recursive search.
+
+    3. Assume we want to process all the files with the .mol .mol2 and .pdb extensions. We would set the topofile and bondfile as:
+        topofile = **EXAMPLES/array_processing/*.[mp][od][lb]*
+        bondfile = n.u.
+       In this case the [mp][od][lb]* is used to only match extensions that have a extension character indexes of:
+         1  m  p  -> [mp]
+         2  o  d  -> [od]
+         3  l  b  -> [lb]
+         4  *  *  -> *
+       where mol mol2 and pdb are found by the combinations and the .mdf file is ignored.
+	   
+    4. Assume we want to process all the files with the .mol .mol2 .pdb and .data extensions. We would set the topofile and bondfile as:
+        topofile = **EXAMPLES/array_processing/*.[dmp]*
+        bondfile = topofile.reaxc
+       In this case the [mpd][oda][lbt]* is used to only match extensions that have a extension character indexes of:
+         1  m  p  d  -> [mpd]
+         2  o  d  a  -> [oda]
+         3  l  b  t  -> [lbt]
+         4  *  *  *  -> *
+       where mol mol2 pdb and data are found by the combinations and the .mdf file is ignored.
+	   
+    5. Assume we want to process all the files that have 5-character basenames with any extension. We would set the topofile as:
+        topofile = EXAMPLES/array_processing/?????.*
+        bondfile = n.u.
+	   
+  If a supplied topofile starts with or ends with the newfile string (e.g. topfile = 'detda_typed.data' and newfile = ':_typed'), it is 
+  assumed that file has already been processed and will be skipped. This will stop the code from re-processing the same file over and over
+  (continually appending or prepending the newfile extension). A WARNING message will be printed in such cases. Finally, the "array processing"
+  can be used for a large number of files that may take long durations. Therefore during an array processing run a "ding" alert will be sounded
+  once all files are processed.
 
 ***********
 * Options *
