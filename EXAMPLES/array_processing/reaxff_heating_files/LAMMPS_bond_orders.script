@@ -1,0 +1,37 @@
+# LAMMPS script to get ReaxFF bond order files
+#--------------Variables--------------
+
+variable        time equal 0     # Time in ps
+variable        temp equal 300   # Temp in K
+ 
+variable        base string heating_dimer_ReaxFF_CHON-17_Weak_rep_1_del_2-50_temp_${temp}K_time_${time}ps
+variable        myid string ${base}_bonds
+
+
+#--------------initialization--------------
+units           real
+dimension       3
+boundary        p p p
+atom_style      charge
+
+#--------------ForceField--------------
+read_data       ../${base}.data 
+pair_style      reaxff NULL safezone 5.0 mincap 100
+pair_coeff      * * CHON_2017_weak.reax C H
+fix             charges all qeq/reaxff 1 0.0 10.0 1.0e-6 reaxff
+
+#--------------Settings--------------
+timestep        0.1
+thermo          100 # log every 0.01 ps
+thermo_style    custom step temp press etotal ke pe density lx ly lz
+log             ${myid}.log.lammps
+
+#--------------Get Bond information--------------
+reset_atoms     id  sort yes
+fix             1 all nvt temp ${temp} ${temp} $(100*dt)
+fix             2 all reaxff/bonds 100 ${myid}.reaxff # log every 0.01 ps
+
+#--------------Run--------------
+run             1000 # 0.1 ps
+write_data      ${myid}.data
+

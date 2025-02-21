@@ -1,0 +1,558 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. This file is meant to provide the text to display
+# in the popup when pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restricted to 145.
+#
+# Last edited 2/20/2025
+#
+************
+* Overview *
+************
+
+  LUNAR/atom_typing_log_processor.py is meant perform "array processing" on a variety of *log.lunar files that are produced when running
+  LUNAR/atom_typing.py. This can be useful to perform topological analysis using atom_typing.py and a large array of outputted log files,
+  where atom_typing_log_processor.py will "reduce" and "combine" values that are of interested. This is particularly useful for ReaxFF
+  pyrolysis analysis as atom_typing.py can read the LAMMPS ReaxFF bond order file and the LAMMPS ReaxFF datafile to define bonds. For example 
+  the following publication figures can be recreated using LUNAR/atom_typing.py and LUNAR/atom_typing_log_processor.py workflow:
+    - https://doi.org/10.1021/acsaenm.3c00360 (Figures: 4a and 6c)
+    - https://doi.org/10.1016/j.cartre.2023.100290 (Figures: 5, 10a, 10b, and 10c)
+    - https://doi.org/10.1039/D4NA00824C (Figures: 2a, 2b, and 2c)
+
+**********
+* Inputs *
+**********
+
+  logfile
+    Button to load in a *.log.lunar logfile produced when running LUNAR/atom_typing.py. You may also directly type the filename in the entry to
+    the right of the button as well.
+	
+  parent_directory
+    Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the
+    right of the button as well. The path can be a full path or relative path or be set to the . (dot character) to write files to the location
+    where log_analysis.py is currently being run from. Setting parent_directory to "logfile" will use the path of the log_file variable to write
+    the files to that location on your machine. Additionally, relative directories can be made based on the logfile path, for example setting
+    parent_directory to "logfile/new_directory" will create a "new_directory" folder where the logfile is currently or setting parent_directory
+    to "logfile/../" will write the outputs one directory "backwards" from where the logfile is stored or setting parent_directory to
+    "log_file/../results" will create a "results" folder one directory "backwards" from where the logfile is stored.
+	
+  mode file
+    Button to load in a "mode file" used to setup all settings within the log_analysis GUI. You may also directly type the filename in the entry to
+    the right of the button as well. The mode file uses Python data structures to store all values to input as settings. You may write these mode
+    files manually or setup the GUI as you wish and then click "save settings as mode" button, to automatically write the mode file. All mode files
+    are by default stored in LUNAR/src/log_analysis/modes/ directory, which is also the default location to write the mode files, along with the 
+    default path that is used to open up the file dialog selection box to load in a mode file. If you plan to manually write a mode file, it is best
+    to take one that is already built and modify as needed.
+	
+  Replacing logfile when loading mode
+    During loading of a mode file, it maybe desired to load in the logfile that was saved to the mode file or to not load in that file. If this
+    Boolean is set to False, the logfile path will not be updated with what is saved in the mode file, where as if the Boolean is True, the logfile 
+    path will be updated with what is saved in the mode file.
+	
+  newfile
+    An entry to supply a string that will be used to set the output files basenames.
+	
+******************
+* logger: basics *
+******************
+  
+  Text box to supply a string with keywords seperated by comma's. The keywords that are seperated by commas, tell the code what is the values to
+  log into a .csv file. The various keywords will be discussed in their own section to provide as much detail as possbile. You may choose to log a 
+  filename by providing the "filename" keyword to the logger. For examples of logger in this document the entry box is going to be treated like a
+  Python variable and a doc string, such that the general logging string syntax will be:
+    logger = """
+             keyword1,  keyword2,  keyword3,  keyword4
+             keyword5,  keywordN
+             """
+  where the string is wrapped by """ quotes and keywords are supplied with commas between them. Each keyword CANNOT contain any commas, as comas
+  are used to differentiate keywords. In addition, each time a new line is added to the logger there does not need to be a comma behind that keyword
+  (there can be) if it is desired, but it is not a requirement. For example, in the logger string above, there is no commas after "keyword4". Say we
+  only wanted to log the filename, then the logger text box would look like:
+    logger = """
+             filename
+             """
+			 
+  The mass of the system is computed in atom_typing by summing the mass of the Masses in the Masses section of the datafile. Typically  these are in
+  units of atomic mass units (AMU). The mass of the system can be logged using the "mass" keyword.
+			 
+  The char yield of a material can be computed by setting a keyword with the syntax of "CharYield:InitialMass", where "CharYield:" tells the code to
+  compute the char yield and InitialMass is a float or int value to set the initial mass of your systems. The value and units of InitialMass is
+  dependant on your precursor material. In general to char yield can be computed by
+    Char Yield = 100*(mass_step/mass_initial)
+
+  where mass_step is the mass of the system at a given time step and mass_initial is the intial mass of the system. A few examples of how to setup a
+  logger to log the filename, mass, and the char yield for a few different initial system masses.
+  
+    1. Say our system initial mass was 1000.23, a valid logger string would be:
+       logger = """
+                filename, mass, CharYield:1000.23
+                """
+				
+    2. Say our system initial mass was 999.1234, a valid logger string would be:
+       logger = """
+                filename, mass, CharYield:999.1234
+                """
+				
+    3. Say our system initial mass was 1234.456, a valid logger string would be:
+       logger = """
+                filename, mass, CharYield:1234.456
+                """
+
+
+********************
+* logger: clusters *
+********************
+
+  This section will show how to log certain values that are written in the LUNAR/atom_typing.py "Cluster Analysis" table. As an example a partial
+  table is provided below:
+
+    --------------------------------------------Cluster Analysis-------------------------------------
+      molID     Molecule Size          Mass              %Mass           %Size      Molecule Formula
+    -------------------------------------------------------------------------------------------------
+        1             254            2096.74             5.20            5.23        C132-H96-O26  
+        2             147            1212.43             3.01            3.02         C75-H56-O16  
+        3             145            1195.42             2.96            2.98         C75-H55-O15  
+        4             127            1048.37             2.60            2.61         C66-H48-O13  
+        5             127            1048.37             2.60            2.61         C66-H48-O13  
+        6             127            1048.37             2.60            2.61         C66-H48-O13  
+        7             127            1048.37             2.60            2.61         C66-H48-O13  
+        8             127            1048.37             2.60            2.61         C66-H48-O13  
+        9             127            1048.37             2.60            2.61         C66-H48-O13  
+        10            127            1048.37             2.60            2.61         C66-H48-O13
+		
+  The keyword syntax for this table is as follows:
+    
+	clusters[molID]['attribute']
+  
+  where molID is an integer pointing to a molID in the "Cluster Analysis" table and 'attribute' is a string pointing to the attribute to
+  log, where the attribute is set by the "Cluster Analysis" table column name. Examples:
+       
+       1. Say we wanted to log the filename, the 1st cluster mass, the 2nd cluster mass, the 1st cluster molecular formula, and the 2nd
+          cluster molecular molecular formula. A valid logger string would be:
+           logger = """
+                    filename,
+                    clusters[1]['Molecule Size'],     clusters[2]['Molecule Size']
+                    clusters[1]['Molecule Formula'],  clusters[2]['Molecule Formula']
+                    """
+					
+       2. Say we wanted to log the filename, the 1st cluster percent mass and the 2nd cluster mass. A valid logger string would be:
+           logger = """
+                    filename, clusters[1]['%Mass'],     clusters[2]['Mass']
+                    """
+					
+       3. Say we wanted to log the filename and every value in the table. In such cases a special keyword can be used "expand-table:clusters",
+          which will literally go row by row and get all columuns. A valid logger string would be:
+           logger = """
+                    filename, expand-table:clusters
+                    """
+          This is equivalent to the following logger string:
+           logger = """
+                    filename, 
+                    clusters[1]['Molecule Size'], clusters[1]['Mass'], clusters[1]['%Mass'], clusters[1]['%Size'], clusters[1]['Molecule Size'],
+                    clusters[2]['Molecule Size'], clusters[2]['Mass'], clusters[2]['%Mass'], clusters[2]['%Size'], clusters[2]['Molecule Size'],
+                    clusters[3]['Molecule Size'], clusters[3]['Mass'], clusters[3]['%Mass'], clusters[3]['%Size'], clusters[3]['Molecule Size'],
+                             :                             :                    :                     :                     :
+                    clusters[N]['Molecule Size'], clusters[N]['Mass'], clusters[N]['%Mass'], clusters[N]['%Size'], clusters[N]['Molecule Size'],
+                    """
+					
+*****************
+* logger: rings *
+*****************
+
+  This section will show how to log certain values that are written in the LUNAR/atom_typing.py "Ring Analysis" tables. As an example a few
+  tables are provided below:
+  
+    ---------------------------------------------------------------------------------------------
+    |          Ring            |           Count           |             %Ring count            |
+    |          Type            |         of Rings          |            per all rings           |
+    ---------------------------------------------------------------------------------------------
+    |            3             |            12             |                2.40                |
+    ---------------------------------------------------------------------------------------------
+    |    Element      |     natoms      |       Mass       |      %Mass       |     %natoms     |
+    ---------------------------------------------------------------------------------------------
+    |       C         |       33        |      396.00      |       0.98       |       0.68      |
+    |       H         |        0        |       0.00       |       0.00       |       0.00      |
+    |       O         |        0        |       0.00       |       0.00       |       0.00      |
+    |      all        |       33        |      396.00      |       0.98       |       0.68      |
+    ---------------------------------------------------------------------------------------------
+
+
+    ---------------------------------------------------------------------------------------------
+    |          Ring            |           Count           |             %Ring count            |
+    |          Type            |         of Rings          |            per all rings           |
+    ---------------------------------------------------------------------------------------------
+    |            5             |            439            |                87.80               |
+    ---------------------------------------------------------------------------------------------
+    |    Element      |     natoms      |       Mass       |      %Mass       |     %natoms     |
+    ---------------------------------------------------------------------------------------------
+    |       C         |      1464       |     17568.00     |      43.56       |      30.12      |
+    |       H         |        0        |       0.00       |       0.00       |       0.00      |
+    |       O         |       414       |     6623.59      |      16.42       |       8.52      |
+    |      all        |      1878       |     24191.59     |      59.98       |      38.64      |
+    ---------------------------------------------------------------------------------------------
+	
+  The keyword syntax for this table is as follows:
+    
+	rings[RingSize]['attribute']  or  rings[RingSize]['element']['attribute']
+  
+  where RingSize is an integer pointing to the ring size (set in the "Ring Type" column), 'attribute' is a string pointing to the attribute to
+  log and 'element' is a string pointing to the element to log for the partionioned ring info (which is the per atom / per element data) in each
+  ring table. The attribute is set by the "Ring" table column name (or a portion of the column name). Examples:
+       
+       1. Say we wanted to log the filename, the count of 3-member rings and the count of 5-member rings. A valid logger string would be:
+           logger = """
+                    filename, rings[3]['Count'],  rings[5]['Count'],
+                    """ 
+          NOTE: That "Count of Rings" is truncated to "Count"
+
+       2. Say we wanted to log the filename, the percent count of 3-member rings and the percent count of 5-member rings. A valid logger string
+          would be:
+           logger = """
+                    filename, rings[3]['%Ring'],  rings[5]['%Ring'],
+                    """ 
+          NOTE: That "%Ring count per all rings" is truncated to "%Ring"
+		  
+       3. Say we wanted to log the filename, the percent count of 3-member rings, the percent count of 5-member rings, the percent of the 5-member
+          rings mass that is made of carbon and the percent of the 5-member rings mass that is made of oxygen. A valid logger string would be:
+           logger = """
+                    filename, rings[3]['%Ring'],  rings[5]['%Ring'],  rings[3]['C']['%Mass'],  rings[5]['C']['%Mass']
+                    """ 
+					
+       4. Say we wanted to log the filename and every value in the all ring tables. In such cases a special keyword can be used "expand-table:rings",
+          which will literally go row by row and get all columuns. A valid logger string would be:
+           logger = """
+                    filename, expand-table:rings
+                    """
+          This is equivalent to the following logger string:
+           logger = """
+             filename,
+             rings[3]['Count'], rings[3]['%Ring'], rings[3]['C']['natoms'], rings[3]['C']['Mass'], rings[3]['C']['%Mass'], rings[3]['C']['%natoms']
+                                                   rings[3]['O']['natoms'], rings[3]['O']['Mass'], rings[3]['O']['%Mass'], rings[3]['O']['%natoms']
+                                                             :                        :                      :                       :
+                                                   rings[3][all]['natoms'], rings[3][all]['Mass'], rings[3][all]['%Mass'], rings[3][all]['%natoms']
+							  
+             rings[5]['Count'], rings[5]['%Ring'], rings[5]['C']['natoms'], rings[5]['C']['Mass'], rings[5]['C']['%Mass'], rings[5]['C']['%natoms']
+                   :                  :            rings[5]['O']['natoms'], rings[5]['O']['Mass'], rings[5]['O']['%Mass'], rings[5]['O']['%natoms']
+                   :                  :                      :                        :                      :                       :
+                   :                  :            rings[5][all]['natoms'], rings[5][all]['Mass'], rings[5][all]['%Mass'], rings[5][all]['%natoms']
+                   :                  :                      :                        :                      :                       :
+             rings[N]['Count'], rings[N]['%Ring'], rings[N]['C']['natoms'], rings[N]['C']['Mass'], rings[N]['C']['%Mass'], rings[N]['C']['%natoms']
+                                                   rings[N]['O']['natoms'], rings[N]['O']['Mass'], rings[N]['O']['%Mass'], rings[N]['O']['%natoms']
+                                                             :                        :                      :                       :
+                                                   rings[N][all]['natoms'], rings[N][all]['Mass'], rings[N][all]['%Mass'], rings[N][all]['%natoms']
+                """ 
+		  
+**************************
+* logger: hybridizations *
+**************************
+
+  This section will show how to log certain values that are written in the LUNAR/atom_typing.py "Hybridization Information" tables. As an example
+  a table is provided below:
+  
+    -----------------------------Hybridization Information-------------------------------
+         Atom-Type            natoms            Mass            %Mass           %natoms     
+    -------------------------------------------------------------------------------------
+           Sp1-C               112            1344.00            3.33             2.30      
+           Sp2-C               2044           24528.00          60.81            42.06      
+           Sp3-C               364            4368.00           10.83             7.49      
+           all-C               2520           30240.00          74.97            51.85      
+           all-H               1824           1838.59            4.56            37.53      
+           Sp1-O                11             175.99            0.44             0.23      
+           Sp2-O               467            7471.53           18.52             9.61      
+           Sp3-O                38             607.96            1.51             0.78      
+           all-O               516            8255.48           20.47            10.62  
+		   
+  The keyword syntax for this table is as follows:
+    
+	hybridizations['orbital']['attribute']
+  
+  where 'orbital' is a string pointing to the "Atom-type" or "orbital" and 'attribute' is a string pointing to the attribute to log, where the
+  attribute is set by the "Hybridization Information" table column name. Examples:
+  
+       1. Say we wanted to log the filename, the mass and percent mass of sp2 carbon. A valid logger string would be:
+           logger = """
+                    filename, hybridizations['Sp2-C']['Mass'], hybridizations['Sp2-C']['%Mass']
+                    """ 
+					
+       2. Say we wanted to log the filename, the mass and percent mass of sp1, sp2, and sp3 carbon. A valid logger string would be:
+           logger = """
+                    filename, hybridizations['Sp1-C']['Mass'],  hybridizations['Sp2-C']['Mass'],  hybridizations['Sp3-C']['Mass']
+                              hybridizations['Sp1-C']['%Mass'], hybridizations['Sp2-C']['%Mass'], hybridizations['Sp3-C']['%Mass']
+                    """ 
+					
+       3. Say we wanted to log the filename and every value in the all ring tables. In such cases a special keyword can be used 
+          "expand-table:hybridizations", which will literally go row by row and get all columuns. A valid logger string would be:
+           logger = """
+                    filename, expand-table:hybridizations
+                    """
+          This is equivalent to the following logger string:
+           logger = """filename
+           hybridizations['Sp1-C']['natoms'], hybridizations['Sp1-C']['Mass'], hybridizations['Sp1-C']['%Mass'], hybridizations['Sp1-C']['%natoms']
+           hybridizations['Sp2-C']['natoms'], hybridizations['Sp2-C']['Mass'], hybridizations['Sp2-C']['%Mass'], hybridizations['Sp2-C']['%natoms']
+           hybridizations['Sp3-C']['natoms'], hybridizations['Sp3-C']['Mass'], hybridizations['Sp3-C']['%Mass'], hybridizations['Sp3-C']['%natoms']
+           hybridizations['all-C']['natoms'], hybridizations['all-C']['Mass'], hybridizations['all-C']['%Mass'], hybridizations['all-C']['%natoms']
+                             :                                  :                                :                                 :
+           hybridizations['SpN-*']['natoms'], hybridizations['SpN-*']['Mass'], hybridizations['SpN-*']['%Mass'], hybridizations['SpN-*']['%natoms']
+           """ 
+
+*****************************
+* logger: keyword shortcuts *
+*****************************
+
+  All the logger keywords described above can have user defined "shortcuts" to them. The shortcut strings are setup in a shortcuts dictionary found
+  in LUNAR/src/atom_typing/log_processor/keywords.py. Please see this file for setting up your own shortcut keywords or look at the ones that are
+  already supplied. 
+	
+********************
+* Array processing *
+********************
+
+  This module can be run with "array processing", where Unix path expansion rules can be provided to the topofile string, to find filenames and
+  paths to process in a for loop. This is accomplished with the Python "glob" library, which means all "glob" options are supported. In addtion
+  a few extra syntax has been added for further functionality beyound "glob".
+  
+  A basic overview of "glob" is that the "*" character provides general wildcard matching, where the number of characters is arbitrary. The "?"
+  character provides "per index" wild card matching. The "glob" library does not support tilde expansion.
+  
+  If a bondfile needs to be passed in using "array processing" the only supported method is to set bondfile = 'topofile.ext', where 'ext' is 
+  the extension of your bondfile. This means in such cases the topofile and bondfile should have the same basename, where the only difference
+  between the two files is the extensions. 
+  
+  One nice way of using "array processing" is to use the logfile button to select a file and modify the topofile string with "[" or "]" or "?"
+  or "*" characters. The EXAMPLES/array_processing/atom_typing_logfile_processor from LUNAR's top level directory has the following tree structure:  
+
+    EXAMPLES
+    |---array_processing
+    |   |--- heating_temp_300K_time_0ps_bonds_typed.log.lunar
+    |   |--- heating_temp_400K_time_10ps_bonds_typed.log.lunar
+    |   |--- heating_temp_500K_time_20ps_bonds_typed.log.lunar
+    |   |--- heating_temp_600K_time_30ps_bonds_typed.log.lunar
+    |   |--- heating_temp_700K_time_40ps_bonds_typed.log.lunar
+    |   |--- heating_temp_800K_time_50ps_bonds_typed.log.lunar
+    |   |--- poly_tracking_replicate_1_time_0ps_typed.log.lunar
+    |   |--- poly_tracking_replicate_1_time_105ps_typed.log.lunar
+    |   |--- poly_tracking_replicate_1_time_210ps_typed.log.lunar
+    |   |--- poly_tracking_replicate_1_time_315ps_typed.log.lunar
+    |   |--- poly_tracking_replicate_1_time_410ps_typed.log.lunar
+    |   |--- poly_tracking_replicate_1_time_515ps_typed.log.lunar
+    |   |--- poly_tracking_replicate_1_time_515ps_typed_typed.log.lunar
+	
+  A few examples are provided to show how "array_processing" can be used to select files to process in a for loop from the
+  EXAMPLES/array_processing/atom_typing_logfile_processor directory.
+  
+    1. Assume we want to process all the "poly_tracking_..." files. We would set logfile as:
+        logfile = EXAMPLES/array_processing/atom_typing_logfile_processor/poly_tracking_replicate_1_time_*ps_typed.log.lunar
+		
+    2. Assume we want to process all the "heating_temp_..." files. We would set logfile as:
+        logfile = EXAMPLES/array_processing/atom_typing_logfile_processor/heating_temp_*K_time_*ps_bonds_typed.log.lunar
+
+    3. The atom_typing and all2lmp pages have more robust examples to view.
+	   
+  If a supplied newfile string matches with a file basename from array processing, it is assumed that file is a *.log.lunar file produced
+  by running this code. This will stop the code from trying to re-process a log file that was not produced by atom_typing.py. A WARNING message
+  will be printed in such cases. 
+  
+*******************************
+* Array processing and logger *
+*******************************
+
+  When using the glob library to find logfile matches the difference between the input glob string and the matched file generates "wildcards".
+  For example say we set:
+    logfile = heating_temp_*K_time_*ps_bonds_typed.log.lunar
+  and we where inside the "EXAMPLES/array_processing/atom_typing_logfile_processor" directory, the following table is true.
+
+     +----------------------------------------------------------------------+
+     |      logfile = heating_temp_*K_time_*ps_bonds_typed.log.lunar        |
+     +------------------------------------------------------+---------------+
+     |                matched filename                      |   wildcards   |
+     +------------------------------------------------------+---------------+
+     |  heating_temp_300K_time_0ps_bonds_typed.log.lunar    |   300  0      |
+     |  heating_temp_400K_time_10ps_bonds_typed.log.lunar   |   400  10     |
+     |  heating_temp_500K_time_20ps_bonds_typed.log.lunar   |   500  20     |
+     |  heating_temp_600K_time_30ps_bonds_typed.log.lunar   |   600  30     |
+     |  heating_temp_700K_time_40ps_bonds_typed.log.lunar   |   700  40     |
+     |  heating_temp_800K_time_50ps_bonds_typed.log.lunar   |   800  50     |
+     +------------------------------------------------------+---------------+
+	 
+  where the two "*" characters in the logfile string means two wild cards are found. In this case it is the temperature in Kelvin and the time in
+  picoseconds. These wildcards can be logged via the "wildcards" keyword. Say we wanted to log the filename and the wildcards, a valid logger
+  string would be:
+    logger = """filename, wildcards"""
+
+  +----------+
+  | Indexing |
+  +----------+
+    In addition you can select the index of a specify wildcard to log, where the wildcards are indexed starting from 0, so the "300 0" wildcards
+    have indexes 0 and 1 respectively. Say we wanted to log the individual wildcards in the order they appear, a valid logger string would be:
+      logger = """filename, wildcards[0],  wildcards[1]"""
+  
+    The following logger string is equivalent to the above logger string (it just uses the "-" character to go through the list in reverse)
+      logger = """filename, wildcards[-2],  wildcards[-1]"""
+  
+    Finally all index splicing is supported. For this example assume we have wildcards = ['one', 'two', 'three', 'four',	'five']
+      1. Say we would like to log the 'two' 'three' and 'four' wildcards, we could use Python's index splicing and set the logger as
+          logger = """filename, wildcards[1:4]"""
+		
+      2. Say we would like to log the 'one' 'two' and 'three' wildcards, we could use Python's index splicing and set the logger as
+          logger = """filename, wildcards[0:3]"""
+
+  +----------------------------+
+  | Numeric wildcard operation |
+  +----------------------------+
+    There is one more keyword for the logger that deals with wildcards and logfile strings, which is "numeric". The "numeric" keyword defines an
+    operation to find the wildcard amoung wildcards that have the most percent of the keyword characters defined by digits. As an example see the
+    table below:
+  
+      +--------------+----------------+
+      |   wildcard   |   Digits (%)   |
+      +--------------+----------------+
+      |    100ps     |    60.00%      |
+      |    1000ps    |    66.66%      |
+      |    10000ps   |    71.43%      |
+      +--------------+----------------+
+	
+    where the "numeric" operation would compare "100ps" "1000ps" and "10000ps" wildcards and find that the "10000ps" wildcard has the most
+    characters that are digits. This is particularly useful for finding out the time, step, or temperature a given file is logfile was processed on
+    and to be able to log that value, as the Figures for Pyrolysis plots presented in the three papers in the overview of this code tracked metrics 
+    as a function of simulation time. To log time then, the written LAMMPS datafile/bondfile should have time in the name, where atom_typing.py will
+    maintain that time value in its filename and finally that time can be logged.
+  
+    Now that the "numeric" keyword and operation is defined lets see how we can leaverage it to log the value from the filename that we are interested
+    in. In most cases, there will only be a single wildcard such as the time of the simulation. In such as case using "numeric" is simple as it will 
+    find the time of the simulation. However, what if there are two wildcards, such as in the heating example of temperature and time. The first
+    example will be if we want to prioritze numeric to find the temperature and not the time. We can set the logfile string as (pay attention to the
+    part of the string "time_*_bonds", where we removed the "ps" from the string)
+      logfile = heating_temp_*K_time_*_bonds_typed.log.lunar
+  
+       The following table is true, where forcing the * glob operator to find wildcards on the time value that include the "ps" string, means that the 
+       temperature wildcard could be prioritzed over the time wildcard and that the temperature value can be logged.
+
+       +---------------------------------------------------------------------------------------------------------+
+       |                        logfile = heating_temp_*K_time_*_bonds_typed.log.lunar                           |
+       +------------------------------------------------------+---------------+---------------+------------------+
+       |                matched filename                      |   wildcards   |   Digits (%)  | numeric wildcard |
+       +------------------------------------------------------+---------------+---------------+------------------+
+       |  heating_temp_300K_time_0ps_bonds_typed.log.lunar    |   300  0ps    | 100.00  33.33 |        300       |
+       |  heating_temp_400K_time_10ps_bonds_typed.log.lunar   |   400  10ps   | 100.00  50.00 |        400       |
+       |  heating_temp_500K_time_20ps_bonds_typed.log.lunar   |   500  20ps   | 100.00  50.00 |        500       |
+       |  heating_temp_600K_time_30ps_bonds_typed.log.lunar   |   600  30ps   | 100.00  50.00 |        600       |
+       |  heating_temp_700K_time_40ps_bonds_typed.log.lunar   |   700  40ps   | 100.00  50.00 |        700       |
+       |  heating_temp_800K_time_50ps_bonds_typed.log.lunar   |   800  50ps   | 100.00  50.00 |        800       |
+       +------------------------------------------------------+---------------+---------------+------------------+
+	 
+    The second example will be if we want to prioritze numeric to find the time and not the temperature. We can set the logfile string as (pay attention
+    to the part of the string "temp_*_time", where we removed the "K" from the string)
+       logfile = heating_temp_*_time_*ps_bonds_typed.log.lunar
+	 
+       The following table is true, where forcing the * glob operator to find wildcards on the time value that include the "K" string, means that the 
+       time wildcard could be prioritzed over the temperature wildcard and that the time value can be logged.
+
+       +---------------------------------------------------------------------------------------------------------+
+       |                        logfile = heating_temp_*_time_*ps_bonds_typed.log.lunar                          |
+       +------------------------------------------------------+---------------+---------------+------------------+
+       |                matched filename                      |   wildcards   |   Digits (%)  | numeric wildcard |
+       +------------------------------------------------------+---------------+---------------+------------------+
+       |  heating_temp_300K_time_0ps_bonds_typed.log.lunar    |   300K  0     | 75.00  100.00 |        0         |
+       |  heating_temp_400K_time_10ps_bonds_typed.log.lunar   |   400K  10    | 75.00  100.00 |        10        |
+       |  heating_temp_500K_time_20ps_bonds_typed.log.lunar   |   500K  20    | 75.00  100.00 |        20        |
+       |  heating_temp_600K_time_30ps_bonds_typed.log.lunar   |   600K  30    | 75.00  100.00 |        30        |
+       |  heating_temp_700K_time_40ps_bonds_typed.log.lunar   |   700K  40    | 75.00  100.00 |        40        |
+       |  heating_temp_800K_time_50ps_bonds_typed.log.lunar   |   800K  50    | 75.00  100.00 |        50        |
+       +------------------------------------------------------+---------------+---------------+------------------+
+	 
+    Therefore careful selection of how you setup the logfile string with wildcard inclusions or exclusions can allow for the retrieval of finding the
+    independant variable that is usually stored on the filename. As as final logger example, assume we want to log the filename, the wildcards, and
+    the numeric value, a valid logger string would be:
+      logger = """filname, wildcards, numeric"""
+	
+********************
+* Analysis options *
+********************
+
+  Plotting: independant_variable and dependant_variables 
+    Entries to supply a string to tell the code what to plot. If both entries are left empty no plot will attempt to be generated. The
+    independant_variable can only contain one of the keywords described above and the dependant_variables follow the same formatting rules as
+    the logger. In addition the dependant_variables can be set to "logger" which will plot all keywords in the logger. Finally, the keywords in
+    provide to the dependant_variables must appear in the logger. A few examples are presented below:
+	
+      1. Say we wanted to X-axis to be the wildcards[0] and the Y-axis to plot dependant_variables of the mass and percent mass of sp1, sp2,
+         and sp3 carbon. The following logger, independant_variable, and dependant_variables setup is valid.
+           logger = """
+                    filename, hybridizations['Sp1-C']['Mass'],  hybridizations['Sp2-C']['Mass'],  hybridizations['Sp3-C']['Mass']
+                              hybridizations['Sp1-C']['%Mass'], hybridizations['Sp2-C']['%Mass'], hybridizations['Sp3-C']['%Mass']
+                    """ 
+					
+           dependant_variables = """
+                                 hybridizations['Sp1-C']['Mass'],  hybridizations['Sp2-C']['Mass'],  hybridizations['Sp3-C']['Mass']
+                                 hybridizations['Sp1-C']['%Mass'], hybridizations['Sp2-C']['%Mass'], hybridizations['Sp3-C']['%Mass']
+                                 """ 
+								 
+           independant_variable = "wildcards[0]"
+	
+      2. Say we wanted to X-axis to be the numeric value and the Y-axis to plot dependant_variables of the mass and percent mass of sp1, sp2,
+         and sp3 carbon. The following logger, independant_variable, and dependant_variables setup is valid.
+           logger = """
+                    filename, hybridizations['Sp1-C']['Mass'],  hybridizations['Sp2-C']['Mass'],  hybridizations['Sp3-C']['Mass']
+                              hybridizations['Sp1-C']['%Mass'], hybridizations['Sp2-C']['%Mass'], hybridizations['Sp3-C']['%Mass']
+                    """ 
+					
+           dependant_variables = """
+                                 hybridizations['Sp1-C']['Mass'],  hybridizations['Sp2-C']['Mass'],  hybridizations['Sp3-C']['Mass']
+                                 hybridizations['Sp1-C']['%Mass'], hybridizations['Sp2-C']['%Mass'], hybridizations['Sp3-C']['%Mass']
+                                 """ 
+								 
+           independant_variable = "numeric"
+		   
+      3. Say we wanted to X-axis to be the numeric value and the Y-axis to plot dependant_variables of the mass and percent mass of sp1, sp2,
+         and sp3 carbon. The following logger, independant_variable, and dependant_variables setup is valid, where the "logger" keyword in 
+         dependant_variables will attempt to plot all logged values. The filename will be skipped as the code checks to ensure all values that
+         are plotted are numeric values, wher filenames will be strings.
+           logger = """
+                    filename, hybridizations['Sp1-C']['Mass'],  hybridizations['Sp2-C']['Mass'],  hybridizations['Sp3-C']['Mass']
+                              hybridizations['Sp1-C']['%Mass'], hybridizations['Sp2-C']['%Mass'], hybridizations['Sp3-C']['%Mass']
+                    """ 
+					
+           dependant_variables = """
+                                 logger
+                                 """ 
+								 
+           independant_variable = "numeric"
+		   
+
+  Sorting: sorting_method and sorting_direction
+    Drop down menus to select how files are sorted after glob matched them. The sorting of files is important as it dictates how values will be
+    written to a .csv file. For example if we are tracking our files with respect to time, we would like the order of logged values to be increasing
+    with respect to time. Typical sorting algorthims for sorting strings with numbers usually dont result in properly sorted strings. Due to this
+    four different sorting methods have been implemented and are described below:
+      1. sort
+         - Method:   Uses Python's sorted() function.
+         - Result:   Will likely result in improperly ordered values in written .csv file.
+         - Use-Case: This should rarely be used, unless you are aware of what your filename's contain and are confindent sorted() function works
+		             for them.
+
+      2. natsort
+         - Method:   Uses Python's natsort library natsorted() function. This requires natsort to be installed (pip install natsort).
+         - Result:   Should result in properly ordered values written in the .csv file.
+         - Use-Case: This should be the default, if you are NOT going to be thoughtful about the use of the "numeric" keyword.
+	  
+      3. numericsort
+         - Method:   Uses the value that the "numeric" keyword finds and then sorts files based on this value.
+         - Result:   Will likely result in improperly ordered values in written .csv file.
+         - Use-Case: This should be the default, if you are GOING to be thoughtful about the use of the "numeric" keyword.
+		 
+      4. wildcards[i]
+         - Method:   Uses the value that the ith index of wildcards and then sorts files based on this value (e.g. wildcards[0]).
+         - Result:   Will likely result in improperly ordered values in written .csv file.
+         - Use-Case: This should be the default, properly understand what order of wildcards will be important.
+	
+    The direction of sort can also be defined via the sorting_direction dropdown menu. The two directions are described below:
+      1. ascending
+         - Increasing in size or importance.
+		 
+      2. descending
+         - Decreasing in size or importance.

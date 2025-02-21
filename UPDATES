@@ -14,23 +14,39 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 17February2025)
+LUNAR (version 20February2025)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+20February2025    JDK          - atom_typing_log_processor.py: Adding a new module that is meant to bulk process
+                                                               the logfiles that atom_typing.py generates. This
+                                                               is mainly meant to allow for topological analysis
+                                                               of ReaxFF simulaitons.
+
+20February2025    JDK          - all2lmp.py: Fixed a bug related the minimally used nta "remove_things" option
+                                             that only effected class2 FF implementation.
+
+
+-------------------------------------------------------------------------------------------------------------
+LUNAR (version 20February2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
 17February2025    JDK          - atom_typing.py,
                                  all2lmp.py,
                                  free_volume.py,
-                                 add_pi_electrons.py: Have implemeted "array procesing" via the Python
-                                                      glob library. Where Unix path expansion rules allow
-                                                      for mulitple files to be matched based in a single
-                                                      input string supplied to the topofile entry. For
-                                                      example a string like:
-                                                        "**EXAMPLES/array_processing/*.data"
-                                                      will find all files with the .data extension in a
-                                                      directory called EXAMPLES/array_processing/. The files
-                                                      are then iterated through by recursively calling each
-                                                      modules main() function.
+                                 add_pi_electrons.py,
+                                 log_analysis.py,
+                                 auto_morse_bond_update.py: Have implemeted "array procesing" via the Python
+                                                            glob library. Where Unix path expansion rules allow
+                                                            for mulitple files to be matched based in a single
+                                                            input string supplied to the topofile or logfile
+                                                            entry. For example a string like:
+                                                              "**EXAMPLES/array_processing/*.data"
+                                                            will find all files with the .data extension in a
+                                                            directory called EXAMPLES/array_processing/. The files
+                                                            are then iterated through by recursively calling each
+                                                            modules main() function.
 
 14February2025    JDK          - cell_builder.py: Limited the scope of what eval() does in src/cell_builder/
                                                   misc_functions.py get_dict(), to be safe no matter what is 

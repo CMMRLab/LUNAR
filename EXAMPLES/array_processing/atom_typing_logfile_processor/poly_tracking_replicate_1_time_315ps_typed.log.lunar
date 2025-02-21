@@ -1,0 +1,321 @@
+
+
+Using array input option:
+ - topofile     : EXAMPLES/array_processing/poly_tracking_replicate_1_time_*.data
+ - matched file : EXAMPLES/array_processing\poly_tracking_replicate_1_time_315ps.data
+ - elapsed time : 1.91 (seconds)
+ - progress     : 4 of 8 (50.00%)
+
+
+Running atom_typing v1.10 / 10 May 2024
+Using Python version 3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]
+Assigning PCFF-IFF atom-types
+Read in EXAMPLES/array_processing\poly_tracking_replicate_1_time_315ps.data LAMMPS datafile
+
+
+Using mass_map dictionary to set element symbols ...
+Using path and topfile name from topofile to set bondfile = EXAMPLES/array_processing\poly_tracking_replicate_1_time_315ps.reaxc
+Reading ReaxFF Bond order file and finding bonds ....
+Read in EXAMPLES/array_processing\poly_tracking_replicate_1_time_315ps.reaxc LAMMPS reaxff bond-order file
+Finding molecules ...
+Finding rings ...
+Finding atoms hybridization ...
+Using path from topofile to set parent_directory ...
+
+
+Elements found in system:
+- C
+- H
+- O
+
+
+
+ReaxFF atom-typing specific section:
+Each bonding atom ids have had 1 Bond orders (BO) averaged over to find average BO for each bonding pair
+Total bonds created     : 5232 (due to meeting specified criteria)
+Total bonds not created : 33 (due to not meeting specified criteria)
+
+---------------------------Bond type bond order statistics and info---------------------------
+   Bond       Bond    Bond Order   Bond Order      Bond Order      Bond Order        Cut-off    
+   Type      Count     Average       Minimum         Maximum     Standard Deviation    used   
+----------------------------------------------------------------------------------------------
+   C-C        2478      1.3510       0.6530          2.0460          0.2169            0.3      
+   C-H        1777      0.9446       0.3300          0.9720          0.0134            0.3      
+   C-O        944       0.9521       0.3440          1.8970          0.2557            0.3      
+   H-O         47       0.8018       0.4070          0.8700          0.0723            0.3      
+
+
+-------------------------------Element abo statistics and info--------------------------------
+Element    Element     abo           abo            abo            abo           Max bonded     
+Type        Count    Average       Minimum        Maximum    Standard Deviation    Cut-off    
+----------------------------------------------------------------------------------------------
+H            1824     0.9600       0.8160         1.0760         0.0214               1         
+C            2520     3.8134       2.0510         4.4100         0.3327               4         
+O            516      2.0023       1.6580         2.3620         0.0976               2         
+
+
+--------------------------------------------Cluster Analysis-------------------------------------
+  molID     Molecule Size          Mass              %Mass           %Size      Molecule Formula
+-------------------------------------------------------------------------------------------------
+    1            1817            15034.29            37.27           37.39      C942-H685-O190 
+    2             891            7382.59             18.30           18.33       C459-H336-O96 
+    3             762            6317.21             15.66           15.68       C393-H287-O82 
+    4             175            1450.51             3.60            3.60         C90-H66-O19  
+    5             168            1395.49             3.46            3.46         C87-H63-O18  
+    6             148            1231.42             3.05            3.05         C78-H55-O15  
+    7             127            1048.37             2.60            2.61         C66-H48-O13  
+    8              81             678.23             1.68            1.67         C42-H30-O9   
+    9              70             586.20             1.45            1.44         C36-H26-O8   
+    10             67             568.19             1.41            1.38         C36-H24-O7   
+    11             60             495.18             1.23            1.23         C30-H23-O7   
+    12             60             495.18             1.23            1.23         C30-H23-O7   
+    13             31             256.09             0.63            0.64         C15-H12-O4   
+    14             28             238.08             0.59            0.58         C15-H10-O3   
+    15             28             238.08             0.59            0.58         C15-H10-O3   
+    16             28             238.08             0.59            0.58         C15-H10-O3   
+    17             28             238.08             0.59            0.58         C15-H10-O3   
+    18             28             238.08             0.59            0.58         C15-H10-O3   
+    19             28             238.08             0.59            0.58         C15-H10-O3   
+    20             28             238.08             0.59            0.58         C15-H10-O3   
+    21             28             238.08             0.59            0.58         C15-H10-O3   
+    22             13             109.04             0.27            0.27          C6-H5-O2    
+    23             12             93.04              0.23            0.25          C6-H5-O1    
+    24             11             92.03              0.23            0.23          C6-H4-O1    
+    25             11             92.03              0.23            0.23          C6-H4-O1    
+    26             11             92.03              0.23            0.23          C6-H4-O1    
+    27             11             92.03              0.23            0.23          C6-H4-O1    
+    28             11             92.03              0.23            0.23          C6-H4-O1    
+    29             11             92.03              0.23            0.23          C6-H4-O1    
+    30             11             92.03              0.23            0.23          C6-H4-O1    
+    31             11             92.03              0.23            0.23          C6-H4-O1    
+    32             11             92.03              0.23            0.23          C6-H4-O1    
+    33             11             92.03              0.23            0.23          C6-H4-O1    
+    34             11             92.03              0.23            0.23          C6-H4-O1    
+    35             11             92.03              0.23            0.23          C6-H4-O1    
+    36             11             92.03              0.23            0.23          C6-H4-O1    
+    37             11             92.03              0.23            0.23          C6-H4-O1    
+
+
+By-products criteria: {'method': 'mass', 'criteria': 0.0}
+------By Products Tally------
+Type                    Count
+-----------------------------
+
+
+----Inputs used for find_rings----
+Walked along elements  :  ['C', 'H', 'O']
+Checked for ring sizes :  [3, 4, 5, 6, 7]
+Total rings found      :  427
+201 atoms along a ring seam had to be partitioned amoung the ring
+types (To find accurate %Mass of ring type to entire system).
+Giving preference of partionioning in this order:
+- 6 member ring
+- 5 member ring
+- 7 member ring
+- 4 member ring
+- 3 member ring
+- 8 member ring
+- minimum ring size
+*NOTE: If count of rings exists, but no atoms exist for that ring, this means the
+atoms for that ring were partionted to other rings that the atoms belong to.*
+
+---------------------------------------------------------------------------------------------
+|          Ring            |           Count           |             %Ring count            |
+|          Type            |         of Rings          |            per all rings           |
+---------------------------------------------------------------------------------------------
+|            3             |            13             |                3.04                |
+---------------------------------------------------------------------------------------------
+|    Element      |     natoms      |       Mass       |      %Mass       |     %natoms     |
+---------------------------------------------------------------------------------------------
+|       C         |       29        |      348.00      |       0.86       |       0.60      |
+|       H         |        0        |       0.00       |       0.00       |       0.00      |
+|       O         |        1        |      16.00       |       0.04       |       0.02      |
+|      all        |       30        |      364.00      |       0.90       |       0.62      |
+---------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------
+|          Ring            |           Count           |             %Ring count            |
+|          Type            |         of Rings          |            per all rings           |
+---------------------------------------------------------------------------------------------
+|            5             |            361            |                84.54               |
+---------------------------------------------------------------------------------------------
+|    Element      |     natoms      |       Mass       |      %Mass       |     %natoms     |
+---------------------------------------------------------------------------------------------
+|       C         |      1164       |     13968.00     |      34.63       |      23.95      |
+|       H         |        0        |       0.00       |       0.00       |       0.00      |
+|       O         |       337       |     5391.66      |      13.37       |       6.93      |
+|      all        |      1501       |     19359.66     |      48.00       |      30.88      |
+---------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------
+|          Ring            |           Count           |             %Ring count            |
+|          Type            |         of Rings          |            per all rings           |
+---------------------------------------------------------------------------------------------
+|            6             |            51             |                11.94               |
+---------------------------------------------------------------------------------------------
+|    Element      |     natoms      |       Mass       |      %Mass       |     %natoms     |
+---------------------------------------------------------------------------------------------
+|       C         |       303       |     3636.00      |       9.01       |       6.23      |
+|       H         |        0        |       0.00       |       0.00       |       0.00      |
+|       O         |        3        |      48.00       |       0.12       |       0.06      |
+|      all        |       306       |     3684.00      |       9.13       |       6.30      |
+---------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------
+|          Ring            |           Count           |             %Ring count            |
+|          Type            |         of Rings          |            per all rings           |
+---------------------------------------------------------------------------------------------
+|            7             |             2             |                0.47                |
+---------------------------------------------------------------------------------------------
+|    Element      |     natoms      |       Mass       |      %Mass       |     %natoms     |
+---------------------------------------------------------------------------------------------
+|       C         |        5        |      60.00       |       0.15       |       0.10      |
+|       H         |        0        |       0.00       |       0.00       |       0.00      |
+|       O         |        3        |      48.00       |       0.12       |       0.06      |
+|      all        |        8        |      108.00      |       0.27       |       0.16      |
+---------------------------------------------------------------------------------------------
+
+
+----------------------------------Ringed Clusters------------------------------------
+Ring-Formula    Ring-Size     Ring-count    Ring-Mass-tally     natoms-tally
+-------------------------------------------------------------------------------------
+C4-O1                 5            361           23103.64             1805
+C6                    6             48            3456.00              288
+C3                    3             11             396.00               33
+C5-O1                 6              3             228.00               18
+C5-O2                 7              1              92.00                7
+C6-O1                 7              1              88.00                7
+C2-O1                 3              2              80.00                6
+
+
+
+-----------------------------Hybridization Information-------------------------------
+     Atom-Type            natoms            Mass            %Mass           %natoms     
+-------------------------------------------------------------------------------------
+       Sp1-C               130            1560.00            3.87             2.67      
+       Sp2-C               2042           24504.00          60.75            42.02      
+       Sp3-C               348            4176.00           10.35             7.16      
+       all-C               2520           30240.00          74.97            51.85      
+       all-H               1824           1838.59            4.56            37.53      
+       Sp2-O               397            6351.60           15.75             8.17      
+       Sp3-O               119            1903.88            4.72             2.45      
+       all-O               516            8255.48           20.47            10.62      
+
+
+
+
+-----------------------------------------------------------------------------------------
+| Currently supported atom types (If you know your system has an atom type that is not  |
+| listed the force field specifc typing module needs to be added onto for that type).   |
+| If the atom type has a trailing (T) or (F) it means that atom type has flag settings  |
+| in the force field specifc typing module and lets you know the status of those flags. |
+| If the atom type has a trailing (Q) it means that the written datafile has the charge |
+| set for that atom type already (Mainly for PCFF-IFF or Metal/Mineral based FFs). For  |
+| most atom types with the trailing (Q) there will a flag in the specific atom typing   |
+| module to turn on or off this functionality (to give a more control of the code).     |
+|-------------------------------------   Carbon   --------------------------------------|
+|         ct             c+             cr             c-             c5                |
+|         cs             cp             cg1 (Q) (F)    c_0            c_1               |
+|         c_2            cz             ci             c=             c=1               |
+|         c=2            c3h            c3m            c4h            c4m               |
+|         c_a            cg             co             coh            ce1 (Q) (F)       |
+|         c1             c2             c3             c4o            c                 |
+|-------------------------------------  Hydrogen  --------------------------------------|
+|         hi             he1 (Q) (F)    ha1 (Q) (F)    cge (Q) (F)    hc                |
+|         hpan           hw             hos            hoy            ho2               |
+|         ho             hn2            hn             h*             hsi               |
+|         hs             hdm            h                                               |
+|-------------------------------------   Oxygen   --------------------------------------|
+|         o_1            oo             o=             o-             o*                |
+|         oe1 (Q) (F)    oa1 (Q) (F)    oz             o_2            oc                |
+|         o3e            o4e            op             o2h            osh               |
+|         osi            oc23           oh             ob                               |
+|-------------------------------------  Nitrogen  --------------------------------------|
+|         nt             ni             np             n=             n=1               |
+|         n=2            n1             n2             n_2            nho               |
+|         ni             npc            nh             n3n            n3m               |
+|         n4n            n4m            nn             na             n                 |
+|         nh+            n4                                                             |
+|-------------------------------------   Sulfer   --------------------------------------|
+|         s'             s-             s3e            s4e            sp                |
+|         sc             sh             s1             s              sf                |
+|         s_m                                                                           |
+|-------------------------------------  Silicone  --------------------------------------|
+|         sio            sc4            sc1            si                               |
+|-------------------------------------  Fluorine  --------------------------------------|
+|         f                                                                             |
+|-------------------------------------   Xenon    --------------------------------------|
+|         xe                                                                            |
+|-------------------------------------    Neon    --------------------------------------|
+|         ne                                                                            |
+|-------------------------------------  Krypton   --------------------------------------|
+|         kr                                                                            |
+|-------------------------------------   Helium   --------------------------------------|
+|         he                                                                            |
+|------------------------------------- Deuterium  --------------------------------------|
+|         dw                                                                            |
+|-------------------------------------  Chlorine  --------------------------------------|
+|         cl                                                                            |
+|-------------------------------------  Calcium   --------------------------------------|
+|         ca                                                                            |
+|-------------------------------------  Bromine   --------------------------------------|
+|         br                                                                            |
+|-------------------------------------   Argon    --------------------------------------|
+|         ar                                                                            |
+|-------------------------------------Phosphorous --------------------------------------|
+|         p              p=                                                             |
+|------------------------------------- Molybdenum --------------------------------------|
+|         Mo                                                                            |
+-----------------------------------------------------------------------------------------
+|                       Total count of supported atom types: 117                        |
+-----------------------------------------------------------------------------------------
+
+
+
+Final outcome of found atom types:
+Total atom count                   : 4860
+Total Parameterized atom count     : 4832
+Assumed Parameterized atom count   : 28
+Failed Parameterized atom count    : 0
+Total Parameterized atom perentage : 99.42
+
+------Atom types Tally------
+Type                   Count
+----------------------------
+c                         69
+c1                       112
+c2                       131
+c3h                        1
+c5                      1149
+c=                       137
+c=1                       58
+c=2                      379
+c_0                      146
+c_1                        3
+cp                       171
+ct                       164
+hc                      1777
+ho                        47
+o3e                        1
+o_1                       55
+oc                        70
+oh                        47
+op                       343
+pdb_file = skip, so skipping writing of optional .pdb file
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\array_processing\pyro directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.5830342769622803
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

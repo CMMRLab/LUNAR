@@ -53,7 +53,7 @@ def post_processor(parameters, remove, ff_class, BADI, log):
     for i in parameters.angle_coeffs:
         if i in coeffIDmap:
             angle_coeffs[coeffIDmap[i]] = parameters.angle_coeffs[i]
-            if ff_class == 2:
+            if ff_class in [2, '2']:
                 bondbond_coeffs[coeffIDmap[i]] = parameters.bondbond_coeffs[i]
                 bondangle_coeffs[coeffIDmap[i]] = parameters.bondangle_coeffs[i]
                 
@@ -110,7 +110,7 @@ def post_processor(parameters, remove, ff_class, BADI, log):
     for i in parameters.dihedral_coeffs:
         if i in coeffIDmap:
             dihedral_coeffs[coeffIDmap[i]] = parameters.dihedral_coeffs[i]
-            if ff_class == 2:
+            if ff_class in [2, '2']:
                 bondbond13_coeffs[coeffIDmap[i]] = parameters.bondbond13_coeffs[i]
                 angleangletorsion_coeffs[coeffIDmap[i]] = parameters.angleangletorsion_coeffs[i]
                 endbondtorsion_coeffs[coeffIDmap[i]] = parameters.endbondtorsion_coeffs[i]
@@ -185,7 +185,7 @@ def post_processor(parameters, remove, ff_class, BADI, log):
     for i in parameters.improper_coeffs:
         if i in coeffIDmap:
             improper_coeffs[coeffIDmap[i]] = parameters.improper_coeffs[i]
-            if ff_class == 2:
+            if ff_class in [2, '2']:
                 angleangle_coeffs[coeffIDmap[i]] = parameters.angleangle_coeffs[i]
 
     # Update parameters object dicts w/new reduced dicts

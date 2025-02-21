@@ -254,7 +254,7 @@ def write_ecoeffs(doc_title, parameters, ff_class, version, include_type_labels)
         
         
         # Write class2 parameters if class II FF or 's1'
-        if ff_class in [2, 's2']:
+        if ff_class in [2, '2', 's2']:
             
             # Write bondbond coeffs
             if parameters.nangles > 0:

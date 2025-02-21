@@ -148,6 +148,10 @@ class LUNAR:
         self.sheet_builder_button = tk.Button(self.inputs_frame, text='sheet_builder', font=font_settings, command=self.sheet_builder_GUI_in)
         self.sheet_builder_button.grid(column=6, row=1)
         
+        # atom_typing_log_processor button
+        self.atom_typing_log = tk.Button(self.inputs_frame, text='atom_typing_log_processor', font=font_settings, command=self.atom_typing_log_in)
+        self.atom_typing_log.grid(column=0, row=2)
+        
         # Add padding to all frames in self.inputs_frame
         for widget in self.inputs_frame.winfo_children():
             widget.grid_configure(padx=xpadding, pady=ypadding)
@@ -325,6 +329,15 @@ class LUNAR:
                           sb.sheet_edgetype, sb.types, sb.bond_length, sb.sheet_layer_spacing, sb.sheet_nlayers, sb.stacking, sb.plane, sb.tube_edgetype, sb.tube_layer_spacing,
                           sb.symmetric_ntubes, sb.symmetric_length, sb.diameter, sb.n, sb.m, sb.chiral_length, sb.symmetric_tube_axis, sb.chiral_tube_axis, sb.find_bonds, sb.periodic_bonds,
                           sb.charges, sb.masses, sb.functional_seed, sb.functional_atoms, sb.terminating_atoms, self.GUI_zoom)
+        return
+        
+    # atom_typing_log_processor GUI Run
+    def atom_typing_log_in(self):
+        from src.atom_typing.log_processor.GUI import GUI
+        import atom_typing_log_processor as atl
+
+        # Run GUI
+        GUI(atl.settings, self.GUI_zoom)
         return
     
     # Function to pop-up scrollable text

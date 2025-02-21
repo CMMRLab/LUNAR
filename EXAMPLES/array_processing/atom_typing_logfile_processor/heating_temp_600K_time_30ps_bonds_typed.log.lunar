@@ -1,0 +1,324 @@
+
+
+Using array input option:
+ - topofile     : EXAMPLES\array_processing\reaxff_heating_files\heating_dimer_ReaxFF_CHON-17_Weak_rep_1_del_2-50_temp_*K_time_*ps_bonds.data
+ - matched file : EXAMPLES\array_processing\reaxff_heating_files\heating_dimer_ReaxFF_CHON-17_Weak_rep_1_del_2-50_temp_600K_time_30ps_bonds.data
+ - elapsed time : 4.89 (seconds)
+ - progress     : 4 of 6 (66.67%)
+
+
+Running atom_typing v1.10 / 10 May 2024
+Using Python version 3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]
+Assigning PCFF-IFF atom-types
+Read in EXAMPLES\array_processing\reaxff_heating_files\heating_dimer_ReaxFF_CHON-17_Weak_rep_1_del_2-50_temp_600K_time_30ps_bonds.data LAMMPS datafile
+
+
+Using mass_map dictionary to set element symbols ...
+Using path and topfile name from topofile to set bondfile = EXAMPLES\array_processing\reaxff_heating_files\heating_dimer_ReaxFF_CHON-17_Weak_rep_1_del_2-50_temp_600K_time_30ps_bonds.reaxff
+Reading ReaxFF Bond order file and finding bonds ....
+Read in EXAMPLES\array_processing\reaxff_heating_files\heating_dimer_ReaxFF_CHON-17_Weak_rep_1_del_2-50_temp_600K_time_30ps_bonds.reaxff LAMMPS reaxff bond-order file
+Finding molecules ...
+Finding rings ...
+Finding atoms hybridization ...
+Using path from topofile to set parent_directory ...
+
+
+Elements found in system:
+- C
+- H
+
+
+
+ReaxFF atom-typing specific section:
+Each bonding atom ids have had 11 Bond orders (BO) averaged over to find average BO for each bonding pair
+Total bonds created     : 8400 (due to meeting specified criteria)
+Total bonds not created : 0 (due to not meeting specified criteria)
+
+---------------------------Bond type bond order statistics and info---------------------------
+   Bond       Bond    Bond Order   Bond Order      Bond Order      Bond Order        Cut-off    
+   Type      Count     Average       Minimum         Maximum     Standard Deviation    used   
+----------------------------------------------------------------------------------------------
+   C-C        6000      1.3559       1.1102          1.5535          0.0813            0.3      
+   C-H        2400      0.9469       0.9302          0.9524          0.0028            0.3      
+
+
+-------------------------------Element abo statistics and info--------------------------------
+Element    Element     abo           abo            abo            abo           Max bonded     
+Type        Count    Average       Minimum        Maximum    Standard Deviation    Cut-off    
+----------------------------------------------------------------------------------------------
+H            2400     0.9564       0.8860         1.0530         0.0132               1         
+C            4800     3.8770       3.4080         4.2630         0.1071               4         
+
+
+--------------------------------------------Cluster Analysis-------------------------------------
+  molID     Molecule Size          Mass              %Mass           %Size      Molecule Formula
+-------------------------------------------------------------------------------------------------
+    1              48             400.13             0.67            0.67          C32-H16     
+    2              48             400.13             0.67            0.67          C32-H16     
+    3              48             400.13             0.67            0.67          C32-H16     
+    4              48             400.13             0.67            0.67          C32-H16     
+    5              48             400.13             0.67            0.67          C32-H16     
+    6              48             400.13             0.67            0.67          C32-H16     
+    7              48             400.13             0.67            0.67          C32-H16     
+    8              48             400.13             0.67            0.67          C32-H16     
+    9              48             400.13             0.67            0.67          C32-H16     
+    10             48             400.13             0.67            0.67          C32-H16     
+    11             48             400.13             0.67            0.67          C32-H16     
+    12             48             400.13             0.67            0.67          C32-H16     
+    13             48             400.13             0.67            0.67          C32-H16     
+    14             48             400.13             0.67            0.67          C32-H16     
+    15             48             400.13             0.67            0.67          C32-H16     
+    16             48             400.13             0.67            0.67          C32-H16     
+    17             48             400.13             0.67            0.67          C32-H16     
+    18             48             400.13             0.67            0.67          C32-H16     
+    19             48             400.13             0.67            0.67          C32-H16     
+    20             48             400.13             0.67            0.67          C32-H16     
+    21             48             400.13             0.67            0.67          C32-H16     
+    22             48             400.13             0.67            0.67          C32-H16     
+    23             48             400.13             0.67            0.67          C32-H16     
+    24             48             400.13             0.67            0.67          C32-H16     
+    25             48             400.13             0.67            0.67          C32-H16     
+    26             48             400.13             0.67            0.67          C32-H16     
+    27             48             400.13             0.67            0.67          C32-H16     
+    28             48             400.13             0.67            0.67          C32-H16     
+    29             48             400.13             0.67            0.67          C32-H16     
+    30             48             400.13             0.67            0.67          C32-H16     
+    31             48             400.13             0.67            0.67          C32-H16     
+    32             48             400.13             0.67            0.67          C32-H16     
+    33             48             400.13             0.67            0.67          C32-H16     
+    34             48             400.13             0.67            0.67          C32-H16     
+    35             48             400.13             0.67            0.67          C32-H16     
+    36             48             400.13             0.67            0.67          C32-H16     
+    37             48             400.13             0.67            0.67          C32-H16     
+    38             48             400.13             0.67            0.67          C32-H16     
+    39             48             400.13             0.67            0.67          C32-H16     
+    40             48             400.13             0.67            0.67          C32-H16     
+    41             48             400.13             0.67            0.67          C32-H16     
+    42             48             400.13             0.67            0.67          C32-H16     
+    43             48             400.13             0.67            0.67          C32-H16     
+    44             48             400.13             0.67            0.67          C32-H16     
+    45             48             400.13             0.67            0.67          C32-H16     
+    46             48             400.13             0.67            0.67          C32-H16     
+    47             48             400.13             0.67            0.67          C32-H16     
+    48             48             400.13             0.67            0.67          C32-H16     
+    49             48             400.13             0.67            0.67          C32-H16     
+    50             48             400.13             0.67            0.67          C32-H16     
+    51             48             400.13             0.67            0.67          C32-H16     
+    52             48             400.13             0.67            0.67          C32-H16     
+    53             48             400.13             0.67            0.67          C32-H16     
+    54             48             400.13             0.67            0.67          C32-H16     
+    55             48             400.13             0.67            0.67          C32-H16     
+    56             48             400.13             0.67            0.67          C32-H16     
+    57             48             400.13             0.67            0.67          C32-H16     
+    58             48             400.13             0.67            0.67          C32-H16     
+    59             48             400.13             0.67            0.67          C32-H16     
+    60             48             400.13             0.67            0.67          C32-H16     
+    61             48             400.13             0.67            0.67          C32-H16     
+    62             48             400.13             0.67            0.67          C32-H16     
+    63             48             400.13             0.67            0.67          C32-H16     
+    64             48             400.13             0.67            0.67          C32-H16     
+    65             48             400.13             0.67            0.67          C32-H16     
+    66             48             400.13             0.67            0.67          C32-H16     
+    67             48             400.13             0.67            0.67          C32-H16     
+    68             48             400.13             0.67            0.67          C32-H16     
+    69             48             400.13             0.67            0.67          C32-H16     
+    70             48             400.13             0.67            0.67          C32-H16     
+    71             48             400.13             0.67            0.67          C32-H16     
+    72             48             400.13             0.67            0.67          C32-H16     
+    73             48             400.13             0.67            0.67          C32-H16     
+    74             48             400.13             0.67            0.67          C32-H16     
+    75             48             400.13             0.67            0.67          C32-H16     
+    76             48             400.13             0.67            0.67          C32-H16     
+    77             48             400.13             0.67            0.67          C32-H16     
+    78             48             400.13             0.67            0.67          C32-H16     
+    79             48             400.13             0.67            0.67          C32-H16     
+    80             48             400.13             0.67            0.67          C32-H16     
+    81             48             400.13             0.67            0.67          C32-H16     
+    82             48             400.13             0.67            0.67          C32-H16     
+    83             48             400.13             0.67            0.67          C32-H16     
+    84             48             400.13             0.67            0.67          C32-H16     
+    85             48             400.13             0.67            0.67          C32-H16     
+    86             48             400.13             0.67            0.67          C32-H16     
+    87             48             400.13             0.67            0.67          C32-H16     
+    88             48             400.13             0.67            0.67          C32-H16     
+    89             48             400.13             0.67            0.67          C32-H16     
+    90             48             400.13             0.67            0.67          C32-H16     
+    91             48             400.13             0.67            0.67          C32-H16     
+    92             48             400.13             0.67            0.67          C32-H16     
+    93             48             400.13             0.67            0.67          C32-H16     
+    94             48             400.13             0.67            0.67          C32-H16     
+    95             48             400.13             0.67            0.67          C32-H16     
+    96             48             400.13             0.67            0.67          C32-H16     
+    97             48             400.13             0.67            0.67          C32-H16     
+    98             48             400.13             0.67            0.67          C32-H16     
+    99             48             400.13             0.67            0.67          C32-H16     
+   100             48             400.13             0.67            0.67          C32-H16     
+    .               .               .                  .               .              .        
+    .               .               .                  .               .              .        
+    .               .               .                  .               .              .        
+
+
+By-products criteria: {'method': 'mass', 'criteria': 0.0}
+------By Products Tally------
+Type                    Count
+-----------------------------
+
+
+----Inputs used for find_rings----
+Walked along elements  :  ['C', 'H']
+Checked for ring sizes :  [3, 4, 5, 6, 7]
+Total rings found      :  1350
+450 atoms along a ring seam had to be partitioned amoung the ring
+types (To find accurate %Mass of ring type to entire system).
+Giving preference of partionioning in this order:
+- 6 member ring
+- 5 member ring
+- 7 member ring
+- 4 member ring
+- 3 member ring
+- 8 member ring
+- minimum ring size
+*NOTE: If count of rings exists, but no atoms exist for that ring, this means the
+atoms for that ring were partionted to other rings that the atoms belong to.*
+
+---------------------------------------------------------------------------------------------
+|          Ring            |           Count           |             %Ring count            |
+|          Type            |         of Rings          |            per all rings           |
+---------------------------------------------------------------------------------------------
+|            5             |            90             |                6.67                |
+---------------------------------------------------------------------------------------------
+|    Element      |     natoms      |       Mass       |      %Mass       |     %natoms     |
+---------------------------------------------------------------------------------------------
+|       C         |        0        |       0.00       |       0.00       |       0.00      |
+|       H         |        0        |       0.00       |       0.00       |       0.00      |
+|      all        |        0        |       0.00       |       0.00       |       0.00      |
+---------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------
+|          Ring            |           Count           |             %Ring count            |
+|          Type            |         of Rings          |            per all rings           |
+---------------------------------------------------------------------------------------------
+|            6             |           1260            |                93.33               |
+---------------------------------------------------------------------------------------------
+|    Element      |     natoms      |       Mass       |      %Mass       |     %natoms     |
+---------------------------------------------------------------------------------------------
+|       C         |      4800       |     57600.00     |      95.97       |      66.67      |
+|       H         |        0        |       0.00       |       0.00       |       0.00      |
+|      all        |      4800       |     57600.00     |      95.97       |      66.67      |
+---------------------------------------------------------------------------------------------
+
+
+----------------------------------Ringed Clusters------------------------------------
+Ring-Formula    Ring-Size     Ring-count    Ring-Mass-tally     natoms-tally
+-------------------------------------------------------------------------------------
+C6                    6           1260           90720.00             7560
+C5                    5             90            5400.00              450
+
+
+
+-----------------------------Hybridization Information-------------------------------
+     Atom-Type            natoms            Mass            %Mass           %natoms     
+-------------------------------------------------------------------------------------
+       Sp2-C               4800           57600.00          95.97            66.67      
+       all-C               4800           57600.00          95.97            66.67      
+       all-H               2400           2419.20            4.03            33.33      
+
+
+
+
+-----------------------------------------------------------------------------------------
+| Currently supported atom types (If you know your system has an atom type that is not  |
+| listed the force field specifc typing module needs to be added onto for that type).   |
+| If the atom type has a trailing (T) or (F) it means that atom type has flag settings  |
+| in the force field specifc typing module and lets you know the status of those flags. |
+| If the atom type has a trailing (Q) it means that the written datafile has the charge |
+| set for that atom type already (Mainly for PCFF-IFF or Metal/Mineral based FFs). For  |
+| most atom types with the trailing (Q) there will a flag in the specific atom typing   |
+| module to turn on or off this functionality (to give a more control of the code).     |
+|-------------------------------------   Carbon   --------------------------------------|
+|         ct             c+             cr             c-             c5                |
+|         cs             cp             cg1 (Q) (F)    c_0            c_1               |
+|         c_2            cz             ci             c=             c=1               |
+|         c=2            c3h            c3m            c4h            c4m               |
+|         c_a            cg             co             coh            ce1 (Q) (F)       |
+|         c1             c2             c3             c4o            c                 |
+|-------------------------------------  Hydrogen  --------------------------------------|
+|         hi             he1 (Q) (F)    ha1 (Q) (F)    cge (Q) (F)    hc                |
+|         hpan           hw             hos            hoy            ho2               |
+|         ho             hn2            hn             h*             hsi               |
+|         hs             hdm            h                                               |
+|-------------------------------------   Oxygen   --------------------------------------|
+|         o_1            oo             o=             o-             o*                |
+|         oe1 (Q) (F)    oa1 (Q) (F)    oz             o_2            oc                |
+|         o3e            o4e            op             o2h            osh               |
+|         osi            oc23           oh             ob                               |
+|-------------------------------------  Nitrogen  --------------------------------------|
+|         nt             ni             np             n=             n=1               |
+|         n=2            n1             n2             n_2            nho               |
+|         ni             npc            nh             n3n            n3m               |
+|         n4n            n4m            nn             na             n                 |
+|         nh+            n4                                                             |
+|-------------------------------------   Sulfer   --------------------------------------|
+|         s'             s-             s3e            s4e            sp                |
+|         sc             sh             s1             s              sf                |
+|         s_m                                                                           |
+|-------------------------------------  Silicone  --------------------------------------|
+|         sio            sc4            sc1            si                               |
+|-------------------------------------  Fluorine  --------------------------------------|
+|         f                                                                             |
+|-------------------------------------   Xenon    --------------------------------------|
+|         xe                                                                            |
+|-------------------------------------    Neon    --------------------------------------|
+|         ne                                                                            |
+|-------------------------------------  Krypton   --------------------------------------|
+|         kr                                                                            |
+|-------------------------------------   Helium   --------------------------------------|
+|         he                                                                            |
+|------------------------------------- Deuterium  --------------------------------------|
+|         dw                                                                            |
+|-------------------------------------  Chlorine  --------------------------------------|
+|         cl                                                                            |
+|-------------------------------------  Calcium   --------------------------------------|
+|         ca                                                                            |
+|-------------------------------------  Bromine   --------------------------------------|
+|         br                                                                            |
+|-------------------------------------   Argon    --------------------------------------|
+|         ar                                                                            |
+|-------------------------------------Phosphorous --------------------------------------|
+|         p              p=                                                             |
+|------------------------------------- Molybdenum --------------------------------------|
+|         Mo                                                                            |
+-----------------------------------------------------------------------------------------
+|                       Total count of supported atom types: 117                        |
+-----------------------------------------------------------------------------------------
+
+
+
+Final outcome of found atom types:
+Total atom count                   : 7200
+Total Parameterized atom count     : 7200
+Assumed Parameterized atom count   : 0
+Failed Parameterized atom count    : 0
+Total Parameterized atom perentage : 100.00
+
+------Atom types Tally------
+Type                   Count
+----------------------------
+cp                      4800
+hc                      2400
+pdb_file = skip, so skipping writing of optional .pdb file
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\array_processing\reaxff_heating_files\atom_typing directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 1.7000207901000977
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)
