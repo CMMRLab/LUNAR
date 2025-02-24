@@ -59,8 +59,8 @@ def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, co
                     log.warn(f' - WARNING matched file {file} already has newfile {newfile} extension and was skipped')
                     continue
                 try: # we dont want crashes to exit this loop
-                   main(file, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons, parent_directory, newfile, 
-                        include_type_labels, neighbor_charge_constraint, reset_simulation_cell, commandline_inputs, log)
+                   main(file, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons, parent_directory,
+                        newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell, commandline_inputs, log)
                 except: pass
             print('\a') # Alert
         else: log.error(f'ERROR topofile: {topofile} unwrapped zero files or does not exist')
@@ -73,7 +73,7 @@ def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, co
         if log is None:
             log = io_functions.LUNAR_logger()
         log.configure(level='production')
-        #log.configure(level='debug', print2console=False
+        #log.configure(level='debug', print2console=False)
         
         #########################
         # Command Line Override #

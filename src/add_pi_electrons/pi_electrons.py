@@ -89,9 +89,9 @@ def add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset
     ##############################################################
     # Finding orginal number of atoms, bonds, angles, types, etc #
     ##############################################################
-    atom_types_count = len(m.masses); atoms_count = len(m.atoms);
-    bond_types_count = len(m.bond_coeffs); bonds_count = len(m.bonds);
-    angle_types_count = len(m.angle_coeffs); angles_count = len(m.angles);
+    atom_types_count = len(m.masses); atoms_count = max([max(m.atoms), len(m.atoms)]) # Use max of max or len to allow for non-contiguous atomIDs
+    bond_types_count = len(m.bond_coeffs); bonds_count = max([max(m.bonds), len(m.bonds)]) # Use max of max or len to allow for non-contiguous bondIDs
+    angle_types_count = len(m.angle_coeffs); angles_count = max([max(m.angles), len(m.angles)]) # Use max of max or len to allow for non-contiguous bondIDs
 
     
     #################################################
@@ -178,8 +178,16 @@ def add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset
         
         # Get neighbor types and check if they are all in accetable_neightypes
         if neighbor_charge_constraint == 'check-neighbors':
+            neighnbs = [len(graph[i]) for i in graph[id1]]
             neightypes = [m.atoms[i].type for i in graph[id1]]
             neightype_check = all(i in accetable_neightypes for i in neightypes)
+            
+            # If any neighbors do not have the neighbor count set in 
+            # nb_criteria, the neightype_check should be set as False
+            # as the test failed
+            neighnbs_count = [nb_criteria.count(i) for i in neighnbs]
+            if any(i == 0 for i in neighnbs_count):
+                neightype_check = False
         else: neightype_check = True
         
         # If atom.type is specified in atom_type_list, add pi electrons to
