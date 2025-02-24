@@ -14,10 +14,14 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 20February2025)
+LUNAR (version 24February2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+24February2025    JDK          - add_pi_electrons.py: Rewrote parts of the code to allow for adding pi-electrons
+                                                      when atomIDs are non-contiguous in the read in LAMMPS 
+                                                      datafile.
+
 20February2025    JDK          - atom_typing_log_processor.py: Adding a new module that is meant to bulk process
                                                                the logfiles that atom_typing.py generates. This
                                                                is mainly meant to allow for topological analysis
