@@ -14,10 +14,17 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 24February2025)
+LUNAR (version 6March2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+6March2025        JDK          - atom_typing.py: The fused ring analysis use to have O(n^2) time complexity
+                                                 with n being the number of rings in the system. This has been
+                                                 cleaned up to O(n) time complexity.
+												 
+6March2025        JDK          - atom_typing_log_processor.py: Added a bit more documentation via the "Quick help"
+                                                               page on the GUI.
+												 
 24February2025    JDK          - add_pi_electrons.py: Rewrote parts of the code to allow for adding pi-electrons
                                                       when atomIDs are non-contiguous in the read in LAMMPS 
                                                       datafile.
