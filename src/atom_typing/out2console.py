@@ -87,7 +87,6 @@ def out(mm, bp, log, version, ff_name):
     ####################################
     # Write molecules/cluster findings #
     ####################################
-    maxID = 100 # to stop printing after maxID
     # Write molecules table          
     log.out('\n\n--------------------------------------------Cluster Analysis-------------------------------------')
     log.out('{:^10} {:^15} {:^20} {:^15} {:^15} {:^15}'.format('molID', 'Molecule Size', 'Mass', '%Mass', '%Size', 'Molecule Formula'))
@@ -99,17 +98,8 @@ def out(mm, bp, log, version, ff_name):
         pmass = '{:.2f}'.format(data.pmass)
         psize = '{:.2f}'.format(data.psize)
         formula = '{:^10}'.format(data.formula)
-        if i <= maxID:
-            log.out('{:^10} {:^15} {:^20} {:^15} {:^15} {:^15}'.format(i, size, mass, pmass, psize, formula))
-    # if len(mm.molecules.data) > maxID print ...
-    if len( mm.molecules.data) > maxID:
-        size = '{: >6}'.format('.'); mass = '{:.2}'.format('.')
-        pmass = '{:.2}'.format('.'); psize = '{:.2}'.format('.')
-        formula = '{:^10}'.format('.')
-        log.out('{:^10} {:^15} {:^20} {:^15} {:^15} {:^15}'.format('.', size, mass, pmass, psize, formula))
-        log.out('{:^10} {:^15} {:^20} {:^15} {:^15} {:^15}'.format('.', size, mass, pmass, psize, formula))
-        log.out('{:^10} {:^15} {:^20} {:^15} {:^15} {:^15}'.format('.', size, mass, pmass, psize, formula))
-        
+        log.out('{:^10} {:^15} {:^20} {:^15} {:^15} {:^15}'.format(i, size, mass, pmass, psize, formula))
+
         
     ###################################################################
     # Custom extent of reaction section to write or not (hidden flag) #
@@ -267,7 +257,6 @@ def out(mm, bp, log, version, ff_name):
     # Write fused ring findings if user desired #
     #############################################
     if mm.find_rings['fused-rings']:
-        maxID = 10 # to stop printing after maxID
         # Write ringed clusters table          
         log.out('\n\n--------------------------------------------------Fused Ring Clusters-----------------------------------------------------')
         log.out('{:<6} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12} {:>35}'.format('FusedID', 'Size', 'Mass', '%Mass', '%Size', 'Nrings', '%Rings', 'FusedRing Formula'))
@@ -281,14 +270,9 @@ def out(mm, bp, log, version, ff_name):
             nrings = '{:>6}'.format(data.nrings)
             prings = '{:>6}'.format(data.prings)
             formula = '{:^10}'.format(data.formula)
-            if i <= maxID and data.nrings > 0:
+            if data.size > 0:
                 log.out('{:<6} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12} {:>35}'.format(i, size, mass, pmass, psize, nrings, prings, formula))
-        # if len(mm.rings.clusters.data) > maxID print ...
-        if len(mm.rings.fused.data) > maxID:
-            size = '{: >6}'.format('.'); mass = '{:.2}'.format('.'); pmass = '{:.2}'.format('.'); psize = '{:.2}'.format('.');
-            nrings = '{:>6}'.format('.');  prings = '{:>6}'.format('.'); formula = '{:^10}'.format('.');
-            for i in range(3):
-                log.out('{:<6} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12} {:>35}'.format('.', size, mass, pmass, psize, nrings, prings, formula))
+
 
 
     ###############################

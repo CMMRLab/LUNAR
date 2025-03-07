@@ -114,7 +114,7 @@ class fused_rings:
     def __init__(self, m, find_rings, ringIDs, graph, log):
         self.atom2fusedringIDs = {i:0 for i in m.atoms} # { atomID : [lst of ringIDs atom belongs too ]}
         self.clusters = [] # [ lst of sets to find fused clusters ]
-        self.bonded = [] # [ (ringID1, ringID2), ... bonded fused rings ]
+        self.bonded = set() # { (ringID1, ringID2), ... bonded fused rings }
         self.data = {} # { cluster-id : Data object }
         self.atoms = set([])  # set of atoms in fused structures
         self.bonds = set([])  # set of bonds in fused structures
@@ -122,28 +122,38 @@ class fused_rings:
         
         #------------------------------------------------#
         # Find fused rings and assign "bond" via ringIDs #
-        #------------------------------------------------#
+        #------------------------------------------------#          
+        # Generate mapping between atomIDs and ringIDs to make the search O(n)
+        atom2rings = {i:set() for i in graph} # { atomID : set(ringIDs) }
+        for ringID in ringIDs:
+            for atomID in ringIDs[ringID]:
+                atom2rings[atomID].add(ringID)
+                
+        # Start finding bonds
         fused2check = find_rings['fused2check']
-        id2_ringIDs = [i for i in ringIDs]
-        ringed_graph = {ID:[] for ID in ringIDs}
-        checked = {} # for finding clusters in next step
         log.out('Finding fused-ring clusters ...')
-        for id1 in ringIDs:
-            checked[id1] = False
-            ring1 = ringIDs[id1]
-            id2_ringIDs.remove(id1)
-            if len(ring1) not in fused2check: continue
-            for id2 in id2_ringIDs:
-                ring2 = ringIDs[id2]
-                if id1 == id2 or len(ring2) not in fused2check: continue
-                shared_atomIDs = set(ring1).intersection(ring2)
-                if len(shared_atomIDs) >= 2: # If ring has two or more shared atomIDs, it must be fused
-                    self.bonded.append( tuple(sorted([id1, id2])) )
-                    ringed_graph[id1].append(id2); ringed_graph[id2].append(id1);
+        for atomID in atom2rings:
+            rings = atom2rings[atomID]
+            if len(rings) >= 2:
+                for id1 in rings:
+                    ring1 = ringIDs[id1]
+                    if len(ring1) not in fused2check: continue
+                    for id2 in rings:
+                        ring2 = ringIDs[id2]
+                        if id1 == id2: continue
+                        if len(ring2) not in fused2check: continue
+                        self.bonded.add( tuple(sorted([id1, id2])) )
+                            
+        # Generate the ringed graph
+        ringed_graph = {ID:[] for ID in ringIDs}
+        for id1, id2 in self.bonded:    
+            ringed_graph[id1].append(id2)
+            ringed_graph[id2].append(id1)
 
         #-----------------------------------------#
         # Perform cluster analysis on fused rings #
         #-----------------------------------------#
+        checked = {i:False for i in ringIDs}
         clusters = set([])
         for ID in ringIDs:
             if checked[ID]: continue
@@ -194,8 +204,9 @@ class fused_rings:
                     tmp += '{}{}-'.format(element, elements.count(element))
                 formulas.append(tmp[:-1])
             base_formulas = list(sorted({i for i in formulas}))
-            for ring in base_formulas:
-                formula += '{}:{} '.format(formulas.count(ring), ring)
+            for n, ring in enumerate(base_formulas, 1):
+                formula += '{}:{}'.format(formulas.count(ring), ring)
+                if n < len(base_formulas): formula += ';'
             return formula
         
         # Function to find bonds in fused cluster

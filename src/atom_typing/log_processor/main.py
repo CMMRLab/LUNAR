@@ -10,8 +10,8 @@ Houghton, MI 49931
 # Import Necessary Libraries #
 ##############################
 import src.atom_typing.log_processor.read_atom_typing as read_atom_typing
-import src.atom_typing.log_processor.glob_wildcards as glob_wildcards
 import src.atom_typing.log_processor.keywords as keywords
+import src.glob_wildcards as glob_wildcards
 import src.io_functions as io_functions
 import matplotlib.pyplot as plt
 import glob
@@ -306,6 +306,7 @@ def main(mode, savefig=True, dpi=300, log_clear=True, log=None):
             ax.set_xlabel(independent_variable)
             ax.legend(loc='lower right', bbox_to_anchor=(1, 0), fancybox=True, ncol=1, fontsize=8)
         except: pass
+        plt.show()
         if savefig:
             try: fig.savefig(mode['newfile']+'.jpeg', dpi=dpi)
             except: log.warn(f'WARNING could not save {mode["newfile"]+".jpeg"}. Likely opened by another program')

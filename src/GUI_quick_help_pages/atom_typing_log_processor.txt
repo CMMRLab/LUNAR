@@ -246,6 +246,113 @@
                                                              :                        :                      :                       :
                                                    rings[N][all]['natoms'], rings[N][all]['Mass'], rings[N][all]['%Mass'], rings[N][all]['%natoms']
                 """ 
+				
+*************************
+* logger: ring formulas *
+*************************
+
+  This section will show how to log certain values that are written in the LUNAR/atom_typing.py "Ringed Clusters" tables. As an example
+  a table is provided below:	
+  
+    ----------------------------------Ringed Clusters------------------------------------
+    Ring-Formula    Ring-Size     Ring-count    Ring-Mass-tally     natoms-tally
+    -------------------------------------------------------------------------------------
+    C6                    6           1260           90720.00             7560
+    C5                    5             90            5400.00              450
+	
+  The keyword syntax for this table is as follows:
+    
+	ringed_clusters['Ring-Formula']['attribute']
+	
+  where Ring-Formula is a string pointing to the ring formula (set in the "Ring-Formula" column), 'attribute' is a string pointing to
+  the attribute to log. Examples:
+       
+       1. Say we wanted to log the filename, the ring size of C6, the number of C6 rings, and the number of atoms in all C6 rings the logger would be:
+           logger = """
+                    filename,
+                    ringed_clusters['C6']['Ring-Size'],     ringed_clusters['C6']['Ring-count'],
+                    ringed_clusters['C6']['natoms-tally'],
+                    """
+					
+       2. Say we wanted to log the filename and every value in the "Ringed Clusters" table. In such cases a special keyword can be used 
+          "expand-table:expand-table:ringed_clusters",
+          which will literally go row by row and get all columuns. A valid logger string would be:
+           logger = """
+                    filename, expand-table:ringed_clusters
+                    """
+          This is equivalent to the following logger string:
+           logger = """
+             filename,
+             ringed_clusters['C6']['Ring-Size'], ringed_clusters['C6']['Ring-count']], ringed_clusters['C6']['Ring-Mass-tally'],
+             ringed_clusters['C6']['natoms-tally']
+			 
+             ringed_clusters['C5']['Ring-Size'], ringed_clusters['C5']['Ring-count']], ringed_clusters['C5']['Ring-Mass-tally'],
+             ringed_clusters['C5']['natoms-tally']
+			                 :
+             ringed_clusters[*]['Ring-Size'], ringed_clusters[*]['Ring-count']], ringed_clusters[*]['Ring-Mass-tally'],
+             ringed_clusters[*]['natoms-tally']
+             """
+
+***********************
+* logger: fused rings *
+***********************
+
+  This section will show how to log certain values that are written in the LUNAR/atom_typing.py "Fused Ring Clusters" tables. As an example
+  a table is provided below:	
+  
+    --------------------------------------------------Fused Ring Clusters-----------------------------------------------------
+    FusedID         Size         Mass        %Mass        %Size       Nrings       %Rings                   FusedRing Formula
+    --------------------------------------------------------------------------------------------------------------------------
+    1                32       384.00         0.64         0.44            9         0.67                          1:C5;8:C6 
+    2                32       384.00         0.64         0.44            9         0.67                             9:C6   
+    3                32       384.00         0.64         0.44            9         0.67                          1:C5;8:C6 
+    4                32       384.00         0.64         0.44            9         0.67                             9:C6   
+    5                32       384.00         0.64         0.44            9         0.67                          1:C5;8:C6 
+    6                32       384.00         0.64         0.44            9         0.67                             9:C6   
+    7                32       384.00         0.64         0.44            9         0.67                             9:C6   
+    8                32       384.00         0.64         0.44            9         0.67                          1:C5;8:C6 
+    9                32       384.00         0.64         0.44            9         0.67                             9:C6  
+	
+  The keyword syntax for this table is as follows:
+    
+	fused_ringed_clusters[FusedID]['attribute']
+	
+  where FusedID is an int pointing to the fused ring identifieir (set in the "FusedID" column), 'attribute' is a string pointing to
+  the attribute to log. Examples:
+  
+       1. Say we wanted to log the filename, the size and mass of the largest fused ring cluster (FusedID=1), a valid logger would be:
+           logger = """
+                    filename,  fused_ringed_clusters[1]['Size'],  fused_ringed_clusters[1]['Mass']
+                    """
+					
+       2. Say we wanted to log the filename, the percent size and percent mass of the second largest fused ring cluster (FusedID=2), a valid
+          logger would be:
+           logger = """
+                    filename,  fused_ringed_clusters[2]['%Size'],  fused_ringed_clusters[2]['%Mass']
+                    """
+					
+       3. Say we wanted to log the filename and every value in the "Fused Ring Clusters" table. In such cases a special keyword can be used 
+          "expand-table:expand-table:fused_ringed_clusters",
+          which will literally go row by row and get all columuns. A valid logger string would be:
+           logger = """
+                    filename, expand-table:fused_ringed_clusters
+                    """
+          This is equivalent to the following logger string:
+           logger = """
+             filename,
+             fused_ringed_clusters[1]['Size'], fused_ringed_clusters[1]['Mass'], fused_ringed_clusters[1]['%Size'], fused_ringed_clusters[1]['%Mass']
+             fused_ringed_clusters[1]['Nrings'], fused_ringed_clusters[1]['%Rings'], fused_ringed_clusters[1]['%Size'], 
+             fused_ringed_clusters[1]['FusedRing Formula']
+			 
+             fused_ringed_clusters[2]['Size'], fused_ringed_clusters[2]['Mass'], fused_ringed_clusters[2]['%Size'], fused_ringed_clusters[2]['%Mass']
+             fused_ringed_clusters[2]['Nrings'], fused_ringed_clusters[2]['%Rings'], fused_ringed_clusters[2]['%Size'], 
+             fused_ringed_clusters[2]['FusedRing Formula']
+			                       :
+             fused_ringed_clusters[*]['Size'], fused_ringed_clusters[*]['Mass'], fused_ringed_clusters[*]['%Size'], fused_ringed_clusters[*]['%Mass']
+             fused_ringed_clusters[*]['Nrings'], fused_ringed_clusters[*]['%Rings'], fused_ringed_clusters[*]['%Size'], 
+             fused_ringed_clusters[*]['FusedRing Formula']
+             """			 
+
 		  
 **************************
 * logger: hybridizations *

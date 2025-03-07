@@ -193,6 +193,7 @@ class logfile:
 # Basic test of the log file reader             
 if __name__ == "__main__":
     LUNAR_path = '../../../EXAMPLES/array_processing/atom_typing_logfile_processor/poly_tracking_replicate_1_time_0ps_typed.log.lunar'
+    LUNAR_path = '../../../EXAMPLES/array_processing/atom_typing_logfile_processor/heating_temp_300K_time_0ps_bonds_typed.log.lunar'
     log = logfile(LUNAR_path)
     
     # Show how to access elements list
