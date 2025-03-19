@@ -161,7 +161,7 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
         pflag = True # print bonding results
         max_bonds_per_atom = 3 # only use the first 3 closest atoms to generate bonds
         tolerance = bond_length/4 # max_distance = r0*tolerance, which tolerance can be large since code will use 3 closets atoms to create bonds
-        domain_size = 2.0*bond_length # generate a moderate domain size for domain decomposition (best of all worlds for performance)
+        domain_size = 1.5*bond_length # generate domain size for domain decomposition (based on bond length)
         log.out('\n\nFinding bonds ...')
         bonds = misc_functions.find_bonds(atoms, box, boundary, bond_length, tolerance, max_bonds_per_atom, domain_size, pflag, log)
         log.out(f'  Created: {len(bonds)} bonds')

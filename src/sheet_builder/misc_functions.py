@@ -508,7 +508,7 @@ def compute_distance(x1, y1, z1, x2, y2, z2):
 ###########################################################
 # Function to find N-number of possible periodic postions #
 ###########################################################
-def find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=12):
+def find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=15):
     postions_distance = {} # {distance from center : (pbc-x, pbc-y, pbc-z) }
     for ixlx, iyly, izlz in scaled_images:
         x1i = x1+ixlx; y1i = y1+iyly; z1i = z1+izlz;
@@ -520,6 +520,27 @@ def find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=12):
         if N < Npos: positions.append(postions_distance[dist])
         else: break
     return positions
+
+
+############################################################################################
+# Function to find N-number of closets neighboring domains to an atomic position (x, y, z) #
+############################################################################################
+def find_closets_domains(domain, domain_graph, domainID, x, y, z, Npos=15):
+    postions_distance = {} # { domainID : distance from x,y,z }
+    for ID in domain_graph[domainID]:
+        xc, yc, zc = domain[ID]
+        postions_distance[ID] = compute_distance(x, y, z, xc, yc, zc)
+    
+    # Find the nearest Npos
+    postions_distance = dict(sorted(postions_distance.items(), key=lambda x:x[1] )) # [0=keys;1=values]
+    domains = set()
+    for N, ID in enumerate(postions_distance):
+        if N < Npos: domains.add(ID)
+        else: break
+    
+    # Add the current domain to domains
+    domains.add(domainID)
+    return domains
 
 
 ##########################
@@ -575,7 +596,6 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
             neighs.append(1)
         else: neighs.append(ni+1)
         return neighs
-    scaled_images = [(ix*lx, iy*ly, iz*lz) for (ix, iy, iz) in images]
     domain_graph = {ID:set() for ID in domain} # { ID : set(bonded IDs) }
     domain_graph[0] = {ID for ID in domain}
     if pflag: log.out('  Finding cell linked graph for interatomic distance calculations ...')
@@ -628,6 +648,7 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
                 linked_lst[j].add(i)
                 
     # Start finding interatomic distances
+    scaled_images = [(ix*lx, iy*ly, iz*lz) for (ix, iy, iz) in images]
     possible_bonds = {} # { tuple(id1, id2): distance_fff or distance_ppp }
     if pflag: log.out('  Finding interatomic distances for bond creation ...')
     progress_increment = 10; count = 0; natoms = len(atoms)
@@ -638,9 +659,7 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
         if edgeflags[id1]: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=15)
         if 100*count/natoms % progress_increment == 0:
             if pflag: log.out('    progress: {} %'.format(int(100*count/natoms)))
-        domain1 = atom_domain[id1]
-        atom_domains = domain_graph[domain1]
-        atom_domains.add(domain1)
+        atom_domains = find_closets_domains(domain, domain_graph, atom_domain[id1], x1, y1, z1, Npos=27)
         if not atom_domains: continue
         for domainID in atom_domains:
             for id2 in linked_lst[domainID]:

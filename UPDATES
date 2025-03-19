@@ -14,29 +14,30 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 18March2025)
+LUNAR (version 19March2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-18March2025       JDK          - sheet_builder.py: Improved the time to find bonds via distance cut-off.
+19March2025        JDK         - sheet_builder.py and atom_typing.py: Improved the time to find bonds via
+                                                                      distance cut-off.
 
-6March2025        JDK          - atom_typing.py: The fused ring analysis use to have O(n^2) time complexity
+6March2025         JDK         - atom_typing.py: The fused ring analysis use to have O(n^2) time complexity
                                                  with n being the number of rings in the system. This has been
                                                  cleaned up to O(n) time complexity.
 												 
-6March2025        JDK          - atom_typing_log_processor.py: Added a bit more documentation via the "Quick help"
+6March2025         JDK         - atom_typing_log_processor.py: Added a bit more documentation via the "Quick help"
                                                                page on the GUI.
 												 
-24February2025    JDK          - add_pi_electrons.py: Rewrote parts of the code to allow for adding pi-electrons
+24February2025     JDK         - add_pi_electrons.py: Rewrote parts of the code to allow for adding pi-electrons
                                                       when atomIDs are non-contiguous in the read in LAMMPS 
                                                       datafile.
 
-20February2025    JDK          - atom_typing_log_processor.py: Adding a new module that is meant to bulk process
+20February2025     JDK         - atom_typing_log_processor.py: Adding a new module that is meant to bulk process
                                                                the logfiles that atom_typing.py generates. This
                                                                is mainly meant to allow for topological analysis
                                                                of ReaxFF simulaitons.
 
-20February2025    JDK          - all2lmp.py: Fixed a bug related the minimally used nta "remove_things" option
+20February2025     JDK         - all2lmp.py: Fixed a bug related the minimally used nta "remove_things" option
                                              that only effected class2 FF implementation.
 
 
@@ -45,61 +46,61 @@ LUNAR (version 20February2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-17February2025    JDK          - atom_typing.py,
-                                 all2lmp.py,
-                                 free_volume.py,
-                                 add_pi_electrons.py,
-                                 log_analysis.py,
-                                 auto_morse_bond_update.py: Have implemeted "array procesing" via the Python
-                                                            glob library. Where Unix path expansion rules allow
-                                                            for mulitple files to be matched based in a single
-                                                            input string supplied to the topofile or logfile
-                                                            entry. For example a string like:
-                                                              "**EXAMPLES/array_processing/*.data"
-                                                            will find all files with the .data extension in a
-                                                            directory called EXAMPLES/array_processing/. The files
-                                                            are then iterated through by recursively calling each
-                                                            modules main() function.
+17February2025     JDK          - atom_typing.py,
+                                  all2lmp.py,
+                                  free_volume.py,
+                                  add_pi_electrons.py,
+                                  log_analysis.py,
+                                  auto_morse_bond_update.py: Have implemeted "array procesing" via the Python
+                                                             glob library. Where Unix path expansion rules allow
+                                                             for mulitple files to be matched based in a single
+                                                             input string supplied to the topofile or logfile
+                                                             entry. For example a string like:
+                                                               "**EXAMPLES/array_processing/*.data"
+                                                             will find all files with the .data extension in a
+                                                             directory called EXAMPLES/array_processing/. The files
+                                                             are then iterated through by recursively calling each
+                                                             modules main() function.
 
-14February2025    JDK          - cell_builder.py: Limited the scope of what eval() does in src/cell_builder/
-                                                  misc_functions.py get_dict(), to be safe no matter what is 
-                                                  provided in the header of an input LAMMPS datafile.
+14February2025     JDK          - cell_builder.py: Limited the scope of what eval() does in src/cell_builder/
+                                                   misc_functions.py get_dict(), to be safe no matter what is 
+                                                   provided in the header of an input LAMMPS datafile.
 
-19December2024   JDK           - Every module: Updated log defaults in each main() function to allow for the
-                                               the ability to for loop through "the main()" function without
-                                               the need to clear the log between iterations.
+19December2024    JDK           - Every module: Updated log defaults in each main() function to allow for the
+                                                the ability to for loop through "the main()" function without
+                                                the need to clear the log between iterations.
 
-16December2024   JDK           - all2lmp.py: Incorporated r0's and theta0's parameterization from "assumed"
-                                             and "assumed_auto_fill" into crossterm r0's and theta0's. Prior
-                                             to this if an r0 and theta0 from "assumed" and "assumed_auto_fill"
-                                             where filled into either a bond or angle, these parameters where
-                                             not being used in the crossterm. This is meant to help conversions
-                                             from ReaxFF to force fields like PCFF and COMPASS.
+16December2024    JDK           - all2lmp.py: Incorporated r0's and theta0's parameterization from "assumed"
+                                              and "assumed_auto_fill" into crossterm r0's and theta0's. Prior
+                                              to this if an r0 and theta0 from "assumed" and "assumed_auto_fill"
+                                              where filled into either a bond or angle, these parameters where
+                                              not being used in the crossterm. This is meant to help conversions
+                                              from ReaxFF to force fields like PCFF and COMPASS.
 
-13November2024   JDK           - all2lmp.py: Adjusted the "ff_class" variable from taking both string and int
-                                             types to only taking string types (i.e. for class2 force fields
-                                             ff_class will now be ff_class = '2' instead of ff_class = 2). 
-                                             This was done to help with consistency of types, such that all
-                                             ff_class options are now strings. The code is still backwards 
-                                             compatibile for using int's, but is recommended to use strings
-                                             for all ff_class options.
+13November2024    JDK           - all2lmp.py: Adjusted the "ff_class" variable from taking both string and int
+                                              types to only taking string types (i.e. for class2 force fields
+                                              ff_class will now be ff_class = '2' instead of ff_class = 2). 
+                                              This was done to help with consistency of types, such that all
+                                              ff_class options are now strings. The code is still backwards 
+                                              compatibile for using int's, but is recommended to use strings
+                                              for all ff_class options.
 
-2November2024   JDK            - bond_react_merge.py: Added a WARNING check for if the net charge differs from
-                                                      the pre-reaction template to the post-reaction template.
-                                                      Majority of the time the net charge should be the same,
-                                                      where there are only rare cases they will be different.
-                                                      Thus this check was set as a WARNING.
+2November2024    JDK            - bond_react_merge.py: Added a WARNING check for if the net charge differs from
+                                                       the pre-reaction template to the post-reaction template.
+                                                       Majority of the time the net charge should be the same,
+                                                       where there are only rare cases they will be different.
+                                                       Thus this check was set as a WARNING.
 
-2November2024   JDK            - all2lmp.py: Adjusted the read_nta.py methods to allow for users to add spaces
-                                             whereever they like "within" each section. This will help users
-                                             setup a file that is more "readable" to them and their tastes.
+2November2024    JDK            - all2lmp.py: Adjusted the read_nta.py methods to allow for users to add spaces
+                                              whereever they like "within" each section. This will help users
+                                              setup a file that is more "readable" to them and their tastes.
 
 -------------------------------------------------------------------------------------------------------------
 LUNAR (version 23October2024)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-23October2024   JDK            - sheet_builder.py: Adjusted functional_atoms, to properly add epoxide type of
+23October2024      JDK         - sheet_builder.py: Adjusted functional_atoms, to properly add epoxide type of
                                                    functional groups to periodically bonded sheets. Prior version
                                                    would have possibly added the second bond to close the ring
                                                    to span the entire simulation cell due to periodicity.
@@ -110,29 +111,29 @@ Date               Developer   Description
 												     types = {1: 'C:1', 2: 'C:2', 3: 'C:3', 4: 'C:4'}
                                                      functional_atoms = 'C:1<40>|O|; C:2<20>|O|H; C:3<20>|N; C:4<20>|S'
 
-17October2024   JDK            - cell_builder.py: Allowed scientific notation (i.e. instead of giving an input 
+17October2024      JDK         - cell_builder.py: Allowed scientific notation (i.e. instead of giving an input 
                                                   of 1000, users can now input 1e3) to be used in GUI for 
                                                   duplicate and maxtry entries.
 
-17October2024   JDK            - cell_builder.py: Fixed in generated LAMMPS script to read generated LAMMPS
+17October2024      JDK         - cell_builder.py: Fixed in generated LAMMPS script to read generated LAMMPS
                                                   data file name.
 													
-16October2024   JDK            - .mol2 file reader: Fixed issues for weird .mol2 files that are generated via
+16October2024      JDK         - .mol2 file reader: Fixed issues for weird .mol2 files that are generated via
                                                     Materials Studio.
 
-8October2024    JDK            - bond_react_merge.py: Adjust a warning message for generate_map_file option.
+8October2024       JDK         - bond_react_merge.py: Adjust a warning message for generate_map_file option.
 										  
-4October2024    JDK            - Format of this "UPDATE" file was revised to be "order" top-to-bottom, where
+4October2024       JDK         - Format of this "UPDATE" file was revised to be "order" top-to-bottom, where
                                  the top is the most recent updates and the bottom is the oldest updates.
 								 
-4October2024    JDK            - all2lmp.py: Added a new ff_class "ilmp" for interatomic potentials like ReaxFF, REBO,
+4October2024       JDK         - all2lmp.py: Added a new ff_class "ilmp" for interatomic potentials like ReaxFF, REBO,
                                           ... but for when the topofile is a LAMMPS datafile. These potentials where
                                           previously supported with the "i" ff_class and still can be. However if the
                                           input is a LAMMPS datafile, the "i" class resets atomTypeIDs. The "ilmp"
                                           ff_class can now be used for when the topofile is a LAMMPS datafile where
                                           the existing atomTypeIDs are maintatined between inputs and outputs.
 										  
-4October2024    JDK            - cell_builder.py: Added a new ability to assign all atoms in the generated system
+4October2024       JDK         - cell_builder.py: Added a new ability to assign all atoms in the generated system
                                                   to a single molID. This can be useful for generating different
                                                   "sub systems" with cell_builder and then "assembled" in LAMMPS
                                                   if the end goal is easy grouping of the "sub systems".

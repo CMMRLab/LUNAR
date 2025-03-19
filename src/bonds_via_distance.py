@@ -12,7 +12,6 @@ Houghton, MI 49931
 ##############################
 import time
 import math
-import sys
 
 
 ##################################
@@ -103,85 +102,67 @@ def check_near_edge(x, y, z, max_from_edge, xlo, xhi, ylo, yhi, zlo, zhi):
     return pbcflag
 
 
-###########################################
-# Brute force interatomic distance search #
-###########################################
-def interatomic_brute_force(m, maxdist_dict, radial, edgeflags, scaled_images, log):
-    # Start finding interatomic distances
-    start_time = time.time()
-    possible_bonds = {} # { tuple(id1, id2): distance_fff or distance_ppp }
-    bond_status = {'periodic': 0, 'non-periodic': 0} # to tally bond types
-    id2_atoms = {i for i in m.atoms} # atoms to loop over in inner loop (will be reduced each outer loop iteration)
-    log.out('\n\nFinding interatomic distances for bond creation (brute force) ....')
-    progress_increment = 10; count = 0; natoms = len(m.atoms);
-    for id1 in m.atoms:      
-        # Find atom1 to access x1, y1, and z1
-        atom1 = m.atoms[id1]; count += 1
-        x1 = atom1.x; y1 = atom1.y; z1 = atom1.z; r1 = radial[id1]
-        if edgeflags[id1]: periodic_postions = [ (x1+ixlx, y1+iyly, z1+izlz) for ixlx, iyly, izlz in scaled_images ]
-        id2_atoms.remove(id1)
-        if 100*count/natoms % progress_increment == 0:
-            log.out('    progress: {} %'.format(int(100*count/natoms)))
-        for id2 in id2_atoms:
-            # Find atom2 and max distance cutoff
-            atom2 = m.atoms[id2];
-            maxdist = maxdist_dict[(atom1.element, atom2.element)];
-            min_radius = r1 - 2*maxdist
-            max_radius = r1 + 2*maxdist
-             
-            # Find x2, y2, and z2 for interatomic searching
-            x2 = atom2.x; y2 = atom2.y; z2 = atom2.z; r2 = radial[id2]
-            if min_radius < r2 < max_radius:
-                # If both atoms are near an edge try finding across the PBC
-                if edgeflags[id1] and edgeflags[id2]:   
-                    for x1i, y1i, z1i in periodic_postions:
-                        if abs(x1i - x2) > maxdist: continue
-                        elif abs(y1i - y2) > maxdist: continue
-                        elif abs(z1i - z2) > maxdist: continue
-                        else:
-                            distance_ppp = compute_distance(x1i, y1i, z1i, x2, y2, z2)
-                            if distance_ppp <= maxdist: 
-                                # Generate bonding pairs in ascending order
-                                if id1 < id2: bond = (id1, id2)
-                                else: bond = (id2, id1)
-                                
-                                possible_bonds[bond] = distance_ppp
-                                bond_status['periodic'] += 1
-                                break
-                            
-                else: # else compute none-periodic distance
-                    if abs(x1 - x2) > maxdist: continue
-                    elif abs(y1 - y2) > maxdist: continue
-                    elif abs(z1 - z2) > maxdist: continue
-                    else: 
-                        distance_fff = compute_distance(x1, y1, z1, x2, y2, z2)
-                        if distance_fff <= maxdist:
-                            # Generate bonding pairs in ascending order
-                            if id1 < id2: bond = (id1, id2)
-                            else: bond = (id2, id1)
-                            
-                            possible_bonds[bond] = distance_fff
-                            bond_status['non-periodic'] += 1
-    execution_time = (time.time() - start_time)
-    log.out(f'    Bond generation execution time: {execution_time} (seconds)')
-    return possible_bonds, bond_status 
+###########################################################
+# Function to find N-number of possible periodic postions #
+###########################################################
+def find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=15):
+    postions_distance = {} # {distance from center : (pbc-x, pbc-y, pbc-z) }
+    for ixlx, iyly, izlz in scaled_images:
+        x1i = x1+ixlx; y1i = y1+iyly; z1i = z1+izlz;
+        dist_from_center = compute_distance(x1i, y1i, z1i, cx, cy, cz)
+        postions_distance[dist_from_center] = (x1i, y1i, z1i)
+    postions_distance = dict(sorted(postions_distance.items(), key=lambda x:abs(x[0]) )) # [0=keys;1=values]
+    positions = []
+    for N, dist in enumerate(postions_distance):
+        if N < Npos: positions.append(postions_distance[dist])
+        else: break
+    return positions
+
+
+############################################################################################
+# Function to find N-number of closets neighboring domains to an atomic position (x, y, z) #
+############################################################################################
+def find_closets_domains(domain, domain_graph, domainID, x, y, z, Npos=15):
+    postions_distance = {} # { domainID : distance from x,y,z }
+    for ID in domain_graph[domainID]:
+        xc, yc, zc = domain[ID]
+        postions_distance[ID] = compute_distance(x, y, z, xc, yc, zc)
+    
+    # Find the nearest Npos
+    postions_distance = dict(sorted(postions_distance.items(), key=lambda x:x[1] )) # [0=keys;1=values]
+    domains = set()
+    for N, ID in enumerate(postions_distance):
+        if N < Npos: domains.add(ID)
+        else: break
+    
+    # Add the current domain to domains
+    domains.add(domainID)
+    return domains
+
 
 ################################################
 # cell linked list interatomic distance search #
 ################################################
-def interatomic_cell_linked(m, maxdist_dict, radial, edgeflags, scaled_images, xlo, xhi, ylo, yhi, zlo, zhi, log):
+def interatomic_cell_linked(m, maxdist_dict, edgeflags, scaled_images, xlo, xhi, ylo, yhi, zlo, zhi, log):
+    # Set domain size based on largest pairwise distances
+    domain_size = 2.1*(maxdist_dict[max(maxdist_dict, key=maxdist_dict.get)])
+    
     # Find domain decomposition regions
     start_time = time.time()
     lx = xhi-xlo; ly = yhi-ylo; lz = zhi-zlo;
     cx = (xhi + xlo)/2; cy = (yhi + ylo)/2; cz = (zhi + zlo)/2;
-    domain_size = 6; domain = {} # { domainID : (xlo, xhi, ylo, yhi, zlo, zhi, xc, yc, zc, r, edgeflag) }
     nxx = math.ceil(lx/domain_size)
     nyy = math.ceil(ly/domain_size)
     nzz = math.ceil(lz/domain_size)
-    dx = lx/nxx; dy = ly/nyy; dz = lz/nzz;
-    halfdx = dx/2; halfdy = dy/2; halfdz = dz/2; ID = 0;
-    xadd = halfdx + xlo; yadd = halfdy + ylo; zadd = halfdz + zlo;
+    if nxx == 0: nxx = 1
+    if nyy == 0: nyy = 1
+    if nzz == 0: nzz = 1
+    dx = lx/nxx; dy = ly/nyy; dz = lz/nzz; ID = 0;
+    xadd = dx/2 + xlo; yadd = dy/2 + ylo; zadd = dz/2 + zlo;
     log.out('\n\nFinding domain to use cell linked list algorithm for interatomic distance calculations ...')
+    domain = {} # { domainID : (xc, yc, zc) }
+    indexes_forward = {} # { domainID : (nx, ny, nz) }
+    indexes_reverse = {} # { (nx, ny, nz) : domainID }
     for nx in range(nxx):
         for ny in range(nyy):
             for nz in range(nzz):
@@ -189,135 +170,118 @@ def interatomic_cell_linked(m, maxdist_dict, radial, edgeflags, scaled_images, x
                 xc = nx*dx + xadd
                 yc = ny*dy + yadd
                 zc = nz*dz + zadd
-                xlo_sub = xc - halfdx
-                xhi_sub = xc + halfdx
-                ylo_sub = yc - halfdy
-                yhi_sub = yc + halfdy
-                zlo_sub = zc - halfdz
-                zhi_sub = zc + halfdz
-                r = compute_distance(xc, yc, zc, cx, cy, cz)
-                edgeflag = check_near_edge(xc, yc, zc, domain_size, xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo, zhi)
-                domain[ID] = (xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r, edgeflag)
+                domain[ID] = (xc, yc, zc)
+                indexes_forward[ID] = (nx+1, ny+1, nz+1)
+                indexes_reverse[(nx+1, ny+1, nz+1)] = ID
                 
     # Find domain connectivity (graph)
+    def get_neighboring_indexes(ni, nii):
+        neighs = [ni]
+        if ni-1 < 1: # lo-side wraps to hi-side for periodicity
+            neighs.append(nii)
+        else: neighs.append(ni-1)
+        if ni+1 > nii: # hi-side wraps to lo-side for periodicity
+            neighs.append(1)
+        else: neighs.append(ni+1)
+        return neighs
     domain_graph = {ID:set() for ID in domain} # { ID : set(bonded IDs) }
-    domain_graph[0] = set()
-    sub_domain = {i for i in domain}
+    domain_graph[0] = {ID for ID in domain}
     log.out('Finding cell linked graph for interatomic distance calculations ...')
-    for id1 in domain:
-        d1 = domain[id1]
-        x1 = d1[6]; y1 = d1[7]; z1 = d1[8]; r1 = d1[9]; edge1 = d1[10];
-        min_radius = r1 - 2*domain_size
-        max_radius = r1 + 2*domain_size
-        sub_domain.remove(id1)
-        if edge1: periodic_postions = [ (x1+ixlx, y1+iyly, z1+izlz) for ixlx, iyly, izlz in scaled_images ]
-        for id2 in sub_domain:
-            d2 = domain[id2]
-            x2 = d2[6]; y2 = d2[7]; z2 = d2[8]; r2 = d2[9]; edge2 = d2[10];
-            if min_radius < r2 < max_radius:
-                if edge1 and edge2: # periodic
-                    for x1i, y1i, z1i in periodic_postions:
-                        if abs(x1i - x2) > domain_size: continue
-                        elif abs(y1i - y2) > domain_size: continue
-                        elif abs(z1i - z2) > domain_size: continue
-                        else:
-                            domain_graph[id1].add(id2)
-                            domain_graph[id2].add(id1)
-                            break
-                else: # non-periodic
-                    if abs(x1 - x2) > domain_size: continue
-                    elif abs(y1 - y2) > domain_size: continue
-                    elif abs(z1 - z2) > domain_size: continue
-                    else:
-                        domain_graph[id1].add(id2)
-                        domain_graph[id2].add(id1)
+    for id1 in domain:    
+        nx, ny, nz = indexes_forward[id1]
+        nxs = get_neighboring_indexes(nx, nxx)
+        nys = get_neighboring_indexes(ny, nyy)
+        nzs = get_neighboring_indexes(nz, nzz)
+        for ix in nxs:
+            for iy in nys:
+                for iz in nzs:
+                    id2 = indexes_reverse[(ix, iy, iz)]
+                    if id1 == id2: continue
+                    domain_graph[id1].add(id2)
+                    domain_graph[id2].add(id1)
                         
     # Build linked list
     linked_lst = {i:set() for i in domain} # { domainID : atoms in domain }
     linked_lst[0] = set()
     atom_domain = {} # { atomID : domainID }
-    failed_domain = set(); inner_atoms = set()
-    progress_increment = 10; count = 0; natoms = len(m.atoms); guess = 1
+    edgeflags = {} # { atomID : edgeflag }
+    log.out('  Assigning atoms to each sub domain for interatomic distance calculations ...')
     for i in m.atoms:
-        inner_atoms.add(i)
         atom = m.atoms[i]
         x = atom.x; y = atom.y; z = atom.z
-        atom_domain[i] = 0; count += 1
         edgeflags[i] = check_near_edge(x, y, z, domain_size, xlo, xhi, ylo, yhi, zlo, zhi)
-        if 100*count/natoms % progress_increment == 0:
-            log.out('    progress: {} %'.format(int(100*count/natoms)))
-        xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r2, edgeflag = domain[guess]
-        if xlo_sub <= x < xhi_sub and ylo_sub <= y < yhi_sub and zlo_sub <= z < zhi_sub:
-            linked_lst[guess].add(i); atom_domain[i] = guess;
-        else:    
-            for j in domain:
-                xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r2, edgeflag = domain[j]
-                if xlo_sub <= x < xhi_sub and ylo_sub <= y < yhi_sub and zlo_sub <= z < zhi_sub: 
-                    linked_lst[j].add(i); atom_domain[i] = j; guess = j; break
-            if atom_domain[i] == 0: failed_domain.add(j)
+            
+        # Assign to domain
+        try:
+            nx = math.ceil( (x-xlo)/dx )
+            ny = math.ceil( (y-ylo)/dy )
+            nz = math.ceil( (z-zlo)/dz )
+            domainID = indexes_reverse[(nx, ny, nz)]
+        except: domainID = 0
+        atom_domain[i] = domainID
+        linked_lst[domainID].add(i)
+        
+        # check if atom is outside of box and assign to every domain if it is outside of the box
+        outside = False
+        if atom.x <= xlo: outside = True
+        if atom.x >= xhi: outside = True
+        if atom.y <= ylo: outside = True
+        if atom.y >= yhi: outside = True
+        if atom.z <= zlo: outside = True
+        if atom.z >= zhi: outside = True
+        if outside:
+            for j in linked_lst:
+                linked_lst[j].add(i)
                     
     # Start finding interatomic distances
     possible_bonds = {} # { tuple(id1, id2): distance_fff or distance_ppp }
     bond_status = {'periodic': 0, 'non-periodic': 0} # to tally bond types
     log.out('Finding interatomic distances for bond creation (cell linked list) ....')
     progress_increment = 10; count = 0; natoms = len(m.atoms);
-    checked = {i:False for i in m.atoms}
     for id1 in m.atoms:      
-        # Find atom1 to access x1, y1, and z1
-        inner_atoms.remove(id1)
         atom1 = m.atoms[id1]; count += 1
-        x1 = atom1.x; y1 = atom1.y; z1 = atom1.z; r1 = radial[id1]
-        if edgeflags[id1]: periodic_postions = [ (x1+ixlx, y1+iyly, z1+izlz) for ixlx, iyly, izlz in scaled_images ]
+        x1 = atom1.x; y1 = atom1.y; z1 = atom1.z
+        if edgeflags[id1]: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=15)
         if 100*count/natoms % progress_increment == 0:
             log.out('    progress: {} %'.format(int(100*count/natoms)))
-        domain1 = atom_domain[id1]
-        atom_domains = [domain1] + list(domain_graph[domain1]) + list(failed_domain)
-        checked[id1] = True
+        atom_domains = find_closets_domains(domain, domain_graph, atom_domain[id1], x1, y1, z1, Npos=27)
         if not atom_domains: continue
         for domainID in atom_domains:
-            try: id2_atoms = linked_lst[domainID]
-            except: id2_atoms = inner_atoms
-            for id2 in id2_atoms:
-                if checked[id2]: continue
+            for id2 in linked_lst[domainID]:
+                atom2 = m.atoms[id2]
+                if id1 == id2: continue
                 # Find atom2 and max distance cutoff
                 atom2 = m.atoms[id2];
                 maxdist = maxdist_dict[(atom1.element, atom2.element)];
-                min_radius = r1 - 2*maxdist
-                max_radius = r1 + 2*maxdist
-                 
-                # Find x2, y2, and z2 for interatomic searching
-                x2 = atom2.x; y2 = atom2.y; z2 = atom2.z; r2 = radial[id2]
-                if min_radius < r2 < max_radius:
-                    # If both atoms are near an edge try finding across the PBC
-                    if edgeflags[id1] and edgeflags[id2]:   
-                        for x1i, y1i, z1i in periodic_postions:
-                            if abs(x1i - x2) > maxdist: continue
-                            elif abs(y1i - y2) > maxdist: continue
-                            elif abs(z1i - z2) > maxdist: continue
-                            else:
-                                distance_ppp = compute_distance(x1i, y1i, z1i, x2, y2, z2)
-                                if distance_ppp <= maxdist: 
-                                    # Generate bonding pairs in ascending order
-                                    if id1 < id2: bond = (id1, id2)
-                                    else: bond = (id2, id1)
-                                    
-                                    possible_bonds[bond] = distance_ppp
-                                    bond_status['periodic'] += 1
-                                    break
-                                
-                    else: # else compute none-periodic distance
-                        if abs(x1 - x2) > maxdist: continue
-                        elif abs(y1 - y2) > maxdist: continue
-                        elif abs(z1 - z2) > maxdist: continue
-                        else: 
-                            distance_fff = compute_distance(x1, y1, z1, x2, y2, z2)
-                            if distance_fff <= maxdist:
-                                # Generate bonding pairs in ascending order
-                                if id1 < id2: bond = (id1, id2)
-                                else: bond = (id2, id1)
-                                
-                                possible_bonds[bond] = distance_fff
-                                bond_status['non-periodic'] += 1
+                x2 = atom2.x; y2 = atom2.y; z2 = atom2.z
+
+                # If both atoms are near an edge try finding across the PBC  
+                if edgeflags[id1] and edgeflags[id2]:   
+                    for x1i, y1i, z1i in periodic_postions:
+                        if abs(x1i - x2) > maxdist: continue
+                        elif abs(y1i - y2) > maxdist: continue
+                        elif abs(z1i - z2) > maxdist: continue
+                        distance_ppp = compute_distance(x1i, y1i, z1i, x2, y2, z2)
+                        if distance_ppp <= maxdist: 
+                            if id1 < id2: bond = (id1, id2)
+                            else: bond = (id2, id1)
+                            possible_bonds[bond] = distance_ppp
+                            bond_status['periodic'] += 1
+                            break
+                            
+                else: # else compute none-periodic distance
+                    if abs(x1 - x2) > maxdist: continue
+                    elif abs(y1 - y2) > maxdist: continue
+                    elif abs(z1 - z2) > maxdist: continue
+                    distance_fff = compute_distance(x1, y1, z1, x2, y2, z2)
+                    if distance_fff <= maxdist:
+                        # Generate bonding pairs in ascending order
+                        if id1 < id2: bond = (id1, id2)
+                        else: bond = (id2, id1)
+                        
+                        possible_bonds[bond] = distance_fff
+                        bond_status['non-periodic'] += 1
+                        
     execution_time = (time.time() - start_time)
     log.out(f'    Bond generation execution time: {execution_time} (seconds)')
     return possible_bonds, bond_status 
@@ -387,12 +351,9 @@ class generate:
         elements = sorted({m.atoms[i].element for i in m.atoms})
         max_from_edge = vdw_radius_scale*max([get_vdw_radii(element, vdw_radius, log) for element in elements]) 
         edgeflags = {} # { atomID : edge flag }
-        radial = {} # { atomID : radius from center of cell }
-        cx = (xhi + xlo)/2; cy = (yhi + ylo)/2; cz = (zhi + zlo)/2;
         for i in m.atoms:
             x = m.atoms[i].x; y = m.atoms[i].y; z = m.atoms[i].z;
             edgeflags[i] = check_near_edge(x, y, z, max_from_edge, xlo, xhi, ylo, yhi, zlo, zhi)
-            radial[i] = compute_distance(x, y, z, cx, cy, cz)
 
 
         ###############################################################################################
@@ -435,16 +396,9 @@ class generate:
         #################################################
         # Find possible bonds via interatomic distances #
         #################################################
-        if len(m.atoms) < 7500 or density < 0.25 or lx < 18 or ly < 18 or lz < 18:
-            possible_bonds, self.bond_status = interatomic_brute_force(m, maxdist_dict, radial, edgeflags, scaled_images, log)
-        else: # cell linked list method is really slow for low density systems and requires at least a 3*domain_size (3*6=18) in each direction to decompose the system
-            try: possible_bonds, self.bond_status = interatomic_cell_linked(m, maxdist_dict, radial, edgeflags, scaled_images, xlo, xhi, ylo, yhi, zlo, zhi, log)
-            except:
-                log.out('Cell linked list method failed, resorting to brute force method')
-                possible_bonds, self.bond_status = interatomic_brute_force(m, maxdist_dict, radial, edgeflags, scaled_images, log)
-
-
+        possible_bonds, self.bond_status = interatomic_cell_linked(m, maxdist_dict, edgeflags, scaled_images, xlo, xhi, ylo, yhi, zlo, zhi, log)
                     
+        
         ####################################
         # Find bonded atoms to be able to  #
         # set max nb cut-off per atom type #
