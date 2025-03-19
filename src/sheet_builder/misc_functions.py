@@ -522,19 +522,6 @@ def find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=12):
     return positions
 
 
-###
-def find_closests_domains(domains, domain_graph, domainID):
-    print()
-    print(domainID)
-    #print(domains)
-    print(domain_graph[domainID], len(domain_graph[domainID]), len(domain_graph))
-    if domainID == 0:
-        pass
-    else:
-        d1 = domains[domainID]
-    return
-
-
 ##########################
 # Function to find bonds #
 ##########################
@@ -563,10 +550,9 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
     dx = lx/nxx; dy = ly/nyy; dz = lz/nzz; ID = 0;
     xadd = dx/2 + xlo; yadd = dy/2 + ylo; zadd = dz/2 + zlo;
     if pflag: log.out('Using {} x {} x {} sub domains of size {:.2f} x {:.2f} x {:.2f} to perform domain decomposition'.format(nxx, nyy, nzz, dx, dy, dz))
-    domain = {} # { domainID : (xlo, xhi, ylo, yhi, zlo, zhi, xc, yc, zc, r, edgeflag) }
+    domain = {} # { domainID : (xc, yc, zc) }
     indexes_forward = {} # { domainID : (nx, ny, nz) }
     indexes_reverse = {} # { (nx, ny, nz) : domainID }
-    cubes = [dx, dy, dz]
     for nx in range(nxx):
         for ny in range(nyy):
             for nz in range(nzz):
@@ -574,9 +560,7 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
                 xc = nx*dx + xadd
                 yc = ny*dy + yadd
                 zc = nz*dz + zadd
-                r = compute_distance(xc, yc, zc, cx, cy, cz)
-                edgeflag = check_near_edge(xc, yc, zc, domain_size+tolerance, xlo, xhi, ylo, yhi, zlo, zhi)
-                domain[ID] = (xc, yc, zc, r, edgeflag)
+                domain[ID] = (xc, yc, zc)
                 indexes_forward[ID] = (nx+1, ny+1, nz+1)
                 indexes_reverse[(nx+1, ny+1, nz+1)] = ID
 
@@ -584,10 +568,10 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
     # Find domain connectivity (graph)
     def get_neighboring_indexes(ni, nii):
         neighs = [ni]
-        if ni-1 < 1:
+        if ni-1 < 1: # lo-side wraps to hi-side for periodicity
             neighs.append(nii)
         else: neighs.append(ni-1)
-        if ni+1 > nii: 
+        if ni+1 > nii: # hi-side wraps to lo-side for periodicity
             neighs.append(1)
         else: neighs.append(ni+1)
         return neighs
@@ -596,8 +580,6 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
     domain_graph[0] = {ID for ID in domain}
     if pflag: log.out('  Finding cell linked graph for interatomic distance calculations ...')
     for id1 in domain:    
-        x1, y1, z1, r1, edge1 = domain[id1]
-        if edge1: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=15)
         nx, ny, nz = indexes_forward[id1]
         nxs = get_neighboring_indexes(nx, nxx)
         nys = get_neighboring_indexes(ny, nyy)
@@ -607,21 +589,8 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
                 for iz in nzs:
                     id2 = indexes_reverse[(ix, iy, iz)]
                     if id1 == id2: continue
-                    x2, y2, z2, r2, edge2 = domain[id2]
-                    if edge1 and edge2: # periodic
-                        for x1i, y1i, z1i in periodic_postions:
-                            if abs(x1i - x2) > domain_size: continue
-                            elif abs(y1i - y2) > domain_size: continue
-                            elif abs(z1i - z2) > domain_size: continue
-                            domain_graph[id1].add(id2)
-                            domain_graph[id2].add(id1)
-                            break
-                    else: # non-periodic
-                        if abs(x1 - x2) > domain_size: continue
-                        elif abs(y1 - y2) > domain_size: continue
-                        elif abs(z1 - z2) > domain_size: continue
-                        domain_graph[id1].add(id2)
-                        domain_graph[id2].add(id1)
+                    domain_graph[id1].add(id2)
+                    domain_graph[id2].add(id1)
                             
                         
     # Build linked list
@@ -638,9 +607,9 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
             
         # Assign to domain
         try:
-            nx = math.ceil( (x-xlo)/cubes[0] )
-            ny = math.ceil( (y-ylo)/cubes[1] )
-            nz = math.ceil( (z-zlo)/cubes[2] )
+            nx = math.ceil( (x-xlo)/dx )
+            ny = math.ceil( (y-ylo)/dy )
+            nz = math.ceil( (z-zlo)/dz )
             domainID = indexes_reverse[(nx, ny, nz)]
         except: domainID = 0
         atom_domain[i] = domainID
