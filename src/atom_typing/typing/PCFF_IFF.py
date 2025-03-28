@@ -224,10 +224,10 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # cr        12.01115      C          3        C in neutral arginine 
-            elif ring == 0 and elements1.count('C') == 2 and elements1.count('N') == 1:
+            elif ring == 0 and elements1.count('C') == 2 and elements1.count('N') == 1 and formula == 'C6-H14-N4-O2':
                 atom.nta_type = 'cr'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
-            elif ring == 0 and elements1.count('N') == 3:
+            elif ring == 0 and elements1.count('N') == 3 and formula == 'C6-H14-N4-O2':
                 atom.nta_type = 'cr'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             
@@ -262,7 +262,10 @@ def nta(mm, basename, ff_name):
                 atom.nta_type = 'cp'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
-            # c_0     12.01115      C          3        carbonyl carbon of aldehydes, ketones  
+            # c_0     12.01115      C          3        carbonyl carbon of aldehydes, ketones 
+            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 1:
+                atom.nta_type = 'c_0'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
             # Ketone (O-index=2 in nbs1)
             elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 1 and nbs1[2] == 0:
                 atom.nta_type = 'c_0'; tally['found'] += 1;
@@ -340,7 +343,7 @@ def nta(mm, basename, ff_name):
             # User defined intial attempts (For ReaxFF with open valence polymerization) #
             #----------------------------------------------------------------------------#
             # # For 6 member-ring open valence
-            # if ring >= 6:
+            # if ring >= 6 and elements1.count('C') == 4 and rings1.count(6) >= 3:
             #     atom.nta_type = 'cp'; tally['found'] += 1;
             #     atom.nta_info = 'User-defined for Graphite xlinks (element:C, ring:>=6, nb:4)'
             
