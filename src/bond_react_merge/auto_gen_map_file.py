@@ -32,6 +32,7 @@ class find:
         pre_filename = os.path.basename(pre.filename)
         post_filename = os.path.basename(post.filename)
         
+        
         ##################################################
         # Get pre headers info: BondingIDs and CreateIDs #
         ##################################################
@@ -42,9 +43,7 @@ class find:
             for n, i in enumerate(Reduce):
                 if n <= 3: BondingIDs.append(i)
         self.BondingIDs = BondingIDs; self.CreateIDs = CreateIDs; self.Reduce = Reduce;
-
-            
-
+        
         
         ##############################################################################
         # Check for errors before proceding. If an error is found the code will exit #
@@ -188,8 +187,11 @@ class find:
                         cumulative_pre_nb = [len(pre_graph[i]) for i in pre_cumulative_neighs[n]]
                         cumulative_post_nb = [len(post_graph[i]) for i in post_cumulative_neighs[n] if i not in CreateIDs]
                         cumulative_neigh_types_cost += diff_lst(cumulative_pre_nb, cumulative_post_nb)
-                    if len(post_cumulative_neighs) < len(pre_cumulative_neighs):
-                        cumulative_neigh_types_cost += 20; cumulative_neigh_elements_cost += 20; cumulative_neigh_nb_cost += 20;
+                    if len(post_cumulative_neighs) != len(pre_cumulative_neighs):
+                        ndiff = 10*abs(len(pre_cumulative_neighs) - len(post_cumulative_neighs))
+                        cumulative_neigh_types_cost += ndiff
+                        cumulative_neigh_elements_cost += ndiff
+                        cumulative_neigh_nb_cost += ndiff
                     
                     # deleteID cost if post_molid > 1 assign a large cost to help deleteIDs be assigned lass
                     if post_molid > 1: deleteID_cost = 20
@@ -320,9 +322,22 @@ class find:
         #--------------------------------------------------------#
         # Method 2 (Default if user does not provide BondingIDs) #
         #--------------------------------------------------------#
+        #sorted_cost_tally = dict(sorted(cost_tally.items(), key=lambda x:x[1], reverse=False))  # [0=keys;1=values] sort by cost
+        #pre_atoms = [i[0] for i in sorted_cost_tally] # iterate through atomIDs with increasing costs
+        #pre_atoms = sorted(pre_atoms, reverse=True)
+        # sorted_cost_tally = dict(sorted(cost_tally.items(), key=lambda x:x[1], reverse=False))  # [0=keys;1=values] sort by cost
+        # for i in sorted_cost_tally:
+        #     keys = ['atom-type', 'nb', 'neigh_1st_elements', 'edge', 'depth_from_edge', 'deleteID', 'cumulative_neigh_types',
+        #             'cumulative_neigh_elements', 'molID', 'neigh_1st_atom-types']
+        #     tmptally, tmpdicts = reduce_and_sort_costdict(i[0], cost_dict, keys, paired, post_graph)
+        #     if i[0] == 1:
+        #         print()
+        #         print(i, tmptally[i])
+        #         print(tmpdicts[i])
         while len(used_preids) < len(pre_atoms):
-            while_count += 1;
-            if while_count % update: acceptable_cost += cost_increment
+            while_count += 1
+            if while_count % update:
+                acceptable_cost += cost_increment
             for i in pre_atoms:
                 keys = ['atom-type', 'nb', 'neigh_1st_elements', 'edge', 'depth_from_edge', 'deleteID', 'cumulative_neigh_types',
                         'cumulative_neigh_elements', 'molID', 'neigh_1st_atom-types']                 
@@ -331,7 +346,7 @@ class find:
                 for pair in tmptally:
                     preid, postid = pair; cost = tmptally[pair];
                     if preid not in used_preids and postid not in used_postids and cost <= acceptable_cost:
-                        used_preids.add(preid);  used_postids.add(postid); paired.add(pair);
+                        used_preids.add(preid); used_postids.add(postid); paired.add(pair);
                         self.map[preid] = postid; self.cost[pair] = tmpdicts[pair]; break
             if while_count >= max_while: 
                 log.warn(' WARNING Equivalence map timed out. NOT ALL Equivalences could be found for {} -> {}'.format(pairname[0], pairname[1]));  break
@@ -446,6 +461,20 @@ class find:
                 log.out('    {}'.format(self.deleteIDs[i]))
                 
                 
+###########################################################
+# Function to "order" atoms about an atomID. For example: #
+#   atomID = 3                                            #
+#   atoms = [1,2,3,4,5,6]                                 #
+# The returned list of atoms will be:                     #
+#  [3, 2, 4, 1, 5, 6]                                     #
+###########################################################
+def order_atomIDs_around_atomID(atomID, atoms):
+    atomID_diffs = {i:abs(i-atomID) for i in sorted(atoms)} # {atomID : differents between atomIDs}
+    atomID_diffs = dict(sorted(atomID_diffs.items(), key=lambda x:x[1], reverse=False))  # [0=keys;1=values]
+    ordered_atoms = list(atomID_diffs.keys())
+    return ordered_atoms
+                
+                
 ################################################################################
 # Function to reduce inner dict and sort based atomids in pair and lowest cost #
 ################################################################################
@@ -469,9 +498,9 @@ def reduce_and_sort_costdict(atomid, cost_dict, keys, paired, post_graph):
                 
     # Sort tmptally then create tmpdicts from tmptally since tmptally has already been sorted
     # and tmpdicts will inherit tmptally sequence (ASSUMES PYTHON 3.7 OR GREATER)
-    tmptally = dict(sorted(tmptally.items(), key=lambda x:x[0][0])) # [0=keys;1=values][0=preID] 
-    tmptally = dict(sorted(tmptally.items(), key=lambda x:x[0][1])) # [0=keys;1=values][1=postID] 
-    tmptally = dict(sorted(tmptally.items(), key=lambda x:x[1]))    # [0=keys;1=values] sort by cost 
+    tmptally = dict(sorted(tmptally.items(), key=lambda x:x[0][0], reverse=False)) # [0=keys;1=values][0=preID] 
+    tmptally = dict(sorted(tmptally.items(), key=lambda x:x[0][1], reverse=False)) # [0=keys;1=values][1=postID] 
+    tmptally = dict(sorted(tmptally.items(), key=lambda x:x[1], reverse=False))    # [0=keys;1=values] sort by cost 
     tmpdicts = {j:tmpdicts[j] for j in tmptally} # ReBuild tmpdicts from order in tmpy tally
     return tmptally, tmpdicts
                 

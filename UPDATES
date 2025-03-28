@@ -20,6 +20,9 @@ Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
 28March2025        JDK         - atom_typing.py: Adjusted PCFF and PCFF-IFF atom typing for arginine.
 
+28March2025        JDK         - bond_react_merge.py: Adjusted the auto-gen-map file option to include further
+                                                      constraints.
+
 19March2025        JDK         - sheet_builder.py and atom_typing.py: Improved the time to find bonds via
                                                                       distance cut-off.
 
