@@ -26,7 +26,6 @@ def generate_MWCNT(length, diameter, r0, types, edgetype, layer_spacing, ntubes,
     
     # Determine diameters
     diameters = [diameter + 2*n*layer_spacing for n in range(ntubes)]
-    molID_attributes = {} # {molID : (length, width, natoms)}
     atoms = {} # { atomID : Atoms Object }
     ID = 0
     for n, diameter in enumerate(diameters, 1):
@@ -44,8 +43,7 @@ def generate_MWCNT(length, diameter, r0, types, edgetype, layer_spacing, ntubes,
         stacking = 'AA'
         periodic_bonds_sheets = True
         pflag = False
-        sheet_atoms, sheet_box, molID_attr = build_sheets.generate(lx, ly, r0, sheet_edgetype, types, layer_spacing, nlayers, stacking, plane, periodic_bonds_sheets, pflag, log)
-        molID_attributes[n] = molID_attr[1]
+        sheet_atoms, sheet_box = build_sheets.generate(lx, ly, r0, sheet_edgetype, types, layer_spacing, nlayers, stacking, plane, periodic_bonds_sheets, pflag, log)
         circumference = sheet_box['xhi'] - sheet_box['xlo']
         length = sheet_box['zhi'] - sheet_box['zlo']
         log.out('  edge={} with a diameter={:.4f} and a length={:.4f}'.format(edgetype, diameter, length))
@@ -120,7 +118,7 @@ def generate_MWCNT(length, diameter, r0, types, edgetype, layer_spacing, ntubes,
         if axis == 'z':
             box['zlo'] -= increase
             box['zhi'] += increase
-    return atoms, box, molID_attributes
+    return atoms, box
 
 
 
@@ -157,7 +155,7 @@ def generate_chiral(n, m, desried_length, r0, types, axis, periodic_bonds, log):
     sheet_edgetype = 'armchair'
     periodic_bonds_sheets = True
     pflag = False
-    sheet_atoms, sheet_box, molID_attributes = build_sheets.generate(max_length, max_length, r0, sheet_edgetype, types, layer_spacing, nlayers, stacking, plane, periodic_bonds_sheets, pflag, log)
+    sheet_atoms, sheet_box = build_sheets.generate(max_length, max_length, r0, sheet_edgetype, types, layer_spacing, nlayers, stacking, plane, periodic_bonds_sheets, pflag, log)
     
     # Rotate the sheet atoms about Y-axis
     phi = 0; theta = -alpha; psi = 0;
@@ -264,10 +262,6 @@ def generate_chiral(n, m, desried_length, r0, types, axis, periodic_bonds, log):
             a.iy = 0
             a.iz = 0
             atoms[ID] = a
-            
-    # Regenerate molID attributes since atoms where removed
-    molID_attributes = {} # {molID : (length, width, natoms)}
-    molID_attributes[1] = (length, circumference, len(atoms))
 
     # Center atoms
     xavg = sum(spans['x'])/len(spans['x'])
@@ -345,7 +339,7 @@ def generate_chiral(n, m, desried_length, r0, types, axis, periodic_bonds, log):
         if axis == 'z':
             box['zlo'] -= increase
             box['zhi'] += increase
-    return atoms, box, molID_attributes
+    return atoms, box
 
 
 ################################################

@@ -12,7 +12,6 @@ Houghton, MI 49931
 ##############################
 import src.sheet_builder.add_terminating_atoms as add_terminating_atoms
 import src.sheet_builder.add_functional_groups as add_functional_groups
-import src.sheet_builder.add_grafting_fragment as add_grafting_fragment
 import src.sheet_builder.add_pi_electrons as add_pi_electrons
 import src.sheet_builder.misc_functions as misc_functions
 import src.sheet_builder.command_line as command_line
@@ -32,8 +31,8 @@ import os
 #####################################
 def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype, sheet_edgetype, types,
          bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_length, diameter, n, m,
-         chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, charges, masses, seed, functional_atoms, terminating_atoms,
-         grafting_files, minimum_distance, commandline_inputs=[], log=None):
+         chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, charges, masses, functional_seed, functional_atoms, terminating_atoms, 
+         commandline_inputs=[], log=None):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
@@ -135,20 +134,20 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
         else: log.error(f"ERROR plane {plane} is not supported. Supported planes are 'xy' or 'xz' or 'yz'")
         basename = sheet_basename
         pflag = True
-        atoms, box, molID_attributes = build_sheets.generate(length_in_perpendicular, length_in_edgetype, bond_length, sheet_edgetype, atom_types, sheet_layer_spacing, sheet_nlayers, stacking, plane, periodic_bonds, pflag, log)
+        atoms, box = build_sheets.generate(length_in_perpendicular, length_in_edgetype, bond_length, sheet_edgetype, atom_types, sheet_layer_spacing, sheet_nlayers, stacking, plane, periodic_bonds, pflag, log)
     elif run_mode in ['chiral-tube', 'symmetric-tube']:
         if run_mode == 'symmetric-tube':
             if symmetric_tube_axis == 'x': boundary = 'p f f'
             elif symmetric_tube_axis == 'y': boundary = 'f p f'
             elif symmetric_tube_axis == 'z': boundary = 'f f p'
             basename = symmetric_tube_basename
-            atoms, box, molID_attributes = build_tubes.generate_MWCNT(symmetric_length, diameter, bond_length, atom_types, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_tube_axis, periodic_bonds, log)
+            atoms, box = build_tubes.generate_MWCNT(symmetric_length, diameter, bond_length, atom_types, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_tube_axis, periodic_bonds, log)
         if run_mode == 'chiral-tube':
             if chiral_tube_axis == 'x': boundary = 'p f f'
             elif chiral_tube_axis == 'y': boundary = 'f p f'
             elif chiral_tube_axis == 'z': boundary = 'f f p'
             basename = chiral_tube_basename
-            atoms, box, molID_attributes = build_tubes.generate_chiral(n, m, chiral_length, bond_length, atom_types, chiral_tube_axis, periodic_bonds, log)
+            atoms, box = build_tubes.generate_chiral(n, m, chiral_length, bond_length, atom_types, chiral_tube_axis, periodic_bonds, log)
     else: log.error(f"ERROR run_mode {run_mode} is not supported. Supported modes are 'sheet' or 'symmetric-tube' or 'chiral-tube'")    
     log.out(f'  Created: {len(atoms)} atoms')
     
@@ -185,17 +184,8 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
     ###########################################################################################
     # Add functional groups and/or grafting fragments (Prior to adding pi-electrons to allow  #
     # for both functionalization and adding of pi-electrons to unfunctionalized atoms)        #
-    ###########################################################################################
-    functional_atoms = functional_atoms.strip() # remove any white space on ends
-    grafting_files = grafting_files.strip() # remove any white space on ends
-    if grafting_files:
-        if find_bonds:
-            log.out('\n\nAdding grafting fragments ...')
-            atoms, bonds, box = add_grafting_fragment.add(atoms, bonds, box, run_mode, grafting_files, seed, functional_atoms, boundary, bond_length, minimum_distance, molID_attributes, log)
-        else:
-            log.warn(f'WARNING grafting_files = {grafting_files}, but find_bonds is False. Set find_bonds as True to add {grafting_files}.')   
-    
-    elif functional_atoms:
+    ###########################################################################################   
+    if functional_atoms:
         if find_bonds:
             log.out('\n\nAdding functional groups ...')
             atoms, bonds, box = add_functional_groups.add(atoms, bonds, box, run_mode, functional_atoms, seed, boundary, 1.0, minimum_distance, log)
