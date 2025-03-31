@@ -13,7 +13,6 @@ Houghton, MI 49931
     *                                                 *
     ***************************************************
 """
-
 ############################################################
 # Helper functions to use outside of this file for getting #
 # sections from thermo file (appends zeros when needed)    #
@@ -21,7 +20,7 @@ Houghton, MI 49931
 # Function to check if value is an int
 def check_int(value):
     try: 
-        val = int(value)
+        int(value)
         return True
     except: 
         return False
@@ -29,7 +28,7 @@ def check_int(value):
 # Function to check if value is a float
 def check_float(value):
     try: 
-        val = float(value)
+        float(value)
         return True
     except: 
         return False
@@ -72,44 +71,40 @@ def get_sections(log_sections, sections):
 # Function to count number of matching keywords per line
 def count_keywords(line, keywords):
     count = 0
-    for i in line:
-        if i in keywords: count += 1
+    for keyword in keywords:
+        count += line.count(keyword)
     return count
 
-# Function to convert all strings in line to floats of ints
-def line2digits(line, nline):
-    digits = []
-    for i in line:
-        # 1st try converting to float, 2nd check if float is really and not int, and 3rd log digit as int or float
-        try: digit = float(i)
-        except: raise Exception(f'  ERROR not all thermo data could not be converted to floats or ints at line {nline}\n{line}')
-        if digit.is_integer(): digit = int(digit)
-        digits.append(digit)
-    return digits
-
-# Function to check every element in line can be converted to a float
-def checkline4floats(line):
-    booleans = {check_float(i) for i in line}
-    if False in booleans:
-        return False
-    else:
-        return True
+# Function to convert string to float or int and will default to string if needed
+def string2digit(string):
+    digitized = True; digit = string
+    try: 
+        digit = float(string)
+        if digit.is_integer():
+            digit = int(digit)
+    except: digitized = False
+    return digitized, digit
 
 
-#####################################################################
-# Class to open and parse LAMMPS log file into data structures.     #
-#   Inputs:                                                         #
-#      logfile  = name of log file to read                          #
-#      keywords = list of keywords for column data, default is      #
-#                 'Step' only. Add keywords when necessary.         #
-#   Outputs:                                                        #
-#      A class with the following attributes:                       #
-#         CLASS.data = { sectionID : {column1 : [column1], ... } }  #
-#         CLASS.sections  = [ lst of section IDs ]                  #
-#         CLASS.sectionID = count of sections in log file           #
-#         CLASS.nlines = count of lines in file                     # 
-#         CLASS.nentries = count of entries in file                 #
-#####################################################################
+######################################################################
+# Class to open and parse LAMMPS log file into data structures.      #
+#   Inputs:                                                          #
+#      logfile  = name of log file to read                           #
+#      keywords = list of keywords for column data, default is       #
+#                 'Step' only. Add keywords when necessary.          #
+#   Outputs:                                                         #
+#      A class with the following attributes:                        #
+#         CLASS.data = { sectionID : {column1 : [column1], ... } }   #
+#         CLASS.sections  = [ lst of section IDs ]                   #
+#         CLASS.sectionID = count of sections in log file            # 
+#         CLASS.nlines = count of lines in file                      # 
+#         CLASS.nentries = count of entries in file                  #
+#                                                                    #
+#   Methods:                                                         #
+#      .get_data(self, sections, remove_duplicates=True, pflag=True) #
+#         Which allows for multiple sections of a logfile to be      #
+#         "joined" together based on sections string.                #
+######################################################################
 class file:
     def __init__(self, logfile, keywords=['Step'], pflag=True):
         self.data = {} # { sectionID : {column1 : [column1], ... } }
@@ -118,52 +113,56 @@ class file:
         self.nlines = 0 # count of lines in file
         self.nentries = 0 # count of entries in file
         
-        # Flags to find things
-        data_flag = False
+        # nmax for printing sections with pflag
+        self.nmax = 10
         
         # Open and parse log file
+        data_flag = False
         with open(logfile, 'r') as f:
             for string in f:
-                # Strip and split line
                 line = string.strip(); line = line.split(); self.nlines += 1;
-                
-                # Find begining thermo data section if count of keywords is > 0
-                if 'WARNING' in string or string == '': continue # skip warnings or empty lines
-                elif count_keywords(line, keywords) > 0 and '#' not in string and 'thermo_style' not in string: # section of logfile with thermo data
-                    data_flag = True
-                    self.sectionID += 1
-                    self.sections.append(self.sectionID)
-                    self.data[self.sectionID] = {i:[] for i in line} # {column-name:[]}
-                    indexes = {n:i for n, i in enumerate(line)} # {index:column-name}
-                    continue
-                # Break thermo data section if 'Loop time of' in string or if all data in-line could not be converted to a float
+                if 'WARNING' in string or len(string) == 0: continue
+                elif count_keywords(line, keywords) > 0 and '#' not in string and 'thermo_style' not in string:
+                    data_flag = True; self.sectionID += 1
+                    self.sections.append(self.sectionID) 
+                    self.data[self.sectionID] = {i:[] for i in line}
+                    indexes = {n:i for n, i in enumerate(line)}; continue
+                elif not line: data_flag = False
                 elif 'Loop time of' in string: data_flag = False
                 elif 'Loop' in string and 'time' in string and 'of' in string: data_flag = False
                 elif 'ERROR' in line: data_flag = False
-                elif line == '': data_flag = False
-                elif not checkline4floats(line): data_flag = False
-                    
-                # Add data to self.data if data_flag
                 if data_flag:
-                    digits = line2digits(line, self.nlines) # convert strings to numbers (ints and floats)
-                    if len(digits) == len(indexes): # skip over incomplete lines
-                        for n, i in enumerate(digits):
-                            self.data[self.sectionID][indexes[n]].append(i)
-                            self.nentries += 1
-                    else: 
-                        print(f'  WARNING skipping over line {self.nlines} in log file due to incomplete data series. Line {self.nlines}: ')
-                        print('     {}'.format( ' '.join(line) ))
-        
+                    if len(line) != len(indexes):
+                        print(f'\n  WARNING skipping over line {self.nlines} in log file due to incomplete data series. Line {self.nlines}: ')
+                        print('     {}'.format(' '.join(line) ))
+                    else:
+                        success = True
+                        for n, i in enumerate(line):
+                            digitized, digit = string2digit(i)
+                            if digitized:
+                                column = indexes[n]; self.nentries += 1
+                                self.data[self.sectionID][column].append(digit)
+                            else: success = False; break
+                        if not success:
+                            print(f'\n  WARNING not all thermo data could not be converted to floats or ints at line {self.nlines}:')
+                            print('     {}'.format(' '.join(line) ))
+                            for i in range(n):
+                                column = indexes[i]; self.nentries -= 1
+                                del self.data[self.sectionID][column][-1]
+                                
+
         # Print to user to outcomes
         if pflag:
-            print(f'  read sections: {" ".join([str(i) for i in self.sections])}')
+            if len(self.sections) < self.nmax:
+                print(f'  read sections: {" ".join([str(i) for i in self.sections])}')
             print(f'  with {self.nentries} log entries')
             
     # method to get all sections that user desires from log file
-    def get_data(self, sections, pflag=True):
+    def get_data(self, sections, remove_duplicates=True, pflag=True):
         # Find sectionIDs based on user specified string
         sectionIDs = get_sections(self.sections, sections)
-        if pflag: print(f'  Loading {" ".join([str(i) for i in sectionIDs])} of {" ".join([str(i) for i in self.sections])} sections')
+        if pflag and len(self.sections) < self.nmax:
+            print(f'  Loading {" ".join([str(i) for i in sectionIDs])} of {" ".join([str(i) for i in self.sections])} sections')
         
         # Find all column names in loaded sections and start joining data
         columns = {column for ID in self.sections for column in self.data[ID]}
@@ -172,10 +171,14 @@ class file:
             used = {column:False for column in columns}; ndatas = [];
             for column in self.data[ID]:
                 used[column] = True
-                ndatas.append(len(self.data[ID][column]))
+                tmp = self.data[ID][column]
                 if column in data:
-                    data[column].extend(self.data[ID][column])
-                else: data[column] = self.data[ID][column]
+                    if remove_duplicates and data[column]:
+                        try: del tmp[0]
+                        except: pass
+                    data[column].extend(tmp)
+                else: data[column] = tmp
+                ndatas.append(len(tmp))
     
             # Check for any unused columns and make zeros to append
             for column in used:

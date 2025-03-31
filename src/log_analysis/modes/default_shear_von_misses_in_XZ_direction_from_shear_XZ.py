@@ -52,8 +52,8 @@ s31 = "{}{}{}".format('${', 'f_sxz_ave', '}')
 svm = "( (({s11}-{s22})**2 + ({s22}-{s33})**2 + ({s33}-{s11})**2 + 6*({s23}**2 + {s31}**2 + {s12}**2))/2 )**0.5".format(s11=s11, s22=s22, s33=s33, s12=s12, s23=s23, s31=s31)
 
 # analysis list
-analysis = [['moving average', 0, 0.1, 'window=50', 'moving average'],
-            ['linear regression', 0, 0.02, 'shift=True', 'Modulus'],
+analysis = [['moving average', '', '', 'window=50', 'moving average'],
+            ['linear regression', '', 0.02, 'shift=True', 'Modulus'],
             ['cursor', '', '', 'x=0; y=0;', 'Yield strength']]
 
 # loadable mode
@@ -66,6 +66,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=shear_modulus_xz_strain_rate=
         'ylabel': 'Von Mises Stress (MPa)',
         'xcompute': '',
         'ycompute': f'{svm}', # use variable from above since this is a long equation,
-        'analysis': analysis
+        'analysis': analysis,
+        'nevery': '1',
+        'parent_directory': 'logfile'
         }
 

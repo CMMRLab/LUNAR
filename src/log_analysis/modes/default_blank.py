@@ -22,6 +22,8 @@ mode = {'logfile': 'UPDATE-ME',
         'ylabel': '',
         'xcompute': '',
         'ycompute': '',
-        'analysis': analysis
+        'analysis': analysis,
+        'nevery': '1',
+        'parent_directory': 'logfile'
         }
 

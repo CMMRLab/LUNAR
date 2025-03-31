@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-May 17, 2023
+Revision 1.2
+November 11th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -17,60 +17,85 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
-import matplotlib.pyplot as plt
 import numpy as np
 import math
-import sys
-import os
 
-###################################################
-# Josh's hand built linear regression model class #
-###################################################
+
+#############################################
+# Josh's hand built linear regression model #
+#############################################
 class linear_regression:
-    def __init__(self, x, y):
-        # Length of variables
-        n = len(x)  
-    
-        # Sum of xi and yi 
-        sum_xi = sum(x); sum_yi = sum(y);
-        
-        # xi and yi squared
-        xi_2 = [x**2 for x in x]; yi_2 = [y**2 for y in y];
-        
-        # Sum of xi squared and xi*yi
-        sum_xi_2 = sum(xi_2); xi_yi = [x[i]*y[i] for i in range(0, len(x))]; 
-                      
-        # sum of xi*yi
-        sum_xi_yi = sum(xi_yi);
+    def __init__(self, xdata, ydata):
+        # Compute cummulative parameters
+        sum_xi = 0; sum_yi = 0; sum_xi_2 = 0; sum_yi_2 = 0; sum_xi_yi = 0; n = 0
+        for x, y in zip(xdata, ydata):
+            sum_xi += x; sum_yi += y; n += 1
+            sum_xi_2 += x*x; sum_yi_2 += y*y; 
+            sum_xi_yi += x*y
                 
-        # SSxy
-        SSxy = (sum_xi_yi) - ((1/n)*(sum_xi)*(sum_yi));
-        
-        # SSxx
-        SSxx = sum_xi_2 - (1/n)*sum_xi**2;
+        # SSxy and Sxx
+        self.SSxy = (sum_xi_yi) - ((1/n)*(sum_xi*sum_yi))
+        self.SSxx = sum_xi_2 - (1/n)*sum_xi*sum_xi
         
         # y bar and x bar
-        y_bar = sum_yi/n; x_bar = sum_xi/n;
-    
+        self.x_bar = sum_xi/n
+        self.y_bar = sum_yi/n 
+
         # b0 and b1
-        self.b1 = SSxy/SSxx; self.b0 = y_bar - self.b1*x_bar;
+        self.b1 = self.SSxy/self.SSxx
+        self.b0 = self.y_bar - self.b1*self.x_bar
+        self.n = n
     
-        # SSreg and SS total
-        SSreg = (self.b1**2)*(SSxx); SStotal = sum(yi_2) - sum_yi**2/n;
+        # Errors in residuals and regressions
+        self.SStotal = sum_yi_2 - (sum_yi*sum_yi/n)
+        self.SSreg = self.b1*self.b1*self.SSxx
+        self.SSres = self.SStotal - (self.b1*self.b1*self.SSxx)
+        self.MSres = self.SSres/(n - 2)
+
+        # variances and r^2
+        self.b0_variance = self.MSres*( (1/n) + (self.x_bar*self.x_bar/self.SSxx) )
+        self.b1_variance = self.MSres/self.SSxx
+        self.r2 = self.SSreg/self.SStotal
         
-        # r2
-        self.r2 = SSreg/SStotal;
-        
-        # lineare regression data
-        self.xreg = [min(x), max(x)]
+        # linear regression data
+        self.xreg = [min(xdata), max(xdata)]
         self.yreg = [i*self.b1 + self.b0 for i in self.xreg]
         
+    # Method for computing confidence interval for b0
+    def confidence_interval_b0(self, alpha):
+        from scipy import stats    
+        df_res = self.n - 2
+        t_statistic = stats.t.ppf(alpha, df_res)
+        std_dev = math.sqrt(self.b0_variance)
+        plus_minus = t_statistic*std_dev
+        return sorted([self.b0-plus_minus, self.b0+plus_minus])
+    
+    # Method for computing confidence interval for b1
+    def confidence_interval_b1(self, alpha):
+        from scipy import stats
+        df_res = self.n - 2
+        t_statistic = stats.t.ppf(alpha, df_res)
+        std_dev = math.sqrt(self.b1_variance)
+        plus_minus = t_statistic*std_dev
+        return sorted([self.b1-plus_minus, self.b1+plus_minus])
+    
+    
+#########################################
+# Function implementing LOWESS smoother #
+#########################################
+def lowess(xdata, ydata, fraction=0.2, max_iter=10):    
+    import statsmodels.api as sm
+    out = sm.nonparametric.lowess(np.array(ydata), np.array(xdata), frac=fraction, it=max_iter, is_sorted=False)   
+    xout = out[:, 0]
+    yout = out[:, 1]
+    return xout, yout
+
 
 ###################################
 # Josh's avg/moving avg functions #
 ###################################
 def moving_average(x, w):
-  return np.convolve(x, np.ones(w), 'valid') / w
+  return np.convolve(x, np.ones(w)/w, 'valid')
 
 def avg(lst):
     return sum(lst)/len(lst)
@@ -81,7 +106,7 @@ def avg(lst):
 ###############################
 def reduce_data(xdata, ydata, xlo, xhi):
     if xlo > xhi:
-        print(f'ERROR (reduce_data) no data between {xlo}-{xhi}')
+        print(f'ERROR (reduce_data) no data between {xlo} - {xhi}')
     reducedx = []; reducedy = [];  
     for x, y in zip(xdata, ydata):
         if x >= xlo and x <= xhi:
@@ -89,106 +114,61 @@ def reduce_data(xdata, ydata, xlo, xhi):
     return reducedx, reducedy
 
 
-##########################################################################
-# Function to compute vectorized operations on arrays using string math. #
-#  Inputs:                                                               #
-#     data = {'NAME':[lst], ... }                                        #
-#     compute_string = "${A} + ${B}/2 + 100", where A and B are keys in  #
-#                       the data dictionary.                             #
-#  Outputs:                                                              #
-#    computed_list = "${A} + ${B}/2 + 100", using vectorization methods  #
-#                    from numpy and Python eval() function.              #
-##########################################################################
-def compute_thermo_data(data, compute_string):
-    #--------------------------------------#
-    # d will be used in list(eval(string)) #
-    #--------------------------------------#
-    d = {i:np.array(data[i]) for i in data}
-    nzeros = max([len(d[i]) for i in d])
-    message = ''
-    
-    #------------------------------------------------------------------#
-    # The compute_string needs to be transformed, for example:         #
-    #  in-string:  "  ${A} + ${B}/2   + 100"                           #
-    #  out-string: "d['A'] + d['B']/2 + 100"                           #
-    # where A and B are columns in the logfile, stored as keys in the  #
-    # dictionary d = {'COLUMN-NAME':np.array()}. Using the Python      #
-    # eval() function we can then perform vectorized computes of the   #
-    # numpy arrays.                                                    #
-    #------------------------------------------------------------------#
-    cstring = compute_string
-    cstring = cstring.replace("${", "d['")
-    cstring = cstring.replace("}", "']")
-    
-    #---------------------------------------------------------------#
-    # Check that each variable in the compute_string exists in the  #
-    # dictionary "d". Warn if not in the dictionary.                #
-    #---------------------------------------------------------------#
-    # Find variables from compute_string
-    variables = set(); tmp = ''; dollar_sign = False; bracket0 = False; bracket1 = False;
-    for i in compute_string:
-        if i == '$': dollar_sign = True
-        if i == '{': bracket0 = True
-        if i == '}': bracket1 = True
-        if dollar_sign and bracket0:
-            tmp += str(i)
-        if bracket1:
-            dollar_sign = False; bracket0 = False; bracket1 = False;
-            tmp = tmp.replace('{', '')
-            tmp = tmp.replace('}', '')
-            variables.add(tmp); tmp = '';
-            
-    # Check that each variable is in the "d" dictionary
-    variable_check = True
-    for variable in variables:
-        if variable not in d:
-            variable_check = False
-            message += 'ERROR {} is not in the compute dictionary. Perhaps something was misspelled.\n'.format(variable)     
-        
-    #---------------------------------------------------------------------#
-    # Try making compute, if it fails log a different message and create  #
-    # an array of zeros to output.                                        #
-    #---------------------------------------------------------------------#
-    if variable_check:
-        try:
-            new_data = list(eval(cstring))
-            message += f'{compute_string} was succesfully evaluted.\n'
-        except:
-            new_data = nzeros*[0]
-            message += f'ERROR could not evalute {compute_string} in internal compute.\n'
-    else: new_data = nzeros*[0]
-    return new_data, message
+####################################################################
+# Function to sort independant variable X-list in ascending order  #
+# and to re-construct Y-list based on the newly sorted X-list. For #
+# example:                                                         #
+#   x = [0, 1, 2, 2, 4, 3]                                         #
+#   y = [0, 1, 2, 3, 4, 5]                                         #
+#                                                                  #
+# Perform increasing independant sort:                             #
+#   newx, newy, index_backmap = increasing_independant_sort(x, y)  #
+#   newx = [0, 1, 2, 2, 3, 4]                                      #
+#   newy = [0, 1, 2, 3, 5, 4]                                      #
+#                                                                  #
+# Reconstruct x and y data from  newx, newy, and index_backmap:    #
+#   reconx = []; recony = []                                       #
+#   for i in index_backmap:                                        #
+#       reconx.append(newx[i])                                     #
+#       recony.append(newy[i])                                     #
+#                                                                  #
+#   reconx = [0, 1, 2, 2, 4, 3]                                    #
+#   reconx = [0, 1, 2, 3, 4, 5]                                    #
+####################################################################
+def increasing_independant_sort(xdata, ydata):
+    paired = {(n, i):j for n, (i, j) in enumerate(zip(xdata, ydata))}
+    paired = dict(sorted(paired.items(), key=lambda x:abs(x[0][1]) )) # [0=keys;1=values][index position in tuple-key]
+    newx = []; newy = []; index_backmap = [] # {}
+    for n, key in enumerate(paired):
+        index_backmap.append(key[0])
+        value = paired[key]
+        newx.append(key[1])
+        newy.append(value)
+    return newx, newy, index_backmap
 
 
-#########################################################################
-# Function to convert string to float for int, float or fraction. From: #
-# https://stackoverflow.com/questions/1806278/convert-fraction-to-float #
-#########################################################################
-def convert_to_float(frac_str):
-    try:
-        return float(frac_str)
-    except ValueError:
-        num, denom = frac_str.split('/')
-        try:
-            leading, num = num.split(' ')
-            whole = float(leading)
-        except ValueError:
-            whole = 0
-        frac = float(num) / float(denom)
-        return whole - frac if whole < 0 else whole + frac  
+###################################################################################
+# Function to walk along x- and y-data and remove any x-data that backtracks. For #
+# example:                                                                        #
+#   x = [0, 1, 2, 2, 4, 3]                                                        #
+#   y = [0, 1, 2, 3, 4, 5]                                                        #
+#                                                                                 #
+# Perform cleaning:                                                               #
+#   newx, newy, removed_indexes = increasing_independant_cleaning(x, y)           #
+#   newx = [0, 1, 2, 4]                                                           #
+#   newy = [0, 1, 2, 4]                                                           #
+###################################################################################
+def increasing_independant_cleaning(xdata, ydata):
+    newx = [xdata[0]]; newy = [ydata[0]]; 
+    removed_indexes = []; passed_x = xdata[0]
+    for n, (x, y) in enumerate(zip(xdata, ydata)):
+        if x > passed_x:
+            newx.append(x)
+            newy.append(y)
+            passed_x = x
+        else: removed_indexes.append(n)
+    return newx, newy, removed_indexes
     
-    
-##############################################
-# Function to define of a butterworth filter #
-##############################################
-def butter_lowpass_filter(xdata, ydata, wn, order):
-    from scipy.signal import butter, filtfilt
-    
-    # Get the filter coefficients and filter ydata
-    b, a = butter(order, wn, btype='low', analog=False)
-    y = filtfilt(b, a, np.array(ydata))
-    return y
-
 
 #######################################################
 # Function to compute integral using Trapezoidal rule #
@@ -200,31 +180,174 @@ def compute_integral(x, y):
             xdiff = x[i+1] - x[i]
             yprod = y[i+1] + y[i]
             summation += (yprod/2)*xdiff
-            ix.append( (x[i+1] + x[i])/2 )
+            ix.append( x[i] )
             iy.append(  summation )
     else: print('ERROR (compute_integral) inconsistent number of data points between X and Y arrays')
     return ix, iy
 
 
-#######################################################
-# Function to compute derivative using Euler's method #
-#######################################################
-def compute_derivative(x, y):
-    dx = []; dy = [];
-    if len(x) == len(y):
-        for i in range(len(x)-1):
-            xdiff = x[i+1] - x[i]
-            ydiff = y[i+1] - y[i]
-            dx.append( (x[i+1] + x[i])/2 )
-            dy.append( ydiff/xdiff )
+##################################################################################################################################
+# Function to compute a first and second derivative using central finite difference.                                             #
+# https://www.mathworks.com/matlabcentral/answers/494553-first-and-second-order-central-difference                               #
+# https://pythonnumericalmethods.studentorg.berkeley.edu/notebooks/chapter20.02-Finite-Difference-Approximating-Derivatives.html #
+##################################################################################################################################
+def compute_derivative(xdata, ydata):
+    dxn = xdata[1:-1] # ignore first and last point
+    dy1 = [0]*len(dxn)
+    dy2 = [0]*len(dxn)
+    if len(xdata) == len(ydata):
+        for i in range(1, len(xdata)-1):
+            dx = (xdata[i+1] - xdata[i-1])/2
+            if dx == 0:
+                print('WARNING finite difference dx was zero at x={}. Derivative was set to zero to avoid infinite derivative.'.format(xdata[i]))
+            else:
+                dy1[i-1] = (ydata[i+1] - ydata[i-1])/(2*dx)
+                dy2[i-1] = (ydata[i+1] - 2*ydata[i] + ydata[i-1])/(dx*dx) 
     else: print('ERROR (compute_derivative) inconsistent number of data points between X and Y arrays')
-    return dx, dy
+    return dxn, dy1, dy2
+
+
+############################################################
+# Function to compute derivatives based on polynomial fits #
+############################################################
+def poly_derivative(xdata, ydata, span=2, deg=3):
+    xdata = np.array(xdata); ydata = np.array(ydata)
+    npoints = min([len(xdata), len(ydata)]) - span
+    drxn = []; dry1 = []; dry2 = []
+    for i in range(span, npoints):
+        px = xdata[i-span:i+span+1]
+        py = ydata[i-span:i+span+1]
+        
+        coefficients = np.polynomial.polynomial.polyfit(px, py, deg)
+        x0 = xdata[i]; y0 = 0
+        yp1 = 0; yp2 = 0
+        for n in range(len(coefficients)):
+            y0 += coefficients[n]*x0**n
+            if n >= 1: 
+                yp1 += coefficients[n]*n*x0**(n-1)
+            if n >= 2: 
+                yp2 += coefficients[n]*n*(n-1)*x0**(n-2)
+    
+        drxn.append(x0)
+        dry1.append(yp1)
+        dry2.append(yp2)           
+    return drxn, dry1, dry2
+
+
+#############################################################
+# This was is Josh's method for computing euler's curvature #
+#############################################################
+def compute_euler_curvature(xdata, ydata):
+    npoints = min([len(xdata), len(ydata)]) - 3
+    xcurvature = []; ycurvature = []
+    for i in range(1, npoints):
+        x0, x1, x2, x3 = xdata[i:i+4]
+        y0, y1, y2, y3 = ydata[i:i+4]
+        
+        # Compute the tangent vectors using central difference
+        t1 = [x2-x0, y2-y0]
+        t2 = [x3-x1, y3-y1]
+        
+        # Normalize the tangent vectors
+        t1_magnitude = math.sqrt(t1[0]*t1[0] + t1[1]*t1[1])
+        t2_magnitude = math.sqrt(t2[0]*t2[0] + t2[1]*t2[1])
+        h1_hat = [t1[0]/t1_magnitude, t1[1]/t1_magnitude]
+        h2_hat = [t2[0]/t2_magnitude, t2[1]/t2_magnitude]
+        
+        # Compute the change in tangent vectors "t3"
+        t3 = [h1_hat[0]-h2_hat[0], h1_hat[1]-h2_hat[1]]
+        t3_magnitude = math.sqrt(t3[0]*t3[0] + t3[1]*t3[1])
+        
+        # Set the direction of the of the t3 vector
+        if t1[1] > t2[1]:
+            direction = -1
+        else:
+            direction = 1
+        
+        # Compute the arc length
+        ds = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+        
+        # Finally compute kappa
+        kappa = direction*(t3_magnitude/ds)
+        
+        # Log values
+        xcurvature.append(x2)
+        ycurvature.append(kappa)
+    return xcurvature, ycurvature
+
+
+##########################################
+# Function to compute Newton's curvature #
+##########################################
+def compute_newton_curvature(xdata, ydata, method='signed', span=1, deg=1):
+    if span == 1 or deg == 1:
+        print('Computing derivatives using central difference')
+        dxn, dy1, dy2 = compute_derivative(xdata, ydata)
+    else:
+        print(f'Computing derivatives polyfit with span={span} and deg={deg}')
+        dxn, dy1, dy2 = poly_derivative(xdata, ydata, span, deg)
+    yp1 = np.array(dy1); yp2 = np.array(dy2)
+    if method == 'signed':
+        kappa = yp2/((1 + yp1*yp1)**(3/2))
+    elif method == 'unsigned':
+        kappa = np.abs(yp2)/((1 + yp1*yp1)**(3/2))
+    else: raise Exception(f'ERROR unsupported method {method}. Currently supported methods: "signed" or "unsigned"')
+    return dxn, kappa
+
+
+##########################################################
+# Function to find zero crossing (intial version came    #
+# from Tristan Muzzy - This version is fully vectorized) #
+##########################################################
+def value_crossing(xdata, ydata, yvalue=0, style='low'):
+    # Convert to numpy arrays
+    x = np.array(xdata)
+    y = np.array(ydata) - yvalue
+        
+    # Use Tristan's method of signs to find a zero crossing
+    s = np.sign(y)
+    flips = s[1:]*s[:-1]
+    lo = np.where(flips == -1)[0]
+    hi = lo[lo <= np.size(x)-2] + 1
+    if style == 'low':
+        x_cross = x[lo]
+        y_cross = y[lo] + yvalue
+    elif style == 'high':
+        x_cross = x[hi]
+        y_cross = y[hi] + yvalue
+    elif style == 'interp':
+        x_cross = -y[lo]*( (x[hi] - x[lo])/(y[hi] - y[lo]) ) + x[lo]
+        y_cross = np.zeros_like(x_cross) + yvalue
+    else:
+        raise Exception(f'ERROR style {style} not recognized. Currently supported styles are "low" or "high" or "interp".')
+    return list(x_cross), list(y_cross)
+
+
+######################################################################
+# Function to find peaks and valleys in a data set using derivatives #
+######################################################################
+def find_peaks_and_valleys(xdata, ydata):
+    # Compute derivatives and find critical points
+    dxn, dy1, dy2 = compute_derivative(xdata, ydata)
+    critical_x, critical_y = value_crossing(dxn, dy1, yvalue=0, style='low')
+    
+    # Use 1st and 2nd derivative test to determine if the point is a peak or a valley
+    xpeaks = []; ypeaks = []; xvalleys = []; yvalleys = []
+    for x, y in zip(critical_x, critical_y):
+        i = xdata.index(x)
+        if dy2[dxn.index(x)] <= 0:
+            xpeaks.append(xdata[i])
+            ypeaks.append(ydata[i])
+        else:
+            xvalleys.append(xdata[i])
+            yvalleys.append(ydata[i])
+    return xpeaks, ypeaks, xvalleys, yvalleys
 
 
 #########################################################################
 # Function to fit y = c0 + c1*x + ... + c_n*x^n to x and y numpy arrays #
 #########################################################################
-def np_curve_fit(x, y, degree=2, domain=[]):
+def np_curve_fit(x, y, degree=2, domain=None):
     # Define polynomial function
     def poly(x, coef):
         yout = np.zeros_like(x)
@@ -232,8 +355,9 @@ def np_curve_fit(x, y, degree=2, domain=[]):
             yout += coef[n]*(x**n)
         return yout
     
-    # Find domain
-    if domain != []:
+    # Ensure X and Y are numpy arrays and find domain
+    x = np.array(x); y = np.array(y)
+    if domain is not None:
         indices = np.where( np.logical_and(x >= domain[0], x <= domain[1]) )[0]
         x = x[indices]; y = y[indices];
     else:
@@ -241,33 +365,9 @@ def np_curve_fit(x, y, degree=2, domain=[]):
     
     # Find best fit
     param = np.polynomial.polynomial.polyfit(x, y, degree)
-    yfit = poly(x, param)
-    return x, y, yfit, param
-
-
-####################################################
-# Function to find peaks and valleys in a data set #
-####################################################
-def find_peaks_and_valleys(x, y):
-    from scipy.signal import find_peaks
-    
-    # Find peaks
-    xdata = np.array(x); ydata = np.array(y);
-    peaks, properties = find_peaks(ydata)
-    xpeaks = list(xdata[peaks])
-    ypeaks = list(ydata[peaks])
-    
-    # Find valleys
-    xvalleys = []; yvalleys = [];
-    if len(xpeaks) >= 2 and len(ypeaks) >= 2:
-        for i in range(len(peaks)-1):
-            lo = peaks[i]; hi = peaks[i+1];
-            between_peaksx = xdata[lo:hi]
-            between_peaksy = ydata[lo:hi]
-            minimum_index = np.min(np.where(between_peaksy == between_peaksy.min())[0])
-            xvalleys.append( between_peaksx[minimum_index] )
-            yvalleys.append( between_peaksy[minimum_index] )
-    return xpeaks, ypeaks, xvalleys, yvalleys
+    xfit = np.linspace(min(x), max(x), num=len(x))
+    yfit = poly(xfit, param)
+    return x, y, xfit, yfit, param
 
 
 ############################################################################
@@ -314,7 +414,8 @@ def fit_hyperbola(x, y, xlo, xhi, minimum_convergence=None, initial_guess=False,
     from scipy import optimize
       
     # define default outputs (in-case something goes wrong)
-    xout = list(x); yout = len(y)*[0];
+    xout = list(np.linspace(min(x), max(x), num=len(x)))
+    yout = len(y)*[0];
     params = [0, 0, 0, 0, 0]; center = [0, 0];
     slopes = [0, 0]; transition = [0, 0];
     
@@ -325,7 +426,7 @@ def fit_hyperbola(x, y, xlo, xhi, minimum_convergence=None, initial_guess=False,
     p0 = None
     if initial_guess:
         slopeguess = (yy[-1]-yy[0])/(xx[-1]-xx[0])
-        p0 = (np.mean(xx),np.mean(yy), slopeguess, slopeguess, np.log((xx[-1]-xx[0])**2/100))
+        p0 = (np.mean(xx), np.mean(yy), slopeguess, slopeguess, np.log((xx[-1]-xx[0])**2/100))
 
     # Define the hyperbola equation (eqn 1 in paper)
     def hyberbola(t, t0, v0, a, b, c):
@@ -356,37 +457,63 @@ def fit_hyperbola(x, y, xlo, xhi, minimum_convergence=None, initial_guess=False,
 # Function to find closest value in list #
 ##########################################
 def closest(lst, value):
-    return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-value))]
+    return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-value))]  
 
 
-################################################################
-# Statistic's functions to use for analyzing bond stats. *NOTE #
-# not using numpy to make this code have zero dependancies*    #
-################################################################
+######################################################################
+# Statistic's functions to use why you dont want numpy as dependancy #
+######################################################################
 def compute_mean(data):
-  return sum(data)/len(data)
+    if data:
+        return sum(data)/len(data)
+    else:
+        return 0
  
 def compute_variance(data):
-  mean = compute_mean(data)
-  deviations = [(x - mean)**2 for x in data]
-  variance = sum(deviations)/len(data)
-  return variance
+    if data:
+      mean = compute_mean(data)
+      deviations = [(x - mean)**2 for x in data]
+      variance = sum(deviations)/len(data)
+      return variance
+    else:
+        return 0
  
 def compute_standard_deviation(data):
   variance = compute_variance(data)
-  return math.sqrt(variance)
+  return math.sqrt(variance)   
 
 
-#############################################################
-# Function to import file from path useage:                 #
-#  module = import_file('path/to/file/default_density.py')  #
-#  print(module.mode) # print mode dict                     #
-#############################################################
-def import_file(path):
-    from importlib import util
-    root = os.path.basename(path)
-    root = root[:root.rfind('.')]
-    spec = util.spec_from_file_location(root, path)
-    module = util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module      
+#######################################################
+# Function to write Kemppainen-Muzzy data to csv file #
+#######################################################
+def savedata_to_csv(csv_data, csv_name):
+    with open(csv_name, 'w') as f:
+        csv_data = dict(sorted(csv_data.items(), key=lambda x: len(x[1][0]), reverse=True)) # x[value][index-in-value]
+        ncolumns = int(2*len(csv_data)); nrows = max([len(csv_data[i][0]) for i in csv_data])
+        matrix = [[None]*ncolumns for n in range(nrows)]; titles = []
+        for i in csv_data:
+            titles.append('{} (x)'.format(i[:75]))
+            titles.append('{} (y)'.format(i[:75]))
+        for i in range(nrows):
+            j = 0
+            for name in csv_data:
+                xd = csv_data[name][0]
+                yd = csv_data[name][1]
+                try: 
+                    matrix[i][j] = xd[i]
+                    j += 1
+                except: pass
+                try: 
+                    matrix[i][j] = yd[i]
+                    j += 1
+                except: pass
+                
+        # Join with comma's and write titles
+        titles = ', '.join(titles)
+        f.write('{}\n'.format(titles))
+        
+        # write rows
+        for row in matrix:
+            row = ', '.join([str(i) for i in row if i is not None])
+            f.write('{}\n'.format(row))
+    return

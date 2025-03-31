@@ -12,8 +12,8 @@ Purpose: Mode to find shear modulus in XZ-dir
 
 """
 # analysis list
-analysis = [['moving average', 0, 0.1, 'window=50', 'moving average'],
-            ['linear regression', 0, 0.02, 'shift=True', 'Modulus'],
+analysis = [['moving average', '', '', 'window=50', 'moving average'],
+            ['linear regression', '', 0.02, 'shift=True', 'Modulus'],
             ['cursor', '', '', 'x=0.02; y=5;', 'Yield strength']]
 
 # loadable mode
@@ -26,6 +26,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=shear_modulus_xz_strain_rate=
         'ylabel': 'True Stress (MPa)',
         'xcompute': '',
         'ycompute': '',
-        'analysis': analysis
+        'analysis': analysis,
+        'nevery': '1',
+        'parent_directory': 'logfile'
         }
 

@@ -14,10 +14,14 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 28March2025)
+LUNAR (version 31March2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+31March2025        JDK         - log_analysis.py: Added the Regression Fringe Response stress-strain analysis
+                                                  module. Along with added further compute options and 
+                                                  documentation.
+
 28March2025        JDK         - atom_typing.py: Adjusted PCFF and PCFF-IFF atom typing for arginine.
 
 28March2025        JDK         - bond_react_merge.py: Adjusted the auto-gen-map file option to include further

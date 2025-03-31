@@ -11,7 +11,7 @@ Purpose: Mode to find Tg and CTE using two
 
 """
 # analysis list
-analysis = [['moving average', 100, 800, 'window=100', 'moving average'],
+analysis = [['moving average', '', '', 'window=100', 'moving average'],
             ['average', 290, 310, '', 'room temp volume average (A$^3$)'],
             ['linear regression', 100, 300, 'extend=250', 'CTE below Tg'],
             ['linear regression', 600, 750, 'extend=-100', 'CTE above Tg'],
@@ -27,6 +27,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/properties=Tg_and_CTE_heating_rate=50_
         'ylabel': 'Volume (A$^3$)',
         'xcompute': '',
         'ycompute': '',
-        'analysis': analysis
+        'analysis': analysis,
+        'nevery': '1',
+        'parent_directory': 'logfile'
         }
 

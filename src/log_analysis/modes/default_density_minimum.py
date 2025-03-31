@@ -11,7 +11,8 @@ Purpose: Mode to find lowest density in a given
 
 """
 # analysis list
-analysis = [['minimum', 0, 2100, 'window=10', 'Density minimum']]
+analysis = [['LAMMPS data (apply moving average)', '', '', 'windw=100', ''],
+            ['minimum', '', '', '', 'Density minimum']]
 
 # loadable mode
 mode = {'logfile': 'EXAMPLES/log_analysis/property=density_ts=0.5.log.lammps',
@@ -23,6 +24,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=density_ts=0.5.log.lammps',
         'ylabel': 'Density ($g/cm^3$)',
         'xcompute': '${Step}*(1/2000)',
         'ycompute': '',
-        'analysis': analysis
+        'analysis': analysis,
+        'nevery': '1',
+        'parent_directory': 'logfile'
         }
 

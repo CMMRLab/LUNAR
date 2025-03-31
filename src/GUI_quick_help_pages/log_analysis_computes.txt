@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 8/15/2024
+# Last edited 2/13/2025
 #
 *******************
 * Compute options *
@@ -48,7 +48,44 @@
     The "**N" character is used to raise something to the power N. For example:
       ${Step}**2
       ${Step}**(1/2)
-		
+	  
+************
+* Indexing *
+************
+
+  Indexes in arrays can be accessed by using square brackets and the index number. For example say we wanted
+  to compute the intial cross-sectional area, then the compute would be:
+    ${Lx}[0]*${Ly}[0]
+	
+******************************************
+* Built-in/NumPy functions and constants *
+******************************************
+
+  The compute string can further leverage some Python built-in's and all of the NumPy library for further computing operations. A few examples
+  are provided below (NOTE: numpy is aliased as np):
+
+    A linspace can be computed in "pure" NumPy or combining with some Python built-ins:
+      np.linspace(np.min(${v_strain}), np.max(${v_strain}), np.size(${v_strain}))
+      np.linspace(min(${v_strain}), max(${v_strain}), len(${v_strain}))	  
+	  
+    An array can be reversed if needed in "pure" NumPy or with Python built-ins:
+      np.flip(${v_strain})
+      reversed(${v_strain})
+      ${v_strain}[::-1]
+	  
+  All of the NumPy library is accessible, so any code snippet that can be written in NumPy can be executed with the compute options of log_analysis.
+  The built-in Python functions are limited to the following, for security and safety reasons:
+    - min()
+    - max()
+    - sum()
+    - abs()
+    - len()
+    - map()
+    - range()
+    - reversed()
+  Please see official NumPY and Python documentation for how to use the functions described above. Additional libraries such as SciPy, Pandas, etc
+  can be added to LUNAR/src/log_analysis/vectorized_string_compute.py -> thermo_data() -> locals_dict, however it is advised to leave out libraries
+  that can perform OS-level tasks, such as the "os" or "sys" libraries.  
 		
 ************************************
 * Examples of some useful computes *
@@ -68,5 +105,8 @@
 	
   Say we wanted to compute von mises stress from LAMMPS variables, you can set a compute like:
     (((${f_sxx}-${f_syy})**2 + (${f_syy}-${f_szz})**2 + (${f_szz}-${f_sxx})**2 + 6*(${f_sxy}**2 + ${f_syz}**2 + ${f_sxz}**2))/2)**0.5
+	
+  Say we wanted to convert true stress to engineering stress in the Z-direction, then the compute would be:
+    ${f_szz_ave}*(${Lx}*${Ly})/(${Lx}[0]*${Ly}[0])
 		
 

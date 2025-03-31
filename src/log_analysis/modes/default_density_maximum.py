@@ -11,7 +11,8 @@ Purpose: Mode to find largest density in a given
 
 """
 # analysis list
-analysis = [['maximum', 0, 2100, '', 'Density maximum']]
+analysis = [['LAMMPS data (apply moving average)', '', '', 'windw=100', ''],
+            ['maximum', '', '', '', 'Density maximum']]
 
 # loadable mode
 mode = {'logfile': 'EXAMPLES/log_analysis/property=density_ts=0.5.log.lammps',
@@ -23,6 +24,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=density_ts=0.5.log.lammps',
         'ylabel': 'Density ($g/cm^3$)',
         'xcompute': '${Step}*(1/2000)',
         'ycompute': '',
-        'analysis': analysis
+        'analysis': analysis,
+        'nevery': '1',
+        'parent_directory': 'logfile'
         }
 

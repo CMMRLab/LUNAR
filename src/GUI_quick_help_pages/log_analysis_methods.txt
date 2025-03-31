@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 8/15/2024
+# Last edited 2/28/2025
 #
 ************
 * Overview *
@@ -18,15 +18,111 @@
   LUNAR/log_analysis.py  is meant to provide a general purpose plotting and analysis tool for LAMMPS logfiles. The LAMMPS logfile can be setup
   using the LAMMPS "thermo_style    custom ..." command and can be written to based on the LAMMPS "thermo N" command. LUNAR/log_analysis.py is
   compatible with very complex log files with many sections defined. This code minimally requires the Python numpy and matplotlib packages,
-  where pwlf and scipy can enable more methods (see the methods section below).
+  where other packages can enable more methods of analysis (see the methods section below).
   
 **********
 * Inputs *
 **********
 
+  logfile
+    Button to load in a LAMMPS log file to analyze. You may also directly type the filename in the entry to the right of the button as well.
+
+  parent_directory
+    Button to load in a path to the directory where the outputs will be written to. You may also directly type the path in the entry to the
+    right of the button as well. The path can be a full path or relative path or be set to the . (dot character) to write files to the location
+    where log_analysis.py is currently being run from. Setting parent_directory to "logfile" will use the path of the log_file variable to write
+    the files to that location on your machine. Additionally, relative directories can be made based on the logfile path, for example setting
+    parent_directory to "logfile/new_directory" will create a "new_directory" folder where the logfile is currently or setting parent_directory
+    to "logfile/../" will write the outputs one directory "backwards" from where the logfile is stored or setting parent_directory to
+    "log_file/../results" will create a "results" folder one directory "backwards" from where the logfile is stored.
+	
+  mode file
+    Button to load in a "mode file" used to setup all settings within the log_analysis GUI. You may also directly type the filename in the entry to
+    the right of the button as well. The mode file uses Python data structures to store all values to input as settings. You may write these mode
+    files manually or setup the GUI as you wish and then click "save settings as mode" button, to automatically write the mode file. All mode files
+    are by default stored in LUNAR/src/log_analysis/modes/ directory, which is also the default location to write the mode files, along with the 
+    default path that is used to open up the file dialog selection box to load in a mode file. If you plan to manually write a mode file, it is best
+    to take one that is already built and modify as needed.
+	
+  Replacing logfile when loading mode
+    During loading of a mode file, it maybe desired to load in the logfile that was saved to the mode file or to not load in that file. If this
+    Boolean is set to False, the logfile path will not be updated with what is saved in the mode file, where as if the Boolean is True, the logfile 
+    path will be updated with what is saved in the mode file.
+	
+********************
+* Array processing *
+********************
+
+  This module can be run with "array processing", where Unix path expansion rules can be provided to the topofile string, to find filenames and
+  paths to process in a for loop. This is accomplished with the Python "glob" library, which means all "glob" options are supported. In addtion
+  a few extra syntax has been added for further functionality beyound "glob".
+  
+  A basic overview of "glob" is that the "*" character provides general wildcard matching, where the number of characters is arbitrary. The "?"
+  character provides "per index" wild card matching. The "glob" library does not support tilde expansion.
+  
+  One nice way of using "array processing" is to use the logfile button to select a file and modify the logfile string with "[" or "]" or "?"
+  or "*" characters. The EXAMPLES/log_analysis/ from LUNAR's top level directory has the following tree structure:  
+
+    EXAMPLES
+    |---log_analysis
+    |   |--- heating_PFA_ReaxFF_rep_2_del_0-50.log.lammps
+    |   |--- heating_trimer_ReaxFF_rep_1_del_2-50.log.lammps
+    |   |--- properties=Tg_and_CTE_heating_rate=50_k_ns.log.lammps
+    |   |--- property=bulk_modulus_v0_v1_calc_ts=0.5_p0=1atm_p1=5000atm.log.lammps
+    |   |--- property=density_ts=0.5.log.lammps
+    |   |--- property=density_ts=0.5_improperly_formated.log.lammps
+    |   |--- property=shear_modulus_xy_strain_rate=2e8.log.lammps
+    |   |--- property=shear_modulus_xz_strain_rate=2e8.log.lammps
+    |   |--- property=shear_modulus_yz_strain_rate=2e8.log.lammps
+    |   |--- property=tensile_modulus_x_strain_rate=2e8.log.lammps
+    |   |--- property=tensile_modulus_y_strain_rate=2e8.log.lammps
+    |   |--- property=tensile_modulus_z_strain_rate=2e8.log.lammps
+    |   |--- regression_fringe_response_example_1.txt
+    |   |--- regression_fringe_response_example_2.txt
+    |   |--- regression_fringe_response_example_3.txt
+    |   |--- regression_fringe_response_example_4.txt
+    |   |--- regression_fringe_response_example_5.txt
+    |   |--- regression_fringe_response_example_6.txt
+    |   |--- shear_1_AroCy_L10_pxld_97_replicate_1_FF_PCFF-class2xe.log.lammps
+    |   |--- shear_1_EPON_862_pxld_88.2_replicate_1_FF_PCFF-class2xe.log.lammps
+    |   |--- shear_2_AroCy_L10_pxld_97_replicate_1_FF_PCFF-class2xe.log.lammps
+    |   |--- shear_2_EPON_862_pxld_88.2_replicate_1_FF_PCFF-class2xe.log.lammps
+    |   |--- shear_3_AroCy_L10_pxld_97_replicate_1_FF_PCFF-class2xe.log.lammps
+    |   |--- shear_3_EPON_862_pxld_88.2_replicate_1_FF_PCFF-class2xe.log.lammps
+    |   |--- tensile_1_AroCy_L10_pxld_97_replicate_1_FF_PCFF-class2xe.log.lammps
+    |   |--- tensile_1_EPON_862_pxld_86.8_replicate_4_FF_PCFF.log.lammps
+    |   |--- tensile_1_EPON_862_pxld_88.2_replicate_1_FF_PCFF-class2xe.log.lammps
+    |   |--- tensile_2_AroCy_L10_pxld_97_replicate_1_FF_PCFF-class2xe.log.lammps
+    |   |--- tensile_2_EPON_862_pxld_86.8_replicate_4_FF_PCFF.log.lammps
+    |   |--- tensile_2_EPON_862_pxld_88.2_replicate_1_FF_PCFF-class2xe.log.lammps
+    |   |--- tensile_3_AroCy_L10_pxld_97_replicate_1_FF_PCFF-class2xe.log.lammps
+    |   |--- tensile_3_EPON_862_pxld_86.8_replicate_4_FF_PCFF.log.lammps
+    |   |--- tensile_3_EPON_862_pxld_88.2_replicate_1_FF_PCFF-class2xe.log.lammps
+    |   |--- tensile_Z_dip_before_linear_region.log.lammps
+	
+  A few examples are provided to show how "array_processing" can be used to select files to process in a for loop from 
+  the EXAMPLES/log_analysis/ directory.
+  
+    1. Assume we want to process all the tensile simulations in the X-direction (denoted by "tensile_1_*") with the RFR method. We would
+       set logfile as:
+        logfile = EXAMPLES/log_analysis/tensile_1*.log.lammps
+		
+    2. Assume we want to process all the LAMMPS log files to analyze the density of each file. We would set logfile as:
+        logfile = EXAMPLES/log_analysis/*.log.lammps
+		
+    3. The atom_typing and all2lmp pages have more robust examples to view.
+	   
+  Finally, the "array processing" can be used for a large number of files that may take long durations. Therefore during an array processing
+  run a "ding" alert will be sounded once all files are processed.
+  
+***********
+* Methods *
+***********
+
   Methods that use the "X-lo" and "X-hi" columns
     - "moving avrage"
     - "Butterworth (low pass)"
+    - "Whittaker-Eilers"
     - "average"
     - "linear regression"
     - "hyperbola"
@@ -34,8 +130,14 @@
     - "spline-integration"
     - "minimum"
     - "maximum"
+    - "Calculus: Integrate Data"
+    - "Calculus: Differentiate Data"
+    - "Regression Fringe Response Modulus"
     - "LAMMPS data (apply moving average)"
-    - "LAMMPS data (apply butterworth filter)"
+    - "LAMMPS data (apply Butterworth filter)"
+    - "LAMMPS data (apply Whittaker-Eilers)"
+    - "LAMMPS data LAMMPS data (LOWESS)"
+    - "LAMMPS data LAMMPS data (fit polynomial)"
     - all other methods can leave this column empty
     - NOTE: if not provided the GUI will default to using the minimum xdata for xlo and the maximum xdata for xhi
 
@@ -47,13 +149,15 @@
           window=75  # group 75 data points and average into one data point
 		  
     - "Butterworth (low pass)"
-        This method implements a low pass butterworth  filter to attenuate the higher frequency thermal vibrations associated with most MD thermo-
-        dynamic data. The goal is the "reveal" a cleaned response of the data being filtered. It is worth researching the butterworth filter prior
+        This method implements a low pass Butterworth filter to attenuate the higher frequency thermal vibrations associated with most MD thermo-
+        dynamic data. The goal is the "reveal" a cleaned response of the data being filtered. It is worth researching the Butterworth filter prior
         to using this filtering method, however a breif discussion will be provided discussing the keyword inputs implemented for this method.
         This method allows for two settings to be adjusted, the "order" of the filter and the "critical frequency (wn)" of the filter. The "order"
         of the filter sets how "aggressive" the higher frequencies are attenuated near the "cutoff frequency" of the filter. For example see the
         two magnitude responses below for the same "cutoff frequency", the "higher" order filter reduces the "gain" much more aggressively near the
-        "cutoff frequency".
+        "cutoff frequency". The Butterworth filter is then implemented using "scipy.signal.filtfilt", which is a zero phase shift method by first
+        performing a forward convolution and then a backwars convolution. This results in a net order of the filter to be twice that of the order
+        supplied with the keywords detailed below.
 
           Depicts the magnitude response               Depicts the magnitude response
           of a "lower order" filter		               of a "higher order" filter
@@ -68,24 +172,98 @@
          0+----------|-------------->                 0+---------|--------------->
             frequency cutoff                             frequency cutoff
 					
-        wn=<float>, where <float> is a floating point number between 0 and 1 to set critical frequency, which is the point at which the gain drops to
-        1/sqrt(2) that of the passband (the "-3 dB point"). If you want to control the "true cutoff frequency" you may compute "wn" in the following
-        way:
+        wn=<float or string>, where <float> is a floating point number between 0 and 1 to set critical frequency, which is the point at which the gain
+        drops to 1/sqrt(2) that of the passband (the "-3 dB point"). If you want to control the "true cutoff frequency" instead of the "normalized
+        cutoff frequency" you may compute "wn" in the
+        following way:
             wn = cutoff/nf; where "wn" is the input to the filter, "nf" is the Nyquist frequency, and "cutoff" is the cutoff frequency. 
             nf = 0.5*fs; where "fs" is the sampling frequency (1/delta-x).
             wn = cutoff/(0.5*fs)
-        The default wn is 0.01, if not supplied. Examples:
+        If wn=<string>, the string can be 'or' or 'op' where 'or' means optimize wn automatically by finding where the residual crosses the mean
+        of the residuals for the first time and 'op' means optimize wn automatically by computing the Power Spectral Density (PSD) and finding where
+        the power in dB crosses the zero point (mean of the PSD). The power in dB is computed with the reference power as the mean of the PSD and thus
+        positive values represent the dominant frequencies in the signal and negative values represent the trivial frequencies in the signal. The
+        crossing from positive to negative then provides a method to determine the low pass filter cutoff as the trivial frequencies due to white 
+        noise or simply lack of frequency at that band will be negative. The following order values are recommend for each optimization method:
+          wn='or' an order=5 is recommended
+          wn='op' an order=2 is recommended
+        When wn=<string>, a "-p" set of characters can be appended to the ending (for example 'or' -> 'or-p' and 'op' -> 'op-p'), which will plot the 
+        "spectra" used for optimizing wn. The default wn is 0.01, if not supplied. Examples:
           wn=0.1
           wn=0.5
+          wn=or
+          wn=op
+          wn=or-p
+          wn=op-p
 		  
-        order=<int>, where <int> is the order of the low pass butterworth filter. See the images above for the effect of the order of the filter.  The
-        default order is 2, if not supplied. Examples:
+        order=<int>, where <int> is the order of the low pass Butterworth filter. See the images above for the effect of the order of the filter.
+        The default order is 2, if not supplied. Examples:
           order=2
           order=3
 		  
-        NOTE: the "order" and "wn" can be set by stringing them together with the ";" character. For example:
-          order=2; wn=0.1
-          wn=0.5; order=3
+        psd=<Boolean>, where <Boolean> is True or False. If psd=True and wn=<float> or wn=or the Power Spectral Density (PSD) will be plotted.
+        The PSD will be plotted for wn=op, if the "-p" flag is provided (i.e. psd=op-p) no matter what the psd flag is set as. If psd=False the 
+        PSD will not be plotted. The PSD offers a method to understand the dominant frequency in the "signal" and offers a method for determining
+        wn. Examples:
+          psd=True
+          psd=False
+
+        qm=<string>, where <string> is in the format 'lo,hi', where lo and hi are integer values (i.e. '1,1', '2,1', ...). The purpose of "qm" is 
+        to perform quadrant mirroring to reduce the transiet edge effects of the start-up and shut-down cost of the convolution on either the forward
+        or backwards pass. By mirroring the data at each end, the start-up and shut-down costs of the convolution can be "pushed" into data that does
+        not matter. The data is mirrored prior to filtering and then sectioned back to the original data after filtering. The integer meanings for 
+        lo and hi are described below:
+
+          +---------+-----------------------------------------------------+-----------------------------------------------------+
+          | integer |                    lo X-data end                    |                    hi X-data end                    |
+          +---------+-----------------------------------------------------+-----------------------------------------------------+
+          |    1    | shuts off mirroring operation at "lo" X-data end    | shuts off mirroring operation at "hi" X-data end    |
+          |    2    | mirrors data "head-to-head" into quadrant 2         | mirrors data "tail-to-tail" and leaves Y-data alone |
+          |    3    | mirrors data "head-to-head" into quadrant 3         | mirrors data "tail-to-tail" and flips Y-data        |
+          |    4    | mirrors data "head-to-tail" and leaves Y-data alone | mirrors data "tail-to-head" and leaves Y-data alone |
+          +---------+-----------------------------------------------------+-----------------------------------------------------+
+
+        When the MD stress-strain response has "slack" it is best to mirror the data into quadrant 2, and when the MD stress-strain response has "no
+        slack" it is best to mirror the data into quadrant 3 for the "lo" integer. For the "hi" integer majority of the time the optimal integer is 
+        2 and will be rare to deviate to other integers. Additionally the "-p" flag can be added to plot the quadrant mirroring of the data for
+        inspection. The default is '1,1' and will be used if not specified. Examples:
+          qm=1,2
+          qm=2,2
+          qm=2,3-p
+          qm=1,4-p
+        
+        Additionally the string can be set to "msr" or "msr-p", where msr stands for minimum sum of residuals squared. The sum of residuals 
+        squared is determined for all permuations and combinations of lo and hi integer values; where which ever Butterworth filtered data has the
+        minimum sum of residuals squared between permuations, is the "best quadrants" to use as the mirror (or to not mirror the data at all for
+        quadrant 1). This is because the "edge" effects cause the low and high x-range residuals to be larger, when mirrored in the incorrect
+        direction. Additionally the "-p" flag can be added to plot the optimized quadrant position and the quadrant mirroring of the data for
+        inspection. NOTE: using "wn=or"/"wn=or-p" and "qm=msr"/"qm=msr-p" is not recommended as the mirroring directions may alternate during the
+        "wn=or" optimization, ultimately producing bogus results. So when using "wn=or"/"wn=or-p", it best to explicilty set qm to the desired
+        quadrant. Examples:
+          qm=msr
+          qm=msr-p
+		  
+        csv=<Boolean>, where <Boolean> is True or False. If the boolean is True, all data that is plotted with the '-p' flag or the psd Boolean 
+        (such as qm=1,2-p; qm=msr-p; psd=True; wn=op-p; ...) will be written to a .csv file for plotting outside of log_analysis. Examples:
+          csv=True
+          csv=False
+		  
+        savefig=<string>, where <string> can have 'all' or integer values ('0' or '1' or '1 2' or '1,2'). This string will control which figures are
+        saved during the calculations. Integers can go from 0 to 2, with the following meainings:
+          '0' no plots will be saved. Can also be an empty string or a string that does not have int values 1-2.
+          '1' Will save the wn optimization plot, if the '-p' flag is provided to the "wn" keyword.
+          '2' Will save the quadrant mirroing plot if the '-p' flag is provided in the "qm" keyword or the "psd" keyword Boolean is True.
+        The 'all' flag can be used to save all plots. When using integer values they are not required to be seperated or not seperated by a delimiter.
+        For example '1 2' or '1-2' or '1,2' all will save plots 1 and 2. However to standardize the syntax of this string, it is recommended to use
+        a comma delimiter (e.g. '1,2'). The default if not provided is 'all'. Examples:
+          savefig=0
+          savefig=1
+          savefig=1,2
+          savefig=all
+		  
+        NOTE: the "order", "wn", "psd", and "qm" can be set by stringing them together with the ";" character. For example:
+          order=2; wn=0.1; psd=True; qm=2,3
+          psd=False; wn=0.5; order=3; qm=2,3-p
 		
         This method requires the Python scipy package (install via: pip install scipy)
                   
@@ -137,18 +315,14 @@
         This method requires the Python scipy package (install via: pip install scipy)
 
     - "spline-integration"
-        This method applies a spline integration (interpolation if needed between data points), where calling this method a moving average
-        is applied to the LAMMPS data and then a spline integration is applied to the moving average data.
-	
-        window=<N>, where <N> is the number of data points to group and average together. The default window is 100 and will be applied if
-        entry is left empty. Examples:
-          window=50  # group 50 data points and average into one data point
-          window=75  # group 75 data points and average into one data point
+        This method applies a spline integration (interpolation if needed between data points), where calling this method computes a spline
+        integration to find the area under the curve. NOTE, it maybe useful to clean the LAMMPS data before integrating with methods like:
+        "LAMMPS data (i)", where i="apply moving average" or "apply Butterworth filter" or "fit polynomial" or "apply Whittaker-Eilers".
 		  
         shift=<Boolean>, where <Boolean> is True or False. If shift=True all data that is plotted except the cursor (if plotted) will be shifted
-        by the first data point from the moving average. The shifting of data is useful for stress-vs-strain analysis for finding the yield
-        strength, since it is advised to shift all data, such that the linear regression starts at zero, to effectively remove the residual
-        stress from the yeild strength calculation. The default shift boolean is False and will be applied if entry is left empty. Examples:
+        by the first data point from of the data (cleaned or not). The shifting of data is useful for stress-vs-strain analysis for finding the
+        "true" area under the curve where the stress should start around zero. The default shift boolean is False and will be applied if entry
+        is left empty. Examples:
           shift=False  # All data will remain as is
           shift=True   # All Y-data will be shifted by the y-intercept of the regression
 		  
@@ -168,39 +342,315 @@
         This method requires the Python pwlf package (install via: pip install pwlf)
 		
     - "cursor"
-      x=<N>; y=<N>;, where <N> is the X or Y coordinate to place the cursor. If both x and y are not present the cursor will not plot or analyze
-      anything. Thus the default if not present is to do nothing. Examples:
-        x=10; y=200;  # Will place a cursor at (10, 200) in the plot
-        x=50; y=800;  # Will place a cursor at (50, 800) in the plot
+        x=<N>; y=<N>;, where <N> is the X or Y coordinate to place the cursor. If both x and y are not present the cursor will not plot or analyze
+        anything, if only x is only present (with no y) a vertical line will be plotted at that location, and if y is only present (with no x) a 
+        horizontal line will be plotted at that location. The default if not present is to do nothing. Examples:
+          x=10; y=200;  # Will place a cursor at (10, 200) in the plot
+          x=50; y=800;  # Will place a cursor at (50, 800) in the plot
+          x=10.5
+          y=2000
 		
     - "minimum" and "maxmimum"
-        window=<N>, where <N> is the number of data points to group and average together. The default window is 100 and will be applied if
-        entry is left empty. Examples:
-          window=50  # group 50 data points and average into one data point
-          window=75  # group 75 data points and average into one data point
-        After the moving average is applied the minimum or maximum Y-value on the moving average data will found and reported.
+         Find the minimum Y-value or maximum Y-value in a given X-range. This method has no additional "misc" settings. NOTE, it maybe useful to
+         clean the LAMMPS data before integrating with methods like: "LAMMPS data (i)", where i="apply moving average" or "apply Butterworth filter"
+         or "fit polynomial" or "apply Whittaker-Eilers".	
 
-    - "LAMMPS data (apply moving average)" or "LAMMPS data (apply butterworth filter)"
+    - "Calculus: Differentiate Data" or "Calculus: Integrate Data"
+        These method provides basic calculus methods such as differentiating or integrating data to find critical points or inflection points or
+        areas under the curve. Both methods use the same keywords described below.
+		
+        order=<string>, where the string can contain integer values of '1' or '2' or 1,2'. When '1' is passed a first derivaitve or integral is 
+        plotted, when '2' is passed a 2nd derivaitve or integral is plotted and when both '1' and '2' are passed as '1,2' both the first and second
+        derivatives or integrals are plotted. In addition for the "Calculus: Differentiate Data" method a "-zc" can be appended (e.g. '1-zc' or '2-zc'
+        or '1,2-zc'), the zero crossing points will be plotted to show the critical and inflection points. Examples:
+          order=1
+          order=1,2
+          order=1-zc
+          order=1,2-zc
+		  
+        csv=<Boolean>, where <Boolean> is True or False. If the boolean is True, all the data that is computed these calculations will be written
+        to a .csv file and if False, no data will be written to a .csv file. The default is False, if not provided. Examples:
+          csv=True
+          csv=False
+		  
+        savefig=<string>, where <string> can have 'all' or integer values ('0' or '1'). This string will control which figures are saved during the
+        calculations. Integers can go from 0 to 1, with the following meainings:
+          '0' no plots will be saved. Can also be an empty string or a string that does not have int values 1-2.
+          '1' Will figure with two subplots (X, Y-data and the differentiated or integrated data).
+        The 'all' flag can be used to save all plots. When using integer values they are not required to be seperated or not seperated by a delimiter.
+        The default if not provided is 'all'. Examples:
+          savefig=0
+          savefig=1
+          savefig=all
+		  
+    - "Regression Fringe Response Modulus"
+        This method implements the "Regression Fringe Response Modulus" (RFR-modulus) calculation to find where to fit the linear regression model
+        to, by walking along the LAMMPS data and fitting a linear regression model to each data increment. This is denoted as fringe-slope, where
+        the fringe is being used to "feel" for a yielding event causing non-linearity in the stress-vs-strain plot. Once the fringe slopes are found
+        the "xhi" value is found where the fringe slope is maximized, as a yielding event will cause the fringe slope to decrease. Once the "xhi" 
+        value is found, three methods exist to find xlo, please read about these in the "xlo" keyword option. Additionally, this method can then take
+        inputs for the two transverse strain directions to compute a linear regression in the xrange defined by "xlo" and "xhi" (or the yield point
+        if defining the yield point is performed using either the "yp" or "offset" option - the max strain defined by either of the three methods will
+        be used to set the end point for the linear regression model to compute Poisson's ratio). The linear regression will define the slope to
+        compute the Poisson's ratio as:
+          nu = -(d_trainsverse_strain)/(d_axial_strain)
+        where, d_trainsverse_strain will be described by the "t1" and t2" keywords described below and d_axial_strain is set by the "X-data" drop
+        down menu. NOTE that if attempting to find the yield strength by using "yp" or "offset" methods the xhi will be the maximum a value found
+        from the "linear region", the "yield point X from yp", or "yield point X from offset". This is due to the fact, computing nu in this way,
+        it is best to apply the linear regression model over the largest range of data as possible.		
+	
+        shift=<string>, where <string> is "no" or "ymin" or "yint". If shift=yint all data that is plotted except the cursor (if plotted) will be
+        shifted by the y-intercept of the linear regression. If shift=ymin all data that is plotted except the cursor (if plotted) will be shifted
+        by the y-minimum value of the stress data. If shift=no no data will be shifted at all. The shifting of data is useful for stress-vs-strain
+        analysis for finding the yield strength, since it is advised to shift all data to remove "any residual stress" from the yield strength
+        prediction. The default shift is "no" and will be applied if entry is left empty. Examples:
+          shift=no
+          shift=yint
+          shift=ymin		  
+        NOTE: shift=ymin should only be used if data was "cleaned" before hand using "LAMMPS data (i)", where i="apply moving average" or
+              "apply Butterworth filter" or "fit polynomial" or "apply Whittaker-Eilers", otherwise "ymin" on noisy LAMMPS data makes no
+              physical sense. If there is no "cleaning" of LAMMPS data before using this method and you want to shift the data to near zero
+              starting, use shift=yint. As the linear regression model will provide a "mean" shift required. Finally, on systems with "slack"
+              in the low strain ranges, it makes more sense to use shift=ymin.
+
+        minxhi=<float>, where <float> is the minimum xhi strain that the linear region can be found. If <float> is zero, this is left as unbound,
+        which is the default if not specified. This value can then be thought of as the "smallest linear span" to find within the stress-strain
+        data. Examples:
+          minxhi=0.01
+          minxhi=0.005	
+		  
+        maxxhi=<float>, where <float> is the maximum xhi strain that the linear region can be found. If <float> is zero, this is left as unbound,
+        which is the default if not specified. This value can then be thought of as the "largest strain to attempt finding the linear region in".
+        Some data may have more "wiggly" linear regions (particularly shear data, as shear data has more wiggles then tensile data), where this
+        option allows you to control the "largest" linear region to search as the "wiggles" can maximize the fringe-slope response at fairly large
+        strains. Examples:
+          maxxhi=0.03
+          maxxhi=0.05	
+
+        t1=<string> and t2=<string>, where <string> sets the transverse strain data column in the LAMMPS logfile. This option is meant to be used
+        for tensile straining simulations to compute the two Poisson's ratio associated with a 3D tensile simulation. The default for "t1" and t2"
+        is an empty string, which means to not find the transvere strain data to compute the Poisons ratio from. NOTE for this option to work both
+        "t1" and "t2" must be supplied. Examples:
+          t1=v_etruey; t2=v_etruez
+          t2 = v_etruex; t1 = v_etruey 
+                 
+        yp=<int or string>, where <int> is a positive value. The keyword "yp" means "yield point" and the <int> value sets an integer defining the
+        valley index (moving from low strain to high strain, with index starting at 1) of the 2nd derivative of fringe slope. The fringe slope "peaks"
+        or "plateaus" represents locations on the stress-strain curve of "kinking over". The first "peak" or rather the maximum of fringe slope
+        plot is the first "kinking over" and is used to define the proportional limit to fit the linear regression model to for finding the Young's
+        Modulus. Then subsequent "peaks" or "plateaus" in the fringe slope plot represents other yielding phenomenon. The simplest way to locate the
+        subsequent "peaks" or "plateaus" is to use the 2nd derivative of the fringe slope, where the valleys for the 2nd derivative represents the
+        "most concave down portions" of the fringe slope. The valleys are then indexed starting from 1 and users can define the valley index to pick
+        a concave down portion of the fringe slope plot. Please see the yp=<string> section as some other internal methods have been developed to
+        pick the valley for you, using relative pieces of information. If <int> is set to zero (yp=0), the yield point will not be determined and
+        is the default if yp is not provided in the misc column. Examples:
+          yp=1
+          yp=2
+          yp=0	
+		  
+        If yp=<string>, a different approach is used to find the yield point. The following string options are available and what they imply:
+          "min-v"   means use the valley with the minimum Y-value of the 2nd derivative of the fringe slope. When the 2nd derivative is negative 
+                    it implies a concave down portion of the undifferentiated data. There are cases where the undifferentiated data will not have
+                    critical points and thus there will be no fully concave down sections in the undifferentiated data. However, taking a relative
+                    view of the 2nd derivative, such as finding the minimum of the 2nd derivatives provides a method to finding the section that
+                    is the "most concave down" relative to all other sections of the undifferentiated data. The "min-v" method is the recommended
+                    method for predicting yield strength when using the "yp" method.
+					
+          "min-2d"  means use the minimum of the 2nd derivative of the fringe-slope plot. The minimum of the 2nd derivative marks the point in the
+                    plot that is most concave down. However, the actually minimum of the 2nd derivative will be when the first linear section ends
+                    found via the maximization of the fringe-slope. The "min-v" method is a refinement of this method, however the "min-2d" method
+                    is left as an option for rare case in-which the "min-v" method could potentially have issues.
+
+          "max-d"   means the use the maximum depth valley in the 2nd derivative of fringe-slope plot as the yield point. The deepest valley 
+                    represents a relative low in the 2nd derivative of fringe slope which ultimately shows the largest relative concave down portion. 
+                    This method works alright and it is recommended to use "min-2d" over this method. This method is here for testing purposes.
+					
+          "min-r2d2" means use the minimum of the 2nd derivative to the r^2 value with respect to strain. This point in the r^2 plot means that is
+                     the part of the r^2 value that has the largest concave down portion and represents the point where the r^2 value starts to
+                     decay due to a yielding point. The yielding point is the first onset of non-linear behavior, which causes the r^2 value to start
+                     to decay.
+					 
+          "mean(r2)-3s"  means find the mean and standard deviation of the r^2 value in the linear region of the fringe-slope calculation. The yield
+                         point is then set by the first crossing of the r^2 value of <mean - 3*sigma>. If for some reason there is no crossing, the
+                         code will warn the user and set the crossing at the end of the linear region.
+						 
+          "max(r2)-3s"   means find the max and standard deviation of the r^2 value in the linear region of the fringe-slope calculation. The yield
+                         point is then set by the first crossing of the r^2 value of <max - 3*sigma>. If for some reason there is no crossing, the 
+                         code will warn the user and set the crossing at the end of the linear region.
+						 
+          "max-3ffs"     means perform a 3rd forward fringe slope pass, starting at the end of the linear regions, then find the maximum of the 3rd
+                         forward fringe pass. The strain value at the maximum of the 3rd forward fringe pass will be the yield strain.
+						 
+        Examples using yp as a string:
+          yp=min-2d
+          yp=min-v
+          yp=max-d
+						 
+        If yp uses a derivaitve, different methods can be assigned to how derivaitves are computed. Two different methods are available:
+          1. Central difference (should be the default if you dont want special controls)
+          2. Spanned polynomial fitting (can customize if you have the desire to do so - EXPERIMENTAL).
+               In this method polynomials of degreeN are fit to spans of data. The first and second derivaitve is then computed using the parameters
+               of the fit polynomial. 
+          The two methods described above are controlled by the "ds" (derivative span) and "dd" (derivative degree) keywords:
+            ds=<int,string>, where <int> sets the span of data to fit on either side of the data point of interest. For example a "ds=5", means fit
+            a polynomial 5 data points to the left and 5 data points to the right of the point of interest. If "ds=0", the derivaitve calculation is
+            set to the central difference method. If ds=<string> the only supported string currently is "hlr", which stands for half of the linear
+            region and finds the number of data points in the linear region and divides that number by 2. The rough idea is that any meaningful
+            derivative is around this span. The "ds" option is EXPERIMENTAL, thus the safest option is the set it to "ds=0" and use the finite 
+            difference derivaitves. If "ds=<int,string>" is not supplied in the misc column, it will default to "ds=0".
+
+            dd=<int>, where <int> sets the degree of polynomial to fit over the span "ds". This value needs to minimally by greater then or equal
+            to 2, so that the second derivaitve can be computed from the polynomial parameters. If "dd=<int>" is not supplied in the misc column,
+            it will default to "dd=3".
+
+            Examples of controlling the derivaitve method:
+              ds=0
+              ds=10; dd=5
+              ds=hlr; dd=10
+		  
+        offset=<float>, where <float> is the percent offset to find the yield strength (usually 0.002) by moving the linear regression fit by <float>
+        offset in the positive X-direrction. The intersection is then found numerically by minimizing the distance between the stress-strain curve and
+        the offset line. NOTE both the "yp" and "offset" option can be used simultaneously. Examples:
+          offset=0.002
+          offset=0.001
+		  
+        xlo=<string or float>, where <string> can be "iv" or "rfs" with meanings described below and <float> provides manual control of selecting the
+        desired xlo value. When xlo=<string>, here are the meanings of the string and how it effects the xlo calculation:
+          'iv'   which uses the vertex of the integrated stress-strain data.
+          'rfs'  which uses the fringe slope method in reverse to maximize the slope. NOTE the smallest linear region this method will find is the
+                 length of minxhi.
+        When xlo is a float, the user can specifically place the lower bound for the linear regression model. The default if not specified is 'rfs'.
+        Examples:
+          xlo=iv
+          xlo=rfs
+          xlo=0.001
+		  
+        csv=<Boolean>, where <Boolean> is True or False. If the boolean is True, all the data that is computed during the RFR-modulus calculation will
+        be written to a .csv file and if False, no data will be written to a .csv file. The default is False, if not provided. Examples:
+          csv=True
+          csv=False
+		  
+        savefig=<string>, where <string> can have 'all' or integer values ('0' or '1' or '1 2' or '1,2'). This string will control which figures are
+        saved during the calculations. Integers can go from 0 to 2, with the following meainings:
+          '0' no plots will be saved. Can also be an empty string or a string that does not have int values 1-2.
+          '1' Will save the RFR figure with four subplots (xhi-method, xlo-method, derivaitves, stress-strain).
+          '2' Will save the transverse-vs-axial strain figure, if "t1" and t2" are provided for Poisson's ratio calculation.
+        The 'all' flag can be used to save all plots. When using integer values they are not required to be seperated or not seperated by a delimiter.
+        For example '1 2' or '1-2' or '1,2' all will save plots 1 and 2. However to standardize the syntax of this string, it is recommended to use
+        a comma delimiter (e.g. '1,2'). The default if not provided is 'all'. Examples:
+          savefig=0
+          savefig=1
+          savefig=1,2
+          savefig=all
+		  
+        grid=<string>, where <string> can be "on" or "off" to turn on or shutoff the grid in the plots generated by the RFR method. If "grid=<string>"
+        is not supplied in the misc column it defaults to "grid=off". Examples:
+          grid=on
+          grid=off
+		  
+        ci=<float>, where float is zero or "0 < ci < 1". If <float> is zero no additional statistics will be computed for the fit linear regression
+        model. If <float> is greater then zero, but less then 1 (i.e. 0.95) a confidence interval will be computed for the slope. For example 
+        "ci=0.95" a 95% confidence interval will be computed for the slope of the linear regression model and if "ci=0" no additional calculations
+        will be under taken. This option requires scipy to be installed to be able to compute the two sided "t-statistic". Examples:
+          ci=0
+          ci=0.95
+
+********************************
+* LAMMPS data cleaning methods *
+********************************
+
+    - "LAMMPS data (apply moving average)" or "LAMMPS data (apply Butterworth filter)" or "LAMMPS data (fit polynomial)" or "LAMMPS data (apply
+       Whittaker-Eilers)" or "LAMMPS data (LOWESS)"
         Can be used as a "global" method to clean the LAMMPS data before analyzing. The "LAMMPS data (apply moving average)" option means apply a 
         moving average to the LAMMPS data before analyzing. This can be useful to reduce the "noise" in logged thermodynamic data. Please see the
         "moving average" section for options to use in the "misc" column to define the operations of this method on the LAMMPS data. The default
-        "X-lo" and "X-hi" will be the minimum and maximum of the X-data if left blank and the default window will be 100 data points of left
-        blank.
+        "X-lo" and "X-hi" will be the minimum and maximum of the X-data if left blank.
       
-        The "LAMMPS data (apply butterworth filter)" option means apply a low pass butterworth filter to the LAMMPS data before analyzing. This
+        The "LAMMPS data (apply Butterworth filter)" option means apply a low pass Butterworth filter to the LAMMPS data before analyzing. This
         can be useful to reduce the "noise" in logged thermodynamic data. Please see the "Butterworth (low pass)" section for options to use in
         the "misc" column to define the operations of this method on the LAMMPS data. The default "X-lo" and "X-hi" will be the minimum and maximum
-        of the X-data if left blank. The default "wn" will be 0.01 and "order" will be 2 if left blanks.
+        of the X-data if left blank. The default "wn" will be 0.01, "order" will be 2, "psd" will be False, and "qm" will be 1,1 if left blank.
+		
+        The "LAMMPS data (fit polynomial)" will fit a polynomial to the LAMMPS data of desired degree. This method uses
+        numpy.polynomial.polynomial.polyfit. The misc option input is:
+          deg=<int>, where <int> sets the degree of the polynomial to fit to the LAMMPS data.
+		  
+        The "LAMMPS data (apply Whittaker-Eilers)" will attempt to smooth the data with the Whittaker-Eilers smoother. Please read more about this
+        method from pages below:
+          https://towardsdatascience.com/the-perfect-way-to-smooth-your-noisy-data-4f3fe6b44440
+          https://towardsdatascience.com/how-to-tune-the-perfect-smoother-bcc5a67660b1
+          
+          This method currently has two defined parameters:
+            order=<int>, where <int> sets the order of the smoother which is the number of neighboring data points used to smooth the data. A
+                         good default is an order of 2 (a second order finite difference). Examples:
+                           order=1
+                           order=2
+			
+			
+            lambda=<float or string>, where <float> sets the lambda parameter and <string> enables the automatic determination of lambda. For string
+                                      inputs a few options exist. The full option is summarized as 'op<MinLambda,MaxLambda,NumLambda>-p', where
+                                      'op' tells the code to optimize lambda using the minimum cross-validation error (CVE) determined by leave-
+                                           one-out cross validation.
+										   
+                                      '<MinLambda,MaxLambda,NumLambda>' allows users to set the bounds of lambdas to check (minimum bound is set
+                                                                        by 'MinLambda' and maximum bound is set by 'MaxLambda'). The number of
+                                                                        lambdas to check is set by 'NumLambda', where the lambdas are generated on
+                                                                        a logscale of base 10. This sets the "course" grid to check for a minimum
+                                                                        CVE and then a fine grid is established between the neighboring left and
+                                                                        right course points of the course minimum. The fine grid uses NumLambda-1
+                                                                        points on a linear scale on both sides of the course minimum, where the code
+                                                                        walks one increment out at a time from the "centered" course minimum
+                                                                        "outward", until both sides of the fine grid CVE is greater then the course
+                                                                        minimum. The optimized lambda is then the minimum CVE on the fine grid. If
+                                                                        '<MinLambda,MaxLambda,NumLambda>' is not specified. defaults will be 
+                                                                        employed. The defaults are as follows:
+                                                                          MinLambda: 1e-2
+                                                                          MaxLambda: 1e12
+                                                                          NumLambda: 50
+																		  
+                                      '-p' will plot the final CVE "spectra" so users can see how well the mimima appears. If '-p' is not present,
+                                           the CVE "spectra" will not be plotted.
+                                    
+                                    Examples of setting lambda:
+                                      lambda=1000
+                                      lambda=100_000
+                                      lambda=1e6
+                                      lambda=op
+                                      lambda=op-p
+                                      lambda=op<1e-4, 1e10, 25>
+                                      lambda=op<1e-1, 1e12, 10>-p
+									  
+        The "LAMMPS data (LOWESS)" option means apply a Locally Weighted Scatterplot Smoothing (LOWESS), sometimes called (locally weighted smoothing)
+        LOESS. LOWESS is as a non-parametric smoother (does not require knowledge of the shape or distribution of data), that uses successive 
+        refinements of least squares regression on over a given region of the data. The maximum number of successive refinements will be controlled by
+        the "max_iter" keyword and the region is controlled via the "fraction" keyword. Where "max_iter" is an integer to set the number of successive
+        refinements (default of 10 if not provided) and "fraction" is a float that sets the plus/minus region around a data point (default is 0.2 if
+        not provided). An example of the fraction keyword is shown where below, where the "*" data point is the example data point for the LOWESS  
+        regression and the "@" data points are the neighbors. For the example there is a total of 20 data points, where we will set the fraction=0.1
+        (meaning 10% of the data around the point of interest, the "*" data point will be used for the LOWESS regression. That is (10/100)*20 = 2 data
+        points plus/minus). Where the define region is  then shown by "[-- --]".
+		  
+            ^
+            | [-- --]
+            |  @@*@@@   @@@@@@
+            |@@  |   @@@   |  @@@
+            +----+----+----+----+-->
+		    0    5    10   15   20
+			 number of data points
+			 
+          The "LAMMPS data (LOWESS)" requires "statsmodels" to be installed, which can be installed via "pip install statsmodels". Examples of 
+          using the keywords:
+            max_iter=20; fraction=0.01
+            fraction=0.1; max_iter=4
 	  
-        NOTE only one instance of "LAMMPS data (apply moving average)" or "LAMMPS data (apply butterworth filter)" can be used at a time (not both
-        at once). Additionally even when using either LAMMPS data method, the raw LAMMPS data will still be plotted. To remove the raw LAMMPS data
-        from the plot while using either of these options use the "LAMMPS data (remove from plot)" option.
+        NOTE more the one instance of a LAMMPS data cleaning can be used. The order of implementation will be set by the order in which they appear
+        in the "Methods" stack, going from top to bottom. So if two cleaning methods are implemented say "LAMMPS data (apply Whittaker-Eilers)" and
+        then "LAMMPS data (apply Butterworth filter)" is below, then the LAMMPS data will first be cleaned with Whittaker-Eilers and then the 
+        Whittaker-Eilers data will be cleaned once more with the Butterworth filter. There is no way to determine if this is a good idea or not, the
+        log_analysis code will just let you do it and it is up to you to decide if it is a good idea.
 
   All methods will use "Name" column, however if left empty the code will create the name as analysis-<N>, where <N> is the index of the analysis
   in the GUI.   
-
-  If analysis stack has empty entries in the "X-lo" or "X-hi" columns and they are required to perform the analysis, the code will skip the
-  analysis and not plot any data. 
 
 *****************************************************************************
 * Please see the "Code: log_analysis.py" chapter in the official manual     *

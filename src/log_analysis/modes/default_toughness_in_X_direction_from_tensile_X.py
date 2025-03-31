@@ -13,7 +13,8 @@ Purpose: Mode to find toughness when strained in
 
 """
 # analysis list
-analysis = [['spline-integration', 0, 0.1, 'window=100; shift=True;', 'Toughness']]
+analysis = [['LAMMPS data (apply moving average)', '', '', 'windw=100', ''],
+            ['spline-integration', '', '', 'shift=True;', 'Toughness']]
 
 # loadable mode
 mode = {'logfile': 'EXAMPLES/log_analysis/property=tensile_modulus_x_strain_rate=2e8.log.lammps',
@@ -25,6 +26,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=tensile_modulus_x_strain_rate
         'ylabel': 'True Stress (MPa)',
         'xcompute': '',
         'ycompute': '',
-        'analysis': analysis
+        'analysis': analysis,
+        'nevery': '1',
+        'parent_directory': 'logfile'
         }
 

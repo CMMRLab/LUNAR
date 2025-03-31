@@ -12,8 +12,8 @@ Purpose: Mode to find YZ-poissions strained in
 
 """
 # analysis list
-analysis = [['moving average', 0, 0.1, 'window=50', 'moving average'],
-            ['linear regression', 0, 0.02, '', '$\\nu_{yz}$  ']]
+analysis = [['moving average', '', '', 'window=50', 'moving average'],
+            ['linear regression', '', 0.02, '', '$\\nu_{yz}$  ']]
 
 # loadable mode
 mode = {'logfile': 'EXAMPLES/log_analysis/property=tensile_modulus_y_strain_rate=2e8.log.lammps',
@@ -25,6 +25,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=tensile_modulus_y_strain_rate
         'ylabel': 'True Strain (in Z)',
         'xcompute': '',
         'ycompute': '',
-        'analysis': analysis
+        'analysis': analysis,
+        'nevery': '1',
+        'parent_directory': 'logfile'
         }
 

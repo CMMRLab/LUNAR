@@ -22,6 +22,8 @@ mode = {'logfile': 'EXAMPLES/log_analysis/property=density_ts=0.5.log.lammps',
         'ylabel': 'Potential Energy (Kcal/mol)',
         'xcompute': '${Step}*(1/2000)',
         'ycompute': '',
-        'analysis': analysis
+        'analysis': analysis,
+        'nevery': '1',
+        'parent_directory': 'logfile'
         }
 
