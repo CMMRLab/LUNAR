@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.4
-July 14th, 2023
+Revision 1.5
+November 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -60,14 +60,14 @@ def width_at_D(e_harmonic, D, radius, r0):
 
 # Function to find when bond is dissociated
 def find_d_rcut(morse_lst, radius, D, r0):
-    poverunder = 3/100 # 3% error
+    poverunder = 2/100 # 2% error
     Dlo = D - poverunder*D
     Dhi = D + poverunder*D
     rs = []
     for d, r in zip(morse_lst, radius):
         if Dlo < d < Dhi and r > r0: rs.append(r)
     try: rd = min(rs)
-    except: rd = 3*r0
+    except: rd = 2*r0
     return rd
     
     
@@ -83,6 +83,7 @@ class fitting:
         self.e_morse = {} # {bond coeff id: potential for plotting }
         self.morse_harmonic = {}  # {bond coeff id: lst[parms] }
         self.dpoint = {} # { bond coeff ID : dissociation break point }
+        self.rcut = {i:0 for i in m.bond_coeffs} # { bond coeff ID : rcut }
         
         # Generate alpha_testing
         alpha_round = str(alpha_specs['increment'])[::-1].find('.')
@@ -93,17 +94,17 @@ class fitting:
         ##################################
         for i in m.bond_coeffs:            
             # get coeffs after converting to quadratic (if desired)
-            if ff_class == 1: 
+            if ff_class in [1, '1']:
                 k, r0 = m.bond_coeffs[i].coeffs
-            if ff_class == 2:
+            if ff_class in [2, '2']:
                 r0, k2, k3, k4 = m.bond_coeffs[i].coeffs 
             self.e_harmonic[i] = [];
             self.e_morse[i] = [];
             self.morse_harmonic[i] = [];
             for r in radius:
-                if ff_class == 1:
+                if ff_class in [1, '1']:
                     k_i = k*(r - r0)**2
-                if ff_class == 2:
+                if ff_class in [2, '2']:
                     k2e = k2*(r - r0)**2
                     k3e = k3*(r - r0)**3
                     k4e = k4*(r - r0)**4
@@ -130,7 +131,7 @@ class fitting:
                 holder = {alpha: [D*(1 - e**(  -alpha*(r - r0)  ) )**2 for r in radius] for alpha in alpha_testing}
                         
                 # Finding width of harmonic curve at D
-                lo, hi, width = width_at_D(self.e_harmonic[i], D, radius, r0)
+                lo_index, hi_index, width = width_at_D(self.e_harmonic[i], D, radius, r0)
                     
                 ##################    
                 ### Minimizing ###
@@ -138,11 +139,11 @@ class fitting:
                 sum_distances = [];
                 for j in holder:
                     # Finding minimum sum of distances
-                    dist = []; alphas = holder[j];
-                    for val in range(lo, hi, 1):
-                        p1 = [radius[val], self.e_harmonic[i][val]]
-                        p2 = [radius[val], alphas[val]]
-                        dist.append(distance(p1[0], p1[1], p2[0], p2[1]))   
+                    dist = []; e_morse = holder[j];
+                    for n in range(lo_index, hi_index, 1):
+                        p1x = radius[n]; p1y = self.e_harmonic[i][n];
+                        p2x = radius[n]; p2y = e_morse[n];
+                        dist.append(distance(p1x, p1y, p2x, p2y))   
                     sum_distances.append(sum(dist))
                 
                 # Finding index of minimum sum of distances
@@ -192,19 +193,24 @@ class fitting:
             ####################################
             if morse:
                 self.dpoint[i] = find_d_rcut(self.e_morse[i], radius, D, r0)
-                if include_rcut: # New rcut and offset options
+                if bondbreak_scale > 0:
                     rcut = float('{:.4f}'.format(bondbreak_scale*r0))
+                else:
+                    rcut = float('{:.4f}'.format(self.dpoint[i]))
+                self.rcut[i] = rcut
+                if include_rcut: # New rcut and offset options
                     self.morse_harmonic[i].append(rcut)
+                    if rcut < r0: log.warn( 'WARNING bond coeff {} rcut < r0; rcut = {}, r0 = {}, bondbreak_scale = {}'.format(i, rcut, r0, bondbreak_scale) )
                     
                     
             ###############################################################################################################
             ### Else self morse_harmonic dict as harmonic or class2 and save morse curve as harmonic curve for plotting ###
             ###############################################################################################################
             else:
-                if ff_class == 1: 
+                if ff_class in [1, '1']: 
                     k, r0 = m.bond_coeffs[i].coeffs
                     self.morse_harmonic[i] = ['harmonic', k, r0]
-                if ff_class == 2:
+                if ff_class in [2, '2']:
                     r0, k2, k3, k4 = m.bond_coeffs[i].coeffs 
                     self.morse_harmonic[i] = ['class2', r0, k2, k3, k4]
                 self.e_morse[i] = self.e_harmonic[i]

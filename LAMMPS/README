@@ -1,0 +1,4 @@
+This directory contains USER defined LAMMPS packages
+that maybe useful for other researchers. Some of the 
+packages are being worked on for integration into the
+LAMMPS source code.

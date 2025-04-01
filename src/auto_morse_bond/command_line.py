@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-January 5th, 2024
+Revision 1.3
+November 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -27,15 +27,16 @@ import sys
 def print_man_page(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip,
                    radius_specs, alpha_specs, alpha_scale, files2write, atom_style,
                    zero_effected_xterms, bondbreak_scale, ff_class, include_type_labels,
-                   include_rcut):
+                   class2xe_update, include_rcut):
 
     
     # print general command line options
     print('\n\nauto_morse_bond has been run with -opt or -man option to show the optional command line overrides available. Command line option summary [-tag <tag-input>]:')
     print('python3 auto_morse_bond_update.py [-topo <topo-filename>] [-dir <new directory name>] [-newfile <string>] [-atomstyle <atomstyle>]')
     print('                                  [-class <|1|2>] [-type-labels <T|F>] [-min-r0 <float>] [-skip <string of IDs>] [-alpha <float>]')
-    print('                                  [-rcut <T|F>] [-bondbreak <float>] [-xterms <T|F>] [-morse <morse parameter filename>] <-gui> <-opt>|<-man>')
-    print('                                  [*NOTE: Not all options found in auto_morse_bond_update.py are currently supported via command line overrides.*] ')
+    print('                                  [-rcut <T|F>] [-bondbreak <float>] [-xterms <T|F>] [-class2xe <T|F>] [-morse <morse parameter filename>]')
+    print('                                  <-gui> <-opt>|<-man> [*NOTE: Not all options found in auto_morse_bond_update.py are currently supported')
+    print('                                  via command line overrides.*] ')
 
     print('\n*NOTE: If the command line input options are not used the hard coded inputs in the inputs section of the auto_morse_bond_update.py')
     print('file will be enforced. The command line inputs option gives more flexibility to the code depending on IDE usage or command line')
@@ -166,6 +167,23 @@ def print_man_page(topofile, morsefile, parent_directory, newfile, mass_map, min
     print('    that the harmonic bond can constrain the bond lengths to keep the crossterms from increasing dramatically.)')
     print('    T is for True and F is for False. Example usage:')
     print('        python3 auto_morse_bond_update.py -xterms T')
+    
+    # print -xterms option
+    print(f'\n -class2xe or -2xe <T|F> auto_morse_bond_update variable: class2xe_update    hard coded: {class2xe_update}')
+    print('    Command line option to convert class2 force field to a class2xe (x=crossterms, e=exponential), to allow for the')
+    print('    crossterms to dissociate like a Morse bond. The following crossterms are updated to:')
+    print('       E_bondbond = D*(1-e^(-alpha(r-r1)))*(1-e^(-alpha(r-r2)))')
+    print('       E_bondangle = D1*(1-e^(-alpha(r-r1)))*(theta-theta0) + (1-e^(-alpha(r-r2)))*(theta-theta0)')
+    print('       E_middlebondtorsion = (1-e^(-alpha(r-r2)))*[A1cos(phi) + A2cos(2*phi) + A3cos(3*phi)]')
+    print('       E_endbondtorsion = (1-e^(-alpha(r-r1)))*[B1cos(phi) + B2cos(2*phi) + B3cos(3*phi)] +')
+    print('                          (1-e^(-alpha(r-r3)))*[C1cos(phi) + C2cos(2*phi) + C3cos(3*phi)]')
+    print('       E_bondbond13 = D*(1-e^(-alpha(r-r1)))*(1-e^(-alpha(r-r3)))')
+    print()
+    print('    If class2xe_update is T (True), the crossterms above will be reparmaterized and if F (False), the crossterms')
+    print('    will be left alone. NOTE that when using class2xe_update the min_bond_length and coeffs2skip criteria')
+    print('    will not be used and every bond coeff that is possible to update to a Morse bond will be updated, as')
+    print('    the implementation of the class2xe potential requires all bonds to be Morse bonds. Example usage:')
+    print('        python3 auto_morse_bond_update.py -class2xe_update T')
             
     # print -bondbreak option
     print(f'\n -bondbreak or -bb <float> auto_morse_bond_update variable: bondbreak_scale    hard coded: {bondbreak_scale}')
@@ -174,7 +192,8 @@ def print_man_page(topofile, morsefile, parent_directory, newfile, mass_map, min
     print('    be used to generate the LAMMPS include script with fix bond/break settings with the rcut value set as')
     print('    r0*bondbreak_scale. If include_rcut = True (used) the bond break scale will also be used to set the')
     print('    value of rcut in the bond coeffs. The rcut value in the bond coeffs section will be used to shift the')
-    print('    morse potential. Example usage:')
+    print('    morse potential. Alternatively if bondbreak_scale is set to 0, the Rmax will be set at the')
+    print('    "dissociation point" of the Morse potential. Example usage:')
     print('        python3 auto_morse_bond_update.py -bondbreak 1.75')
     
     # print -rcut option
@@ -212,7 +231,7 @@ def print_man_page(topofile, morsefile, parent_directory, newfile, mass_map, min
 class inputs:
     def __init__(self, topofile, morsefile, parent_directory, newfile, min_bond_length, coeffs2skip,
                        alpha_scale, atom_style, zero_effected_xterms, bondbreak_scale,
-                       ff_class, include_type_labels, include_rcut, commandline_inputs):
+                       ff_class, include_type_labels, class2xe_update, include_rcut, commandline_inputs):
         # Give access to inputs (update later on if command line over ride is given)
         self.commandline_inputs = commandline_inputs
         self.topofile = topofile
@@ -228,6 +247,7 @@ class inputs:
         self.zero_effected_xterms = zero_effected_xterms
         self.bondbreak_scale = bondbreak_scale
         self.include_rcut = include_rcut
+        self.class2xe_update = class2xe_update
         
         
         # Check that the given command line inputs are even for alternating tags/tag-inputs
@@ -245,18 +265,18 @@ class inputs:
         # Check that tag is supported and log if tag from the command line
         # set supported tags
         supported_tags = ['-topo', '-dir', '-newfile', '-atomstyle', '-class', '-type-labels', '-min-r0', 
-                          '-skip', '-alpha', '-xterms', '-bondbreak', '-rcut', '-morse']
+                          '-skip', '-alpha', '-xterms', '-bondbreak', '-rcut', '-morse', '-class2xe']
         
         # set shortcut_tags mapping
         shortcut_tags = {'-t':'-topo', '-d':'-dir', '-nf':'-newfile', '-as':'-atomstyle', '-c':'-class',
                          '-tl': '-type-labels', '-mr0':'-min-r0', '-c2s':'-skip', '-a':'-alpha',
-                         '-zex':'-xterms', '-bb':'-bondbreak', '-irc':'-rcut', '-m':'-morse'}
+                         '-zex':'-xterms', '-bb':'-bondbreak', '-irc':'-rcut', '-m':'-morse', '-2xe':'-class2xe'}
         
         # set default variables
         default_variables = {'-topo': self.topofile, '-dir':parent_directory, '-newfile': self.newfile, '-atomstyle': self.atom_style,
                              '-class': self.ff_class, '-type-labels': self.include_type_labels, '-min-r0': self.min_bond_length,
                              '-skip': self.coeffs2skip, '-alpha': self.alpha_scale, '-xterms':self.zero_effected_xterms,
-                             '-bondbreak':self.bondbreak_scale, '-rcut':self.include_rcut, '-morse':self.morsefile}
+                             '-bondbreak':self.bondbreak_scale, '-rcut':self.include_rcut, '-morse':self.morsefile,'-class2xe':self.class2xe_update}
         
         # set tag/tag-input pair as empty string and update
         tags = {i:'' for i in supported_tags}
@@ -325,14 +345,18 @@ class inputs:
         
         # set new -class option and print confirmation
         if tags['-class']:
-            try: self.ff_class = int(tags['-class']) # try getting class 1 or 2
-            except: self.ff_class = str(tags['-class']) # try getting class 'r'
+            self.ff_class = str(tags['-class'])
             print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-class', self.ff_class))
             
         # set new -type-labels option and print confirmation
         if tags['-type-labels']:
             self.include_type_labels = T_F_string2boolean('-type-labels', (tags['-type-labels']))
             print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-type-labels', self.include_type_labels))
+            
+        # set new -class2xe option and print confirmation
+        if tags['-class2xe']:
+            self.class2xe_update = T_F_string2boolean('-class2xe', (tags['-class2xe']))
+            print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-class2xe', self.class2xe_update))
             
         # set new '-min-r0' option and print confirmation (ERROR checks will occur in the next step so only try float except set as input)
         if tags['-min-r0']:

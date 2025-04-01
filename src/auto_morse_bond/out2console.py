@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-January 16th, 2022
+Revision 1.1
+June 31st, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -125,13 +125,39 @@ def out(mm, log, version, min_bond_length, coeffs2skip, zero_effected_xterms, al
         log.out(f'{i}')
     log.out('\n\n')
         
+    ###################################################################
+    # Write recommendations to starting a simulation after conversion #
+    ###################################################################
+    log.out('\n\nRecommendation for Morse bond conversion process:') 
+    log.out(' Step1:')
+    log.out('  Fully equilibrate the system in the harmonic form of the force field in NVT or NPT (preferably')
+    log.out('  NPT) as the harmonic form can generate large restoring forces to ensure the system is at the')
+    log.out('  lowest energy state as possible. Then convert the harmonic bonds to morse bonds and apply and')
+    log.out('  constraint to class2 crossterms.')
     
-    ##############################
-    # Write new coeffs to screen #
-    ##############################  
-    log.out('New combinations of harmonic and morse bond coeffs:')   
-    for i in mm.alpha_parameter.morse_harmonic:
-        a = mm.alpha_parameter.morse_harmonic[i]
-        string = '  '.join([str(i) for i in a])
-        log.out('{} {}'.format(i, string))
+    log.out('\n Step2:')
+    log.out('  # Morse bond simulation initialization')
+    log.out('  timestep       0.5 # may need to be changed to 0.1')
+    log.out('  fix            1 all nve/limit 0.1')
+    log.out('  run            20000 # (10000/0.5 = 20000) = 10ps with 0.5 dt')
+    log.out('  write_data     morse_bond_initialization.data')
+    log.out('  unfix          1\n')
+    log.out('  # Start simulation that is desired')
+    log.out('  :\n')
+    
+    log.out('  # This is because the conversion from a harmonic form to a Morse bond form of a force field')
+    log.out('  # may result in discontinuities in the energy and gradients (forces) during the first few')
+    log.out('  # timesteps due the geometries resting in a different potential energy enviroment.')
+    
+    ########################################################
+    # Write out notes about commands like "fix bond/react" #
+    ########################################################
+    log.out('\n\n*NOTE this code can only update coeff types if atoms are used by the bond types, thus')
+    log.out('it can be dangerous to use the updated force field parameters from one system to the next')
+    log.out('if using LAMMPS commands like "fix bond/react" as those type of commands are constantly')
+    log.out('switching out which part of the force field is being used by the current system.')
+    
+    log.out('\nThus for use with the "fix bond/react" command you SHOULD update each force field for each')
+    log.out('system and not "mix-and-match" morse bond updates.*')
+    
     return

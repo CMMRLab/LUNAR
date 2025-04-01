@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 2.2
-January 5th, 2024
+Revision 2.4
+November 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -54,7 +54,7 @@ def read(filename):
 
 # Class to find bond types and set info that will be passed onto alpha parameters code
 class topology:
-    def __init__(self, m, min_bond_length, coeffs2skip, ff_class, morsefile, log):
+    def __init__(self, m, min_bond_length, coeffs2skip, ff_class, morsefile, class2xe_update, log):
         self.data = {} # {bond coeff id: []}
         self.types = {} # { bond coeff id: string type}
         self.messages = [] # [lst of messages]
@@ -74,12 +74,12 @@ class topology:
         # Find atoms info for each bond coeff
         for i in m.bond_coeffs:
             coeff = m.bond_coeffs[i].coeffs
-            if ff_class == 1: 
+            if ff_class in [1, '1']: 
                 k, r0 = coeff
                 self.data[i] = [k, r0] # {bond coeff id: []}
-            if ff_class == 2:
+            if ff_class in [2, '2']:
                 r0, k2, k3, k4 = coeff
-                if ff_class == 2: self.data[i] = [r0, k2, k3, k4] # {bond coeff id: []}
+                self.data[i] = [r0, k2, k3, k4] # {bond coeff id: []}
             
             # Initialize flag and types
             found_flag = False; self.types[i] = 'Not Typed (likely not used by any bonds)';
@@ -163,17 +163,17 @@ class topology:
                 
                 # If atomids could be found and r0 is large enough and bond coeff is not listed as one
                 # to skip over try finding bond type info based on atomids and set dissociation energy
-                if r0 > min_bond_length and i not in coeffs2skip:
+                if r0 > min_bond_length and i not in coeffs2skip or class2xe_update:
                     
                     # Graphene/CNT with pi-electrons check of IFF/IFF-R
-                    if id1_neigh1.count(['C', 6, 5]) == 3 or id2_neigh1.count(['C', 6, 5]) == 3 and ('GRAPHENE', 'GRAPHENE') in parameters:
+                    if itype == 'C,6,5' and jtype == 'C,6,5' and id1_neigh1.count(['C', 6, 5]) == 3 or id2_neigh1.count(['C', 6, 5]) == 3 and ('GRAPHENE', 'GRAPHENE') in parameters:
                         parms = parameters['GRAPHENE', 'GRAPHENE']
                         self.data[i] = [r0, parms.d]; found_flag = True;
                         self.types[i] = self.types[i].replace('N/A', str(parms.bo)) # Update BO with same spacing as N/A
                         self.types[i] = self.types[i].replace('class'+str(ff_class), 'file  ') # Update parms with same spacing as classN
                         if check_float(parms.alpha): self.data[i] = [r0, parms.d, parms.alpha] # Add alpha if in file
                     # Graphene/CNT check
-                    elif id1_neigh1.count(['C', 6, 3]) == 3 or id2_neigh1.count(['C', 6, 3]) == 3 and ('GRAPHENE', 'GRAPHENE') in parameters:
+                    elif itype == 'C,6,3' and jtype == 'C,6,3' and  id1_neigh1.count(['C', 6, 3]) == 3 or id2_neigh1.count(['C', 6, 3]) == 3 and ('GRAPHENE', 'GRAPHENE') in parameters:
                         parms = parameters['GRAPHENE', 'GRAPHENE']
                         self.data[i] = [r0, parms.d]; found_flag = True;
                         self.types[i] = self.types[i].replace('N/A', str(parms.bo)) # Update BO with same spacing as N/A

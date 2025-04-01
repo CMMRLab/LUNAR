@@ -1,0 +1,180 @@
+
+
+Running auto_morse_bond v1.11 / 13 November 2024
+Using Python version 3.11.5 (tags/v3.11.5:cce6ba9, Aug 24 2023, 14:38:34) [MSC v.1936 64 bit (AMD64)]
+Read in EXAMPLES/auto_morse_bond/detda_typed_IFF.data LAMMPS datafile
+Finding molecules ....
+Finding rings ...
+Typing bonds ....
+    Bond typing rules and parameters read from: frc_files/Morse_parameters.txt
+Fitting alpha parameters ....
+
+
+
+auto_morse_bond settings:
+- min_bond_length:      1.2
+- coeffs2skip:          []
+- alpha_specs:          {'start': 1.0, 'end': 3.5, 'increment': 0.1}
+- alpha_scale:          1.0
+- zero_effected_xterms: False
+- include_type_labels:  True
+
+
+Elements found in system:
+- C
+- H
+- N
+
+
+
+-----------------------------------------------------Cluster Analysis----------------------------------------------
+    ##     Size of Cluster            Mass               %Mass Cluster        %Size Cluster       Cluster Formula   
+-------------------------------------------------------------------------------------------------------------------
+    1               31               178.28                  100.00               100.00             C11-H18-N2     
+
+
+
+Bond length and bond type statistics and info:
+Bond order (BO) will let you know what type of bond the code determine to coeff was from atom types in bond. BO options:
+- single:   1
+- double:   2
+- triple:   3
+- aromatic: 1.5
+
+Parameters (parms) will let you know how the morse parms were found. parms options:
+- classN: coeff left as class1 or class2
+- file:   dissociation energy was set by morsefile and and alpha was minized by the code
+----------------------------------------------------Bond type bond length statistics----------------------------------------------------
+Bond      Bond Type: atom 1-2 (element,ring,nb)        Bond       Bond    Bond Length   Bond Length     Bond Length     Bond Length  
+id        BO: 1, 2, 3, 0; parms: file, classN;        Count        r0      Average       Minimum         Maximum     Standard Deviation
+----------------------------------------------------------------------------------------------------------------------------------------
+1         C,0,4 - C,0,4  BO: 1.0  parms: file           2        morse      1.5339       1.5322          1.5355          0.0016     
+2         C,0,4 - C,6,3  BO: 1.0  parms: file           2        morse      1.5253       1.5221          1.5285          0.0032     
+3         C,0,4 - H,0,1  BO: 1.0  parms: file           4        morse      1.1181       1.1174          1.1189          0.0008     
+4         C,0,4 - C,6,3  BO: 1.0  parms: file           1        morse      1.5235       1.5235          1.5235          0.0000     
+5         C,0,4 - H,0,1  BO: 1.0  parms: file           9        morse      1.1135       1.1070          1.1152          0.0023     
+6         C,6,3 - C,6,3  BO: 1.5  parms: file           6        morse      1.3483       1.3417          1.3536          0.0038     
+7         C,6,3 - H,0,1  BO: 1.0  parms: file           1        morse      1.1005       1.1005          1.1005          0.0000     
+8         C,6,3 - N,0,3  BO: 1.0  parms: file           2        morse      1.2692       1.2682          1.2703          0.0010     
+9         H,0,1 - N,0,3  BO: 1.0  parms: file           4        morse      1.0451       1.0405          1.0478          0.0030     
+
+
+
+----Inputs used for find_rings----
+elements2walk:  ['Ag', 'Al', 'Ar', 'As', 'At', 'Au', 'B', 'Ba', 'Be', 'Bi', 'Br', 'C', 'Ca', 'Cl', 'Co', 'Cr', 'Cs', 'Cu', 'D', 'F', 'FI', 'Fe', 'Fr', 'Ga', 'Ge', 'H', 'He', 'I', 'In', 'K', 'Kr', 'L', 'Li', 'Lp', 'Lv', 'Mc', 'Mg', 'Mn', 'Mo', 'N', 'Na', 'Ne', 'Nh', 'Ni', 'O', 'Og', 'P', 'Pb', 'Pd', 'Po', 'Pt', 'Ra', 'Rb', 'Rn', 'S', 'Sb', 'Se', 'Si', 'Sn', 'Sr', 'TI', 'Te', 'Ti', 'Ts', 'V', 'W', 'Xe', 'mg']
+rings2check:  [3, 4, 5, 6]
+fused-rings:  False
+fused2check:  [5, 6]
+
+
+Checked for ring sizes :  [3, 4, 5, 6]
+Total rings found :  1
+0 atoms along a ring seam had to be partitioned amoung the ring
+types (To find accurate %Mass of ring type to entire system).
+Giving preference of partionioning in this order:
+- 6 member ring
+- 5 member ring
+- 7 member ring
+- 4 member ring
+- 3 member ring
+- 8 member ring
+- minimum ring size
+*NOTE: If count of rings exists, but no atoms exist for that ring, this means the
+atoms for that ring were partionted to other rings that the atoms belong to.*
+
+---------------------------------------------------------------------------------------------
+|          Ring            |           Count           |             %Ring count            |
+|          Type            |         of Rings          |            per all rings           |
+---------------------------------------------------------------------------------------------
+|            6             |             1             |               100.00               |
+---------------------------------------------------------------------------------------------
+|    Element      |     natoms      |       Mass       |      %Mass       |     %natoms     |
+---------------------------------------------------------------------------------------------
+|       C         |        6        |      72.07       |      40.42       |      19.35      |
+|       H         |        0        |       0.00       |       0.00       |       0.00      |
+|       N         |        0        |       0.00       |       0.00       |       0.00      |
+|      all        |        6        |      72.07       |      40.42       |      19.35      |
+---------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+Recommendation for Morse bond conversion process:
+ Step1:
+  Fully equilibrate the system in the harmonic form of the force field in NVT or NPT (preferably
+  NPT) as the harmonic form can generate large restoring forces to ensure the system is at the
+  lowest energy state as possible. Then convert the harmonic bonds to morse bonds and apply and
+  constraint to class2 crossterms.
+
+ Step2:
+  # Morse bond simulation initialization
+  timestep       0.5 # may need to be changed to 0.1
+  fix            1 all nve/limit 0.1
+  run            20000 # (10000/0.5 = 20000) = 10ps with 0.5 dt
+  write_data     morse_bond_initialization.data
+  unfix          1
+
+  # Start simulation that is desired
+  :
+
+  # This is because the conversion from a harmonic form to a Morse bond form of a force field
+  # may result in discontinuities in the energy and gradients (forces) during the first few
+  # timesteps due the geometries resting in a different potential energy enviroment.
+
+
+*NOTE this code can only update coeff types if atoms are used by the bond types, thus
+it can be dangerous to use the updated force field parameters from one system to the next
+if using LAMMPS commands like "fix bond/react" as those type of commands are constantly
+switching out which part of the force field is being used by the current system.
+
+Thus for use with the "fix bond/react" command you SHOULD update each force field for each
+system and not "mix-and-match" morse bond updates.*
+
+
+Updating class2 force field to class2xe force field ....
+  - checking morse bond updates for consistency
+  - updating bondbond coeffs
+  - updating bondangle coeffs
+  - updating middlebondtorsion coeffs
+  - updating endbondtorsion coeffs
+  - updating bondbond13 coeffs
+
+
+New potential styles to use in LAMMPS:
+  bond     style morse
+  angle    style class2xe
+  dihedral style class2xe
+
+
+New combinations of harmonic and morse bond coeffs:
+  1 82.6961  2.0  1.53
+  2 82.6961  2.0  1.501
+  3 98.2315  2.0  1.101
+  4 82.6961  2.0  1.501
+  5 98.2315  2.0  1.101
+  6 150.0  1.9  1.417
+  7 98.2315  2.1  1.0982
+  8 110.0001  2.1  1.3912
+  9 92.2563  1.7  1.026
+Using path from topofile to set parent_directory ...
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\GitHub\LUNAR\EXAMPLES\auto_morse_bond directory
+
+
+*NOTE: To use the shifted morse bond potential, modification to the LAMMPS source code
+is required! You must subtract out d0[type] from ebond in src/MOLECULE/bond_morse.cpp *
+
+
+Normal program termination
+
+
+Execution time in seconds: 1.3150341510772705
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

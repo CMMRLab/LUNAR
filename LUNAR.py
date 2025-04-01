@@ -230,7 +230,7 @@ class LUNAR:
         # Run auto_morse_bond_GUI
         auto_morse_bond_GUI(amb.topofile, amb.morsefile, amb.parent_directory, amb.newfile, amb.mass_map, amb.min_bond_length, amb.coeffs2skip,
                             amb.radius_specs, amb.alpha_specs, amb.alpha_scale, amb.files2write, amb.atom_style, amb.zero_effected_xterms,
-                            amb.bondbreak_scale, amb.ff_class, amb.include_type_labels, amb.include_rcut, self.GUI_zoom)
+                            amb.bondbreak_scale, amb.ff_class, amb.include_type_labels, amb.class2xe_update, amb.include_rcut, self.GUI_zoom)
         return
     
     # cell_builder GUI Run

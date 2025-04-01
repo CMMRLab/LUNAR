@@ -14,10 +14,17 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 31March2025)
+LUNAR (version 1April2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+1April2025         JDK         - auto_morse_bond.py: Adding the code to allow for ClassII potential to be
+                                                     reparamterized into the ClassII-xe potenial. In addition
+                                                     The LAMMPS potentials where added to the:
+                                                       LUNAR/LAMMPS/CLASS2 
+                                                     directory, with guidance on how to compile and call the
+                                                     classII-xe potential from a LAMMPS script.
+
 31March2025        JDK         - log_analysis.py: Added the Regression Fringe Response stress-strain analysis
                                                   module. Along with added further compute options and 
                                                   documentation.

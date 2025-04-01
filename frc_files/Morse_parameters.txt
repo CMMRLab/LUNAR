@@ -37,7 +37,7 @@
 !      those pair of atoms. Josh will try to have most use cases already set, but is limited due to the expeirmental 
 !      dissociation energies available. If you want to add more and need help reach out to Josh.  
 !
-! Version 1.1 7/11/2024
+! Version 1.2 12/10/2024
 
 #parameters
 
@@ -54,7 +54,10 @@ GRAPHENE  GRAPHENE  518.8154         1.5             T                2.4       
  C,*,4     C,*,4    346.0000         1               T                min             2     ! C-C single bond.
  C,*,3     C,*,4    346.0000         1               T                min             2     ! C-C single bond.
  C,*,2     C,*,4    346.0000         1               T                min             2     ! C-C single bond.
- C,0,3     C,6,3    346.0000         1               T                min             2     ! C-C single bond.
+ C,0,3     C,6,3    346.0000         1               T                min             2     ! C-C single bond (ReaxFF Glassy carbon model).
+ C,0,2     C,6,3    346.0000         1               T                min             2     ! C-C single bond (ReaxFF Glassy carbon model).
+ C,0,3     C,5,3    346.0000         1               T                min             2     ! C-C single bond (ReaxFF Glassy carbon model).
+ C,0,2     C,5,3    346.0000         1               T                min             2     ! C-C single bond (ReaxFF Glassy carbon model).
  C,0,2     O,0,1    1072.0000        3               T                min             2     ! C-O triple bond.
  C,0,3     O,0,1    799.0000         2               T                min             2     ! C-O double bond.
  C,5,*     O,5,*    578.5000         1.5             T                min             2     ! C-O aromatic bond. NO DATA, SO average BO 1&2 D's (799+358)/2.

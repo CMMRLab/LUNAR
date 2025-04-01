@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.9
-April 2nd, 2024
+Revision 1.11
+November 13th, 2024
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -76,6 +76,24 @@ morsefile = 'frc_files/Morse_parameters.txt'
 
 
 ###########################################################################################################
+# Option to convert class2 force field to a class2xe (x=crossterms, e=exponential), to allow for the      #
+# crossterms to dissociate like a Morse bond. The following crossterms are updated to:                    #
+#    E_bondbond = D*(1-e^(-alpha(r-r1)))*(1-e^(-alpha(r-r2)))                                             #
+#    E_bondangle = D1*(1-e^(-alpha(r-r1)))*(theta-theta0) + (1-e^(-alpha(r-r2)))*(theta-theta0)           #
+#    E_middlebondtorsion = (1-e^(-alpha(r-r2)))*[A1cos(phi) + A2cos(2*phi) + A3cos(3*phi)]                #
+#    E_endbondtorsion = (1-e^(-alpha(r-r1)))*[B1cos(phi) + B2cos(2*phi) + B3cos(3*phi)] +                 #
+#                       (1-e^(-alpha(r-r3)))*[C1cos(phi) + C2cos(2*phi) + C3cos(3*phi)]                   #
+#    E_bondbond13 = D*(1-e^(-alpha(r-r1)))*(1-e^(-alpha(r-r3)))                                           #
+#                                                                                                         #
+# If class2xe_update is True, the crossterms above will be reparmaterized and if False, the crossterms    #
+# will be left alone. NOTE that when using class2xe_update the min_bond_length and coeffs2skip criteria   #
+# will not be used and every bond coeff that is possible to update to a Morse bond will be updated, as    #
+# the implementation of the class2xe potential requires all bonds to be Morse bonds.                      #
+###########################################################################################################
+class2xe_update = True
+
+
+###########################################################################################################
 # Option to zero effected crossterms. Will help stabilize IFF-R completely (True or False). This option   #
 # techincally changes the force field from that defined as IFF-R, since IFF-R does not do anything about  #
 # crossterms that use bond lengths to compute them. Therefore usage of this option requires a recognition #
@@ -118,7 +136,7 @@ zero_effected_xterms = False
 #                                                                                                         #
 # Update files newfile as needed.                                                                         #
 ###########################################################################################################
-newfile = ':_morse_bond'
+newfile = ':-class2xe'
 
 
 ###########################################################################################################
@@ -131,12 +149,14 @@ newfile = ':_morse_bond'
 # psuedo-LAMMPS input script for generating fix bond/break fixes. The Rmax in fix bond/break can be       #
 # adjusted with bondbreak_scale, which sets a a multiplier value to the r0 of each bond coeff to find the #
 # Rmax value for fix bond/break. bondbreak_scale = 2.0 means set Rmax 200% of orginal bond length.        #
+# Alternatively if bondbreak_scale is set to 0, the Rmax will be set at the "dissociation point" of the   #
+# Morse potential.                                                                                        #
 ########################################################################################################### 
 radius_specs = {'start': 0.0, 'end': 8.0, 'increment': 0.01} # usually: {'start':0.0, 'end': 8.0, 'increment': 0.01}
 alpha_specs  = {'start': 1.0, 'end': 3.5, 'increment': 0.1} # usually: {'start':1.0, 'end': 3.5, 'increment': 0.1}
 alpha_scale = 1.0 # usually: 1.0 (increase to create narrower well and decrease to widen well)
 bondbreak_scale = 2.0 # usually: 1.7-2.0
-include_rcut = False # option to have the bond_coeffs set as ID d0 r0 alpha rcut     # where rcut will be used within LAMMPS to shift the morse potential
+include_rcut = False # option to have the bond_coeffs set as ID d0 r0 alpha rcut            # where rcut will be used within LAMMPS to shift the morse potential
 
 
 ###########################################################################################################
@@ -184,16 +204,16 @@ atom_style = 'full'
 ###########################################################################################################
 # Python int variable to set what type of forcefield the system is to initialize zeroes and update once   #
 # parameters are found.The following options are available:                                               #
-#    1   = class1   (int data type - FF files: cvff, clayff, DREIDING, opls-AA, CHARMM)                   #
-#    2   = class2   (int data type - FF files: PCFF-IFF, PCFF, compass, CFF91)                            #
+#   '1'  = class1   (int data type - FF files: cvff, clayff, DREIDING, opls-AA, CHARMM)                   #
+#   '2'  = class2   (int data type - FF files: PCFF-IFF, PCFF, compass, CFF91)                            #
 #                                                                                                         #
 # Examples:                                                                                               #
-#     ff_class = 1 # Will find bond coeffs based on LAMMPS bond style harmonic                            #
-#     ff_class = 2 # Will find bond coeffs based on LAMMPS bond style class2                              #
+#     ff_class = '1' # Will find bond coeffs based on LAMMPS bond style harmonic                          #
+#     ff_class = '2' # Will find bond coeffs based on LAMMPS bond style class2                            #
 #                                                                                                         #
 # Update ff_class as required.                                                                            #
 ###########################################################################################################
-ff_class = 2
+ff_class = '2'
 
 
 ###########################################################################################################
@@ -221,9 +241,10 @@ mass_map = masses.mass_map
 ###########################################################################################################
 # Commands for creating Files that this code can write (True or False responses).                         #
 ###########################################################################################################
-files2write = {'write_datafile' : True,   # File containing extracted clusters w/ bonds (name *NEWFILE.data)
-               'write_pdffile'  : True,   # File containing plotted morse vs harmonic fits (name *NEWFILE.pdf)
-               'write_bondbreak': True,   # File containing fix bond/break fixes with Rmax set (name *NEWFILE.script)
+files2write = {'write_datafile'  : True,   # File containing new parameters (name *NEWFILE.data)
+               'write_pdffile'   : True,   # File containing plotted morse vs harmonic fits (name *NEWFILE.pdf)
+               'write_bondbreak' : True,   # File containing fix bond/break fixes with Rmax set (name *NEWFILE.script)
+               'write_forcefield': False,  # File containing force field only (name *NEWFILE.FF.data)
                }
 
 
@@ -236,7 +257,7 @@ files2write = {'write_datafile' : True,   # File containing extracted clusters w
 #                                                                                                         #
 # Update include_type_labels as desired (Default should be False).                                        #
 ###########################################################################################################
-include_type_labels = False
+include_type_labels = True
 
 
 
@@ -278,9 +299,10 @@ if __name__ == "__main__":
         print('\n\n\nauto_morse_bond_update is currently running in GUI mode, where all GUI inputs are intialized from auto_morse_bond_update.\n\n\n')
         auto_morse_bond_GUI(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip,
                             radius_specs, alpha_specs, alpha_scale, files2write, atom_style, zero_effected_xterms,
-                            bondbreak_scale, ff_class, include_type_labels, include_rcut, GUI_zoom)
+                            bondbreak_scale, ff_class, include_type_labels, class2xe_update, include_rcut, GUI_zoom)
     else:
         # Run main auto_morse_bond classes/functions (and get modified m class)
         main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip,
              radius_specs, alpha_specs, alpha_scale, files2write, atom_style, zero_effected_xterms,
-             bondbreak_scale, ff_class, include_type_labels, include_rcut, commandline_inputs=commandline_inputs)
+             bondbreak_scale, ff_class, include_type_labels, class2xe_update, include_rcut,
+             commandline_inputs=commandline_inputs)

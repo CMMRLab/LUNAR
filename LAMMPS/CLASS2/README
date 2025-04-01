@@ -1,0 +1,49 @@
+The *_class2xe.* files can be added to 2018 or newer
+LAMMPS "src/CLASS2" package to enable the Class2-xe
+potentials. LAMMPS can be compiled via make or cmake
+and the Class2-xe potentials will be availble. After
+adding the *_class2xe.* files the CLASS2 package 
+should have the following tree structure:
+
+lammps/src/CLASS2$ tree
+.
+├── angle_class2.cpp
+├── angle_class2.h
+├── angle_class2xe.cpp
+├── angle_class2xe.h
+├── bond_class2.cpp
+├── bond_class2.h
+├── dihedral_class2.cpp
+├── dihedral_class2xe.cpp
+├── dihedral_class2xe.h
+├── improper_class2.cpp
+├── improper_class2.h
+├── pair_lj_class2.cpp
+├── pair_lj_class2.h
+├── pair_lj_class2_coul_cut.cpp
+├── pair_lj_class2_coul_cut.h
+├── pair_lj_class2_coul_long.cpp
+└── pair_lj_class2_coul_long.h
+
+
+An example script calling the class2xe potenials is shown below:
+#-----------------------PCFF-xe-LAMMPS-Settings------------------------
+# Bonded interactions
+bond_styl         morse
+angle_style       class2xe
+dihedral_style    class2xe
+improper_style    class2
+special_bonds     lj/coul 0 0 1
+
+# Non-bonded interactions
+pair_style        lj/class2/coul/long 12.0
+kspace_style      pppm 1.0e-6
+pair_modify       mix sixthpower
+special_bonds     lj/coul 0 0 1
+
+# Neighbor lists (robust settings)
+neighbor          2.0 bin
+neigh_modify      every 1 delay 0 check yes one 5000 page 50000
+
+# Read in molecular system
+read_data         MyMolecularSystem.data
