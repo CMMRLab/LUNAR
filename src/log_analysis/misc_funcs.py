@@ -400,40 +400,6 @@ def piecewise_regression(x, y, xlo, xhi, n):
     return xout, yout, xbreaks, ybreaks, slopes
 
 
-def find_intersection(m1, b1, m2, b2):
-    """
-    Finds the intersection point of two lines given in slope-intercept form.
-
-    Args:
-        m1: Slope of the first line.
-        b1: Y-intercept of the first line.
-        m2: Slope of the second line.
-        b2: Y-intercept of the second line.
-
-    Returns:
-        A tuple (x, y) representing the intersection point, or None if the lines are parallel.
-    """
-    if m1 == m2:
-        return None  # Lines are parallel, no intersection
-
-    x = (b2 - b1) / (m1 - m2)
-    y = m1 * x + b1
-    return x, y
-
-# Example usage:
-m1 = 2
-b1 = 1
-m2 = -1
-b2 = 4
-
-intersection_point = find_intersection(m1, b1, m2, b2)
-
-if intersection_point:
-    print(f"The lines intersect at: {intersection_point}")
-else:
-    print("The lines are parallel and do not intersect.")
-
-
 ######################################################################################
 # The method below implements the Tg/CTE hyperbola fit from the following paper:     #
 # Uncertainty quantification in molecular dynamics studies of the glass transition   #
