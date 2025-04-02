@@ -13,7 +13,6 @@ Purpose: Mode to find Tg and CTE using piecewise
 """
 # analysis list
 analysis = [['average', 290, 310, '', 'room temp volume average (A$^3$)'],
-            ['moving average', '', '', 'window=100', 'moving average'],
             ['piecewise-regression', '', '', 'n=1', 'Segmented piecewise-regression']]
 
 # loadable mode

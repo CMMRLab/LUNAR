@@ -400,6 +400,40 @@ def piecewise_regression(x, y, xlo, xhi, n):
     return xout, yout, xbreaks, ybreaks, slopes
 
 
+def find_intersection(m1, b1, m2, b2):
+    """
+    Finds the intersection point of two lines given in slope-intercept form.
+
+    Args:
+        m1: Slope of the first line.
+        b1: Y-intercept of the first line.
+        m2: Slope of the second line.
+        b2: Y-intercept of the second line.
+
+    Returns:
+        A tuple (x, y) representing the intersection point, or None if the lines are parallel.
+    """
+    if m1 == m2:
+        return None  # Lines are parallel, no intersection
+
+    x = (b2 - b1) / (m1 - m2)
+    y = m1 * x + b1
+    return x, y
+
+# Example usage:
+m1 = 2
+b1 = 1
+m2 = -1
+b2 = 4
+
+intersection_point = find_intersection(m1, b1, m2, b2)
+
+if intersection_point:
+    print(f"The lines intersect at: {intersection_point}")
+else:
+    print("The lines are parallel and do not intersect.")
+
+
 ######################################################################################
 # The method below implements the Tg/CTE hyperbola fit from the following paper:     #
 # Uncertainty quantification in molecular dynamics studies of the glass transition   #
@@ -418,9 +452,11 @@ def fit_hyperbola(x, y, xlo, xhi, minimum_convergence=None, initial_guess=False,
     yout = len(y)*[0];
     params = [0, 0, 0, 0, 0]; center = [0, 0];
     slopes = [0, 0]; transition = [0, 0];
+    tangent_intersection = [0, 0]
+    tangents = [(0, 0, 0), (0, 0, 0)] # {(x-points), (ypoints)}
     
     # Convert to float64 and then lists to numpy arrays
-    xx = np.array(x); yy = np.array(y);
+    xx = np.array(x, dtype=np.float64); yy = np.array(y, dtype=np.float64);
     
     # Setup intial guess
     p0 = None
@@ -430,7 +466,7 @@ def fit_hyperbola(x, y, xlo, xhi, minimum_convergence=None, initial_guess=False,
 
     # Define the hyperbola equation (eqn 1 in paper)
     def hyberbola(t, t0, v0, a, b, c):
-        h0 = 0.5*(t-t0) + np.sqrt( ((t-t0)*(t-t0))/4 + np.exp(c) )
+        h0 = 0.5*(t-t0) + np.sqrt( ((t-t0)*(t-t0))/4 + np.exp(c, dtype=np.float64) )
         v = v0 + a*(t-t0) + b*h0
         return v
     
@@ -446,11 +482,26 @@ def fit_hyperbola(x, y, xlo, xhi, minimum_convergence=None, initial_guess=False,
     center = [t0, v0]
     slopes = [a, (a+b)]
     
+    # Find tangent intersection
+    m1, m2 = slopes # slopes at lo-end and hi-end
+    b1 = yout[0] - m1*xout[0] # Y-intercept at lo-end
+    b2 = yout[-1] - m2*xout[-1] # Y-intercept at hi-end
+    if m1 != m2:
+        x_intersection = (b2 - b1) / (m1 - m2)
+        y_intersection = m1*x_intersection + b1
+        tangent_intersection = [x_intersection, y_intersection]
+        
+        # Upate tangent points for plotting
+        tangents[0] = (xout[0], x_intersection, xout[-1])
+        tangents[1] = (yout[0], y_intersection, yout[-1])
+        
+        
+    
     # Find where function is transitioning (eqn 5 in paper)
     if minimum_convergence is not None:
         dtemp = (np.exp(c/2)*(2*minimum_convergence-1))/(np.sqrt(minimum_convergence*(1-minimum_convergence)))
         transition = [t0-dtemp, t0+dtemp]
-    return xout, yout, params, center, slopes, transition
+    return xout, yout, params, center, slopes, transition, tangent_intersection, tangents
 
 
 ##########################################

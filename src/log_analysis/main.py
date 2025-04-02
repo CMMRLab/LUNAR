@@ -155,6 +155,9 @@ class analysis:
                 # Save xtmp and ytmp in-case they are needed due to LAMMPS data cleaning
                 xlmp = x; ylmp = y;
                 
+                # Generate cite string to call later on for work to cite
+                cite_string = '-'.join(10*['cite'])
+                
                 # Get any anaylsis that users may want
                 analysis = []; write_plotted_data = False; rm_lmp_data = False; 
                 LAMMPS_cleaning = {} # {'Method':[xlo, xhi, misc, name]}
@@ -501,7 +504,7 @@ class analysis:
                             minimum_convergence = setting['p']
                         if 'initial_guess' in setting:
                             initial_guess = setting['initial_guess']
-                        xout, yout, params, center, slopes, transition = self.fit_hyperbola(x, y, xlo, xhi, minimum_convergence=minimum_convergence, initial_guess=initial_guess, maxiter=10**6)
+                        xout, yout, params, center, slopes, transition, tangent_intersection, tangents = self.fit_hyperbola(x, y, xlo, xhi, minimum_convergence=minimum_convergence, initial_guess=initial_guess, maxiter=10**6)
                         self.log.out(self.format_analysis(method, xlo, xhi, misc, name))
                         
                         label = '{} slopes (lower-slope={};\nupper-slope={})'.format(name, slopes[0], slopes[1])
@@ -511,8 +514,17 @@ class analysis:
                         
                         label = '{} center (x={:.4f}; y={:.4f})'.format(name, center[0], center[1])
                         self.log.out('  {}'.format(label))
-                        centerdata = self.plot_parms(x=center[0], y=center[1], style='point', marker='.', line='-', size=10, label=label, shiftable=False)
+                        centerdata = self.plot_parms(x=center[0], y=center[1], style='point', marker='.', line='-', size=10, label=label, shiftable=True)
                         data2plot.append(centerdata)
+                        
+                        label = '{} tangents'.format(name)
+                        tangentsdata = self.plot_parms(x=tangents[0], y=tangents[1], style='line', marker='.', line='--', size=2, label=label, shiftable=True)
+                        data2plot.append(tangentsdata)
+                        
+                        label = '{} tangent intersection (x={:.4f}; y={:.4f})'.format(name, tangent_intersection[0], tangent_intersection[1])
+                        self.log.out('  {}'.format(label))
+                        tangentdata = self.plot_parms(x=tangent_intersection[0], y=tangent_intersection[1], style='point', marker='.', line='-', size=10, label=label, shiftable=True)
+                        data2plot.append(tangentdata)
                         
                         if minimum_convergence is not None:
                             label = '{} transition region (P={}; xlo={:.4f}; xhi={:.4f})'.format(name, minimum_convergence, transition[0], transition[1])
@@ -521,19 +533,26 @@ class analysis:
                             transitiondata = self.plot_parms(x=transition, y=miny, style='both', marker='|', line='-', size=6, label=label, shiftable=False)
                             data2plot.append(transitiondata)
                             
+                        self.log.out(f'\n  {cite_string}')
+                        self.log.out('  This method implements the work found at: https://doi.org/10.1016/j.polymer.2016.01.074')
+                        self.log.out('  which should be cited if used for analyzing your LAMMPS data.')
+                        self.log.out(f'  {cite_string}\n')
+                            
                         # Grant access to Hyperbola-data outside of this class.
                         about = {'xdata': 'List of Hyperbola X-data w/p={}; initial_guess={}.'.format(minimum_convergence, initial_guess),
                                  'ydata': 'List of Hyperbola Y-data w/p={}; initial_guess={}.'.format(minimum_convergence, initial_guess),
                                  'params': 'List of Hyberbola parameters ordered [t0, v0, a, b, c]. Note: using volume data, not density data.',
                                  'center': 'List of center of hyberbola ordered [xc, yc].',
                                  'slopes': 'List of slopes at ends of hyberbola ordered [below-center-slope, above-center-slope]',
-                                 'transition': 'List of range of transitioning data ordered [lo-end, hi-end]'}                     
+                                 'transition': 'List of range of transitioning data ordered [lo-end, hi-end]',
+                                 'tan-inter': 'List of tangent intersections [xt, yt].'}                     
                         output = {'xdata': xout,
                                   'ydata': yout,
                                   'params': params,
                                   'center': center,
                                   'slopes': slopes,
-                                  'transition': transition}
+                                  'transition': transition,
+                                  'tan-inter': tangent_intersection}
                         self.outputs[name] = output
                         self.about[name] = about
                         
@@ -1082,6 +1101,11 @@ class analysis:
                             self.log.out('{:>4}{:<28}: {}'.format('', 'Poissons ratio "nu_avg"', nu_avg))
                         self.log.out('{:>2}{}\n'.format('', '----------------------------------------------------'))
                         
+                        self.log.out(f'\n  {cite_string}')
+                        self.log.out('  This method implements the work found at: https://doi.org/10.26434/chemrxiv-2025-fk935')
+                        self.log.out('  which should be cited if used for analyzing your LAMMPS data.')
+                        self.log.out(f'  {cite_string}\n')
+                        
                         # Provide a statement about "raw" vs "clean" Modulus
                         if raw:
                             self.log.out('  NOTE: Modulus "raw" means fit a linear regression to "raw" LAMMPS data and Modulus "clean" means fit')
@@ -1489,13 +1513,14 @@ class analysis:
     def fit_hyperbola(self, x, y, xlo, xhi, minimum_convergence=None, initial_guess=False, maxiter=10**4):
         reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
         if reduced_x and reduced_y:        
-            xout, yout, params, center, slopes, transition = misc_funcs.fit_hyperbola(x, y, xlo, xhi, minimum_convergence, initial_guess, maxiter)
+            xout, yout, params, center, slopes, transition, tangent_intersection, tangents = misc_funcs.fit_hyperbola(x, y, xlo, xhi, minimum_convergence, initial_guess, maxiter)
         else:
             xout = [0, 1]; yout = [0, 1]; slopes = [0, 1]
             center = [0, 0]; params = [0, 0, 0, 0, 0];
-            transition = [];
+            transition = []; tangent_intersection = [0, 0]
+            tangents = [(0, 0, 0), (0, 0, 0)] # {(x-points), (ypoints)}
             self.log.GUI_error(f'ERROR no (hyperbola) LAMMPS data in xrange {xlo} - {xhi}')
-        return xout, yout, params, center, slopes, transition
+        return xout, yout, params, center, slopes, transition, tangent_intersection, tangents
     
     #--------------------------------------#
     # Method implementing a polynomial fit #
