@@ -226,7 +226,7 @@ class analysis:
                         x, y = self.moving_average(x, y, xlo, xhi, LAMMPS_window)
                         data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
                         
-                        # Log info from method for use in other analysis such as Kempppainen-Muzzy for transverse strain "cleaning"
+                        # Log info from method for use in other analysis such as RFR stres-strain analysis for transverse strain "cleaning"
                         cleaning_settings[method] = [LAMMPS_window]
                     
                         # Grant access to moving-average-data outside of this class
@@ -274,7 +274,7 @@ class analysis:
                         x, y, wn, qm = self.butterworth_lowpass(x, y, xlo, xhi, LAMMPS_wn, LAMMPS_order, LAMMPS_qm, LAMMPS_psd, LAMMPS_write_data, LAMMPS_savefig, figname, dpi)
                         data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
                         
-                        # Log info from method for use in other analysis such as Kempppainen-Muzzy for transverse strain "cleaning"
+                        # Log info from method for use in other analysis such as RFR stres-strain analysis for transverse strain "cleaning"
                         cleaning_settings[method] = [LAMMPS_wn, LAMMPS_order, LAMMPS_qm, LAMMPS_psd, LAMMPS_write_data, LAMMPS_savefig]
                         
                         # Grant access to Butterworth-data outside of this class
@@ -309,7 +309,7 @@ class analysis:
                         x, y = self.whittaker_eilers_smoothing(x, y, xlo, xhi, LAMMPS_order, LAMMPS_lmbda)
                         data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
                         
-                        # Log info from method for use in other analysis such as Kempppainen-Muzzy for transverse strain "cleaning"
+                        # Log info from method for use in other analysis such as RFR stres-strain analysis for transverse strain "cleaning"
                         cleaning_settings[method] = [LAMMPS_order, LAMMPS_lmbda]
                         
                         # Grant access to Whittaker-Eilers-data outside of this class
@@ -335,7 +335,7 @@ class analysis:
                         x, y = self.polynomial_fit(x, y, xlo, xhi, LAMMPS_deg)
                         data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
                         
-                        # Log info from method for use in other analysis such as Kempppainen-Muzzy for transverse strain "cleaning"
+                        # Log info from method for use in other analysis such as RFR stres-strain analysis for transverse strain "cleaning"
                         cleaning_settings[method] = [LAMMPS_deg]
                         
                         # Grant access to Fit polynomial-data outside of this class
@@ -364,7 +364,7 @@ class analysis:
                         x, y = self.lowess(x, y, xlo, xhi, LAMMPS_fraction, LAMMPS_max_iter)
                         data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
                         
-                        # Log info from method for use in other analysis such as Kempppainen-Muzzy for transverse strain "cleaning"
+                        # Log info from method for use in other analysis such as RFR stres-strain analysis for transverse strain "cleaning"
                         cleaning_settings[method] = [LAMMPS_fraction, LAMMPS_max_iter]
                         
                         # Grant access to Whittaker-Eilers-data outside of this class
@@ -374,6 +374,48 @@ class analysis:
                                   'ydata': y}
                         self.outputs[name] = output
                         self.about[name] = about
+    
+    
+                    #----------------------------------#
+                    # Apply iFFT filter to LAMMPS data #
+                    #----------------------------------#
+                    if method == 'LAMMPS data (apply iFFT filter)':
+                        if name == '': name = 'LAMMPS data (apply iFFT filter)'
+                        setting = self.get_misc_setting(misc)
+                        if 'threshold' in setting:
+                            threshold = setting['threshold']
+                        else: threshold='mean'; misc += ' default-threshold=mean;';
+                        
+                        if 'qm' in setting:
+                            qm = setting['qm']
+                        else: qm='1,1'; misc = 'default-qm=1,1-p';
+                        
+                        if 'savefig' in setting:
+                            LAMMPS_savefig = str(setting['savefig'])
+                        else:
+                            LAMMPS_savefig = 'all'; misc += ' default-savefig=all';
+                        
+                        # Filter with inverse FFT
+                        figname = '{}_X={}_Y={}_iFFT'.format(self.get_basename_and_builder_dirs(), xdata, ydata)
+                        self.log.out('  Implementing: LAMMPS data (apply iFFT filter) with {} settings'.format(misc))
+                        y, qm_iFFT = self.iFFT_filter(x, y, xlo, xhi, threshold, qm, LAMMPS_savefig, figname, dpi)
+                        data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
+                        
+                        # Log info from method for use in other analysis such as RFR stres-strain analysis for transverse strain "cleaning"
+                        cleaning_settings[method] = [threshold, qm, LAMMPS_savefig]
+                        
+                        # Grant access to iFFT-data outside of this class
+                        about = {'xdata': 'List of iFFT X-data w/threshold={}; qm={}.'.format(threshold, qm_iFFT),
+                                 'ydata': 'List of iFFT Y-data w/threshold={}; qm={}.'.format(threshold, qm_iFFT),
+                                 'qm': 'Value for the qm (quadrant mirroring used for filtering.',
+                                 'threshold': 'Threshold used for PSD cutoff'}
+                        output = {'xdata': x,
+                                  'ydata': y,
+                                  'qm': qm_iFFT,
+                                  'threshold': threshold}
+                        self.outputs[name] = output
+                        self.about[name] = about
+    
     
                 # Set "Global" LAMMPS_data_xlo (maximize) and LAMMPS_data_xhi (minimize) values
                 try: LAMMPS_data_xlo = max(LAMMPS_data_xlos)
@@ -467,6 +509,42 @@ class analysis:
                         self.outputs[name] = output
                         self.about[name] = about
                         
+                    #-------------------------------------------------------------#
+                    # Apply iFFT filter (nothing will be done on raw LAMMPS data) #
+                    #-------------------------------------------------------------#
+                    if method == 'iFFT filter':
+                        setting = self.get_misc_setting(misc)
+                        if 'threshold' in setting:
+                            threshold = setting['threshold']
+                        else: threshold='mean'; misc += ' default-threshold=mean;';
+                        
+                        if 'qm' in setting:
+                            qm = setting['qm']
+                        else: qm='1,1'; misc = 'default-qm=1,1-p';
+                        
+                        if 'savefig' in setting:
+                            savefig = str(setting['savefig'])
+                        else:
+                            savefig = 'all'; misc += ' default-savefig=all';
+                        
+                        # Filter with inverse FFT
+                        figname = '{}_X={}_Y={}_iFFT'.format(self.get_basename_and_builder_dirs(), xdata, ydata)
+                        self.log.out('  Implementing: LAMMPS data (apply iFFT filter) with {} settings'.format(misc))
+                        y_iFFT, qm_iFFT = self.iFFT_filter(x, y, xlo, xhi, threshold, qm, savefig, figname, dpi)
+                        data2plot.append(self.plot_parms(x=x, y=y_iFFT, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
+                        
+                        # Grant access to iFFT-data outside of this class
+                        about = {'xdata': 'List of iFFT X-data w/threshold={}; qm={}.'.format(threshold, qm_iFFT),
+                                 'ydata': 'List of iFFT Y-data w/threshold={}; qm={}.'.format(threshold, qm_iFFT),
+                                 'qm': 'Value for the qm (quadrant mirroring used for filtering.',
+                                 'threshold': 'Threshold used for PSD cutoff'}
+                        output = {'xdata': x,
+                                  'ydata': y,
+                                  'qm': qm_iFFT,
+                                  'threshold': threshold}
+                        self.outputs[name] = output
+                        self.about[name] = about
+                        
                     #---------------------------------#
                     # Apply Whittaker-Eilers smoother #
                     #---------------------------------#
@@ -488,6 +566,54 @@ class analysis:
                         # Grant access to Whittaker-Eilers-data outside of this class
                         about = {'xdata': 'List of Whittaker-Eilers X-data w/order={}; lambda={}.'.format(order, lmbda),
                                  'ydata': 'List of Whittaker-Eilers Y-data w/order={}; lambda={}.'.format(order, lmbda)}
+                        output = {'xdata': x,
+                                  'ydata': y}
+                        self.outputs[name] = output
+                        self.about[name] = about
+                        
+                    #-----------------------#
+                    # Apply LOWESS cleaning #
+                    #-----------------------#
+                    if method == 'LOWESS':
+                        setting = self.get_misc_setting(misc)
+                        if 'fraction' in setting:
+                            fraction = setting['fraction']
+                        else: fraction=0.2; misc += ' default-fraction=0.2;';
+                        if 'max_iter' in setting:
+                            max_iter = setting['max_iter']
+                        else: max_iter=10; misc += ' default-max_iter=10;';
+                        
+                        # Smooth with LOWESS
+                        self.log.out('  Implementing: LOWESS with {} settings'.format(misc))
+                        x, y = self.lowess(x, y, xlo, xhi, fraction, max_iter)
+                        data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
+                        
+                        # Grant access to Whittaker-Eilers-data outside of this class
+                        about = {'xdata': 'List of LOWESS X-data w/fraction={}; max_iter={}.'.format(LAMMPS_fraction, LAMMPS_max_iter),
+                                 'ydata': 'List of LOWESS Y-data w/fraction={}; max_iter={}.'.format(LAMMPS_fraction, LAMMPS_max_iter)}
+                        output = {'xdata': x,
+                                  'ydata': y}
+                        self.outputs[name] = output
+                        self.about[name] = about
+                    
+                    
+                    #-------------------------------#
+                    # Fit polynomial to LAMMPS data #
+                    #-------------------------------#
+                    if method == 'fit polynomial':
+                        setting = self.get_misc_setting(misc)
+                        if 'deg' in setting:
+                            deg = setting['deg']
+                        else: deg=2; misc += ' default-deg=2;';
+                        
+                        # Fit polynomial
+                        self.log.out('  Implementing: fit polynomial with {} settings'.format(misc))
+                        x, y = self.polynomial_fit(x, y, xlo, xhi, deg)
+                        data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
+                        
+                        # Grant access to Fit polynomial-data outside of this class
+                        about = {'xdata': 'List of fit polynomial X-data w/deg={}.'.format(LAMMPS_deg),
+                                 'ydata': 'List of fit polynomial Y-data w/deg={}.'.format(LAMMPS_deg)}
                         output = {'xdata': x,
                                   'ydata': y}
                         self.outputs[name] = output
@@ -933,6 +1059,7 @@ class analysis:
                                         self.log.out('\n  Applying moving average to "t2" transverse strain direcion.')
                                         xdummy, t2_tmp = self.moving_average(xlmp, t2_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, LAMMPS_window)
                                         t2 = [t2_tmp] # Moving average can not be used with raw data, so reset t1 completely
+                                
                                 if lmp_cleaning == 'LAMMPS data (apply Whittaker-Eilers)':
                                     LAMMPS_order, LAMMPS_lmbda = cleaning_settings[lmp_cleaning]
                                     if t1_tmp: 
@@ -943,6 +1070,7 @@ class analysis:
                                         self.log.out('\n  Applying Whittaker-Eilers to "t2" transverse strain direcion.')
                                         xdummy, t2_tmp = self.whittaker_eilers_smoothing(xlmp, t2_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, LAMMPS_order, LAMMPS_lmbda) 
                                         t2.append(t2_tmp)
+                                
                                 if lmp_cleaning == 'LAMMPS data (apply Butterworth filter)':
                                     LAMMPS_wn, LAMMPS_order, LAMMPS_qm, LAMMPS_psd, LAMMPS_write_data, LAMMPS_savefig = cleaning_settings[lmp_cleaning]
                                     if t1_tmp:
@@ -953,6 +1081,7 @@ class analysis:
                                         self.log.out('\n  Applying Butterworth filter to "t2" transverse strain direcion.')
                                         xdummy, t2_tmp, t2_wn, t2_qm = self.butterworth_lowpass(xlmp, t2_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, LAMMPS_wn, LAMMPS_order, LAMMPS_qm, LAMMPS_psd, LAMMPS_write_data, LAMMPS_savefig, figname+'_t2', dpi)
                                         t2.append(t2_tmp)
+                                
                                 if lmp_cleaning == 'LAMMPS data (fit polynomial)':
                                     LAMMPS_deg = cleaning_settings[lmp_cleaning]
                                     if t1_tmp:
@@ -973,6 +1102,17 @@ class analysis:
                                     if t2_tmp:
                                         self.log.out('\n  Applying LOWESS to to "t2" transverse strain direcion.')
                                         xdummy, t2_tmp = self.lowess(xlmp, t2_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, LAMMPS_fraction, LAMMPS_max_iter)
+                                        t2.append(t2_tmp)
+                                        
+                                if lmp_cleaning == 'LAMMPS data (apply iFFT filter)':
+                                    threshold, LAMMPS_qm, LAMMPS_savefig = cleaning_settings[lmp_cleaning]
+                                    if t1_tmp:
+                                        self.log.out('\n  Applying iFFT filter to "t1" transverse strain direcion.')
+                                        t1_tmp, qm_iFFT = self.iFFT_filter(xlmp, t1_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, threshold, LAMMPS_qm, LAMMPS_savefig,  figname+'_t1', dpi)
+                                        t1.append(t1_tmp)
+                                    if t2_tmp:
+                                        self.log.out('\n  Applying iFFT filter to "t2" transverse strain direcion.')
+                                        t2_tmp, qm_iFFT = self.iFFT_filter(xlmp, t2_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, threshold, LAMMPS_qm, LAMMPS_savefig,  figname+'_t2', dpi)
                                         t2.append(t2_tmp)
                         
                         # Get stress units
@@ -1416,6 +1556,19 @@ class analysis:
             yfilter = reduced_y
             self.log.GUI_error(f'ERROR (butterworth low pass) no LAMMPS data in xrange {xlo} - {xhi}')
         return list(xfilter), list(yfilter), wn, qm
+    
+    
+    #--------------------------------------------------#
+    # Method implementing a Whittaker-Eilers smoothing #
+    #--------------------------------------------------#
+    def iFFT_filter(self, x, y, xlo, xhi, threshold, qm, savefig, figname, dpi):
+        reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
+        if reduced_x and reduced_y:
+            iFFT_y, qm = signal_processing.iFFT_filter(reduced_x, reduced_y, threshold, qm, savefig, figname, dpi)
+        else:
+            iFFT_y = y
+        return list(iFFT_y), qm
+    
     
     #--------------------------------------------------#
     # Method implementing a Whittaker-Eilers smoothing #

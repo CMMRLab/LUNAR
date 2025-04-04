@@ -14,10 +14,13 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 2April2025)
+LUNAR (version 4April2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+4April2025         JDK         - log_analysis.py: Added a FFT / inverse FFT low pass filter for testing 
+                                                  different filtering methods.
+
 2April2025         JDK         - log_analysis.py: Added cite-cite-cite... sections for Patrone and Kemppainen
                                                   et al. analysis methods to written logfile from 
 												  https://doi.org/10.1016/j.polymer.2016.01.074 and 

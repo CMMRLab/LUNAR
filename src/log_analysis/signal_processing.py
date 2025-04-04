@@ -73,10 +73,162 @@ def compute_FFT(x, y):
     d = 1/fs # sampling space
 
     # Perform one sided FFT
-    fft_response = np.fft.rfft(yy, axis=0, norm='backward')
+    fhat = np.fft.rfft(yy, axis=0, norm='backward')
     x_fft = np.fft.rfftfreq(N, d=d)
-    y_fft = fft_response 
+    y_fft = fhat 
     return x_fft, y_fft, fs, N
+
+
+##################################################################################
+# Function to automatically determine the best mirroring options for iFFT filter #
+##################################################################################
+def iFFT_quadrant_mirroring(xdata, ydata, threshold, quadrant_mirror):
+    #------------------------------------------------------------------------#
+    # Set default settings for calling butter_lowpass_filter (since multiple #
+    # tests will be run, we DO NOT WANT to save data or figures.)            #
+    #------------------------------------------------------------------------#
+    savefig = False; figname = ''; dpi = 300
+    
+    #-------------------------------------------------#
+    # Determine half_data to only check for residuals #
+    # either from lo-half_data or half_data-hi        #
+    #-------------------------------------------------#
+    half_data = int(xdata.shape[0]/2)
+    
+    #------------------------------#
+    # First: Optimize the "lo" end #
+    #------------------------------#
+    lo_quads2test = [1, 2, 3, 4]; lo_summed_residuals2 = {} # {quadrant_mirror:sum-of-residuals-squared}
+    for quad in lo_quads2test: 
+        quadrants = '{},{}'.format(quad, 1) # hold hi constant at 1
+        y_filter, qm = iFFT_filter(xdata, ydata, threshold, quadrants, savefig, figname, dpi, plot_PSD=False)
+        residuals = ydata - y_filter
+        residuals = residuals[:half_data] # we only care about the first half fit
+        lo_summed_residuals2[quad] = np.sum(residuals**2)
+        
+    # Find minimized sum of residuals squared
+    lo = min(lo_summed_residuals2, key=lo_summed_residuals2.get)
+    
+    #-------------------------------#
+    # Second: Optimize the "hi" end #
+    #-------------------------------#
+    hi_quads2test = [1, 2, 3, 4]; hi_summed_residuals2 = {} # {quadrant_mirror:sum-of-residuals-squared}
+    for quad in hi_quads2test: 
+        quadrants = '{},{}'.format(1, quad) # hold lo constant at 1
+        y_filter, qm = iFFT_filter(xdata, ydata, threshold, quadrants, savefig, figname, dpi, plot_PSD=False)
+        residuals = ydata - y_filter
+        residuals = residuals[half_data:] # we only care about the last half fit
+        hi_summed_residuals2[quad] = np.sum(residuals**2)
+        
+    # Find minimized sum of residuals squared
+    hi = min(hi_summed_residuals2, key=hi_summed_residuals2.get)
+    
+    #------------------------------------#
+    # Set optimal quadrant_mirror string #
+    #------------------------------------#
+    optimal_quadrant_mirror = '{},{}'.format(lo, hi)
+    if '-p' in str(quadrant_mirror):
+        optimal_quadrant_mirror = '{},{}-p'.format(lo, hi)
+    return optimal_quadrant_mirror
+    
+
+
+###############################################
+# Function to implement an inverse FFT filter #
+###############################################
+def iFFT_filter(x, y, threshold, quadrant_mirror, savefig, figname, dpi, plot_PSD=True):
+    xdata = np.array(x); ydata = np.array(y)
+
+    #-----------------------------------------------------------------------#
+    # Automagically detect which are the best quandrant mirroring locations #
+    #-----------------------------------------------------------------------#
+    if 'msr' in str(quadrant_mirror):
+        quadrant_mirror = iFFT_quadrant_mirroring(xdata, ydata, threshold, quadrant_mirror)
+        print(f'    Optimized quadrant_mirror for iFFT filter was found to be {quadrant_mirror}.')   
+        
+    #----------------------------------------------------------------------------#
+    # Perfrom quadrant mirroring operations if two digits are in quadrant_mirror #
+    #----------------------------------------------------------------------------#
+    digits = [int(i) for i in str(quadrant_mirror) if i.isdigit()]
+    if len(digits) == 2:
+        lo, hi = digits
+        xdata, ydata, lo_trim, hi_trim, lo_xdata, lo_ydata, hi_xdata, hi_ydata = data_extension(xdata, ydata, lo=lo, hi=hi)
+        
+        # Plot the data if the '-p' flag is at the end of quadrant_mirror
+        if str(quadrant_mirror).endswith('-p'):
+            fig, ax = plt.subplots(figsize=(6, 4))
+            ax.plot(lo_xdata, lo_ydata, 'o', ms=4, color='tab:green', label='lo data in quadrant {}'.format(lo))
+            ax.plot(xdata[lo_trim:hi_trim], ydata[lo_trim:hi_trim], 'o', ms=4, color='tab:blue', label='Orignal data w/o mirror')
+            ax.plot(hi_xdata, hi_ydata, 'o', ms=4, color='tab:cyan', label='hi data in quadrant {}'.format(hi))
+            ax.axhline(0, ls='--', color='black', lw=1)
+            ax.axvline(0, ls='--', color='black', lw=1)
+            ax.legend()
+    
+    #--------------------------#
+    # Compute and plot the PSD #
+    #--------------------------#
+    x_fft, y_fft, x_psd, y_psd, fs, N = compute_power_spectral_density(xdata, ydata)
+    if 'mean' in str(threshold):
+        # Attempt getting scaling factor as threshold could be:
+        #   'mean'
+        #   'mean:SF', where 'SF' is the optional scaling factor (e.g.
+        #              threshold='mean:0.25', means scale mean by 0.25)
+        try: scale_factor = float(threshold.split(':')[-1])
+        except: scale_factor = 1.0
+        
+        # Compute threshold
+        threshold = scale_factor*np.mean(y_psd)
+    elif isinstance(threshold, (float, int)):
+        threshold = threshold
+    else:
+        threshold = np.mean(y_psd)
+        print(f'WARNING threshold={threshold} is not supported. Defaulting to mean of PSD ({threshold})')
+
+    #-----------------------------------------------------------------------------------#
+    # Set a scaling factor of 0 or 1 to cancel out (0) or leave (1) certain frequencies #
+    #-----------------------------------------------------------------------------------#
+    scaling_factors = np.zeros_like(y_psd)
+    for i, mag in enumerate(y_psd):
+        # Kill small Fourier Coeffs
+        if mag < threshold:
+            scaling_factor = 0
+        else:
+            scaling_factor = 1
+        scaling_factors[i] = scaling_factor
+    
+    #-----------------------------------------------------------------------------------------------#
+    # Cancel or leave frequencies in y_ftt and then inverse the cleaned fft to get the filterd data #
+    #-----------------------------------------------------------------------------------------------#
+    y_clean = scaling_factors*y_fft
+    y_filter = np.fft.irfft(y_clean)
+    if y_filter.shape != xdata.shape:
+        y_filter = np.append(y_filter, y_filter[-1])
+    
+    # If quadrant mirroring and plotting, append the filter response to the plot
+    if str(quadrant_mirror).endswith('-p') and len(digits) == 2:
+        ax.plot(xdata, y_filter, '-', lw=4, color='tab:orange', label='Filtered data')
+        ax.legend()
+        fig.tight_layout()
+        if '0' not in str(savefig) and '2' in str(savefig) or 'all' in str(savefig):
+            fig.savefig(figname+'_qm.jpeg', dpi=dpi)
+    
+    # If quadrant mirroring was used, get orginal length of data and
+    if len(digits) == 2: y_filter = y_filter[lo_trim:hi_trim] 
+    
+    #------------------------------#
+    # Plot and save PSD if desired #
+    #------------------------------#
+    if plot_PSD:
+        fig, ax = plt.subplots(1, figsize=(6, 4))
+        ax.stem(x_psd, y_psd, linefmt='tab:blue', markerfmt='.', label='$|X(f)|^2/N$')
+        ax.axhline(threshold, ls='--', color='tab:olive', lw=1, label='threshold={:.8f}'.format(threshold))
+        ax.set_xlabel('Frequency (1/X-units)', fontsize=12)
+        ax.set_ylabel('Power', fontsize=12)
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.0), fancybox=True, ncol=1, fontsize=12)
+        fig.tight_layout()
+        if '0' not in str(savefig) and '1' in str(savefig) or 'all' in str(savefig):
+            fig.savefig(figname+'_PSD.jpeg', dpi=dpi)
+    return y_filter, quadrant_mirror
 
 
 ####################################################
@@ -86,10 +238,9 @@ def compute_power_spectral_density(x, y):
     # Compute one sided FFT
     x_fft, y_fft, fs, N = compute_FFT(x, y)
     
-    # One sided power spectrum density (avoiding the FFT*FFT_conj for performance reasons)
+    # One sided power spectrum density
     x_psd = x_fft.copy()
-    y_psd = (np.abs(y_fft)**2)/N
-    #y_psd = np.real( (y_fft*np.conjugate(y_fft))/N )
+    y_psd = np.real( (y_fft*np.conjugate(y_fft))/N )
     return x_fft, y_fft, x_psd, y_psd, fs, N
 
 
@@ -353,7 +504,7 @@ def butter_lowpass_filter(xdata, ydata, wn, order, quadrant_mirror, write_data, 
         # ax.set_xlabel('True Strain', fontsize=fs)
         # ax.set_ylabel('True Stress (MPa)', fontsize=fs)
         # ax.tick_params(axis='both', which='major', labelsize=fs)
-        if savefig:
+        if '0' not in str(savefig) and '2' in str(savefig) or 'all' in str(savefig):
             fig.tight_layout()
             fig.savefig(figname+'.jpeg', dpi=dpi)
 

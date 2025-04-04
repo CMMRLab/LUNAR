@@ -253,12 +253,12 @@ class GUI:
         
         # file selection button and qty
         self.nanalysis = len(self.analysis)
-        self.supported_methods = ['average', 'linear regression', 'moving average', 'hyperbola', 'piecewise-regression', 'cursor', 
-                                  'spline-integration', 'Whittaker-Eilers', 'minimum', 'maximum', 'Butterworth (low pass)', 'skip',
+        self.supported_methods = ['average', 'linear regression', 'moving average', 'hyperbola', 'piecewise-regression', 'cursor', 'skip',
+                                  'spline-integration', 'Whittaker-Eilers', 'minimum', 'maximum', 'Butterworth (low pass)', 'iFFT filter', 'LOWESS'
                                   'Regression Fringe Response Modulus', 'LAMMPS data (remove from plot)', 'LAMMPS data (apply moving average)',
                                   'LAMMPS data (apply Butterworth filter)', 'LAMMPS data (apply Whittaker-Eilers)', 'LAMMPS data (fit polynomial)',
-                                  'LAMMPS data (LOWESS)', 'LAMMPS data (X-sort)', 'write plotted data to csv file', 'Calculus: Differentiate Data',
-                                  'Calculus: Integrate Data']
+                                  'LAMMPS data (LOWESS)', 'LAMMPS data (X-sort)', 'LAMMPS data (apply iFFT filter)', 'write plotted data to csv file',
+                                  'Calculus: Differentiate Data', 'Calculus: Integrate Data']
         self.supported_methods = sorted(self.supported_methods, key=lambda x: x[0].lower()) # sort list by first letter of each method (x[0].lower())
         self.methods = []; self.xlos = []; self.xhis = []; self.miscs = []; self.names = [];
         for n in range(1, self.nanalysis+1):

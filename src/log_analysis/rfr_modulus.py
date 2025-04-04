@@ -187,7 +187,8 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
     # not caused by a fracture event. We will use the "minimum before the maximum" stress to avoid
     # issues in fracture events.
     max_index = stress.index(max(stress))
-    min_stress = min(stress[:max_index])
+    try: min_stress = min(stress[:max_index])
+    except: min_stress = min(stress)
     starting_strain = strain[stress.index(min_stress)]
 
     # Set min_strain value based on minxhi

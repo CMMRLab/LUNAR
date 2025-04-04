@@ -9,13 +9,13 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 2/28/2025
+# Last edited 4/4/2025
 #
 ************
 * Overview *
 ************
 
-  LUNAR/log_analysis.py  is meant to provide a general purpose plotting and analysis tool for LAMMPS logfiles. The LAMMPS logfile can be setup
+  LUNAR/log_analysis.py is meant to provide a general purpose plotting and analysis tool for LAMMPS logfiles. The LAMMPS logfile can be setup
   using the LAMMPS "thermo_style    custom ..." command and can be written to based on the LAMMPS "thermo N" command. LUNAR/log_analysis.py is
   compatible with very complex log files with many sections defined. This code minimally requires the Python numpy and matplotlib packages,
   where other packages can enable more methods of analysis (see the methods section below).
@@ -123,6 +123,9 @@
     - "moving avrage"
     - "Butterworth (low pass)"
     - "Whittaker-Eilers"
+    - "LOWESS"
+    - "fit polynomial"
+    - "iFFT filter"
     - "average"
     - "linear regression"
     - "hyperbola"
@@ -138,6 +141,7 @@
     - "LAMMPS data (apply Whittaker-Eilers)"
     - "LAMMPS data LAMMPS data (LOWESS)"
     - "LAMMPS data LAMMPS data (fit polynomial)"
+    - "LAMMPS data (apply iFFT filter)"
     - all other methods can leave this column empty
     - NOTE: if not provided the GUI will default to using the minimum xdata for xlo and the maximum xdata for xhi
 
@@ -155,8 +159,8 @@
         This method allows for two settings to be adjusted, the "order" of the filter and the "critical frequency (wn)" of the filter. The "order"
         of the filter sets how "aggressive" the higher frequencies are attenuated near the "cutoff frequency" of the filter. For example see the
         two magnitude responses below for the same "cutoff frequency", the "higher" order filter reduces the "gain" much more aggressively near the
-        "cutoff frequency". The Butterworth filter is then implemented using "scipy.signal.filtfilt", which is a zero phase shift method by first
-        performing a forward convolution and then a backwars convolution. This results in a net order of the filter to be twice that of the order
+        "cutoff frequency". The Butterworth filter is then implemented using "scipy.signal.sosfiltfilt", which is a zero phase shift method by first
+        performing a forward convolution and then a backwards convolution. This results in a net order of the filter to be twice that of the order
         supplied with the keywords detailed below.
 
           Depicts the magnitude response               Depicts the magnitude response
@@ -174,8 +178,7 @@
 					
         wn=<float or string>, where <float> is a floating point number between 0 and 1 to set critical frequency, which is the point at which the gain
         drops to 1/sqrt(2) that of the passband (the "-3 dB point"). If you want to control the "true cutoff frequency" instead of the "normalized
-        cutoff frequency" you may compute "wn" in the
-        following way:
+        cutoff frequency" you may compute "wn" in the following way:
             wn = cutoff/nf; where "wn" is the input to the filter, "nf" is the Nyquist frequency, and "cutoff" is the cutoff frequency. 
             nf = 0.5*fs; where "fs" is the sampling frequency (1/delta-x).
             wn = cutoff/(0.5*fs)
@@ -266,6 +269,112 @@
           psd=False; wn=0.5; order=3; qm=2,3-p
 		
         This method requires the Python scipy package (install via: pip install scipy)
+		
+    - "Whittaker-Eilers" 
+	    The methid will smooth data with the Whittaker-Eilers smoother. Please read more about this method from pages below:
+          https://towardsdatascience.com/the-perfect-way-to-smooth-your-noisy-data-4f3fe6b44440
+          https://towardsdatascience.com/how-to-tune-the-perfect-smoother-bcc5a67660b1
+          
+        This method currently has two defined parameters:
+          order=<int>, where <int> sets the order of the smoother which is the number of neighboring data points used to smooth the data. A
+                       good default is an order of 2 (a second order finite difference). Examples:
+                         order=1
+                         order=2
+			
+			
+          lambda=<float or string>, where <float> sets the lambda parameter and <string> enables the automatic determination of lambda. For string
+                                    inputs a few options exist. The full option is summarized as 'op<MinLambda,MaxLambda,NumLambda>-p', where
+                                    'op' tells the code to optimize lambda using the minimum cross-validation error (CVE) determined by leave-
+                                    one-out cross validation.
+										   
+                                    '<MinLambda,MaxLambda,NumLambda>' allows users to set the bounds of lambdas to check (minimum bound is set
+                                                                      by 'MinLambda' and maximum bound is set by 'MaxLambda'). The number of
+                                                                      lambdas to check is set by 'NumLambda', where the lambdas are generated on
+                                                                      a logscale of base 10. This sets the "course" grid to check for a minimum
+                                                                      CVE and then a fine grid is established between the neighboring left and
+                                                                      right course points of the course minimum. The fine grid uses NumLambda-1
+                                                                      points on a linear scale on both sides of the course minimum, where the code
+                                                                      walks one increment out at a time from the "centered" course minimum
+                                                                      "outward", until both sides of the fine grid CVE is greater then the course
+                                                                      minimum. The optimized lambda is then the minimum CVE on the fine grid. If
+                                                                      '<MinLambda,MaxLambda,NumLambda>' is not specified, defaults will be 
+                                                                      employed. The defaults are as follows:
+                                                                        MinLambda: 1e-2
+                                                                        MaxLambda: 1e12
+                                                                        NumLambda: 50
+																		  
+                                    '-p' will plot the final CVE "spectra" so users can see how well the mimima appears. If '-p' is not present,
+                                         the CVE "spectra" will not be plotted.
+                                    
+                                    Examples of setting lambda:
+                                      lambda=1000
+                                      lambda=100_000
+                                      lambda=1e6
+                                      lambda=op
+                                      lambda=op-p
+                                      lambda=op<1e-4, 1e10, 25>
+                                      lambda=op<1e-1, 1e12, 10>-p
+									  
+    - "LOWESS" 
+        The method will smooth data with Locally Weighted Scatterplot Smoothing (LOWESS), sometimes called (locally weighted smoothing) LOESS. LOWESS
+        is as a non-parametric smoother (does not require knowledge of the shape or distribution of data), that uses successive refinements of least
+        squares regression over a given region of the data. The maximum number of successive refinements will be controlled by the "max_iter" keyword
+        and the region is controlled via the "fraction" keyword. Where "max_iter" is an integer to set the number of successive refinements (default
+        of 10 if not provided) and "fraction" is a float that sets the plus/minus region around a data point (default is 0.2 if not provided). An
+        example of the fraction keyword is shown where below, where the "*" data point is the example data point for the LOWESS regression and the
+        "@" data points are the neighbors. For the example there is a total of 20 data points, where we will set the fraction=0.1 (meaning 10% of the
+        data around the point of interest, the "*" data point will be used for the LOWESS regression. That is (10/100)*20 = 2 data points plus/minus).
+        Where the region is then shown by "[-- --]".
+		  
+            ^
+            | [-- --]
+            |  @@*@@@   @@@@@@
+            |@@  |   @@@   |  @@@
+            +----+----+----+----+-->
+		    0    5    10   15   20
+			 number of data points
+			 
+          The "LOWESS" requires "statsmodels" to be installed, which can be installed via "pip install statsmodels". Examples of using the keywords:
+            max_iter=20; fraction=0.01
+            fraction=0.1; max_iter=4
+			
+    - "fit polynomial"
+        The method will fit a polynomial to the data of desired degree. This method uses numpy.polynomial.polynomial.polyfit. The keyword is:
+          deg=<int>, where <int> sets the degree of the polynomial to fit to the LAMMPS data.
+		  
+    - "iFFT filter"
+        This method implements a low pass inverse FFT filter to attenuate the higher frequency thermal vibrations associated with most MD thermo-
+        dynamic data. The goal is the "reveal" a cleaned response of the data being filtered. The idea behind this method is to transform the data
+        from the time domain, to the frequency domain, compute the power spectral density (PSD). Set a threshold value where any Fourier constant 
+        that is less then the threshold value is killed. The data is then inverse Fourier transformed back to the time domain, where the singal will
+        have all low power Fourier constants removed, ultimately generating a low-pass type of filter. The following keywords are available:
+        
+		qm=<string>, where <string> is in the format 'lo,hi', where lo and hi are integer values (i.e. '1,1', '2,1', ...). Please see "qm" in 
+        the "Butterworth (low pass)" section for further details. Examples:
+          qm=1,2
+          qm=2,2
+          qm=2,3-p
+          qm=1,4-p
+		  
+        threshold=<string>, where <string> can be "mean" or "mean:SF". This method generates a PSD plot and "mean" sets a the threshold where any
+        power less then the mean of the PSD, the corresponding Fourier constant is killed and any power greater then or equal to the mean is
+        left alone. The data is then inverse Fourier transformed with the killed constants, which generates a clean signal. The "mean:SF" method
+        allows for the mean value to be scaled by scaling factor "SF" (e.g. say we wanted twice the mean then threshold=mean:2). Examples:
+          threshold=mean
+          threshold=mean:1.5		  
+		
+        savefig=<string>, where <string> can have 'all' or integer values ('0' or '1' or '1 2' or '1,2'). This string will control which figures are
+        saved during the calculations. Integers can go from 0 to 2, with the following meainings:
+          '0' no plots will be saved. Can also be an empty string or a string that does not have int values 1-2.
+          '1' Will save the threshold optimization plot.
+          '2' Will save the quadrant mirroing plot.
+        The 'all' flag can be used to save all plots. When using integer values they are not required to be seperated or not seperated by a delimiter.
+        For example '1 2' or '1-2' or '1,2' all will save plots 1 and 2. However to standardize the syntax of this string, it is recommended to use
+        a comma delimiter (e.g. '1,2'). The default if not provided is 'all'. Examples:
+          savefig=0
+          savefig=1
+          savefig=1,2
+          savefig=all
                   
     - "linear regression"
         shift=<Boolean>, where <Boolean> is True or False. If shift=True all data that is plotted except the cursor (if plotted) will be shifted
@@ -560,88 +669,9 @@
 ********************************
 
     - "LAMMPS data (apply moving average)" or "LAMMPS data (apply Butterworth filter)" or "LAMMPS data (fit polynomial)" or "LAMMPS data (apply
-       Whittaker-Eilers)" or "LAMMPS data (LOWESS)"
-        Can be used as a "global" method to clean the LAMMPS data before analyzing. The "LAMMPS data (apply moving average)" option means apply a 
-        moving average to the LAMMPS data before analyzing. This can be useful to reduce the "noise" in logged thermodynamic data. Please see the
-        "moving average" section for options to use in the "misc" column to define the operations of this method on the LAMMPS data. The default
-        "X-lo" and "X-hi" will be the minimum and maximum of the X-data if left blank.
-      
-        The "LAMMPS data (apply Butterworth filter)" option means apply a low pass Butterworth filter to the LAMMPS data before analyzing. This
-        can be useful to reduce the "noise" in logged thermodynamic data. Please see the "Butterworth (low pass)" section for options to use in
-        the "misc" column to define the operations of this method on the LAMMPS data. The default "X-lo" and "X-hi" will be the minimum and maximum
-        of the X-data if left blank. The default "wn" will be 0.01, "order" will be 2, "psd" will be False, and "qm" will be 1,1 if left blank.
-		
-        The "LAMMPS data (fit polynomial)" will fit a polynomial to the LAMMPS data of desired degree. This method uses
-        numpy.polynomial.polynomial.polyfit. The misc option input is:
-          deg=<int>, where <int> sets the degree of the polynomial to fit to the LAMMPS data.
-		  
-        The "LAMMPS data (apply Whittaker-Eilers)" will attempt to smooth the data with the Whittaker-Eilers smoother. Please read more about this
-        method from pages below:
-          https://towardsdatascience.com/the-perfect-way-to-smooth-your-noisy-data-4f3fe6b44440
-          https://towardsdatascience.com/how-to-tune-the-perfect-smoother-bcc5a67660b1
-          
-          This method currently has two defined parameters:
-            order=<int>, where <int> sets the order of the smoother which is the number of neighboring data points used to smooth the data. A
-                         good default is an order of 2 (a second order finite difference). Examples:
-                           order=1
-                           order=2
-			
-			
-            lambda=<float or string>, where <float> sets the lambda parameter and <string> enables the automatic determination of lambda. For string
-                                      inputs a few options exist. The full option is summarized as 'op<MinLambda,MaxLambda,NumLambda>-p', where
-                                      'op' tells the code to optimize lambda using the minimum cross-validation error (CVE) determined by leave-
-                                           one-out cross validation.
-										   
-                                      '<MinLambda,MaxLambda,NumLambda>' allows users to set the bounds of lambdas to check (minimum bound is set
-                                                                        by 'MinLambda' and maximum bound is set by 'MaxLambda'). The number of
-                                                                        lambdas to check is set by 'NumLambda', where the lambdas are generated on
-                                                                        a logscale of base 10. This sets the "course" grid to check for a minimum
-                                                                        CVE and then a fine grid is established between the neighboring left and
-                                                                        right course points of the course minimum. The fine grid uses NumLambda-1
-                                                                        points on a linear scale on both sides of the course minimum, where the code
-                                                                        walks one increment out at a time from the "centered" course minimum
-                                                                        "outward", until both sides of the fine grid CVE is greater then the course
-                                                                        minimum. The optimized lambda is then the minimum CVE on the fine grid. If
-                                                                        '<MinLambda,MaxLambda,NumLambda>' is not specified. defaults will be 
-                                                                        employed. The defaults are as follows:
-                                                                          MinLambda: 1e-2
-                                                                          MaxLambda: 1e12
-                                                                          NumLambda: 50
-																		  
-                                      '-p' will plot the final CVE "spectra" so users can see how well the mimima appears. If '-p' is not present,
-                                           the CVE "spectra" will not be plotted.
-                                    
-                                    Examples of setting lambda:
-                                      lambda=1000
-                                      lambda=100_000
-                                      lambda=1e6
-                                      lambda=op
-                                      lambda=op-p
-                                      lambda=op<1e-4, 1e10, 25>
-                                      lambda=op<1e-1, 1e12, 10>-p
-									  
-        The "LAMMPS data (LOWESS)" option means apply a Locally Weighted Scatterplot Smoothing (LOWESS), sometimes called (locally weighted smoothing)
-        LOESS. LOWESS is as a non-parametric smoother (does not require knowledge of the shape or distribution of data), that uses successive 
-        refinements of least squares regression on over a given region of the data. The maximum number of successive refinements will be controlled by
-        the "max_iter" keyword and the region is controlled via the "fraction" keyword. Where "max_iter" is an integer to set the number of successive
-        refinements (default of 10 if not provided) and "fraction" is a float that sets the plus/minus region around a data point (default is 0.2 if
-        not provided). An example of the fraction keyword is shown where below, where the "*" data point is the example data point for the LOWESS  
-        regression and the "@" data points are the neighbors. For the example there is a total of 20 data points, where we will set the fraction=0.1
-        (meaning 10% of the data around the point of interest, the "*" data point will be used for the LOWESS regression. That is (10/100)*20 = 2 data
-        points plus/minus). Where the define region is  then shown by "[-- --]".
-		  
-            ^
-            | [-- --]
-            |  @@*@@@   @@@@@@
-            |@@  |   @@@   |  @@@
-            +----+----+----+----+-->
-		    0    5    10   15   20
-			 number of data points
-			 
-          The "LAMMPS data (LOWESS)" requires "statsmodels" to be installed, which can be installed via "pip install statsmodels". Examples of 
-          using the keywords:
-            max_iter=20; fraction=0.01
-            fraction=0.1; max_iter=4
+       Whittaker-Eilers)" or "LAMMPS data (LOWESS)" or "LAMMPS data (apply iFFT filter)"
+        Can be used as a "global" method to clean the LAMMPS data before analyzing. The "LAMMPS data i", where i is "moving average", "Butterworth (low
+        pass)", "fit polynomial", "Whittaker-Eilers", "LOWESS", and "iFFT filter" settings and keywords can be read in the above methods.
 	  
         NOTE more the one instance of a LAMMPS data cleaning can be used. The order of implementation will be set by the order in which they appear
         in the "Methods" stack, going from top to bottom. So if two cleaning methods are implemented say "LAMMPS data (apply Whittaker-Eilers)" and
