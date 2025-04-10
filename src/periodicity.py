@@ -145,9 +145,6 @@ def update_image_flags(m):
     
     # Generate h and h_inv vector like LAMMPS does
     h, h_inv, boxlo, boxhi = get_box_parameters(m)
-    cx = boxhi[0] - boxlo[0]
-    cy = boxhi[1] - boxlo[1]
-    cz = boxhi[2] - boxlo[2]
 
     # Find clusters and update molIDs
     m, clusters = update_molids(m)    
@@ -168,7 +165,7 @@ def update_image_flags(m):
         clusters_bonds.append(bondIDs)
     
     # Go through and update image flags in each cluster
-    half_box_lambda_space = 0.499
+    half_box_lambda_space = 0.49
     for cluster, bonds in zip(clusters, clusters_bonds):
         # Find lowest coordinate in each direction
         xs = []; ys = []; zs = []
@@ -270,7 +267,7 @@ def unwrap_atoms_with_iflags(m):
         atom.x = pos[0] 
         atom.y = pos[1] 
         atom.z = pos[2] 
-        # atom.ix -= images[0]
-        # atom.iy -= images[1]
-        # atom.iz -= images[2]
+        atom.ix -= images[0]
+        atom.iy -= images[1]
+        atom.iz -= images[2]
     return m
