@@ -267,7 +267,7 @@ class analysis:
         periodic_flags = [False, False, False]
         
         # Check bond lengths
-        half_box_lambda_space = 0.499
+        half_box_lambda_space = 0.49 # allow for 1% error from 0.5
         for i in bonds:
             id1, id2 = m.bonds[i].atomids
             atom1 = m.atoms[id1]

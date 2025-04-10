@@ -165,7 +165,7 @@ def update_image_flags(m):
         clusters_bonds.append(bondIDs)
     
     # Go through and update image flags in each cluster
-    half_box_lambda_space = 0.49
+    half_box_lambda_space = 0.49 # allow for 1% error from 0.5
     for cluster, bonds in zip(clusters, clusters_bonds):
         # Find lowest coordinate in each direction
         xs = []; ys = []; zs = []
