@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.4
-November 4th, 2023
+Revision 1.5
+April 10th, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -52,7 +52,12 @@ GUI_zoom = 100
 # labels" in it. The only supported atom styles are full, charge, or molecular. More atom styles can be #
 # coded if needed.                                                                                      #
 #########################################################################################################
-topofile = 'EXAMPLES/auto_cluster_analysis/EPON_862_pxld_60_typed.data'
+#topofile = 'EXAMPLES/auto_cluster_analysis/EPON_862_pxld_60_typed.data'
+#topofile = 'EXAMPLES/periodicity/PAN_crystal_PCFF.data'
+#topofile = 'EXAMPLES/periodicity/CNT_PCFF.data'
+#topofile = 'EXAMPLES/periodicity/EPON_862_pxld_60_typed.data'
+#topofile = 'EXAMPLES/periodicity/dgebf_typed_IFF.data'
+topofile = 'EXAMPLES/periodicity/Cellulose-supercell_PCFF.data'
 
 
 #########################################################################################################

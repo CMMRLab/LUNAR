@@ -118,14 +118,14 @@ fav = 2.66
 #################################################################################################################
 # Option to write a .txt file of BASENAME.txt (topofile) of all connectivty information found (True or False).  #
 #################################################################################################################
-txtfile = False
+txtfile = True
 
 
 ###########################################
 ### Main auto_cluster_analysis function ###
 ###########################################
 import src.io_functions as io_functions
-def main(files_directory, N0, fav, txtfile, newfile, log=io_functions.LUNAR_logger()):
+def main(files_directory, N0, fav, txtfile, newfile, log=None):
     import src.clusters as clusters
     import time
     import os
@@ -134,6 +134,8 @@ def main(files_directory, N0, fav, txtfile, newfile, log=io_functions.LUNAR_logg
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
+    if log is None:
+        log = io_functions.LUNAR_logger()
     log.configure(level='production')
     #log.configure(level='debug')
     
@@ -218,33 +220,45 @@ def main(files_directory, N0, fav, txtfile, newfile, log=io_functions.LUNAR_logg
         log.out('intall natsort with:  pip3 install natsort   (if pip manager is installed)')
     log.out('\n\nIterating through topofiles to find molecule information ....')
     for iteration, topofile in enumerate(topofiles, 1):
+        log_looped = io_functions.LUNAR_logger()
+        log_looped.configure(level='production', print2console=False, write2log=True)
+        
         #---------------------------------------------------------------------------------------#
         # Find molecules and store data in a class w/multiple layers of attributes listed above #
         #---------------------------------------------------------------------------------------#
-        molecules = clusters.analysis(topofile, N0, txtfile, fav, pflag=False, log=log)
-        
-        #---------------------------------------------------------------------------------#
-        # Set up logger dict to hold the info to write to the .csv file. Update as desired#
-        #         header name in file:  written value                                     #
-        #---------------------------------------------------------------------------------#
-        logger = {'Iteration':          iteration,
-                  '1st cluster Mass':   molecules.info[1].mass,
-                  '2nd cluster Mass':   molecules.info[2].mass,
-                  '1st cluster %Mass':  molecules.info[1].pmass,
-                  '2nd cluster %Mass':  molecules.info[2].pmass,
-                  'RMW':                molecules.RMW,
-                  'filename':           molecules.filename,
-                  }
- 
-        #-----------------------------------#
-        # Write logger results to .csv file #
-        #-----------------------------------#
-        write_csv(logger, newfile+'.csv')
+        try:
+            molecules = clusters.analysis(topofile, N0, txtfile, fav, log=log_looped)
+            log.out(f'Processed: {topofile}')
+            
+            #---------------------------------------------------------------------------------#
+            # Set up logger dict to hold the info to write to the .csv file. Update as desired#
+            #         header name in file:  written value                                     #
+            #---------------------------------------------------------------------------------#
+            logger = {'Iteration':          iteration,
+                      '1st cluster Mass':   molecules.info[1].mass,
+                      '2nd cluster Mass':   molecules.info[2].mass,
+                      '1st cluster %Mass':  molecules.info[1].pmass,
+                      '2nd cluster %Mass':  molecules.info[2].pmass,
+                      'RMW':                molecules.RMW,
+                      'INF-count cluster (x)': molecules.periodic_count['x'],
+                      'INF-count cluster (y)': molecules.periodic_count['y'],
+                      'INF-count cluster (z)': molecules.periodic_count['z'],
+                      'filename':           molecules.filename,
+                      }
+     
+            #-----------------------------------#
+            # Write logger results to .csv file #
+            #-----------------------------------#
+            write_csv(logger, newfile+'.csv')
+        except:
+            log.warn(f'WARNING failed to process: {topofile}')
         
         
     ####################################
     # Cleanup and finalization of code #
     ####################################
+    log.write_logged(newfile+'.log.lammps')
+    
     # Change back to the intial directory to keep directory free for deletion
     os.chdir(pwd)
     

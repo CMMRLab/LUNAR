@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.4
-November 4th, 2023
+Revision 1.5
+April 10th, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -12,6 +12,7 @@ Houghton, MI 49931
 # Import Necessary Libraries #
 ##############################
 import src.io_functions as io_functions
+import src.periodicity as periodicity
 import src.read_lmp as read_lmp
 import time
 import sys
@@ -24,7 +25,7 @@ import os
 ###############################################
 class Info: pass # .size .mass .psize .pmass .atoms
 class analysis:
-    def __init__(self, topofile, N0, txtfile, fav, pflag=True, log=None): 
+    def __init__(self, topofile, N0, txtfile, fav, log=None): 
         start_time = time.time()       
         
         # Configure log (default is level='production', switch to 'debug' if debuging)
@@ -36,17 +37,16 @@ class analysis:
         ########################################################
         # set version and print starting information to screen #
         ########################################################
-        version = 'v1.4 / 4 November 2023'
-        if pflag: 
-            log.out(f'\n\nRunning cluster_analysis {version}')
-            log.out(f'Using Python version {sys.version}')
+        version = 'v1.5 / 10 April 2025'
+        log.out(f'\n\nRunning cluster_analysis {version}')
+        log.out(f'Using Python version {sys.version}')
         
         ##########################################################
         # Read LAMMPS datafile into memory as class "m" applying #
         # forward mapping of type labels (if applicable)         #
         ##########################################################
         if os.path.isfile(topofile):
-            m = read_lmp.Molecule_File(topofile, method='forward', sections = ['Atoms', 'Bonds'])
+            m = read_lmp.Molecule_File(topofile, method='forward', sections = ['Atoms', 'Bonds', 'Angles', 'Dihedrals', 'Impropers'])
             log.out(f'Read in {m.filename}')
         else:
             log.error(f'ERROR lammps datafile: {topofile} does not exist')
@@ -55,6 +55,24 @@ class analysis:
             basename = basename.replace('.gz', '') # remove .gz suffix
         basename = basename[:basename.rfind('.')] # Find file basename
         log.debug(f'basename = {basename}')
+        
+        
+        #######################################
+        # Unwrap atoms and get box dimensions #
+        #######################################
+        # Generate h and h_inv vector like LAMMPS does
+        h, h_inv, boxlo, boxhi = periodicity.get_box_parameters(m)
+        
+        # Unwrap atoms
+        m = periodicity.unwrap_atoms_with_iflags(m)
+        write_lmp = False
+        if write_lmp:
+            # Write LAMMPS datafile of unwrapped atoms to check how code did
+            import src.write_lmp as write_lmp
+            header = 'HEADER, Unwrap Testing'
+            atom_style = 'full'
+            include_type_labels = False
+            write_lmp.file(m, basename+'_UNWRAPPED.data', header, atom_style, include_type_labels, log)
         
         
         ##############################################
@@ -99,18 +117,33 @@ class analysis:
             self.clusters.add( tuple(sorted(visited)) )
         self.clusters = sorted(self.clusters, key=lambda x: x[0]) # Sort all clusters based on 1st atomID in cluster
         self.clusters = sorted(self.clusters, key=len, reverse=True) # Sort all clusters by number of atoms
+
         
-        # Functon to compute cluster mass                                  
-        def getmass(c):                                                                                                                  
-            return sum([m.masses[m.atoms[i].type].coeffs[0] for i in c])
+        # Find mapping of atomIDs to bondIDs
+        atoms2bondIDs = {i:set() for i in m.atoms} # {atomIDs : set(bondIDs)}
+        for i in m.bonds:
+            id1, id2 = m.bonds[i].atomids
+            atoms2bondIDs[id1].add(i)
+            atoms2bondIDs[id2].add(i)
+            
+        # Map bonds to cluster index
+        clusters_bonds = []
+        for cluster in self.clusters:
+            bondIDs = set()
+            for i in cluster:
+                bondIDs.update(atoms2bondIDs[i])
+            clusters_bonds.append(bondIDs)
+
     
         # Analyze clusters
-        natoms = [];  cmass = [];   
-        for c in self.clusters:
-            natoms.append(len(c)); cmass.append(getmass(c));     
+        natoms = [];  cmass = []; periodic_flags = [];
+        for cluster, bonds in zip(self.clusters, clusters_bonds):
+            natoms.append(len(cluster));
+            cmass.append(self.getmass(m, cluster))   
+            periodic_flags.append(self.cluster_periodicity(m, cluster, bonds, h_inv, boxlo))
                   
         # Summing mass and atoms                                                                                                                                                               
-        self.mass_total = sum(cmass); self.size_total = sum(natoms); 
+        self.mass_total = sum(cmass); self.size_total = sum(natoms);   
 
         # Initalize info with zeros for nmolIDs=nmol_initial_zeros
         for n in range(nmol_initial_zeros):  
@@ -120,10 +153,12 @@ class analysis:
             I.mass = 0
             I.psize = 0
             I.pmass = 0
-            self.info[n+1] = I                                                                               
+            I.periodic = [False, False, False]
+            self.info[n+1] = I                                                                              
         
-        # Log Info inside an oject acessible via molID in a dictionary                              
-        for n, (size, mass) in enumerate(zip(natoms, cmass)):
+        # Log Info inside an oject acessible via molID in a dictionary  
+        self.periodic_count = {'x':int(0), 'y':int(0), 'z':int(0)} # {'dir':count}                            
+        for n, (size, mass, periodic) in enumerate(zip(natoms, cmass, periodic_flags)):
             # Compute pmass and psize if applicable
             psize = 0; pmass = 0; # Intialize as zeros and update
             if self.size_total > 0: psize = 100*size/self.size_total
@@ -136,7 +171,13 @@ class analysis:
             I.mass = mass
             I.psize = psize
             I.pmass = pmass
+            I.periodic = periodic
             self.info[n+1] = I
+            
+            # Count periodically spanning clusters
+            if periodic[0]: self.periodic_count['x'] += int(1)
+            if periodic[1]: self.periodic_count['y'] += int(1)
+            if periodic[2]: self.periodic_count['z'] += int(1)
                 
         # Find Mw, Mn, Mz, Mz1, and RMW from self.info[molID].mass. Equations from:
         #    Polymers: Chemistry and Physics of Modern Materials pg 8-9 &
@@ -175,61 +216,70 @@ class analysis:
         if self.p > 0 and fav > 0:
             self.Xn = 2/(2-self.p*fav) # degree of polymerization
         
-        # Print out info; if pflag
-        if pflag:
-            # Print out table of molIDs
-            log.out('\n\n----------------------------Cluster Analysis----------------------------')
-            log.out('{:^10} {:^15} {:^15} {:^15} {:^15}'.format('molID', 'size', '%size', 'mass', '%mass'))
-            log.out('------------------------------------------------------------------------')  
-            for n in self.info:
-                molID = self.info[n]
-                if molID.size > 0:
-                    log.out('{:^10} {:^15} {:^15.2f} {:^15.2f} {:^15.2f}'.format(n, molID.size, molID.psize, molID.mass, molID.pmass))
-                
-            # Print out Mn, Mw, Mz, Mz+1 Xn, and p
-            log.out('\n\n------------------------Distributions------------------------')
-            log.out('{} {:.4f}'.format('Extent of reaction aka converison      (p)   : ', self.p))
-            log.out('{} {:.4f}'.format('Critical extent of reaction gel point  (pg)  : ', self.pg))
-            log.out('{} {:.4f}'.format('Degree of Polymerization               (Xn)  : ', self.Xn))
-            log.out('{} {:.4f}'.format('Weight-average molar mass              (Mw)  : ', self.Mw))
-            log.out('{} {:.4f}'.format('Number-average molar mass              (Mn)  : ', self.Mn))
-            log.out('{} {:.4f}'.format('Higher-average molar mass              (Mz)  : ', self.Mz))
-            log.out('{} {:.4f}'.format('Higher-average molar mass              (Mz+1): ', self.Mz1))
-            log.out('{} {:.4f}'.format('Weight-averge reduced molecular weight (RMW) : ', self.RMW))
+        # Print out table of molIDs
+        log.out('\n\n------------------------------------------Cluster Analysis------------------------------------------')
+        log.out('{:^10} {:^15} {:^15} {:^15} {:^15} {:^20}'.format('molID', 'size', '%size', 'mass', '%mass', 'periodicity (x, y, z)'))
+        log.out('----------------------------------------------------------------------------------------------------')  
+        for n in self.info:
+            molID = self.info[n]
+            if molID.size > 0:
+                log.out('{:^10} {:^15} {:^15.2f} {:^15.2f} {:^15.2f} {:^20}'.format(n, molID.size, molID.psize, molID.mass, molID.pmass, ', '.join([str(i) for i in molID.periodic])))
+            
+        # Print out Mn, Mw, Mz, Mz+1 Xn, and p
+        log.out('\n\n------------------------Distributions------------------------')
+        log.out('{} {:.4f}'.format('Extent of reaction aka converison      (p)   : ', self.p))
+        log.out('{} {:.4f}'.format('Critical extent of reaction gel point  (pg)  : ', self.pg))
+        log.out('{} {:.4f}'.format('Degree of Polymerization               (Xn)  : ', self.Xn))
+        log.out('{} {:.4f}'.format('Weight-average molar mass              (Mw)  : ', self.Mw))
+        log.out('{} {:.4f}'.format('Number-average molar mass              (Mn)  : ', self.Mn))
+        log.out('{} {:.4f}'.format('Higher-average molar mass              (Mz)  : ', self.Mz))
+        log.out('{} {:.4f}'.format('Higher-average molar mass              (Mz+1): ', self.Mz1))
+        log.out('{} {:.4f}'.format('Weight-averge reduced molecular weight (RMW) : ', self.RMW))
+        log.out('{} {}'.format('Count of infinitely spanned clusters (X-dir) : ', self.periodic_count['x']))
+        log.out('{} {}'.format('Count of infinitely spanned clusters (Y-dir) : ', self.periodic_count['y']))
+        log.out('{} {}'.format('Count of infinitely spanned clusters (Z-dir) : ', self.periodic_count['z']))
             
         # Write .txt file if desired
         if txtfile:
+            log.write_logged(basename+'_clusters.txt')
             path = os.path.dirname(os.path.abspath(topofile))
-            if pflag:
-                log.out(f'\n\nAll outputs can be found in {path} directory')
-            with open(basename+'_clusters.txt', 'w') as f:
-                # Write out table of molIDs
-                f.write('\n\n----------------------------Cluster Analysis----------------------------\n')
-                f.write('{:^10} {:^15} {:^15} {:^15} {:^15}\n'.format('molID', 'size', '%size', 'mass', '%mass'))
-                f.write('------------------------------------------------------------------------\n')  
-                for n in self.info:
-                    molID = self.info[n]
-                    if molID.size > 0:
-                        f.write('{:^10} {:^15} {:^15.2f} {:^15.2f} {:^15.2f}\n'.format(n, molID.size, molID.psize, molID.mass, molID.pmass))
-                    
-                # Write out Mn, Mw, Mz, Mz+1 Xn, and p
-                f.write('\n\n------------------------Distributions------------------------\n')
-                f.write('{} {:.4f}\n'.format('Extent of reaction aka converison      (p)   : ', self.p))
-                f.write('{} {:.4f}\n'.format('Degree of Polymerization               (Xn)  : ', self.Xn))
-                f.write('{} {:.4f}\n'.format('Weight-average molar mass              (Mw)  : ', self.Mw))
-                f.write('{} {:.4f}\n'.format('Number-average molar mass              (Mn)  : ', self.Mn))
-                f.write('{} {:.4f}\n'.format('Higher-average molar mass              (Mz)  : ', self.Mz))
-                f.write('{} {:.4f}\n'.format('Higher-average molar mass              (Mz+1): ', self.Mz1))
-                f.write('{} {:.4f}\n'.format('Weight-averge reduced molecular weight (RMW) : ', self.RMW))
+            log.out(f'\n\nAll outputs can be found in {path} directory')
                 
         # Print completion of code
-        if pflag:
-            log.out('\n\nNormal program termination\n\n')
+        log.out('\n\nNormal program termination\n\n')
+        
+        # Script run time
+        execution_time = (time.time() - start_time)
+        log.out('Execution time in seconds: ' + str(execution_time))
+        
+        # Show number of warnings and errors
+        log.out_warnings_and_errors()
             
-            # Script run time
-            execution_time = (time.time() - start_time)
-            log.out('Execution time in seconds: ' + str(execution_time))
-            
-            # Show number of warnings and errors
-            log.out_warnings_and_errors()
+        
+    # Method to compute cluster mass                                  
+    def getmass(self, m, cluster):                                                                                                                  
+        return sum([m.masses[m.atoms[i].type].coeffs[0] for i in cluster])
+    
+    # Method to find cluster periodicit
+    def cluster_periodicity(self, m, cluster, bonds, h_inv, boxlo):
+        # Initialize Flags
+        periodic_flags = [False, False, False]
+        
+        # Check bond lengths
+        half_box_lambda_space = 0.5
+        for i in bonds:
+            id1, id2 = m.bonds[i].atomids
+            atom1 = m.atoms[id1]
+            atom2 = m.atoms[id2]
+            pos1 = [atom1.x, atom1.y, atom1.z]
+            pos2 = [atom2.x, atom2.y, atom2.z]
+            lamda1 = periodicity.pos2lamda(pos1, h_inv, boxlo)
+            lamda2 = periodicity.pos2lamda(pos2, h_inv, boxlo)
+            dx = lamda1[0] - lamda2[0]
+            dy = lamda1[1] - lamda2[1]
+            dz = lamda1[2] - lamda2[2]
+            if abs(dx) > half_box_lambda_space: periodic_flags[0] = True
+            if abs(dy) > half_box_lambda_space: periodic_flags[1] = True
+            if abs(dz) > half_box_lambda_space: periodic_flags[2] = True    
+        return periodic_flags
     

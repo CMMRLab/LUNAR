@@ -21,6 +21,8 @@ import tkinter as tk
 import threading
 import traceback
 import math
+import glob
+import time
 import os
 
 
@@ -209,17 +211,42 @@ class GUI:
             log.GUI_error(f'ERROR fav value of {self.fav.get()} is not a float value.')
             valid_inputs = False
         txtfile = boolean[self.txtfile.get()]
-        pflag = self.pflag
         
         # Run LUNAR/cluster
         if valid_inputs:
-            try: 
-                inputs = (topofile, N0, txtfile, fav, pflag, log)
-                t1=threading.Thread(target=clusters.analysis, args=inputs)
-                t1.start()
-                t1.join()
-            except Exception:
-                log.GUI_error(traceback.format_exc())
+            #------------------#
+            # Array processing #
+            #------------------#
+            if not os.path.isfile(str(topofile)):
+                log = io_functions.LUNAR_logger()
+                log.configure(level='production', print2console=True, write2log=True)
+                files = glob.glob(topofile); array_time = time.time()
+                if files:
+                    for n, file in enumerate(files, 1):
+                        log.clear_all()
+                        log.out('\n\nUsing array input option:')
+                        log.out(' - topofile     : {}'.format(topofile))
+                        log.out(' - matched file : {}'.format(file))
+                        log.out(' - elapsed time : {:.2f} (seconds)'.format(time.time() - array_time))
+                        log.out(' - progress     : {} of {} ({:.2f}%)'.format(n, len(files), 100*(n/len(files))))
+                        try: 
+                            inputs = (file, N0, txtfile, fav, log)
+                            t1=threading.Thread(target=clusters.analysis, args=inputs)
+                            t1.start()
+                            t1.join()
+                        except Exception:
+                            log.GUI_error(traceback.format_exc())
+            #------------------#
+            # Single usage run #
+            #------------------#
+            else:
+                try: 
+                    inputs = (topofile, N0, txtfile, fav, log)
+                    t1=threading.Thread(target=clusters.analysis, args=inputs)
+                    t1.start()
+                    t1.join()
+                except Exception:
+                    log.GUI_error(traceback.format_exc())
         self.popup(log.logged, title='Outputs')
         return  
    

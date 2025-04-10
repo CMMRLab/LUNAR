@@ -1,0 +1,42 @@
+
+
+Running cluster_analysis v1.5 / 10 April 2025
+Using Python version 3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]
+Read in EXAMPLES/periodicity/Cellulose-supercell_PCFF.data
+
+
+------------------------------------------Cluster Analysis------------------------------------------
+  molID         size            %size           mass            %mass      periodicity (x, y, z)
+----------------------------------------------------------------------------------------------------
+    1            84             5.56           648.57           5.56        False, False, True 
+    2            84             5.56           648.57           5.56        False, False, True 
+    3            84             5.56           648.57           5.56        False, False, True 
+    4            84             5.56           648.57           5.56        False, False, True 
+    5            84             5.56           648.57           5.56        False, False, True 
+    6            84             5.56           648.57           5.56        False, False, True 
+    7            84             5.56           648.57           5.56        False, False, True 
+    8            84             5.56           648.57           5.56        False, False, True 
+    9            84             5.56           648.57           5.56        False, False, True 
+    10           84             5.56           648.57           5.56        False, False, True 
+    11           84             5.56           648.57           5.56        False, False, True 
+    12           84             5.56           648.57           5.56        False, False, True 
+    13           84             5.56           648.57           5.56        False, False, True 
+    14           84             5.56           648.57           5.56        False, False, True 
+    15           84             5.56           648.57           5.56        False, False, True 
+    16           84             5.56           648.57           5.56        False, False, True 
+    17           84             5.56           648.57           5.56        False, False, True 
+    18           84             5.56           648.57           5.56        False, False, True 
+
+
+------------------------Distributions------------------------
+Extent of reaction aka converison      (p)   :  0.6617
+Critical extent of reaction gel point  (pg)  :  0.7519
+Degree of Polymerization               (Xn)  :  8.3333
+Weight-average molar mass              (Mw)  :  648.5744
+Number-average molar mass              (Mn)  :  648.5744
+Higher-average molar mass              (Mz)  :  648.5744
+Higher-average molar mass              (Mz+1):  648.5744
+Weight-averge reduced molecular weight (RMW) :  648.5744
+Count of infinitely spanned clusters (X-dir) :  0
+Count of infinitely spanned clusters (Y-dir) :  0
+Count of infinitely spanned clusters (Z-dir) :  18
