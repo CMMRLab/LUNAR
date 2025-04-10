@@ -14,6 +14,7 @@ Houghton, MI 49931
 import src.io_functions as io_functions
 import src.periodicity as periodicity
 import src.read_lmp as read_lmp
+import math
 import time
 import sys
 import os
@@ -140,7 +141,7 @@ class analysis:
         for cluster, bonds in zip(self.clusters, clusters_bonds):
             natoms.append(len(cluster));
             cmass.append(self.getmass(m, cluster))   
-            periodic_flags.append(self.cluster_periodicity(m, cluster, bonds, h_inv, boxlo))
+            periodic_flags.append(self.cluster_periodicity(m, cluster, bonds, h, h_inv, boxlo))
                   
         # Summing mass and atoms                                                                                                                                                               
         self.mass_total = sum(cmass); self.size_total = sum(natoms);   
@@ -261,12 +262,12 @@ class analysis:
         return sum([m.masses[m.atoms[i].type].coeffs[0] for i in cluster])
     
     # Method to find cluster periodicit
-    def cluster_periodicity(self, m, cluster, bonds, h_inv, boxlo):
+    def cluster_periodicity(self, m, cluster, bonds, h, h_inv, boxlo):
         # Initialize Flags
         periodic_flags = [False, False, False]
         
         # Check bond lengths
-        half_box_lambda_space = 0.5
+        half_box_lambda_space = 0.499
         for i in bonds:
             id1, id2 = m.bonds[i].atomids
             atom1 = m.atoms[id1]
@@ -278,8 +279,8 @@ class analysis:
             dx = lamda1[0] - lamda2[0]
             dy = lamda1[1] - lamda2[1]
             dz = lamda1[2] - lamda2[2]
-            if abs(dx) > half_box_lambda_space: periodic_flags[0] = True
-            if abs(dy) > half_box_lambda_space: periodic_flags[1] = True
-            if abs(dz) > half_box_lambda_space: periodic_flags[2] = True    
+            if abs(dx) >= half_box_lambda_space: periodic_flags[0] = True
+            if abs(dy) >= half_box_lambda_space: periodic_flags[1] = True
+            if abs(dz) >= half_box_lambda_space: periodic_flags[2] = True    
         return periodic_flags
     

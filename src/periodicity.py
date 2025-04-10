@@ -141,10 +141,13 @@ def get_box_parameters(m):
 ###############################################################################
 # Function to update image flags in an orthogonal or triclinc simulation cell #
 ###############################################################################
-def update_image_flags(m, unwrap=False):
+def update_image_flags(m):
     
     # Generate h and h_inv vector like LAMMPS does
     h, h_inv, boxlo, boxhi = get_box_parameters(m)
+    cx = boxhi[0] - boxlo[0]
+    cy = boxhi[1] - boxlo[1]
+    cz = boxhi[2] - boxlo[2]
 
     # Find clusters and update molIDs
     m, clusters = update_molids(m)    
@@ -165,25 +168,25 @@ def update_image_flags(m, unwrap=False):
         clusters_bonds.append(bondIDs)
     
     # Go through and update image flags in each cluster
-    half_box_lambda_space = 0.5
+    half_box_lambda_space = 0.499
     for cluster, bonds in zip(clusters, clusters_bonds):
-        # Compute centroid of cluster
+        # Find lowest coordinate in each direction
         xs = []; ys = []; zs = []
         for i in cluster:
             atom = m.atoms[i]
             xs.append(atom.x)
             ys.append(atom.y)
             zs.append(atom.z)
-        cx = sum(xs)/len(xs)
-        cy = sum(ys)/len(ys)
-        cz = sum(zs)/len(zs)
+        cx = min(xs)
+        cy = min(ys)
+        cz = min(zs)
         
-        # Find closest atom to center to use as the anchoring atom
-        dist2center = {} # {atomID:distance-to-center}
+        # Find closest atom to lowest cooridates
+        dist2anchor = {} # {atomID:distance-to-anchor position}
         for i in cluster:
             atom = m.atoms[i]
-            dist2center[i] = compute_distance(cx, cy, cz, atom.x, atom.y, atom.z)
-        anchorID = min(dist2center, key=dist2center.get)
+            dist2anchor[i] = compute_distance(cx, cy, cz, atom.x, atom.y, atom.z)
+        anchorID = min(dist2anchor, key=dist2anchor.get)
         anchor_atom = m.atoms[anchorID]
         anchor_pos = [anchor_atom.x, anchor_atom.y, anchor_atom.z]
         anchor_lamda = pos2lamda(anchor_pos, h_inv, boxlo)
@@ -206,9 +209,9 @@ def update_image_flags(m, unwrap=False):
             dx = lamda1[0] - lamda2[0]
             dy = lamda1[1] - lamda2[1]
             dz = lamda1[2] - lamda2[2]
-            if abs(dx) > half_box_lambda_space: periodic_flags[0] = True
-            if abs(dy) > half_box_lambda_space: periodic_flags[1] = True
-            if abs(dz) > half_box_lambda_space: periodic_flags[2] = True 
+            if abs(dx) >= half_box_lambda_space: periodic_flags[0] = True
+            if abs(dy) >= half_box_lambda_space: periodic_flags[1] = True
+            if abs(dz) >= half_box_lambda_space: periodic_flags[2] = True 
 
         
         # Reset image flags based on anchoring atom position
@@ -216,22 +219,21 @@ def update_image_flags(m, unwrap=False):
             if i == anchorID: continue
             atom = m.atoms[i]
             pos = [atom.x, atom.y, atom.z]
-            images = [atom.ix, atom.iy, atom.iz]
             lamda = pos2lamda(pos, h_inv, boxlo)
             
             # Check if differents lamba space from anchoringID to current ID is greater
             # then half of the simulation cell dimensions in lamda space and check to be
             # sure the cluster is periodically bonded in that direction (to avoid issues
             # with small simulation cells of single molecules).                 
-            images = 3*[0]
+            images = [0, 0, 0]
             for k in range(0, 3):
                 if not periodic_flags[k]: continue
-                diff_lamda = anchor_lamda[k] - lamda[k]
+                diff_lamda = lamda[k] - anchor_lamda[k]
                 image = 0
-                if diff_lamda > half_box_lambda_space:
-                    image = 1
-                if diff_lamda < -half_box_lambda_space:
+                if diff_lamda >= half_box_lambda_space:
                     image = -1
+                if diff_lamda <= -half_box_lambda_space:
+                    image = 1
                 images[k] = image
                 lamda[k] -= image
 
@@ -268,7 +270,7 @@ def unwrap_atoms_with_iflags(m):
         atom.x = pos[0] 
         atom.y = pos[1] 
         atom.z = pos[2] 
-        atom.ix -= images[0]
-        atom.iy -= images[1]
-        atom.iz -= images[2]
+        # atom.ix -= images[0]
+        # atom.iy -= images[1]
+        # atom.iz -= images[2]
     return m

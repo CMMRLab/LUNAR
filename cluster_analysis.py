@@ -139,4 +139,4 @@ if __name__ == "__main__":
         print('\n\n\ncluster_analysis is currently running in GUI mode, where all GUI inputs are intialized from cluster_analysis.\n\n\n')
         from src.clusters_GUI import GUI 
         GUI(topofile, N0, txtfile, fav, GUI_zoom, pflag=True)
-    else: molecules = clusters.analysis(topofile, N0, txtfile, fav, pflag=True)
+    else: molecules = clusters.analysis(topofile, N0, txtfile, fav)
