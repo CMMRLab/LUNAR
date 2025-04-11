@@ -55,6 +55,7 @@ GUI_zoom = 100
 #topofile = 'EXAMPLES/auto_cluster_analysis/EPON_862_pxld_60_typed.data'
 #topofile = 'EXAMPLES/periodicity/PAN_crystal_PCFF.data'
 #topofile = 'EXAMPLES/periodicity/CNT_PCFF.data'
+#topofile = 'EXAMPLES/periodicity/cnt-hexagonal-class1_cvff.data'
 #topofile = 'EXAMPLES/periodicity/EPON_862_pxld_60_typed.data'
 #topofile = 'EXAMPLES/periodicity/dgebf_typed_IFF.data'
 topofile = 'EXAMPLES/periodicity/Cellulose-supercell_PCFF.data'

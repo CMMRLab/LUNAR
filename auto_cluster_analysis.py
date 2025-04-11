@@ -234,16 +234,24 @@ def main(files_directory, N0, fav, txtfile, newfile, log=None):
             # Set up logger dict to hold the info to write to the .csv file. Update as desired#
             #         header name in file:  written value                                     #
             #---------------------------------------------------------------------------------#
-            logger = {'Iteration':          iteration,
-                      '1st cluster Mass':   molecules.info[1].mass,
-                      '2nd cluster Mass':   molecules.info[2].mass,
-                      '1st cluster %Mass':  molecules.info[1].pmass,
-                      '2nd cluster %Mass':  molecules.info[2].pmass,
-                      'RMW':                molecules.RMW,
+            logger = {'Iteration':             iteration,
+                      '1st cluster Mass':      molecules.info[1].mass,
+                      '2nd cluster Mass':      molecules.info[2].mass,
+                      '1st cluster %Mass':     molecules.info[1].pmass,
+                      '2nd cluster %Mass':     molecules.info[2].pmass,
+                      'RMW':                   molecules.RMW,
                       'INF-count cluster (x)': molecules.periodic_count['x'],
                       'INF-count cluster (y)': molecules.periodic_count['y'],
                       'INF-count cluster (z)': molecules.periodic_count['z'],
-                      'filename':           molecules.filename,
+                      'Rg mean':               molecules.Rg_mean,
+                      'Rg stdev':              molecules.Rg_stdev,
+                      'Rxx mean':              molecules.Rxx_mean,
+                      'Rxx stdev':             molecules.Rxx_stdev,
+                      'Ryy mean':              molecules.Ryy_mean,
+                      'Ryy stdev':             molecules.Ryy_stdev,
+                      'Rzz mean':              molecules.Rzz_mean,
+                      'Rzz stdev':             molecules.Rzz_stdev,
+                      'filename':              molecules.filename,
                       }
      
             #-----------------------------------#
