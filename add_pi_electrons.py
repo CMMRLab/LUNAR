@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.6
-May 9th, 2024
+Revision 1.7
+April 14, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -279,6 +279,10 @@ reset_simulation_cell = False
 include_type_labels = False
 
 
+use_GUI = False
+neighbor_charge_constraint = 'check-neighbors'
+topofile = 'EXAMPLES/sheet_builder/Grafting_PCFF-IFF_full_test/sheet_typed_IFF.data'
+
 
 
 #####################################################
@@ -314,7 +318,6 @@ if __name__ == "__main__":
         add_pi_electrons_GUI(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
                              parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell, GUI_zoom)
     else:
-        # Run main convert2graphite
         main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons, parent_directory,
              newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell, commandline_inputs=commandline_inputs)
 

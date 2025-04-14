@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.21
-November 13th, 2024
+Revision 1.22
+April 14, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -46,7 +46,39 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
          reset_charges, write_txt_comments, write_bond_react, print_options, use_morse_bonds, include_type_labels, add2box, ignore_missing_parameters,
          shift, rotate, commandline_inputs, log=None):
     
-    # Set up Tristan's "array" analysis using recursion
+    #########################
+    # Command Line Override #
+    #########################
+    # if -opt or -man option is in commandline_inputs print options and stop code execution
+    if '-opt' in commandline_inputs or  '-man' in commandline_inputs or print_options:
+        # call man page and exit if '-opt' or '-man' is provided at the command line
+        command_line.print_man_page(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_style, ff_class, use_auto_equivalence, use_assumed_auto_fill, reset_molids,
+                                    reset_charges, write_txt_comments, write_bond_react, print_options, use_morse_bonds, include_type_labels, add2box, ignore_missing_parameters,
+                                    shift, rotate)
+        sys.exit()
+    
+    ###################################################################################
+    # if -opt option is NOT in commandline_inputs start assiging over ride parameters #
+    ###################################################################################
+    if '-opt' not in commandline_inputs and commandline_inputs:    
+        # call inputs for commandline over rides
+        over_rides = command_line.inputs(commandline_inputs, topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_style, ff_class, use_auto_equivalence,
+                                         use_assumed_auto_fill, reset_molids, reset_charges, write_txt_comments, write_bond_react, print_options, use_morse_bonds,
+                                         include_type_labels, add2box, ignore_missing_parameters, shift, rotate)
+        
+        # Set new inputs from over_rides class
+        topofile = over_rides.topofile; nta_file = over_rides.nta_file; add2box = over_rides.add2box;
+        frc_file = over_rides.frc_file; assumed = over_rides.assumed; ignore_missing_parameters = over_rides.ignore_missing_parameters
+        parent_directory = over_rides.parent_dir;  newfile = over_rides.newfile; shift = over_rides.shift; rotate = over_rides.rotate
+        atom_style = over_rides.atom_style; ff_class = over_rides.ff_class;
+        use_auto_equivalence = over_rides.use_auto_equivalence; use_assumed_auto_fill = over_rides.use_assumed_auto_fill;
+        reset_molids = over_rides.reset_molids; reset_charges = over_rides.reset_charges;
+        write_txt_comments = over_rides.write_txt_comments; write_bond_react = over_rides.write_bond_react;
+        print_options = over_rides.print_options; use_morse_bonds = over_rides.use_morse_bonds; include_type_labels = over_rides.include_type_labels;
+    
+    #####################################################
+    # Set up Tristan's "array" analysis using recursion #
+    #####################################################
     if not os.path.isfile(str(topofile)):
         if log is None: log = io_functions.LUNAR_logger()
         log.configure(level='production', print2console=True, write2log=True)
@@ -83,36 +115,6 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
             log = io_functions.LUNAR_logger()
         log.configure(level='production')
         #log.configure(level='debug', print2console=False)
-    
-        #########################
-        # Command Line Override #
-        #########################
-        # if -opt or -man option is in commandline_inputs print options and stop code execution
-        if '-opt' in commandline_inputs or  '-man' in commandline_inputs or print_options:
-            # call man page and exit if '-opt' or '-man' is provided at the command line
-            command_line.print_man_page(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_style, ff_class, use_auto_equivalence, use_assumed_auto_fill, reset_molids,
-                                        reset_charges, write_txt_comments, write_bond_react, print_options, use_morse_bonds, include_type_labels, add2box, ignore_missing_parameters,
-                                        shift, rotate)
-            sys.exit()
-        
-        ###################################################################################
-        # if -opt option is NOT in commandline_inputs start assiging over ride parameters #
-        ###################################################################################
-        if '-opt' not in commandline_inputs and commandline_inputs:    
-            # call inputs for commandline over rides
-            over_rides = command_line.inputs(commandline_inputs, topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_style, ff_class, use_auto_equivalence,
-                                             use_assumed_auto_fill, reset_molids, reset_charges, write_txt_comments, write_bond_react, print_options, use_morse_bonds,
-                                             include_type_labels, add2box, ignore_missing_parameters, shift, rotate)
-            
-            # Set new inputs from over_rides class
-            topofile = over_rides.topofile; nta_file = over_rides.nta_file; add2box = over_rides.add2box;
-            frc_file = over_rides.frc_file; assumed = over_rides.assumed; ignore_missing_parameters = over_rides.ignore_missing_parameters
-            parent_directory = over_rides.parent_dir;  newfile = over_rides.newfile; shift = over_rides.shift; rotate = over_rides.rotate
-            atom_style = over_rides.atom_style; ff_class = over_rides.ff_class;
-            use_auto_equivalence = over_rides.use_auto_equivalence; use_assumed_auto_fill = over_rides.use_assumed_auto_fill;
-            reset_molids = over_rides.reset_molids; reset_charges = over_rides.reset_charges;
-            write_txt_comments = over_rides.write_txt_comments; write_bond_react = over_rides.write_bond_react;
-            print_options = over_rides.print_options; use_morse_bonds = over_rides.use_morse_bonds; include_type_labels = over_rides.include_type_labels;
         
         ######################################################
         # Check for valid inputs; if not valid exit the code #
@@ -125,7 +127,7 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
         # Initialize some preliminary information #
         ###########################################
         # set version and print starting information to screen
-        version = 'v1.21 / 13 November 2024'
+        version = 'v1.22 / 14 April 2025'
         log.out(f'\n\nRunning all2lmp {version}')
         log.out(f'Using Python version {sys.version}')
         log.out('Trying Atom Equivalences if needed')

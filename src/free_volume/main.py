@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.11
-April 3rd, 2024
+Revision 1.12
+April 14, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -29,7 +29,39 @@ def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_direct
          files2write, run_mode, probe_diameter, vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels,
          commandline_inputs, log=None):
     
-    # Set up Tristan's "array" analysis using recursion
+    #-----------------------#
+    # Command Line Override #
+    #-----------------------#
+    # if -opt or -man option is in commandline_inputs print options and stop code execution
+    if '-opt' in commandline_inputs or  '-man' in commandline_inputs:
+        # call man page and exit if '-opt' or '-man' is provided at the command line
+        command_line.print_man_page(topofile, max_voxel_size, boundary, parent_directory, compute_free_volume_distributions, run_mode, probe_diameter,
+                                    vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels)
+        sys.exit()
+    
+    #---------------------------------------------------------------------------------#
+    # if -opt option is NOT in commandline_inputs start assiging over ride parameters #
+    #---------------------------------------------------------------------------------#
+    if '-opt' not in commandline_inputs and commandline_inputs:    
+        # call inputs for commandline over rides
+        over_rides = command_line.inputs(topofile, max_voxel_size, boundary, parent_directory, compute_free_volume_distributions, run_mode, probe_diameter,
+                                         vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, commandline_inputs)
+        
+        # Set new inputs from over_rides class
+        topofile = over_rides.topofile
+        parent_directory = over_rides.parent_directory
+        max_voxel_size = over_rides.max_voxel_size
+        boundary = over_rides.boundary
+        compute_free_volume_distributions = over_rides.compute_free_volume_distributions
+        run_mode = over_rides.run_mode
+        probe_diameter = over_rides.probe_diameter
+        vdw_method = over_rides.vdw_method
+        CUDA_threads_per_block_atoms = over_rides.CUDA_threads_per_block_atoms
+        CUDA_threads_per_block_voxels = over_rides.CUDA_threads_per_block_voxels
+
+    #---------------------------------------------------#
+    # Set up Tristan's "array" analysis using recursion #
+    #---------------------------------------------------#
     if not os.path.isfile(str(topofile)):
         if log is None: log = io_functions.LUNAR_logger()
         log.configure(level='production', print2console=True, write2log=True)
@@ -67,39 +99,9 @@ def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_direct
         #log.configure(level='debug')
         
         # set version and print starting information to screen
-        version = 'v1.11 / 3 April 2024'
+        version = 'v1.12 / 14 April 2025'
         log.out(f'\n\nRunning free_volume {version}')
         log.out(f'Using Python version {sys.version}')
-        
-        #-----------------------#
-        # Command Line Override #
-        #-----------------------#
-        # if -opt or -man option is in commandline_inputs print options and stop code execution
-        if '-opt' in commandline_inputs or  '-man' in commandline_inputs:
-            # call man page and exit if '-opt' or '-man' is provided at the command line
-            command_line.print_man_page(topofile, max_voxel_size, boundary, parent_directory, compute_free_volume_distributions, run_mode, probe_diameter,
-                                        vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels)
-            sys.exit()
-        
-        #---------------------------------------------------------------------------------#
-        # if -opt option is NOT in commandline_inputs start assiging over ride parameters #
-        #---------------------------------------------------------------------------------#
-        if '-opt' not in commandline_inputs and commandline_inputs:    
-            # call inputs for commandline over rides
-            over_rides = command_line.inputs(topofile, max_voxel_size, boundary, parent_directory, compute_free_volume_distributions, run_mode, probe_diameter,
-                                             vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, commandline_inputs)
-            
-            # Set new inputs from over_rides class
-            topofile = over_rides.topofile
-            parent_directory = over_rides.parent_directory
-            max_voxel_size = over_rides.max_voxel_size
-            boundary = over_rides.boundary
-            compute_free_volume_distributions = over_rides.compute_free_volume_distributions
-            run_mode = over_rides.run_mode
-            probe_diameter = over_rides.probe_diameter
-            vdw_method = over_rides.vdw_method
-            CUDA_threads_per_block_atoms = over_rides.CUDA_threads_per_block_atoms
-            CUDA_threads_per_block_voxels = over_rides.CUDA_threads_per_block_voxels
         
         #--------------------------------------------------#
         # Define run mode to find voxels to atom distances #

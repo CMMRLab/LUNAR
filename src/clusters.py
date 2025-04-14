@@ -14,7 +14,6 @@ Houghton, MI 49931
 import src.io_functions as io_functions
 import src.periodicity as periodicity
 import src.read_lmp as read_lmp
-import numpy as np
 import math
 import time
 import sys
@@ -63,7 +62,7 @@ class analysis:
         # Unwrap atoms and get box dimensions #
         #######################################
         # Generate h and h_inv vector like LAMMPS does
-        h, h_inv, box = periodicity.get_box_parameters(m)
+        h, h_inv, boxlo, boxhi, tilts = periodicity.get_box_parameters(m)
         m = periodicity.unwrap_atoms(m)
         write_lmp = False
         if write_lmp:
@@ -140,7 +139,7 @@ class analysis:
             rgs.append(self.compute_radius_of_gyration(m, cluster))
             natoms.append(len(cluster));
             cmass.append(self.getmass(m, cluster))   
-            periodic_flags.append(self.cluster_periodicity(m, cluster, bonds, h, h_inv))
+            periodic_flags.append(self.cluster_periodicity(m, cluster, bonds, h, h_inv, boxlo))
                   
         # Summing mass and atoms                                                                                                                                                               
         self.mass_total = sum(cmass); self.size_total = sum(natoms);   
@@ -312,7 +311,7 @@ class analysis:
         return sum([m.masses[m.atoms[i].type].coeffs[0] for i in cluster])
     
     # Method to find cluster periodicity
-    def cluster_periodicity(self, m, cluster, bonds, h, h_inv):
+    def cluster_periodicity(self, m, cluster, bonds, h, h_inv, boxlo):
         # Initialize Flags
         periodic_flags = [False, False, False]
         
@@ -321,15 +320,15 @@ class analysis:
         for i in bonds:
             id1, id2 = m.bonds[i].atomids
             atom1 = m.atoms[id1]
-            atom2 = m.atoms[id2]
-            pos1 = np.array([atom1.x, atom1.y, atom1.z])
-            pos2 = np.array([atom2.x, atom2.y, atom2.z])
-            delta = pos2 - pos1
-            frac = delta @ h_inv
-            dx, dy, dz = frac
-            if abs(dx) >= half_box_lambda_space: periodic_flags[0] = True
-            if abs(dy) >= half_box_lambda_space: periodic_flags[1] = True
-            if abs(dz) >= half_box_lambda_space: periodic_flags[2] = True    
+            atom2 = m.atoms[id2]            
+            frac_x1, frac_y1, frac_z1 = periodicity.pos2frac(atom1.x, atom1.y, atom1.z, h_inv, boxlo)
+            frac_x2, frac_y2, frac_z2 = periodicity.pos2frac(atom2.x, atom2.y, atom2.z, h_inv, boxlo)
+            delta_x = frac_x2 - frac_x1
+            delta_y = frac_y2 - frac_y1
+            delta_z = frac_z2 - frac_z1
+            if abs(delta_x) >= half_box_lambda_space: periodic_flags[0] = True
+            if abs(delta_y) >= half_box_lambda_space: periodic_flags[1] = True
+            if abs(delta_z) >= half_box_lambda_space: periodic_flags[2] = True    
         return periodic_flags
     
     # Method to compute the radius of gyration of a cluster

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.6
-May 9th, 2024
+Revision 1.7
+April 14, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -38,7 +38,41 @@ import os
 def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons, parent_directory, newfile, 
          include_type_labels, neighbor_charge_constraint, reset_simulation_cell, commandline_inputs=[], log=None):
     
-    # Set up Tristan's "array" analysis using recursion
+    #########################
+    # Command Line Override #
+    #########################
+    # if -opt or -man option is in commandline_inputs print options and stop code execution
+    if '-opt' in commandline_inputs or  '-man' in commandline_inputs:
+        # call man page and exit if '-opt' or '-man' is provided at the command line
+        command_line.print_man_page(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
+                                    parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell)
+        sys.exit()
+        
+    ###################################################################################
+    # if -opt option is NOT in commandline_inputs start assiging over ride parameters #
+    ###################################################################################
+    if '-opt' not in commandline_inputs and commandline_inputs:    
+        # call inputs for commandline over rides
+        over_rides = command_line.inputs(commandline_inputs, topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
+                                         parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell)
+        
+        # Set new inputs from over_rides class
+        topofile = over_rides.topofile
+        parent_directory = over_rides.parent_directory
+        newfile = over_rides.newfile
+        atom_style = over_rides.atom_style
+        types2convert = over_rides.types2convert
+        reset_charges = over_rides.reset_charges
+        net_zero_charge = over_rides.net_zero_charge
+        convert2cg1 = over_rides.convert2cg1
+        add_pi_electrons = over_rides.add_pi_electrons
+        include_type_labels = over_rides.include_type_labels
+        neighbor_charge_constraint = over_rides.neighbor_charge_constraint
+        reset_simulation_cell = over_rides.reset_simulation_cell
+    
+    #####################################################
+    # Set up Tristan's "array" analysis using recursion #
+    #####################################################
     if not os.path.isfile(str(topofile)):
         if log is None: log = io_functions.LUNAR_logger()
         log.configure(level='production', print2console=True, write2log=True)
@@ -75,43 +109,13 @@ def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, co
         log.configure(level='production')
         #log.configure(level='debug', print2console=False)
         
-        #########################
-        # Command Line Override #
-        #########################
-        # if -opt or -man option is in commandline_inputs print options and stop code execution
-        if '-opt' in commandline_inputs or  '-man' in commandline_inputs:
-            # call man page and exit if '-opt' or '-man' is provided at the command line
-            command_line.print_man_page(topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
-                                        parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell)
-            sys.exit()
-            
-        ###################################################################################
-        # if -opt option is NOT in commandline_inputs start assiging over ride parameters #
-        ###################################################################################
-        if '-opt' not in commandline_inputs and commandline_inputs:    
-            # call inputs for commandline over rides
-            over_rides = command_line.inputs(commandline_inputs, topofile, types2convert, atom_style, reset_charges, net_zero_charge, convert2cg1, add_pi_electrons,
-                                             parent_directory, newfile, include_type_labels, neighbor_charge_constraint, reset_simulation_cell)
-            
-            # Set new inputs from over_rides class
-            topofile = over_rides.topofile
-            parent_directory = over_rides.parent_directory
-            newfile = over_rides.newfile
-            atom_style = over_rides.atom_style
-            types2convert = over_rides.types2convert
-            reset_charges = over_rides.reset_charges
-            net_zero_charge = over_rides.net_zero_charge
-            convert2cg1 = over_rides.convert2cg1
-            add_pi_electrons = over_rides.add_pi_electrons
-            include_type_labels = over_rides.include_type_labels
-            neighbor_charge_constraint = over_rides.neighbor_charge_constraint
-            reset_simulation_cell = over_rides.reset_simulation_cell
+
         
         ###########################################
         # Initialize some preliminary information #
         ###########################################
         # set version and print starting information to screen
-        version = 'v1.6 / 9 May 2024'
+        version = 'v1.7 / 14 April 2025'
         log.out(f'\n\nRunning add_pi_electrons {version}')
         log.out(f'Using Python version {sys.version}')
         

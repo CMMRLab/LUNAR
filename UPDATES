@@ -14,11 +14,15 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 11April2025)
+LUNAR (version 14April2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-11April2025         JDK        - cluster_analysis.py and auto_cluster_analysis.py: 
+14April2025         JDK        - add_pi_electrons.py, all2lmp.py, atom_typing.py, auto_morse_bond_update.py:
+                                  Adjusted command line overrides to be called before the array processing
+                                  recursion.
+
+14April2025         JDK        - cluster_analysis.py and auto_cluster_analysis.py: 
                                    Added the ability to find if the molecule spans the entire simulation cell.
                                    The goal being to help develop a new method for computing gel point of
                                    polymers.

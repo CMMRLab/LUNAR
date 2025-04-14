@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.10
-May 2nd, 2024
+Revision 1.11
+April 14, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -54,7 +54,48 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
          vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file, 
          chargefile, include_comments_nta, log=None): 
     
-    # Set up Tristan's "array" analysis using recursion
+    #########################
+    # Command Line Override #
+    #########################
+    # if -opt or -man option is in commandline_inputs print options and stop code execution
+    if '-opt' in commandline_inputs or '-man' in commandline_inputs or print_options:
+        # call man page and exit if '-opt' or '-man' is provided at the command line
+        command_line.print_man_page(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms,
+                                    mass_map, bondorder, maxbonded, boundary, vdw_radius_scale, reset_charges,
+                                    print_options, pdb_file, chargefile, include_comments_nta, bonds_via_distance_override)
+        sys.exit()
+    
+    ###################################################################################
+    # if -opt option is NOT in commandline_inputs start assiging over ride parameters #
+    ###################################################################################
+    if '-man' not in commandline_inputs and commandline_inputs:    
+        # call inputs for commandline over rides
+        over_rides = command_line.inputs(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded,
+                                         boundary, vdw_radius_scale, reset_charges, print_options, pdb_file, chargefile, include_comments_nta,
+                                         bonds_via_distance_override, commandline_inputs)
+        
+        # Set new inputs from over_rides class
+        topofile = over_rides.topofile
+        bondfile = over_rides.bondfile
+        parent_directory = over_rides.parent_directory
+        newfile = over_rides.newfile
+        ff_name = over_rides.ff_name
+        delete_atoms = over_rides.delete_atoms
+        mass_map = over_rides.mass_map
+        bondorder = over_rides.bondorder
+        maxbonded = over_rides.maxbonded
+        boundary = over_rides.boundary
+        vdw_radius_scale = over_rides.vdw_radius_scale
+        reset_charges = over_rides.reset_charges
+        print_options = over_rides.print_options
+        pdb_file = over_rides.pdb_file
+        chargefile = over_rides.chargefile
+        include_comments_nta = over_rides.include_comments_nta
+        bonds_via_distance_override = over_rides.bonds_via_distance_override
+    
+    #####################################################
+    # Set up Tristan's "array" analysis using recursion #
+    #####################################################
     if not os.path.isfile(str(topofile)) and not str(topofile).endswith('smiles'):
         if log is None: log = io_functions.LUNAR_logger()
         log.configure(level='production', print2console=True, write2log=True)
@@ -92,45 +133,6 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
         log.configure(level='production')
         #log.configure(level='debug', print2console=False)
         
-        #########################
-        # Command Line Override #
-        #########################
-        # if -opt or -man option is in commandline_inputs print options and stop code execution
-        if '-opt' in commandline_inputs or '-man' in commandline_inputs or print_options:
-            # call man page and exit if '-opt' or '-man' is provided at the command line
-            command_line.print_man_page(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms,
-                                        mass_map, bondorder, maxbonded, boundary, vdw_radius_scale, reset_charges,
-                                        print_options, pdb_file, chargefile, include_comments_nta, bonds_via_distance_override)
-            sys.exit()
-        
-        ###################################################################################
-        # if -opt option is NOT in commandline_inputs start assiging over ride parameters #
-        ###################################################################################
-        if '-man' not in commandline_inputs and commandline_inputs:    
-            # call inputs for commandline over rides
-            over_rides = command_line.inputs(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded,
-                                             boundary, vdw_radius_scale, reset_charges, print_options, pdb_file, chargefile, include_comments_nta,
-                                             bonds_via_distance_override, commandline_inputs)
-            
-            # Set new inputs from over_rides class
-            topofile = over_rides.topofile
-            bondfile = over_rides.bondfile
-            parent_directory = over_rides.parent_directory
-            newfile = over_rides.newfile
-            ff_name = over_rides.ff_name
-            delete_atoms = over_rides.delete_atoms
-            mass_map = over_rides.mass_map
-            bondorder = over_rides.bondorder
-            maxbonded = over_rides.maxbonded
-            boundary = over_rides.boundary
-            vdw_radius_scale = over_rides.vdw_radius_scale
-            reset_charges = over_rides.reset_charges
-            print_options = over_rides.print_options
-            pdb_file = over_rides.pdb_file
-            chargefile = over_rides.chargefile
-            include_comments_nta = over_rides.include_comments_nta
-            bonds_via_distance_override = over_rides.bonds_via_distance_override
-        
         
         ######################################################
         # Check for valid inputs; if not valid exit the code #
@@ -144,7 +146,7 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
         # Initialize some preliminary information #
         ###########################################
         # set version and print starting information to screen
-        version = 'v1.10 / 10 May 2024'
+        version = 'v1.11 / 14 April 2025'
         log.out(f'\n\nRunning atom_typing {version}')
         log.out(f'Using Python version {sys.version}')
         log.out(f'Assigning {ff_name} atom-types')

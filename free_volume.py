@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.11
-April 3rd, 2024
+Revision 1.12
+April 14, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -301,7 +301,6 @@ vdw_radius = {'C':  1.70, # Ref1
               'Pb': 2.30, # Ref1
               'Mo': 2.45,
               }
-
 
 
 

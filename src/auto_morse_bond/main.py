@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Revision 1.11
-November 13th, 2024
+Revision 1.12
+April 14, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -52,7 +52,46 @@ import os
 def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip, radius_specs, alpha_specs, alpha_scale, files2write, atom_style,
          zero_effected_xterms, bondbreak_scale, ff_class, include_type_labels, class2xe_update, include_rcut, commandline_inputs=[], log=None):
     
-    # Set up Tristan's "array" analysis using recursion
+    #########################
+    # Command Line Override #
+    #########################
+    # if -opt or -man option is in commandline_inputs print options and stop code execution
+    if '-opt' in commandline_inputs or  '-man' in commandline_inputs:
+        # call man page and exit if '-opt' or '-man' is provided at the command line
+        command_line.print_man_page(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip,
+                                    radius_specs, alpha_specs, alpha_scale, files2write, atom_style,
+                                    zero_effected_xterms, bondbreak_scale, ff_class, include_type_labels,
+                                    class2xe_update, include_rcut)
+        sys.exit()
+        
+    ###################################################################################
+    # if -opt option is NOT in commandline_inputs start assiging over ride parameters #
+    ###################################################################################
+    if '-opt' not in commandline_inputs and commandline_inputs:    
+        # call inputs for commandline over rides
+        over_rides = command_line.inputs(topofile, morsefile, parent_directory, newfile, min_bond_length, coeffs2skip,
+                                         alpha_scale, atom_style, zero_effected_xterms, bondbreak_scale,
+                                         ff_class, include_type_labels, class2xe_update, include_rcut, commandline_inputs)
+        
+        # Set new inputs from over_rides class
+        topofile = over_rides.topofile
+        morsefile = over_rides.morsefile
+        parent_directory = over_rides.parent_directory
+        newfile = over_rides.newfile
+        atom_style = over_rides.atom_style
+        ff_class = over_rides.ff_class
+        include_type_labels = over_rides.include_type_labels
+        min_bond_length = over_rides.min_bond_length
+        coeffs2skip = over_rides.coeffs2skip
+        alpha_scale = over_rides.alpha_scale
+        zero_effected_xterms = over_rides.zero_effected_xterms
+        bondbreak_scale = over_rides.bondbreak_scale
+        class2xe_update = over_rides.class2xe_update
+        include_rcut = over_rides.include_rcut
+    
+    #####################################################
+    # Set up Tristan's "array" analysis using recursion #
+    #####################################################
     if not os.path.isfile(str(topofile)):
         if log is None: log = io_functions.LUNAR_logger()
         log.configure(level='production', print2console=True, write2log=True)
@@ -88,50 +127,13 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
             log = io_functions.LUNAR_logger()
         log.configure(level='production')
         #log.configure(level='debug', print2console=False)
-        
-        #########################
-        # Command Line Override #
-        #########################
-        # if -opt or -man option is in commandline_inputs print options and stop code execution
-        if '-opt' in commandline_inputs or  '-man' in commandline_inputs:
-            # call man page and exit if '-opt' or '-man' is provided at the command line
-            command_line.print_man_page(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip,
-                                        radius_specs, alpha_specs, alpha_scale, files2write, atom_style,
-                                        zero_effected_xterms, bondbreak_scale, ff_class, include_type_labels,
-                                        class2xe_update, include_rcut)
-            sys.exit()
-            
-        ###################################################################################
-        # if -opt option is NOT in commandline_inputs start assiging over ride parameters #
-        ###################################################################################
-        if '-opt' not in commandline_inputs and commandline_inputs:    
-            # call inputs for commandline over rides
-            over_rides = command_line.inputs(topofile, morsefile, parent_directory, newfile, min_bond_length, coeffs2skip,
-                                             alpha_scale, atom_style, zero_effected_xterms, bondbreak_scale,
-                                             ff_class, include_type_labels, class2xe_update, include_rcut, commandline_inputs)
-            
-            # Set new inputs from over_rides class
-            topofile = over_rides.topofile
-            morsefile = over_rides.morsefile
-            parent_directory = over_rides.parent_directory
-            newfile = over_rides.newfile
-            atom_style = over_rides.atom_style
-            ff_class = over_rides.ff_class
-            include_type_labels = over_rides.include_type_labels
-            min_bond_length = over_rides.min_bond_length
-            coeffs2skip = over_rides.coeffs2skip
-            alpha_scale = over_rides.alpha_scale
-            zero_effected_xterms = over_rides.zero_effected_xterms
-            bondbreak_scale = over_rides.bondbreak_scale
-            class2xe_update = over_rides.class2xe_update
-            include_rcut = over_rides.include_rcut
     
     
         ###########################################
         # Initialize some preliminary information #
         ###########################################
         # set version and print starting information to screen
-        version = 'v1.11 / 13 November 2024'
+        version = 'v1.12 / 14 April 2025'
         log.out(f'\n\nRunning auto_morse_bond {version}')
         log.out(f'Using Python version {sys.version}')
         
