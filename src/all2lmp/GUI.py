@@ -426,11 +426,17 @@ class all2lmp_GUI:
             log.GUI_error('ERROR shift X, Y, or Z rotation is not a float')
             valid_inputs = False
         try:
-            rotate = {'x': float(self.xr.get()),
-                      'y': float(self.yr.get()),
-                      'z': float(self.zr.get())}
+            try: rx = float(self.xr.get())
+            except: rx = self.xr.get()
+            try: ry = float(self.yr.get())
+            except: ry = self.yr.get()
+            try: rz = float(self.zr.get())
+            except: rz = self.zr.get()
+            rotate = {'x': rx,
+                      'y': ry,
+                      'z': rz}
         except:
-            log.GUI_error('ERROR max X, Y, or Z rotation is not a float')
+            log.GUI_error('ERROR max X, Y, or Z rotation is not a float or string')
             valid_inputs = False
 
 
@@ -488,9 +494,15 @@ class all2lmp_GUI:
         shift = {'x': float(self.xs.get()),
                  'y': float(self.ys.get()),
                  'z': float(self.zs.get())}
-        rotate = {'x': float(self.xr.get()),
-                  'y': float(self.yr.get()),
-                  'z': float(self.zr.get())}
+        try: rx = float(self.xr.get())
+        except: rx = self.xr.get()
+        try: ry = float(self.yr.get())
+        except: ry = self.yr.get()
+        try: rz = float(self.zr.get())
+        except: rz = self.zr.get()
+        rotate = {'x': rx,
+                  'y': ry,
+                  'z': rz}
         
         # Read current py script and re-write with new settings
         print('Updating settings in: {}, from current GUI settings'.format(self.filename))

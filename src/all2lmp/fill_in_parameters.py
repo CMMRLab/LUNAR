@@ -54,6 +54,7 @@ mol2lmp as serves as a good example of what could be used to read in other molec
 ################################
 # Import Necessary Libraries   #
 ################################
+import src.all2lmp.align_molecule_direction as amd
 import src.all2lmp.ff_functions as ff_functions
 import sys
 
@@ -88,7 +89,31 @@ class get:
         self.header = m.header
         
         # shift and rotate atoms (if user desires)
-        phi = rotate['x']; theta = rotate['y']; psi = rotate['z'];
+        phi = rotate['x']; theta = rotate['y']; psi = rotate['z']
+        if phi == 'nva' or theta == 'nva' or psi == 'nva': # Check if user wants to align normal vector to an axis
+            # Check that only one instance of 'nva' is used
+            nva_check = [phi, theta, psi]
+            if nva_check.count('nva') > 1:
+                log.error(f'ERROR rotate "nva" used on more then one axis (phi={phi}, theta={theta}, psi={psi}). Can only use "nva" on one axis.')
+        
+            # set the direction
+            if phi == 'nva':
+                axis = 'x'
+                direction = [1, 0, 0]
+            if theta == 'nva':
+                axis = 'y'
+                direction = [0, 1, 0]
+            if psi == 'nva':
+                axis = 'z'
+                direction = [0, 0, 1]
+
+            # Find normal vector as the orientation vector and rotate molecule
+            orientation_vector = amd.find_normal_vector(m)
+            m = amd.rotate_molecule_from_a_to_b(m, orientation_vector, direction)
+            
+            # Reset phi, theta, and psi so molecule does not get rotated again
+            phi = 0;  theta = 0; psi = 0
+            log.out(f'Rotated system about such that molecule normal vector aligns with {axis}-axis')
         if shift['x'] != 0 or shift['y'] != 0 or shift['z'] != 0:
             m = ff_functions.shift_system(m, shift, log)
             log.out(f'Shifted system by {shift["x"]} in x-axis, by {shift["y"]} in y-axis, and by {shift["z"]} in z-axis.')

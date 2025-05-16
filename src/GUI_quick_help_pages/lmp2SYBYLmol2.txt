@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 5/21/2024
+# Last edited 5/16/2025
 #
 ************
 * Overview *
@@ -39,6 +39,59 @@
     A drop-down menu to select a Boolean to remove periodic bonds or not remove periodic bonds, where these bonds are determined to be periodic
     via the minimum image convention. If the intended use is to visualize a molecule system in tools such as ChemDraw, Avogadro, VMD, Material
     Studio, etc it may be desired to remove the periodic bonds, which will appear as long bonds spanning the system.
+	
+  addbox
+    A drop-down menu to select a Boolean to add a "pseudo simulation cell" to the written .mol2 file. The "pseudo simulation cell" is added to the
+    file by setting the box corners as atoms and the box edges as bonds. The purpose of this option is to allow for the visualization of your model
+    in VMD with a simulation cell defined, since VMD does not natively support simulation cells nor does the .mol2 file format. When the atoms are
+    written to the .mol2 file the following attributes are set:
+      - column1 -> atomID:      incremented atomID
+      - column2 -> element:     set as "Bx" (shorthand for Box)
+      - column3 -> x:           box corner X-postion
+      - column4 -> y:           box corner Y-postion
+      - column5 -> z:           box corner Z-postion
+      - column6 -> atom type:   set as "Bx" (shorthand for Box)
+      - column7 -> subst_id:    set as max(molIDs)+1 (box atoms will always have a molID greater then all other atoms)
+      - column8 -> subst_name:  set as "BOX"
+      - column9 -> charge:      set as "0.000" as charge is meaningless here
+    
+    Knowing which attributes are set and how they are set allows you to generate different visualizations in VMD. For example the attribute names
+    map onto VMD coloring and selection categories as such:
+      subst_id   -> resid
+      subst_name -> resname
+	  
+    As an example, set addbox=True for the default "EXAMPLES/lmp2SYBYLmol2/detda_typed_IFF.data" topofile, run, and look at the bottom of the 
+    @<TRIPOS>ATOM and @<TRIPOS>BOND section, to see the "box" atoms and bonds. Then do the following in VMD:
+      1. File -> New Molecule -> Browse -> Select "detda_typed_IFF.mol2" file -> Load
+      2. Graphics -> Representations  &&  Graphics -> Colors 
+         * Which will open both the Representations and Colors dialog boxes
+         * In the Representations dialog box do the following:
+           * Set Selected atoms as "name C H N", which generates a representation of just the molecule
+           * Change the Coloring method to "Type"
+           * Change the Drawing method to "CPK"
+		   
+           * Click "Create rep" to generate another representation Do the following for this representation
+             * Set Selected atoms as "resname BOX", which generates a representation of just the atoms/bonds of the box
+             * Change the Coloring method to "ResName"
+             * Change the Drawing method to "Lines"
+			 
+          * In the Colors dialog box do the following:
+            * Categories -> Type  && Names -> C  && Colors -> black
+            * which changes the carbon atoms to color black. Can color the remaining atoms in the same way
+			  
+            * Categories -> Resname  && Names -> BOX  && Colors -> blue
+              * which changes the box atoms to the color blue
+              * NOTE: VMD has predefined Resname's and any new resnames that are defined when reading a file are set at the bottom of the list,
+                      so you can just assume this and scroll to the bottom of the Names menu, to find "BOX"
+					  
+    There are a few other ways to generate your representation's, however those are self studies. A few useful entries for the "Selected Atoms"
+    box are (in example format, change numbers and letters accoridingly)
+      all and x > -12 and y > -12 and z > -12
+      resid > 10
+      name C O
+      mass 5 to 11.5
+      index < 10
+      within 5 of name H
 	
 ***********
 * Buttons *

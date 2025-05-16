@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-May 13th, 2024
+May 16, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -33,7 +33,7 @@ from lmp2SYBYLmol2 import main
 # LUNAR/lmp2SYBYLmol2 GUI #
 ###########################
 class GUI:
-    def __init__(self, topofile, parent_directory, remove_PBC_bonds, mass_map, GUI_zoom):
+    def __init__(self, topofile, parent_directory, remove_PBC_bonds, mass_map, addbox, GUI_zoom):
         self.mass_map = mass_map
         
         # Find present working directory
@@ -86,24 +86,32 @@ class GUI:
         # topofile selection button
         self.topofile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
         self.topofile.insert(0, topofile)
-        self.topofile.grid(column=1, row=0)
+        self.topofile.grid(column=1, row=0, columnspan=3)
         self.topofile_button = tk.Button(self.inputs_frame, text='topofile', font=font_settings, command=self.topofile_path)
         self.topofile_button.grid(column=0, row=0)
         
         # parent_directory entry
         self.parent_directory = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
         self.parent_directory.insert(0, parent_directory)
-        self.parent_directory.grid(column=1, row=1)
+        self.parent_directory.grid(column=1, row=1, columnspan=3)
         self.dir_button = tk.Button(self.inputs_frame, text='parent_directory', font=font_settings, command=self.directory_path)
         self.dir_button.grid(column=0, row=1)
         
         # remove_PBC_bonds drop down menu
         styles = [True, False]
-        self.remove_PBC_bonds = ttk.Combobox(self.inputs_frame, values=styles, width=int(maxwidth/1.035), font=font_settings)
+        self.remove_PBC_bonds = ttk.Combobox(self.inputs_frame, values=styles, width=int(maxwidth/3), font=font_settings)
         self.remove_PBC_bonds.current(styles.index(remove_PBC_bonds))
         self.remove_PBC_bonds.grid(column=1, row=2)
         self.remove_PBC_bonds_label = tk.Label(self.inputs_frame, text='remove_PBC_bonds', font=font_settings)
         self.remove_PBC_bonds_label.grid(column=0, row=2)
+        
+        # remove_PBC_bonds drop down menu
+        styles = [True, False]
+        self.addbox = ttk.Combobox(self.inputs_frame, values=styles, width=int(maxwidth/3), font=font_settings)
+        self.addbox.current(styles.index(addbox))
+        self.addbox.grid(column=3, row=2)
+        self.addbox_label = tk.Label(self.inputs_frame, text='addbox', font=font_settings)
+        self.addbox_label.grid(column=2, row=2)
         
 
         # Add padding to all frames in self.inputs_frame
@@ -189,15 +197,17 @@ class GUI:
         
         # Get information from GUI
         boolean = {'False':False, 'True':True}
+        
         topofile = self.topofile.get()
         parent_directory = self.parent_directory.get() 
         remove_PBC_bonds = boolean[self.remove_PBC_bonds.get()]
+        addbox = boolean[self.addbox.get()]
         mass_map = self.mass_map
         
         # Run LUNAR/lmp2SYBYLmol2
         if valid_inputs:
             try: 
-                inputs = (topofile, parent_directory, remove_PBC_bonds, mass_map, log)
+                inputs = (topofile, parent_directory, remove_PBC_bonds, mass_map, addbox, log)
                 t1=threading.Thread(target=main, args=inputs)
                 t1.start()
                 t1.join()
@@ -223,6 +233,7 @@ class GUI:
         topofile = io_functions.path_to_string(self.topofile.get())
         parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
         remove_PBC_bonds = boolean[self.remove_PBC_bonds.get()]
+        addbox = boolean[self.addbox.get()]
         
         # Read current py script and re-write with new settings
         print('Updating settings in: {}, from current GUI settings'.format(self.filename))
@@ -238,6 +249,8 @@ class GUI:
                     line = psm.parse_and_modify(line, parent_directory, stringflag=True, splitchar='=')
                 if line.startswith('remove_PBC_bonds') and inputsflag:
                     line = psm.parse_and_modify(line, remove_PBC_bonds, stringflag=False, splitchar='=')
-                if line.startswith('if __name__ == "__main__":'): inputsflag = False
+                if line.startswith('addbox') and inputsflag:
+                    line = psm.parse_and_modify(line, addbox, stringflag=False, splitchar='=')
+                if line.startswith('if __name__ == "__main__":') or line.startswith('def main('): inputsflag = False
                 f.write(line)
         return

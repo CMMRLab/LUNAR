@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-November 4th, 2023
+Revision 1.2
+May 16, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -105,6 +105,64 @@ remove_PBC_bonds = False
 
 
 ##################################################################################################################
+# A Boolean to add a "pseudo simulation cell" to the written .mol2 file. The "pseudo simulation cell" is added   #
+# to the file by setting the box corners as atoms and the box edges as bonds. The purpose of this option is to   #
+# allow for the visualization of your model in VMD with a simulation cell defined, since VMD does not natively   #
+# support simulation cells nor does the .mol2 file format. When the atoms are written to the .mol2 file the      #
+# following attributes are set:                                                                                  #
+#   - column1 -> atomID:      incremented atomID                                                                 #
+#   - column2 -> element:     set as "Bx" (shorthand for Box)                                                    #
+#   - column3 -> x:           box corner X-postion                                                               #
+#   - column4 -> y:           box corner Y-postion                                                               #
+#   - column5 -> z:           box corner Z-postion                                                               #
+#   - column6 -> atom type:   set as "Bx" (shorthand for Box)                                                    #
+#   - column7 -> subst_id:    set as max(molIDs)+1 (box atoms will always have a molID greater than any atom)    #
+#   - column8 -> subst_name:  set as "BOX"                                                                       #
+#   - column9 -> charge:      set as "0.000" as charge is meaningless here                                       #
+#                                                                                                                #
+# Knowing which attributes are set and how they are set allows you to generate different visualizations in VMD.  #
+# For example the attribute names map onto VMD coloring and selection categories as such:                        #
+#   subst_id   -> resid                                                                                          #
+#   subst_name -> resname                                                                                        #
+#                                                                                                                #
+# As an example, set addbox=True for the default "EXAMPLES/lmp2SYBYLmol2/detda_typed_IFF.data" topofile, run,    #
+# and look at the bottom of the @<TRIPOS>ATOM and @<TRIPOS>BOND section, to see the "box" atoms and bonds. Then  #
+# do the following in VMD:                                                                                       #
+#   1. File -> New Molecule -> Browse -> Select "detda_typed_IFF.mol2" file -> Load                              #
+#   2. Graphics -> Representations  &&  Graphics -> Colors                                                       #
+#     * Which will open both the Representations and Colors dialog boxes                                         #
+#      * In the Representations dialog box do the following:                                                     #
+#        * Set Selected atoms as "name C H N", which generates a representation of just the molecule             #
+#        * Change the Coloring method to "Type"                                                                  #
+#        * Change the Drawing method to "CPK"                                                                    #
+#                                                                                                                #
+#        * Click "Create rep" to generate another representation Do the following for this representation        #
+#          * Set Selected atoms as "resname BOX", which generates a representation of just the atoms of the box  #
+#          * Change the Coloring method to "ResName"                                                             #
+#          * Change the Drawing method to "Lines"                                                                #
+#                                                                                                                #
+#       * In the Colors dialog box do the following:                                                             #
+#         * Categories -> Type  && Names -> C  && Colors -> black                                                #
+#         * which changes the carbon atoms to color black. Can color the remaining atoms in the same way         #
+#         * Categories -> Resname  && Names -> BOX  && Colors -> blue                                            #
+#           * which changes the box atoms to the color blue                                                      #
+#           * NOTE: VMD has predefined Resname's and any new resnames that are defined when reading a file are   #
+#                   set at the bottom of the list, so you can just assume this and scroll to the bottom of the   #
+#                   Names menu, to find "BOX"                                                                    #
+# 	                                                                                                             #
+# There are a few other ways to generate your representation's, however those are self studies. A few useful     #
+# entries for the "Selected Atoms" box are (in example format, change numbers and letters accoridingly):         #
+#   all and x > -12 and y > -12 and z > -12                                                                      #
+#   resid > 10                                                                                                   #
+#   name C O                                                                                                     #
+#   mass 5 to 11.5                                                                                               #
+#   index < 10                                                                                                   #
+#   within 5 of name H                                                                                           #
+##################################################################################################################
+addbox = False
+
+
+##################################################################################################################
 # The mass_map dictionary is now a "global" dictionary stored in src/masses.py. The purpose of this was to       #
 # simplify adding new elements, where the new elements can now be applied to every code that uses the mass_map.  #
 # If you get an "ERROR Not all masses in ... are in the mass_map dictionary.", you will now have to open         #
@@ -119,7 +177,7 @@ mass_map = masses.mass_map
 #################################
 ### Main conversion function ####
 #################################
-def main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=None):
+def main(topofile, parent_directory, remove_PBC_bonds, mass_map, addbox, log=None):
     ##############################
     # Import Necessary Libraries #
     ##############################
@@ -139,7 +197,7 @@ def main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=None):
     ########################################################
     # set version and print starting information to screen #
     ########################################################
-    version = 'v1.1 / 4 November 2023'
+    version = 'v1.2 / 16 May 2025'
     log.out(f'\n\nRunning lmp2SYBYLmol2 {version}')
     log.out(f'Using Python version {sys.version}')
     
@@ -197,6 +255,7 @@ def main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=None):
     ################################################################
     # Find box dimensions to remove periodic boundary conditions
     x = m.xbox_line.split(); y = m.ybox_line.split(); z = m.zbox_line.split();
+    xlo = x[0]; xhi = x[1]; ylo = y[0]; yhi = y[1]; zlo = z[0]; zhi = z[1];
     lx = float(x[1])-float(x[0]); ly = float(y[1])-float(y[0]); lz = float(z[1])-float(z[0]);
     
     # set max_x, max_y, max_z w/ minimum image convention
@@ -221,6 +280,13 @@ def main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=None):
         if remove_PBC_bonds: pbc_flag = check_bond_periodicity(m, id1, id2)
         else: pbc_flag = False
         if not pbc_flag: bondIDs2write.append(i)
+        
+        
+    # atom positons and bonds to define simulation cell for VMD
+    boxatoms = [(xhi, ylo, zhi), (xlo, ylo, zhi), (xlo, yhi, zhi), (xhi, yhi, zhi),
+                (xhi, ylo, zlo), (xlo, ylo, zlo), (xlo, yhi, zlo), (xhi, yhi, zlo)]
+    boxbonds = [(1, 2), (2, 3), (3, 4), (4, 1), (5, 6), (6, 7),
+                (7, 8), (8, 5), (4, 8), (5, 1), (3, 7), (6, 2)]
 
 
     ##########################################################################################
@@ -231,7 +297,10 @@ def main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=None):
         # Write molecule section
         f.write('@<TRIPOS>MOLECULE\n')
         f.write(f'{m.header} > lmp2SYBYLmol2 {version} w/remove_PBC_bonds={str(remove_PBC_bonds)}\n')
-        f.write(f'  {m.natoms} {len(bondIDs2write)}    0    0    0\n')
+        if not addbox:
+            f.write(f'  {len(m.atoms)} {len(bondIDs2write)}    0    0    0\n')
+        else:
+            f.write(f'  {len(m.atoms)+len(boxatoms)} {len(bondIDs2write)+len(boxbonds)}    0    0    0\n')
         f.write('SMALL\n')
         f.write('NO_CHARGES\n')
         f.write('****\n')
@@ -241,7 +310,8 @@ def main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=None):
         f.write('\n@<TRIPOS>ATOM\n')
         m.atoms = dict(OrderedDict(sorted(m.atoms.items()))) # sort to keep IDs as close as possible to orginal
         id_map = {} # { orginal atomID : New atomID } to make IDs contiguous if not already
-        for n, i in enumerate(m.atoms):
+        molids = set([1])
+        for n, i in enumerate(m.atoms, 1):
             atom = m.atoms[i]
             
             # Find atoms info
@@ -255,20 +325,35 @@ def main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=None):
             except:
                 subst_id = 1 # The ID number of the substructure containing the atom (int)  [VMD RESID Coloring]
                 molid = 1
+            molids.add(molid)
             subst_name = '****' # The name of the substructure containing the atom (string)
             subst_name = '{:>4}'.format('m'+str(molid)) # Will give access through [VMD ResName Coloring]
             charge = '{:>10.4f}'.format(atom.charge)
             
             # Add id to map
-            id_map[i] = n+1
+            id_map[i] = n
             
             # Write atoms info
-            f.write('{:>7} {} {} {} {} {} {:>7} {:>7} {}\n'.format(n+1, element, x, y, z, element, subst_id, subst_name, charge))
+            f.write('{:>7} {:<2} {} {} {} {:<2} {:>7} {:>7} {}\n'.format(n, element, x, y, z, element, subst_id, subst_name, charge))
+            
+        # Add in box atoms if flag
+        if addbox:
+            boxID = max(molids) + 1; box_map = {} # { index of location : new atomID }
+            for ID, box in enumerate(boxatoms, 1):
+                n += 1 
+                x, y, z = box
+                element = 'Bx'
+                box_map[ID] = n
+                x = '{:>17.4f}'.format(float(x)); y = '{:>10.4f}'.format(float(y))
+                z = '{:>10.4f}'.format(float(z)); charge = '{:>10.4f}'.format(0);
+                subst_name = 'BOX' 
+                subst_id = boxID
+                f.write('{:>7} {:<2} {} {} {} {:<2} {:>7} {:>7} {}\n'.format(n, element, x, y, z, element, subst_id, subst_name, charge))
             
         # Write Bonds info
         f.write('@<TRIPOS>BOND\n')
         bondIDs2write = sorted(bondIDs2write) # sort to keep IDs as close as possible to orginal
-        for n, i in enumerate(bondIDs2write):
+        for n, i in enumerate(bondIDs2write, 1):
             id1, id2 = m.bonds[i].atomids
                         
             # Set bond_type as 1 for now...
@@ -285,7 +370,15 @@ def main(topofile, parent_directory, remove_PBC_bonds, mass_map, log=None):
             
             # Write bonds info
             new_id1 = id_map[id1]; new_id2 = id_map[id2]
-            f.write('{:>6} {:>6} {:>6} {:>6}\n'.format(n+1, new_id1, new_id2, bond_type))
+            f.write('{:>6} {:>6} {:>6} {:>6}\n'.format(n, new_id1, new_id2, bond_type))
+            
+        if addbox:
+            for id1, id2 in boxbonds:
+                new_id1 = box_map[id1]
+                new_id2 = box_map[id2]
+                bond_type = 'du'
+                n += 1;
+                f.write('{:>6} {:>6} {:>6} {:>6}\n'.format(n, new_id1, new_id2, bond_type)) 
             
     #######################
     # Clean up and ending #
@@ -340,5 +433,5 @@ if __name__ == "__main__":
     if use_GUI or '-gui' in commandline_inputs:
         print('\n\n\nlmp2SYBYLmol2 is currently running in GUI mode, where all GUI inputs are intialized from lmp2SYBYLmol2.\n\n\n')
         from src.lmp2SYBYLmol2_GUI import GUI 
-        GUI(topofile, parent_directory, remove_PBC_bonds, mass_map, GUI_zoom)
-    else: main(topofile, parent_directory, remove_PBC_bonds, mass_map)
+        GUI(topofile, parent_directory, remove_PBC_bonds, mass_map, addbox, GUI_zoom)
+    else: main(topofile, parent_directory, remove_PBC_bonds, mass_map, addbox)
