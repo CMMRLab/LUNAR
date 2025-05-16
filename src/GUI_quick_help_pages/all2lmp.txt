@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 2/17/2025
+# Last edited 5/16/2025
 #
 ************
 * Overview *
@@ -283,6 +283,11 @@
     flags are zero). Before the system is rotated, it is centered about (0,0,0), rotated, and then shifted back to its original location. After
     the system has been rotated, the simulation cell is redefined with the same amount of "x-padding", "y-padding", and "z-padding", between the
     atoms and the simulation cell before the rotation. If 'x', 'y', and 'z'  are set to ZERO, this option is not used.
+	
+    Additionally, in one of the "rotate about X" or "rotate about Y" or "rotate about Z" entries the keyword "nva" can be set, which means "
+    align the normal vector" of atoms in the respective direction. To find the normal vector of atoms, a plane is fit to all atoms, and then
+    the normal vector is computed. This option was added to align planar molecules onto a given plane, it maybe useful for other molecular 
+    shapes, but user expeirmentation will be required.
 	
 ***********
 * Buttons *

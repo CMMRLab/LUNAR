@@ -14,6 +14,21 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
+LUNAR (version 16May2025)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+16May2025          JDK        - lmp2SYBYLmol2.py: Added a flag to generate a "pseudo simulation cell" in the 
+                                                  written .mol2 file, by using atoms as box corners and bonds
+                                                  as box edges. This is meant for allowing for a simulation 
+                                                  cell to be visualized in VMD, as VMD does not support this.
+												  
+16May2025          JDK        - all2lmp.py: Added the "nva" (a.k.a. normal vector alignment) option to the 
+                                            rotation options of all2lmp, to align planar molecules "onto"
+                                            a principal plane.											
+								  
+
+-------------------------------------------------------------------------------------------------------------
 LUNAR (version 14April2025)
 
 Date               Developer   Description
