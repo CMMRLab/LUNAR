@@ -286,14 +286,16 @@ def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method):
         
     # Plot the CVE vs lambda plot
     if str(lmbda_method).endswith('-p'):
-        fig, ax = plt.subplots()
-        ax.semilogx(course_lambdas, course_cves, ls='-', lw=4, color='tab:blue', label="CVEs based on course $\lambda$'s")
-        ax.semilogx(fine_lambdas, fine_cves, ls='-', lw=4, color='tab:green', label="CVEs based on fine $\lambda$'s  ")
-        ax.plot(course_optimized_lambda, course_optimized_cve, 'o', mfc='tab:cyan', mec='black', ms=12, lw=3, label='Course Minimum CVE (x={:.4f}; y={:.4f})'.format(course_optimized_lambda, course_optimized_cve))
-        ax.plot(fine_optimized_lambda, fine_optimized_cve, 'o', mfc='lime', mec='black', ms=12, lw=3, label='Fine Minimum CVE (x={:.4f}; y={:.4f})'.format(fine_optimized_lambda, fine_optimized_cve))
-        ax.set_xlabel(r'$\lambda$', fontsize=12)
-        ax.set_ylabel('Cross-validation error (CVE)', fontsize=12)
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), fancybox=True, ncol=2, fontsize=10)
+        fs = 12
+        fig, ax = plt.subplots(figsize=(7, 4))
+        ax.semilogx(course_lambdas, course_cves, ls='-', lw=4, color='tab:blue', label=r"CVEs based on course $\lambda$'s")
+        ax.semilogx(fine_lambdas, fine_cves, ls='-', lw=4, color='tab:green', label=r"CVEs based on fine $\lambda$'s  ")
+        ax.plot(course_optimized_lambda, course_optimized_cve, 'o', mfc='tab:cyan', mec='black', ms=12, lw=3, label='Course Minimum CVE (x={:.2f}; y={:.2f})'.format(course_optimized_lambda, course_optimized_cve))
+        ax.plot(fine_optimized_lambda, fine_optimized_cve, 'o', mfc='lime', mec='black', ms=12, lw=3, label='Fine Minimum CVE (x={:.2f}; y={:.2f})'.format(fine_optimized_lambda, fine_optimized_cve))
+        ax.set_xlabel(r'$\lambda$', fontsize=fs)
+        ax.set_ylabel('Cross-validation error (CVE)', fontsize=fs)
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.2), fancybox=True, ncol=2, fontsize=0.75*fs)
+        fig.tight_layout()
     return fine_optimized_lambda
 
 
