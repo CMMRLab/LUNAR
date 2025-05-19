@@ -157,7 +157,7 @@ def maximized_slope(fringe, slopes, machine_precision=1e-8):
 #              extension, but just the basename name - for example 'Kemppainen-Muzzy-Modulus')                   #
 #    dpi = Int to set the dots per inch of the saved figure                                                      #
 ##################################################################################################################
-def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stress_units, write_data, derivative_span, derivative_degree, grid, savefig, figname, dpi):
+def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stress_units, write_data, derivative_span, derivative_degree, grid, t_12_avg, savefig, figname, dpi):
     #--------------------------------------------------------------------------------------#
     # Internal plotting options (True to plot, False not to). The following are available: #
     #    ffs_stats, which plots the statistic evolution of the 2nd forward fringe slope.   #
@@ -778,7 +778,7 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
     #----------------------------------------------------------#
     # Compute poisson's ratio if t1 and t2 are not empty lists #
     #----------------------------------------------------------#
-    nu1 = None; nu2 = None
+    nu1 = None; nu2 = None; nu12 = None
     if len(t1) >= 1 and len(t2) >= 1:
         # Find data sets to analyze
         if len(t1) == 1:
@@ -796,27 +796,42 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
             t2_reg = t2[-1]  # use the last logged entry
         else:
             raise Exception(f'  ERROR length of t2 can only be 1 or 2. Current length of t2 is {len(t2)}')
+            
+        if len(t1) == 1 and len(t2) == 1:
+            t12_raw = []
+            t12_reg = [(i + j)/2 for i, j in zip(t1_reg, t2_reg)]
+        elif len(t1) >= 2 and len(t2) >= 2:
+            t12_raw = [(i + j)/2 for i, j in zip(t1_raw, t2_raw)]
+            t12_reg = [(i + j)/2 for i, j in zip(t1_reg, t2_reg)]
+        else:
+            raise Exception(f'  ERROR length of t1 and t2 can only be 1 or 2. Current length of t1 is {len(t1)} and t2 is {len(t2)}')
         
         # Find linear regions
         poisson_xhi = max(poisson_xhis)
         axial1, trans1 = misc_funcs.reduce_data(strain, t1_reg, xlo, poisson_xhi)
         axial2, trans2 = misc_funcs.reduce_data(strain, t2_reg, xlo, poisson_xhi)
+        axial12, trans12 = misc_funcs.reduce_data(strain, t12_reg, xlo, poisson_xhi)
     
         # Perform linear regression on linear regions
         nu1_lr = misc_funcs.linear_regression(axial1, trans1)
         nu2_lr = misc_funcs.linear_regression(axial2, trans2)
+        nu12_lr = misc_funcs.linear_regression(axial12, trans12)
         nu1 = -nu1_lr.b1
         nu2 = -nu2_lr.b1
+        nu12 = -nu12_lr.b1
         
         # Plot results
-        fig2, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+        if t_12_avg:
+            fig2, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 5))
+        else:
+            fig2, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
         if len(t1) == 1:
             ax1.plot(strain, t1_reg, '.', mfc='white', ms=5, markeredgecolor='tab:blue', lw=0.01, label='LAMMPS "raw" data')
-            label1 = '{} y = {:.6f}x + {:.6f}'.format('Linear regression on "raw" data', nu1_lr.b1, nu1_lr.b0)
+            label1 = '{}\ny = {:.6f}x + {:.6f}'.format('Linear regression on "raw" data', nu1_lr.b1, nu1_lr.b0)
         if len(t1) >= 2:
             ax1.plot(strain, t1_raw, '.', mfc='white', ms=5, markeredgecolor='tab:cyan', lw=0.01, label='LAMMPS "raw" data')
             ax1.plot(strain, t1_reg, '.', mfc='white', ms=5, markeredgecolor='tab:blue', lw=0.01, label='LAMMPS "cleaned" data')
-            label1 = '{} y = {:.6f}x + {:.6f}'.format('Linear regression on "clean" data', nu1_lr.b1, nu1_lr.b0)
+            label1 = '{}\ny = {:.6f}x + {:.6f}'.format('Linear regression on "clean" data', nu1_lr.b1, nu1_lr.b0)
         ax1.plot(axial1, trans1, '.', mfc='white', ms=5, markeredgecolor='tab:orange', lw=0.01, label='Linear region')
         ax1.plot(nu1_lr.xreg, nu1_lr.yreg, '--', lw=2, color='tab:green', label=label1)
         ax1.set_xlabel('Axial strain')
@@ -829,11 +844,11 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
         
         if len(t2) == 1:
             ax2.plot(strain, t2_reg, '.', mfc='white', ms=5, markeredgecolor='tab:blue', lw=0.01, label='LAMMPS "raw" data')
-            label2 = '{} y = {:.6f}x + {:.6f}'.format('Linear regression on "raw" data', nu2_lr.b1, nu2_lr.b0)
+            label2 = '{}\ny = {:.6f}x + {:.6f}'.format('Linear regression on "raw" data', nu2_lr.b1, nu2_lr.b0)
         if len(t2) >= 2:
             ax2.plot(strain, t2_raw, '.', mfc='white', ms=5, markeredgecolor='tab:cyan', lw=0.01, label='LAMMPS "raw" data')
             ax2.plot(strain, t2_reg, '.', mfc='white', ms=5, markeredgecolor='tab:blue', lw=0.01, label='LAMMPS "clean" data')
-            label2 = '{} y = {:.6f}x + {:.6f}'.format('Linear regression on "clean" data', nu2_lr.b1, nu2_lr.b0)
+            label2 = '{}\ny = {:.6f}x + {:.6f}'.format('Linear regression on "clean" data', nu2_lr.b1, nu2_lr.b0)
         ax2.plot(axial2, trans2, '.', mfc='white', ms=5, markeredgecolor='tab:orange', lw=0.01, label='Linear region')
         ax2.plot(nu2_lr.xreg, nu2_lr.yreg, '--', lw=2, color='tab:green', label=label2)
         ax2.set_xlabel('Axial strain')
@@ -841,6 +856,25 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
         ax2.legend(loc='lower right', bbox_to_anchor=(1, 0), fancybox=True, ncol=1, fontsize=8)
         ax2.set_title('Axial vs Transverse-2 Strain', fontsize=10)
         ax2.set_xlim(xlimits)
+        
+        if t_12_avg:
+            if len(t1) == 1 and len(t2) == 1:
+                ax3.plot(strain, t12_reg, '.', mfc='white', ms=5, markeredgecolor='tab:blue', lw=0.01, label='LAMMPS "raw" data')
+                label3 = '{}\ny = {:.6f}x + {:.6f}'.format('Linear regression on "raw" data', nu12_lr.b1, nu12_lr.b0)
+            if len(t1) >= 2 and len(t2) >= 2:
+                ax3.plot(strain, t12_raw, '.', mfc='white', ms=5, markeredgecolor='tab:cyan', lw=0.01, label='LAMMPS "raw" data')
+                ax3.plot(strain, t12_reg, '.', mfc='white', ms=5, markeredgecolor='tab:blue', lw=0.01, label='LAMMPS "clean" data')
+                label3 = '{}\ny = {:.6f}x + {:.6f}'.format('Linear regression on "clean" data', nu12_lr.b1, nu12_lr.b0)
+            ax3.plot(axial12, trans12, '.', mfc='white', ms=5, markeredgecolor='tab:orange', lw=0.01, label='Linear region')
+            ax3.plot(nu12_lr.xreg, nu12_lr.yreg, '--', lw=2, color='tab:green', label=label3)
+            ax3.set_xlabel('Axial strain')
+            ax3.set_ylabel('Transverse strain (t1 + t2)/2')
+            ax3.legend(loc='lower right', bbox_to_anchor=(1, 0), fancybox=True, ncol=1, fontsize=8)
+            ax3.set_title('Axial vs Transverse-average Strain', fontsize=10)
+            ax3.set_xlim(xlimits)
+        
+        
+        
         if grid == 'on':
             ax2.grid()
         
@@ -1523,4 +1557,4 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
                     for i, j in zip(x, y):
                         f.write('{} {}\n'.format(i, j))
         
-    return xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2
+    return xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12

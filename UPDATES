@@ -14,10 +14,15 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 16May2025)
+LUNAR (version 19May2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+19May2025          JDK        - log_analysis.py: Adjusted how the "shift" keyword of some methods are output
+                                                 in the ".outputs" attribute of the class. In addition added
+                                                 "EXAMPLES/log_analysis_scripting" folder to show how to 
+                                                 script with log_analysis.
+
 16May2025          JDK        - lmp2SYBYLmol2.py: Added a flag to generate a "pseudo simulation cell" in the 
                                                   written .mol2 file, by using atoms as box corners and bonds
                                                   as box edges. This is meant for allowing for a simulation 

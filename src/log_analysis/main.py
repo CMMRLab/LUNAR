@@ -125,6 +125,8 @@ class analysis:
                     self.log.out('  {}'.format(message))
                     ydata = 'ycompute'
                 else: y = data[ydata] 
+                self.log.out('  len(xdata)={}'.format(len(x)))
+                self.log.out('  len(ydata)={}'.format(len(y)))
                 
                 # Check for zero lengths of data
                 if len(x) == 0:
@@ -699,10 +701,7 @@ class analysis:
                         
                         shift_amount = 0
                         if shift:
-                            b0 = ybreaks[0]
-                            if b0 < 0:
-                                shift_amount = abs(b0)
-                            else: shift_amount = -abs(b0)
+                            shift_amount = ybreaks[0]
                             self.log.out(f'  Shifting all Y-data by {shift_amount}')
                         
                         label = '{} (n-breakpoints={})'.format(name, n)
@@ -714,8 +713,8 @@ class analysis:
                         for i, j in slopes:
                             slope = slopes[(i, j)]
                             label += '   slope between (p{}, p{}) = {}\n'.format(i, j, slope)
-                            label += '    p{} = ({}, {})\n'.format(i, xbreaks[i], ybreaks[i]+shift_amount)
-                            label += '    p{} = ({}, {})\n'.format(j, xbreaks[j], ybreaks[j]+shift_amount)
+                            label += '    p{} = ({}, {})\n'.format(i, xbreaks[i], ybreaks[i]-shift_amount)
+                            label += '    p{} = ({}, {})\n'.format(j, xbreaks[j], ybreaks[j]-shift_amount)
                         self.log.out(f'  {label}')
                         breakdata = self.plot_parms(x=xbreaks, y=ybreaks, style='point', marker='.', line='-', size=10, label=label, shiftable=True)
                         data2plot.append(breakdata)
@@ -841,12 +840,9 @@ class analysis:
                         b0, b1, xreg, yreg, r2, ci = self.linear_regression(x, y, xlo, xhi, confidence_interval)
                         self.log.out(self.format_analysis(method, xlo, xhi, misc, name))
                         if shift: 
-                            if b0 < 0:
-                                shift_amount = abs(b0)
-                            else: shift_amount = -abs(b0)
-                            self.log.out(f'  Shifting all Y-data by {-shift_amount}')
+                            shift_amount = b0
                             b0 = 0
-                        label = '{} y = {:.6f}x + {:.6f} (shifted by {:.4f}; r2={:.6f})'.format(name, b1, b0, -shift_amount, r2)
+                        label = '{} y = {:.6f}x + {:.6f} (shifted by {:.4f}; r2={:.6f})'.format(name, b1, b0, shift_amount, r2)
                         self.log.out('  {}'.format(label))
                         if 'extend' in setting:
                             xreg = [xlo, xhi]
@@ -1028,6 +1024,11 @@ class analysis:
                             rfr_savefig = str(setting['savefig'])
                         else:
                             rfr_savefig = 'all'; misc += ' default-savefig=all';
+                            
+                        if 't12_avg' in setting:
+                            t12_avg = setting['t12_avg']
+                        else:
+                            t12_avg = False
 
                         
                         # get settings for poisson's ratio
@@ -1124,9 +1125,9 @@ class analysis:
                         
                         # Perform the RFR-analysis
                         self.log.out(self.format_analysis(method, xlo, xhi, misc, name))
-                        xlo_out, xhi_out, yield_point_derivative, yield_point_offset, nu1, nu2 = self.rfr_modulus(x, y, xlo, xhi, minxhi, maxxhi, xlo_method, yp,
-                                                                                                                  offset, t1, t2, stress_units, write_data, derivative_span,
-                                                                                                                  derivative_degree, grid, rfr_savefig, figname, dpi)
+                        xlo_out, xhi_out, yield_point_derivative, yield_point_offset, nu1, nu2, nu12_avg = self.rfr_modulus(x, y, xlo, xhi, minxhi, maxxhi, xlo_method, yp,
+                                                                                                                            offset, t1, t2, stress_units, write_data, derivative_span,
+                                                                                                                            derivative_degree, grid, t12_avg, rfr_savefig, figname, dpi)
                         
                         # Fit linear regression model to x/y and xlmp/ylmp (if no "LAMMPS data (i)" is used x/y and xlmp/ylmp will be the same )
                         b0_clean, b1_clean, xreg_clean, yreg_clean, r2_clean, ci_clean = self.linear_regression(x, y, xlo_out, xhi_out, confidence_interval)
@@ -1136,60 +1137,68 @@ class analysis:
                         
                         # If shift equals 'yint', shift data by the yintercept
                         if shift == 'yint': 
-                            if b0 < 0:
-                                shift_amount = abs(b0)
-                            else: shift_amount = -abs(b0)
-                            self.log.out(f'  Shifting all Y-data by the negative y-intercept={shift_amount} of the linear regression model')
-                            b0 = 0; b0_raw += shift_amount; b0_clean += shift_amount
+                            shift_amount = b0
+                            self.log.out(f'  Shifting all Y-data by the y-intercept={shift_amount} of the linear regression model')
+                            b0 = 0 
+                            b0_raw -= shift_amount
+                            b0_clean -= shift_amount
                         
                         # If shift equals 'ymin', shift data by the minimum of y
                         if shift == 'ymin':
                             max_index = y.index(max(y))
                             ymin = min(y[:max_index])
-                            if ymin < 0:
-                                shift_amount = abs(ymin)
-                            else: shift_amount = -abs(ymin)
-                            self.log.out(f'  Shifting all Y-data by the min(y-data)={shift_amount}')
-                            b0 += shift_amount; b0_raw += shift_amount; b0_clean += shift_amount
+                            shift_amount = ymin
+                            self.log.out(f'  Shifting all Y-data by min(y-data)={shift_amount}')
+                            b0 -= shift_amount
+                            b0_raw -= shift_amount
+                            b0_clean -= shift_amount
+                        
+                        # Apply shift to yield points
+                        yp_derivative = yield_point_derivative
+                        yp_offset = yield_point_offset
+                        if yp_derivative:
+                            yp_derivative[1] -= shift_amount
+                        if yp_offset:
+                            yp_offset[1] -= shift_amount
                             
                         # Plot "raw fit"
                         if raw:
-                            label = '{} y = {:.6f}x + {:.6f} ("raw fit"; shifted by {:.4f}; $r^2$={:.6f})'.format(name, b1_raw, b0_raw, -shift_amount, r2_raw)
+                            label = '{} y = {:.6f}x + {:.6f} ("raw fit"; shifted by {:.4f}; $r^2$={:.6f})'.format(name, b1_raw, b0_raw, shift_amount, r2_raw)
                             self.log.out('  RFR equation of line {}'.format(label))
-                            regdata_raw = self.plot_parms(x=xreg_raw, y=yreg_raw, style='line', marker='.', line='-', size=3, label=label, shiftable=True)
+                            regdata_raw = self.plot_parms(x=xreg_raw, y=yreg_raw, style='line', marker='.', line='-', size=3, label=label, shiftable=False)
                             data2plot.append(regdata_raw)
                         
                         # Plot "clean fit"
                         if raw:
-                            label = '{} y = {:.6f}x + {:.6f} ("clean fit"; shifted by {:.4f}; $r^2$={:.6f})'.format(name, b1_clean, b0_clean, -shift_amount, r2_clean)
+                            label = '{} y = {:.6f}x + {:.6f} ("clean fit"; shifted by {:.4f}; $r^2$={:.6f})'.format(name, b1_clean, b0_clean, shift_amount, r2_clean)
                         else:
-                            label = '{} y = {:.6f}x + {:.6f} (shifted by {:.4f}; $r^2$={:.6f})'.format(name, b1_clean, b0_clean, -shift_amount, r2_clean)
+                            label = '{} y = {:.6f}x + {:.6f} (shifted by {:.4f}; $r^2$={:.6f})'.format(name, b1_clean, b0_clean, shift_amount, r2_clean)
                         self.log.out('  RFR equation of line {}'.format(label))
-                        regdata_clean = self.plot_parms(x=xreg_clean, y=yreg_clean, style='line', marker='.', line='-', size=3, label=label, shiftable=True)
+                        regdata_clean = self.plot_parms(x=xreg_clean, y=yreg_clean, style='line', marker='.', line='-', size=3, label=label, shiftable=False)
                         data2plot.append(regdata_clean)
                                             
                         # Plot yield point calculations
-                        if yield_point_derivative:
-                            label = '{} yield point from derivative ({}, {})'.format(name, yield_point_derivative[0], yield_point_derivative[1]+shift_amount)
-                            yielding = self.plot_parms(x=yield_point_derivative[0], y=yield_point_derivative[1], style='point', marker='o', line='-', size=8, label=label, shiftable=True)
+                        if yp_derivative:
+                            label = '{} yield point from derivative ({}, {})'.format(name, yp_derivative[0], yp_derivative[1])
+                            yielding = self.plot_parms(x=yp_derivative[0], y=yp_derivative[1], style='point', marker='o', line='-', size=8, label=label, shiftable=False)
                             data2plot.append(yielding)
                             
                             # Determine apparent offset based on yield strength from yield_point_derivative
-                            yield_yvalue = yield_point_derivative[1]+shift_amount
+                            yield_yvalue = yp_derivative[1]
                             slope_xvalue = (yield_yvalue - b0)/b1
-                            apparent_offset = abs(slope_xvalue - yield_point_derivative[0])
+                            apparent_offset = abs(slope_xvalue - yp_derivative[0])
                             self.log.out('  RFR Modulus found the "apparent offset" to compute the yield strength to be {:.6f}'.format(apparent_offset))
-                        if yield_point_offset:
-                            label = '{} yield point from offset ({}, {})'.format(name, yield_point_offset[0], yield_point_offset[1]+shift_amount)
-                            yielding = self.plot_parms(x=yield_point_offset[0], y=yield_point_offset[1], style='point', marker='o', line='-', size=8, label=label, shiftable=True)
+                        if yp_offset:
+                            label = '{} yield point from offset ({}, {})'.format(name, yp_offset[0], yp_offset[1])
+                            yielding = self.plot_parms(x=yp_offset[0], y=yp_offset[1], style='point', marker='o', line='-', size=8, label=label, shiftable=False)
                             data2plot.append(yielding)
                             
                         # Log some outputs
                         self.log.out(f'  RFR Modulus found xlo={xlo_out} and xhi={xhi_out}')
-                        if yield_point_derivative:
-                            self.log.out('  RFR Modulus found the yield point from derivative as ({:.6f}, {:.6f})'.format(yield_point_derivative[0], yield_point_derivative[1]))
-                        if yield_point_offset:
-                            self.log.out('  RFR Modulus found the yield point from offset as ({:.6f}, {:.6f})'.format(yield_point_offset[0], yield_point_offset[1]))
+                        if yp_derivative:
+                            self.log.out('  RFR Modulus found the yield point from derivative as ({:.6f}, {:.6f})'.format(yp_derivative[0], yp_derivative[1]))
+                        if yp_offset:
+                            self.log.out('  RFR Modulus found the yield point from offset as ({:.6f}, {:.6f})'.format(yp_offset[0], yp_offset[1]))
                         if nu1 is not None and nu2 is not None:
                             nu_avg = (nu1 + nu2)/2
                             self.log.out("  RFR Modulus found the poissons ratio's to be nu_1={:.6f}, nu_2={:.6f}, nu_avg={:.6f}".format(nu1, nu2, nu_avg))
@@ -1227,18 +1236,19 @@ class analysis:
                             self.log.out('{:>4}{:<28}: {} to {}'.format('', b0_name, ci_b0[0], ci_b0[1]))
                             self.log.out('{:>4}{:<28}: {} to {}'.format('', b1_name, ci_b1[0], ci_b1[1]))
                         self.log.out('{:>4}{:<28}: {}'.format('', '  - r^2', r2_clean))
-                        if yield_point_derivative:
+                        if yp_derivative:
                             self.log.out('')
-                            self.log.out('{:>4}{:<28}: {}'.format('', 'Yield point "derivative"', yield_point_derivative[1]+shift_amount))
+                            self.log.out('{:>4}{:<28}: {}'.format('', 'Yield point "derivative"', yp_derivative[1]))
                             self.log.out('{:>4}{:<28}: {}'.format('', '  - "apparent offset"', apparent_offset))
-                        if yield_point_offset:
+                        if yp_offset:
                             self.log.out('')
-                            self.log.out('{:>4}{:<28}: {}'.format('', 'Yield point "offset"', yield_point_offset[1]+shift_amount))
+                            self.log.out('{:>4}{:<28}: {}'.format('', 'Yield point "offset"', yp_offset[1]))
                         if nu1 is not None and nu2 is not None:
                             self.log.out('')
                             self.log.out('{:>4}{:<28}: {}'.format('', 'Poissons ratio "nu_1"', nu1))
                             self.log.out('{:>4}{:<28}: {}'.format('', 'Poissons ratio "nu_2"', nu2))
                             self.log.out('{:>4}{:<28}: {}'.format('', 'Poissons ratio "nu_avg"', nu_avg))
+                            if t12_avg: self.log.out('{:>4}{:<28}: {}'.format('', 'Poissons ratio "nu12_avg"', nu12_avg))
                         self.log.out('{:>2}{}\n'.format('', '----------------------------------------------------'))
                         
                         self.log.out(f'\n  {cite_string}')
@@ -1272,8 +1282,8 @@ class analysis:
                                  'b0-clean-ci': 'b0 confidence_interval of {} or None if not computed'.format(confidence_interval),
                                  'xlo': 'Float value of X-lo value of the found linear-region of the stress-strain curve',
                                  'xhi': 'Float value of X-hi value of the found linear-region of the stress-strain curve',
-                                 'yield_point_derivative': 'List of floats found from yield point determination, using derivative methods. Order [X-yp, Y-yp] or [None, None] if not using yp.',
-                                 'yield_point_offset': 'List of floats found from yield point determination, using offset methods. Order [X-yp, Y-yp] or [None, None] if not using offset.',
+                                 'yield_point_derivative': 'List of floats found from yield point determination, using derivative methods. Order [X-yp, Y-yp] or [] if not using yp. NOTE: SHIFTED based on shift method',
+                                 'yield_point_offset': 'List of floats found from yield point determination, using offset methods. Order [X-yp, Y-yp] or [] if not using offset. NOTE: SHIFTED based on shift method',
                                  'nu1': 'Float defining Poissons ratio from tranverse1 (t1) and axial strain (X-data) linear-relation. If not using t1, returns None',
                                  'nu2': 'Float defining Poissons ratio from tranverse1 (t2) and axial strain (X-data) linear-relation. If not using t2, returns None',
                                  'nu_avg': 'Float defining Poissons ratio found be averaing nu1 and nu2 together. If not using t1 and t2, returns None'}
@@ -1287,11 +1297,14 @@ class analysis:
                                    'b0-clean': b0_clean,
                                    'xlo': xlo_out,
                                    'xhi': xhi_out,
-                                   'yield_point_derivative': yield_point_derivative,
-                                   'yield_point_offset': yield_point_offset,
+                                   'yield_point_derivative': yp_derivative,
+                                   'yield_point_offset': yp_offset,
                                    'nu1': nu1,
                                    'nu2': nu2,
-                                   'nu_avg': nu_avg}     
+                                   'nu_avg': nu_avg}
+                        if t12_avg:
+                            about['nu12_avg'] = 'Float defining Poissons ratio from average t1 and t2 and axial strain (X-data) linear-relation. If not using t1 and t2, returns None'
+                            outputs['nu12_avg'] = nu12_avg
                         if ci_raw is not None:
                             outputs['b0-raw-ci'] = ci_raw[0]
                             outputs['b1-raw-ci'] = ci_raw[1]
@@ -1332,9 +1345,9 @@ class analysis:
                     
                     # If shift, shift all data
                     if shift and shiftable:
-                        try: yy = [i+shift_amount for i in yy]
+                        try: yy = [i - shift_amount for i in yy]
                         except: 
-                            try: yy += shift_amount
+                            try: yy -= shift_amount
                             except: pass
                     
                     # Plot data with or without line width size
@@ -1446,13 +1459,20 @@ class analysis:
     # Method to get misc dict of key/value pair #
     #-------------------------------------------#
     def get_misc_setting(self, misc):
+        # Setup the globals namespace to limit scope of what eval() can do
+        allowed_builtins = ['min','max','sum','abs','len','map','range','reversed']
+        copied_builtins = globals()['__builtins__'].copy()
+        globals_dict = {}
+        globals_dict['__builtins__'] = {key:copied_builtins[key] for key in allowed_builtins}
+        
+        # Parse misc string
         setting = {} # {keyword:float or int or Boolean}
         tmp1 = misc.split(';')
         for tmp2 in tmp1:
             tmp3 = tmp2.split('=')
             if len(tmp3) >= 2:
                 i = tmp3[0].strip()
-                try: j = eval(tmp3[1])
+                try: j = eval(tmp3[1], globals_dict)
                 except: j = str(tmp3[1])
                 setting[i] = j
         return setting
@@ -1643,10 +1663,8 @@ class analysis:
             xs = np.array(reduced_x)
             ys = np.array(reduced_y)
             if shift:
-                if ys[0] < 0:
-                    shift_amount = abs(ys[0])
-                else: shift_amount = -abs(ys[0])   
-                ys = ys + shift_amount               
+                shift_amount = ys[0]
+                ys = ys - shift_amount               
             else: shift_amount = 0
             
             spl = InterpolatedUnivariateSpline(xs, ys, k=1)  # k=1 gives linear interpolation
@@ -1692,7 +1710,7 @@ class analysis:
     #------------------------------------------------------------------------------#
     # Method implementing the Kemppainen-Muzzy stress-strain analysis calculations #
     #------------------------------------------------------------------------------#
-    def rfr_modulus(self, x, y, xlo, xhi, minxhi, maxxhi, xlo_method, yp, offset, t1, t2,stress_units, write_data, derivative_span, derivative_degree, grid, savefig, figname, dpi):
+    def rfr_modulus(self, x, y, xlo, xhi, minxhi, maxxhi, xlo_method, yp, offset, t1, t2,stress_units, write_data, derivative_span, derivative_degree, grid, t_12_avg, savefig, figname, dpi):
         strain, stress = misc_funcs.reduce_data(x, y, xlo, xhi)
         t1_reduced = []; t2_reduced = []
         for trans1 in t1:
@@ -1703,12 +1721,12 @@ class analysis:
             t2_reduced.append(t2_tmp)
         if strain and stress:
             out = rfr_modulus.compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1_reduced, t2_reduced, stress_units, write_data,
-                                      derivative_span, derivative_degree, grid, savefig, figname, dpi)
-            xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2 = out
+                                      derivative_span, derivative_degree, grid, t_12_avg, savefig, figname, dpi)
+            xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12 = out
         else:
             xlo = min(x); xhi = max(x);  yield_point_derivative = []; yield_point_offset = []; nu1 = None; nu2 = None;
             self.log.GUI_error(f'ERROR (Regression Fringe Response Modulus) no LAMMPS data in xrange {xlo} - {xhi}')
-        return xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2
+        return xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12
     
     #---------------------------------------------#
     # Method implementing derivative calculations #

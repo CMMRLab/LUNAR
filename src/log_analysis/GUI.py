@@ -828,7 +828,8 @@ class GUI:
         
         # Set up Tristan's "array" analysis using recursion
         if not os.path.isfile(str(mode['logfile'])):
-            files = glob.glob(mode['logfile']); array_time = time.time(); analyzed = None
+            files = glob.glob(mode['logfile']); array_time = time.time(); analyzed = None; 
+            outputs = {} # {filename : dict-of-outputs}
             if files:
                 for n, file in enumerate(files, 1):
                     self.log.clear_all()
@@ -843,10 +844,24 @@ class GUI:
                     mode['logfile'] = file
                     try: # we dont want crashes to exit this loop
                         analyzed = main.analysis(mode, plot=True, savefig=savefig, dpi=dpi, log=self.log, log_clear=False)
+                        outputs[file] = analyzed.outputs
                     except: pass
             print('\a') # Alert
+            # if outputs:
+            #     self.array_csv(outputs)
         else:
             analyzed = main.analysis(mode, plot=True, savefig=savefig, dpi=dpi, log=self.log)
             self.columns = analyzed.columns # Update columns
             #self.popup(self.log.logged, title='Outputs', width=150)
+        return
+    
+    def array_csv(self, outputs):
+        data2skip = set(['Raw-data'])
+        for file in outputs:
+            print()
+            print(file)
+            for data in outputs[file]:
+                if data in data2skip: continue
+                if len(outputs[file][data]) > 10: continue
+                print(data, outputs[file][data])
         return
