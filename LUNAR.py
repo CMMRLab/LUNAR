@@ -283,7 +283,7 @@ class LUNAR:
         import lmp2SYBYLmol2 as l
 
         # Run lmp2SYBYLmol2_GUI
-        GUI(l.topofile, l.parent_directory, l.remove_PBC_bonds, l.mass_map, self.GUI_zoom)
+        GUI(l.topofile, l.parent_directory, l.remove_PBC_bonds, l.mass_map, l.addbox, self.GUI_zoom)
         return
     
     # atom_removal GUI Run
