@@ -14,10 +14,14 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 19May2025)
+LUNAR (version 6June2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+6June2025          JDK        - log_analysis.py: Starting working on allows the RFR stress-strain
+                                                 implementation to be compatibile with stress-strain curves
+                                                 for liquid systems.
+
 19May2025          JDK        - log_analysis.py: Adjusted how the "shift" keyword of some methods are output
                                                  in the ".outputs" attribute of the class. In addition added
                                                  "EXAMPLES/log_analysis_scripting" folder to show how to 

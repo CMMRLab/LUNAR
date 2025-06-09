@@ -10,6 +10,9 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+import src.GUI_file_dialog_paths as GUI_file_dialog_paths
+import src.GUI_font_settings as GUI_font_settings
+import src.py_script_modifier as psm
 import src.log_analysis.read_log as read_log
 import src.io_functions as io_functions
 import src.log_analysis.main as main
@@ -37,13 +40,30 @@ class GUI:
 
         # Find present working directory
         self.pwd = os.getcwd()
-        self.filepath = self.pwd
+        try: self.filepath = GUI_file_dialog_paths.logfile
+        except: self.filepath = self.pwd
         self.modespath = settings['modes-dir']
         
         # Set defaults
         self.settings = settings
-        module = main.import_file(settings['mode'])
-        mode = module.mode
+        try:
+            module = main.import_file(settings['mode'])
+            mode = module.mode
+        except:
+            mode = {'logfile': 'UPDATE-ME',
+                    'keywords': ['Step', 'Temp'],
+                    'sections': 'all',
+                    'xdata': '',
+                    'ydata': '',
+                    'xlabel': '',
+                    'ylabel': '',
+                    'xcompute': '',
+                    'ycompute': '',
+                    'analysis': [],
+                    'nevery': '1',
+                    'parent_directory': 'logfile'}
+            self.log.GUI_error(f'ERROR loading mode file {settings["mode"]}. Internally deriving default settings. Likely launching from outside of LUNAR directory.')
+
         self.columns = ['Step'];
         self.mode = self.settings['mode']
         self.xdata = mode['xdata']
@@ -83,9 +103,20 @@ class GUI:
             self.font_size = 9
             self.font_type = 'Segoe UI'
             self.defaults = {'family':self.font_type, 'size':self.font_size}
+            
+        # Check if user specified any other font settings
+        font_settings = GUI_font_settings.font_settings
+        if 'size' in font_settings:
+            if isinstance(font_settings['size'], (int, float)):
+               self.font_size = font_settings['size'] 
+        if 'type' in font_settings:
+            if isinstance(font_settings['type'], str):
+               self.font_type = font_settings['type'] 
+        self.defaults = {'family':self.font_type, 'size':self.font_size}
+            
         self.xpadding = 20
         self.ypadding = 10
-        self.maxwidth = 150
+        self.maxwidth = 145
         
         # adjust based on GUI_SF
         GUI_SF = GUI_zoom/100
@@ -254,7 +285,7 @@ class GUI:
         # file selection button and qty
         self.nanalysis = len(self.analysis)
         self.supported_methods = ['average', 'linear regression', 'moving average', 'hyperbola', 'piecewise-regression', 'cursor', 'skip',
-                                  'spline-integration', 'Whittaker-Eilers', 'minimum', 'maximum', 'Butterworth (low pass)', 'iFFT filter', 'LOWESS'
+                                  'spline-integration', 'Whittaker-Eilers', 'minimum', 'maximum', 'Butterworth (low pass)', 'iFFT filter', 'LOWESS',
                                   'Regression Fringe Response Modulus', 'LAMMPS data (remove from plot)', 'LAMMPS data (apply moving average)',
                                   'LAMMPS data (apply Butterworth filter)', 'LAMMPS data (apply Whittaker-Eilers)', 'LAMMPS data (fit polynomial)',
                                   'LAMMPS data (LOWESS)', 'LAMMPS data (X-sort)', 'LAMMPS data (apply iFFT filter)', 'write plotted data to csv file',
@@ -467,7 +498,9 @@ class GUI:
         if path:
             self.filepath = os.path.dirname(os.path.abspath(path))
             path = os.path.relpath(path)
-            self.logfile.delete(0, tk.END); self.logfile.insert(0, path);
+            self.logfile.delete(0, tk.END); self.logfile.insert(0, path)
+            
+            self.save_file_path(self.filepath, file_variable='logfile')
             
             # Update self.columns
             if os.path.isfile(path):
@@ -480,6 +513,25 @@ class GUI:
                 log = read_log.file(path, keywords=keywords)
                 data = log.get_data(sections, remove_duplicates=True, pflag=True) # {column-name:[lst of data]}
                 self.columns = list(data.keys())
+        return
+    
+    def save_file_path(self, new_path, file_variable='logfile'):
+        # Get python script path and name and new file path to store
+        script_path = GUI_file_dialog_paths.script_path
+        script_name = GUI_file_dialog_paths.script_name
+        filename = os.path.join(script_path, script_name)
+        new_file = io_functions.path_to_string(new_path)
+        
+        # Update python file to store last location
+        lines = psm.read(filename)
+        with open(filename, 'w') as f:
+            inputsflag = True
+            for line in lines:
+                if line.startswith(file_variable) and inputsflag:
+                    line = psm.parse_and_modify(line, new_file, stringflag=True, splitchar='=')
+                    inputsflag = False
+                if line.startswith('if __name__ == "__main__":'): inputsflag = False
+                f.write(line)
         return
     
     # Function to get directory
@@ -779,7 +831,15 @@ class GUI:
             method, xlo, xhi, misc, name = i
             if n >= nloaded: # add more boxes as needed
                 self.add_overloaded_analysis()
-            self.methods[n].current(self.supported_methods.index(method))
+            
+            if method not in self.supported_methods:
+                self.supported_methods.append(method)
+            try: 
+                index = self.supported_methods.index(method)
+                self.methods[n].current(index)
+            except: 
+                self.log.GUI_error(f'ERROR could not find proper index of {method}. Did not update method')
+                
             self.xlos[n].delete(0, tk.END)
             self.xlos[n].insert(0, xlo)
             self.xhis[n].delete(0, tk.END)

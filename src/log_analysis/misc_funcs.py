@@ -26,6 +26,12 @@ import math
 #############################################
 class linear_regression:
     def __init__(self, xdata, ydata):
+        # Check if xdata and ydate exists. If it does not generate some defaults
+        if not xdata and not ydata:
+            print('WARNING no data for linear regression. Setting xdata=[0.0, 0.5, 1.0]; ydata=[0.0, 0.0, 0.0] to avoid div by zero errors - BUT DONT TRUST OUTPUT.')
+            xdata = [0.0, 0.5, 1.0]
+            ydata = [0.0, 0.0, 0.0]
+        
         # Compute cummulative parameters
         sum_xi = 0; sum_yi = 0; sum_xi_2 = 0; sum_yi_2 = 0; sum_xi_yi = 0; n = 0
         for x, y in zip(xdata, ydata):
@@ -105,6 +111,7 @@ def avg(lst):
 # Josh's reduce data function #
 ###############################
 def reduce_data(xdata, ydata, xlo, xhi):
+    xlo, xhi = sorted([xlo, xhi])
     if xlo > xhi:
         print(f'ERROR (reduce_data) no data between {xlo} - {xhi}')
     reducedx = []; reducedy = [];  

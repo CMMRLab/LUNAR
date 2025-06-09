@@ -1041,14 +1041,31 @@ class analysis:
                             try: t2 = [data[setting['t2']]]
                             except: t2 = []; self.log.GUI_error(f'ERROR t2 column {setting["t2"]} does not exist in logfile. Skipping poissons ratio calculation from -d(trans)/d(axial). Please check that t1, keywords, and sections is correct.')
                         else: t2 = []; misc += ' default-t2=[]'
+                        
+                        
+                        #------------------------------------------------------------------------------------------------------------#
+                        # This entire function assumes strain increases with time (i.e. tensile or shear tests). Therefore if strain #
+                        # decreases with time for compression or unloading tests, we need to "reverse" the stress and strain lists.  #
+                        #------------------------------------------------------------------------------------------------------------#
+                        flip_data = False
+                        if x[-1] < x[0]:
+                            flip_data = True
+                            x.reverse()
+                            y.reverse()
+                            xlmp.reverse()
+                            ylmp.reverse()
+    
     
                         # For t1 and t2 we are going to have to process the data to make sure it is consistent with the axial stress (really only the 
                         # Moving average is required as that changes the data length. Overs are commented out, but can be uncommented at anytime).
-                        if t1 and t2:
+                        if t1 and t2:                            
                             if nevery > 1:
                                 t1 = [t1[0][::nevery]]
                                 t2 = [t2[0][::nevery]]
                             t1_tmp = t1[0]; t2_tmp = t2[0]
+                            if flip_data:
+                                t1_tmp.reverse()
+                                t2_tmp.reverse()
                             for lmp_cleaning in cleaning_settings:
                                 if lmp_cleaning == 'LAMMPS data (apply moving average)':
                                     LAMMPS_window = cleaning_settings[lmp_cleaning]
@@ -1160,12 +1177,16 @@ class analysis:
                             yp_derivative[1] -= shift_amount
                         if yp_offset:
                             yp_offset[1] -= shift_amount
+
+                        # Clean the data based on standing stress wave
+                        # if yp_derivative:
+                        #     rfr_modulus.check_yp(x, y, xlmp, ylmp, yp_derivative)
                             
                         # Plot "raw fit"
                         if raw:
                             label = '{} y = {:.6f}x + {:.6f} ("raw fit"; shifted by {:.4f}; $r^2$={:.6f})'.format(name, b1_raw, b0_raw, shift_amount, r2_raw)
                             self.log.out('  RFR equation of line {}'.format(label))
-                            regdata_raw = self.plot_parms(x=xreg_raw, y=yreg_raw, style='line', marker='.', line='-', size=3, label=label, shiftable=False)
+                            regdata_raw = self.plot_parms(x=xreg_raw, y=yreg_raw, style='line', marker='.', line='-', size=3, label=label, shiftable=True)
                             data2plot.append(regdata_raw)
                         
                         # Plot "clean fit"
@@ -1174,7 +1195,7 @@ class analysis:
                         else:
                             label = '{} y = {:.6f}x + {:.6f} (shifted by {:.4f}; $r^2$={:.6f})'.format(name, b1_clean, b0_clean, shift_amount, r2_clean)
                         self.log.out('  RFR equation of line {}'.format(label))
-                        regdata_clean = self.plot_parms(x=xreg_clean, y=yreg_clean, style='line', marker='.', line='-', size=3, label=label, shiftable=False)
+                        regdata_clean = self.plot_parms(x=xreg_clean, y=yreg_clean, style='line', marker='.', line='-', size=3, label=label, shiftable=True)
                         data2plot.append(regdata_clean)
                                             
                         # Plot yield point calculations
@@ -1684,7 +1705,7 @@ class analysis:
     def fit_hyperbola(self, x, y, xlo, xhi, minimum_convergence=None, initial_guess=False, maxiter=10**4):
         reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
         if reduced_x and reduced_y:        
-            xout, yout, params, center, slopes, transition, tangent_intersection, tangents = misc_funcs.fit_hyperbola(x, y, xlo, xhi, minimum_convergence, initial_guess, maxiter)
+            xout, yout, params, center, slopes, transition, tangent_intersection, tangents = misc_funcs.fit_hyperbola(reduced_x, reduced_y, xlo, xhi, minimum_convergence, initial_guess, maxiter)
         else:
             xout = [0, 1]; yout = [0, 1]; slopes = [0, 1]
             center = [0, 0]; params = [0, 0, 0, 0, 0];

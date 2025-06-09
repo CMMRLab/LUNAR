@@ -13,6 +13,7 @@ Houghton, MI 49931
 import src.log_analysis.signal_processing as signal_processing
 import src.log_analysis.misc_funcs as misc_funcs
 import matplotlib.pyplot as plt
+import numpy as np
 import math
 
 
@@ -126,6 +127,90 @@ def maximized_slope(fringe, slopes, machine_precision=1e-8):
         yhi = slopes[maximized]
     else: xhi = 0; yhi = 0
     return xhi, yhi
+
+
+#######################################################
+# Function to construct perform inverse FFT filtering #
+#######################################################
+def construct_sine_wave(x, y, Npeaks=2):
+    #-----------------------------------#
+    # Compute the one-sided FFT and PSD #
+    #-----------------------------------#
+    # Define sampling rate and number of data points
+    N = x.shape[0] # number of data points
+    fs = (N-1)/(np.max(x) - np.min(x)) # sampling rate
+    d = 1/fs # sampling space
+
+    # Perform one sided FFT
+    X = np.fft.rfft(y, axis=0, norm='backward')
+    f = np.fft.rfftfreq(N, d=d)
+    
+    # One sided power spectrum density
+    psd = np.real( (X*np.conjugate(X)) )/N
+    
+    #-----------------------------------------------------------------------------------#
+    # Set a scaling factor of 0 or 1 to cancel out (0) or leave (1) certain frequencies #
+    #-----------------------------------------------------------------------------------#
+    # Find N-largest peaks in PSD to keep and ensure index zero (DC-offset) is in
+    # the indices to ensure filtered data oscillates about the correct mean value.
+    # The DC-offset maybe very small if data oscillates about a Y-value of zero, 
+    # however in such a case, no harm is done in keeping the DC-offset.
+    indices = np.argpartition(psd[1:], -Npeaks)[-Npeaks:] + 1
+    if 0 not in indices:
+        indices = np.append(indices, [0])
+    scaling_factors = np.zeros_like(psd)
+    scaling_factors[indices] = 1
+    psd_peaks = psd[indices]
+    psd_freqs = f[indices]
+    
+    #-------------------------------------------------------------------------------------------#
+    # Cancel or leave frequencies in X and then inverse the cleaned fft to get the filterd data #
+    #-------------------------------------------------------------------------------------------#
+    X_clean = scaling_factors*X
+    y_filter = np.fft.irfft(X_clean)
+    
+    # Since we are performing a one sided FFT, the Nyquist freq may or may not be inlcuded
+    # depending on even or odd number of data points, so append a value if Nyquist freq is
+    # missing so that y_filter has the same shape as the X-data.
+    if y_filter.shape != x.shape:
+        y_filter = np.append(y_filter, y_filter[-1])
+            
+    #-----------------------------------------------------------------------#
+    # Compute amplitude and phase of signal based on the dominant frequency #
+    #-----------------------------------------------------------------------#
+    dominant_frequency_index = np.argmax(np.abs(X[1:])) + 1
+    frequency = f[dominant_frequency_index]
+    phase = np.angle(X[dominant_frequency_index], deg=False)
+    amplitude = (np.max(y_filter) - np.min(y_filter))/2
+    return f, psd, psd_freqs, psd_peaks, y_filter, phase, amplitude, frequency
+
+
+
+def check_yp(x, y, xlmp, ylmp, yp_derivative):
+    if len(x) == len(xlmp):
+        residuals = [lmp - clean for lmp, clean in zip(ylmp, y)]
+        std = misc_funcs.compute_standard_deviation(residuals)
+        mean = misc_funcs.compute_mean(residuals)
+        
+        f, psd, psd_freqs, psd_peaks, y_filter, phase, amplitude, frequency = construct_sine_wave(np.array(x), np.array(residuals), Npeaks=3)
+
+        
+        fig1, ax1 = plt.subplots(1, 1, figsize=(6, 4))
+        ax1.plot(x, residuals, 'o', ms=2, color='tab:blue', label='Residuals')
+        ax1.plot(x, y_filter, '-', lw=2, color='tab:cyan', label='Standing stress wave')
+        
+        ax1.axhline(y=mean, lw=3, color='tab:orange', linestyle='--', label='Mean')
+        ax1.axhline(y=mean+1*std, lw=3, color='bisque', linestyle='--', label='Mean + 1*sigma')
+        ax1.axhline(y=mean+2*std, lw=3, color='tan', linestyle='--', label='Mean + 2*sigma')
+        ax1.axhline(y=mean+3*std, lw=3, color='tab:brown', linestyle='--', label='Mean + 3*sigma')
+
+        ax1.axvline(x=yp_derivative[0], lw=3, color='tab:green', linestyle='-', label='Yield Point (X)')        
+        ax1.axhline(y=yp_derivative[-1], lw=3, color='tab:green', linestyle='-', label='Yield Point (Y)')
+        ax1.legend(loc='lower right', bbox_to_anchor=(1, 0), fancybox=True, ncol=1, fontsize=8)
+        
+    else:
+        print('ERROR could not predict standing wave based on residuals, because cleaned and raw data series are different lengths')
+    return
 
 
 ##################################################################################################################
@@ -268,7 +353,8 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
     #max_strain_ffs += xlo
     rstrain, rstress = misc_funcs.reduce_data(strain, stress, xlo, max(strain))
     ffs_outputs_2nd = compute_fringe_slope(rstrain, rstress, min_strain=min_strain_ffs, max_strain=max_strain_ffs, direction='forward', stats=ffs_stats)
-    xhi, yhi = maximized_slope(ffs_outputs_2nd['fringe'], ffs_outputs_2nd['slopes'], machine_precision=1e-8)
+    if ffs_outputs_2nd['fringe']:
+        xhi, yhi = maximized_slope(ffs_outputs_2nd['fringe'], ffs_outputs_2nd['slopes'], machine_precision=1e-8)
     if maxxhi > 0: # Compute for nicer looking plots
         ffs_outputs_2nd = compute_fringe_slope(rstrain, rstress, min_strain=min_strain_ffs, max_strain=max(strain), direction='forward', stats=ffs_stats)
     poisson_xhis.append(xhi)
@@ -816,9 +902,9 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
         nu1_lr = misc_funcs.linear_regression(axial1, trans1)
         nu2_lr = misc_funcs.linear_regression(axial2, trans2)
         nu12_lr = misc_funcs.linear_regression(axial12, trans12)
-        nu1 = -nu1_lr.b1
-        nu2 = -nu2_lr.b1
-        nu12 = -nu12_lr.b1
+        nu1 = abs(nu1_lr.b1)
+        nu2 = abs(nu2_lr.b1)
+        nu12 = abs(nu12_lr.b1)
         
         # Plot results
         if t_12_avg:
