@@ -359,8 +359,8 @@ class merged:
         # of parms in bond, angle, dihedral, and improper coeffs #
         ##########################################################
         self.ff_class = 1
-        for i in nparms_in_coeff:
-            print(i, nparms_in_coeff[i], most_frequent(nparms_in_coeff[i]))
+        # for i in nparms_in_coeff:
+        #     print(i, nparms_in_coeff[i], most_frequent(nparms_in_coeff[i]))
         nparms_bond = most_frequent(nparms_in_coeff['bond'])
         nparms_angle = most_frequent(nparms_in_coeff['angle'])
         nparms_dihedral = most_frequent(nparms_in_coeff['dihedral'])
