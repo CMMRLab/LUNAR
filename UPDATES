@@ -14,10 +14,15 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 6June2025)
+LUNAR (version 13June2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+13June2025         JDK         - bond_react_merge.py: Fixed of bug for when trying to merge class2 systems, 
+                                                      which only models pair potentials (and not bonded 
+                                                      potentials) - code was not writing correct datafiles
+                                                      by leaving out the crossterms in such cases.
+
 6June2025          JDK        - log_analysis.py: Starting working on allows the RFR stress-strain
                                                  implementation to be compatibile with stress-strain curves
                                                  for liquid systems.

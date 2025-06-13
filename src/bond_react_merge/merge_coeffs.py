@@ -359,11 +359,24 @@ class merged:
         # of parms in bond, angle, dihedral, and improper coeffs #
         ##########################################################
         self.ff_class = 1
+        for i in nparms_in_coeff:
+            print(i, nparms_in_coeff[i], most_frequent(nparms_in_coeff[i]))
         nparms_bond = most_frequent(nparms_in_coeff['bond'])
         nparms_angle = most_frequent(nparms_in_coeff['angle'])
         nparms_dihedral = most_frequent(nparms_in_coeff['dihedral'])
         nparms_improper = most_frequent(nparms_in_coeff['improper'])
-        if nparms_bond == 4 and nparms_angle == 4 and nparms_dihedral == 6 and nparms_improper == 2:
+        
+        # Flag each coeff to determine whether or not the FF is class2
+        class2 = {'bond': False, 'angle': False, 'dihedral': False, 'improper': False}
+        if nparms_bond is not None and nparms_bond == 4:
+            class2['bond'] = True
+        if nparms_angle is not None and nparms_angle == 4:
+            class2['angle'] = True
+        if nparms_dihedral is not None and nparms_dihedral == 6:
+            class2['dihedral'] = True
+        if nparms_improper is not None and nparms_improper == 2:
+            class2['improper'] = True
+        if any(list(class2.values())):
             self.ff_class = 2
             log.out('Internally determined force field is class2')
         
