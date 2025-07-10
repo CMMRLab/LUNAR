@@ -14,10 +14,13 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 13June2025)
+LUNAR (version 7July2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+7July2025          JDK         - ERROR handling: All ERRORs raised now ensures LUNAR shuts down properly and
+                                                 in the proper directory.
+
 13June2025         JDK         - bond_react_merge.py: Fixed of bug for when trying to merge class2 systems, 
                                                       which only models pair potentials (and not bonded 
                                                       potentials) - code was not writing correct datafiles

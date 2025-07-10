@@ -54,6 +54,11 @@ class LUNAR_logger:
         self.write2log = write2log
         self.print2console = print2console
         
+        # This scripts path and name
+        script_path = os.path.dirname(os.path.realpath(__file__))
+        #script_name = os.path.basename(__file__)
+        self.lunar_path = os.path.normpath(os.path.join(script_path, '../'))
+        
     # Use this method instead of "print()" command
     def out(self, text):
         if self.print2console: print(text)
@@ -70,6 +75,8 @@ class LUNAR_logger:
         if self.print2console: print(text)
         self.logged.append(text)
         self.errors.append(text)
+        self.out('Changing back to: "{}" directory before exiting'.format(self.lunar_path))
+        os.chdir(self.lunar_path)
         sys.exit()
         
     # use this method for a GUI error (not exiting)
