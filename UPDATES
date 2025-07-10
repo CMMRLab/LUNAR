@@ -2,6 +2,7 @@
 Developers
 --------------------------------------------
 JDK = Josh Dan Kemppainen (jdkemppa@mtu.edu)
+TKW = Trevor K. Wavrunek (tkwavrun@mtu.edu)
 
 
 -------------------------------------------------------------------------------------------------------------
@@ -18,8 +19,22 @@ LUNAR (version 7July2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+7July2025          JDK & TKW   - GUI file dialog: All GUIs file dialog boxes now have "memory" of where you
+                                                  during the "last LUNAR session"
+
+7July2025          JDK & TKW   - GUI font settings and size: All GUIs now have easier control of default font
+                                                             size based on LUNAR/src/GUI_scale_settings.py
+                                                             file. Additionally settings for screen size can
+                                                             be setup in this file.
+
 7July2025          JDK         - ERROR handling: All ERRORs raised now ensures LUNAR shuts down properly and
                                                  in the proper directory.
+												 
+7July2025          JDK         - sheet_builder.py: Can now cutoff shapes with the "cutter" stack to generate
+                                                   quantum dots.
+												 
+7July2025          JDK         - sheet_builder.py: Can now "graft" fragments of molecules from other files
+                                                   to the surface of sheets or CNTs.
 
 13June2025         JDK         - bond_react_merge.py: Fixed of bug for when trying to merge class2 systems, 
                                                       which only models pair potentials (and not bonded 

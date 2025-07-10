@@ -10,9 +10,7 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
-import src.GUI_file_dialog_paths as GUI_file_dialog_paths
-import src.GUI_font_settings as GUI_font_settings
-import src.py_script_modifier as psm
+import src.GUI_scale_settings as GUI_scale_settings
 import src.log_analysis.read_log as read_log
 import src.io_functions as io_functions
 import src.log_analysis.main as main
@@ -40,12 +38,11 @@ class GUI:
 
         # Find present working directory
         self.pwd = os.getcwd()
-        try: self.filepath = GUI_file_dialog_paths.logfile
-        except: self.filepath = self.pwd
         self.modespath = settings['modes-dir']
         
         # Set defaults
         self.settings = settings
+        
         try:
             module = main.import_file(settings['mode'])
             mode = module.mode
@@ -105,19 +102,37 @@ class GUI:
             self.defaults = {'family':self.font_type, 'size':self.font_size}
             
         # Check if user specified any other font settings
-        font_settings = GUI_font_settings.font_settings
+        font_settings = GUI_scale_settings.font_settings
+        self.int_font = font.nametofont("TkDefaultFont") # font parameters used in internal TK dialogues
+        self.icon_font = font.nametofont("TkIconFont") # font used in file selection dialogue
         if 'size' in font_settings:
             if isinstance(font_settings['size'], (int, float)):
                self.font_size = font_settings['size'] 
         if 'type' in font_settings:
             if isinstance(font_settings['type'], str):
                self.font_type = font_settings['type'] 
+        if 'dialog_size' in font_settings:
+            if isinstance(font_settings['dialog_size'], (int, float)):
+               self.int_font.configure(size=font_settings['dialog_size'])
+               self.icon_font.configure(size=font_settings['dialog_size'])
+        if 'dialog_type' in font_settings:
+            if isinstance(font_settings['dialog_type'], str):
+               self.int_font.configure(family=font_settings['dialog_type'])
+               self.icon_font.configure(family=font_settings['dialog_type'])
         self.defaults = {'family':self.font_type, 'size':self.font_size}
-            
+
         self.xpadding = 20
         self.ypadding = 10
-        self.maxwidth = 145
-        
+        self.maxwidth = 150
+
+        # Check if user specified any other nong-global scaling settings
+        scale_settings = GUI_scale_settings.screen_settings
+        if 'scaling_factor' in scale_settings:
+            if isinstance(scale_settings['scaling_factor'], (int, float)):
+                self.xpadding = int(self.xpadding/scale_settings['scaling_factor'])
+                self.ypadding = int(self.ypadding/scale_settings['scaling_factor'])
+                self.maxwidth = int(self.maxwidth/scale_settings['scaling_factor'])
+
         # adjust based on GUI_SF
         GUI_SF = GUI_zoom/100
         font_size = int(math.ceil(GUI_SF*self.font_size))
@@ -494,13 +509,11 @@ class GUI:
     # Function to get filepath for logfile
     def logfile_path(self):
         ftypes = (('all files', '*.*'), ('LAMMPS log files (.lammps, .log, .txt)', '*.lammps *.log *.txt'))
-        path = filedialog.askopenfilename(initialdir=self.filepath, title='Open logfile?', filetypes=ftypes)
+        path = filedialog.askopenfilename(title='Open logfile?', filetypes=ftypes)
         if path:
             self.filepath = os.path.dirname(os.path.abspath(path))
             path = os.path.relpath(path)
             self.logfile.delete(0, tk.END); self.logfile.insert(0, path)
-            
-            self.save_file_path(self.filepath, file_variable='logfile')
             
             # Update self.columns
             if os.path.isfile(path):
@@ -515,28 +528,9 @@ class GUI:
                 self.columns = list(data.keys())
         return
     
-    def save_file_path(self, new_path, file_variable='logfile'):
-        # Get python script path and name and new file path to store
-        script_path = GUI_file_dialog_paths.script_path
-        script_name = GUI_file_dialog_paths.script_name
-        filename = os.path.join(script_path, script_name)
-        new_file = io_functions.path_to_string(new_path)
-        
-        # Update python file to store last location
-        lines = psm.read(filename)
-        with open(filename, 'w') as f:
-            inputsflag = True
-            for line in lines:
-                if line.startswith(file_variable) and inputsflag:
-                    line = psm.parse_and_modify(line, new_file, stringflag=True, splitchar='=')
-                    inputsflag = False
-                if line.startswith('if __name__ == "__main__":'): inputsflag = False
-                f.write(line)
-        return
-    
     # Function to get directory
     def directory_path(self):
-        path =filedialog.askdirectory(initialdir=self.pwd)
+        path = filedialog.askdirectory()
         if path:
             path = os.path.relpath(path)
             self.parent_directory.delete(0, tk.END); self.parent_directory.insert(0, path);
@@ -693,7 +687,7 @@ class GUI:
                     f.write('"""\n')
                     
                     f.write('# analysis list\n')
-                    if len(self.methods) > 0 and self.methods.count('skip') < len(self.methods):
+                    if len(self.methods) > 0:
                         analysis = [] # [method, xlo, xhi, miscs, names]
                         for i, j, k, l, m  in zip(self.methods, self.xlos, self.xhis, self.miscs, self.names):
                             try: 
@@ -701,17 +695,22 @@ class GUI:
                                 if method != 'skip':
                                     analysis.append([method, xlo, xhi, misc, name])
                             except: pass
-                        f.write('analysis = [')
-                        for n, (method, xlo, xhi, misc, name) in enumerate(analysis, 1):
-                            try:
-                                if xlo == '': xlo = "'{}'".format(xlo)
-                                if xhi == '': xhi = "'{}'".format(xhi)
-                                string = "['{}', {}, {}, '{}', '{}']".format(method, xlo, xhi, misc, name)
-                                if n < len(analysis): string += ','
-                                else: string += ']'
-                                if n == 1: f.write("{}\n".format(string))
-                                else: f.write("{:>12}{}\n".format('', string))
-                            except: pass
+                        if analysis:
+                            f.write('analysis = [')
+                            for n, (method, xlo, xhi, misc, name) in enumerate(analysis, 1):
+                                if method == 'skip': continue
+                                try:
+                                    if xlo == '': xlo = "'{}'".format(xlo)
+                                    if xhi == '': xhi = "'{}'".format(xhi)
+                                    string = "['{}', {}, {}, '{}', '{}']".format(method, xlo, xhi, misc, name)
+                                    
+                                    if n < len(analysis): string += ','
+                                    else: string += ']'
+                                    
+                                    if n == 1: f.write("{}\n".format(string))
+                                    else: f.write("{:>12}{}\n".format('', string))
+                                except: pass
+                        else: f.write('analysis = []\n')
                     else: f.write('analysis = []\n')
                     f.write('\n')
                     

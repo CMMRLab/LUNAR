@@ -10,6 +10,7 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+import src.GUI_scale_settings as GUI_scale_settings
 import src.atom_typing.log_processor.main as main
 import src.io_functions as io_functions
 from tkinter.scrolledtext import ScrolledText
@@ -35,14 +36,38 @@ class GUI:
 
         # Find present working directory
         self.pwd = os.getcwd()
-        self.filepath = self.pwd
         self.modespath = settings['modes-dir']
         
         # Set defaults
         self.settings = settings
-        if isinstance(settings['mode'], str):
-            mode = main.import_file(settings['mode']).mode
-        else: mode = settings['mode']
+        try:
+            if isinstance(settings['mode'], str):
+                mode = main.import_file(settings['mode']).mode
+            else: mode = settings['mode']
+        except:
+            # dependant and independant variable strings
+            independent_variable = "numeric"
+            dependent_variables = """
+            rings[6]['%Ring'],    rings[6]['C']['%natoms'],    hybridizations['Sp1-C']['%natoms']
+            hybridizations['Sp2-C']['%natoms'],    hybridizations['Sp3-C']['%natoms'],    hybridizations['all-H']['%natoms']
+            """
+            
+            # logger string
+            logger = """
+            filename,    numeric,    wildcards,    rings[6]['%Ring'],    rings[6]['C']['%natoms'],    hybridizations['Sp1-C']['%natoms']
+            hybridizations['Sp2-C']['%natoms'],    hybridizations['Sp3-C']['%natoms'],    hybridizations['all-H']['%natoms']
+            """
+            # loadable mode
+            mode = {'independent_variable': independent_variable,
+                    'dependent_variables': dependent_variables,
+                    'parent_directory': 'logfile',
+                    'sorting_direction': 'ascending',
+                    'sorting_method': 'sort',
+                    'logfile': 'EXAMPLES/array_processing/atom_typing_logfile_processor/poly_tracking_replicate_1_time_*ps_typed.log.lunar',
+                    'newfile': 'atom_typing_logfile_processor',
+                    'logger': logger
+                    }
+            self.log.GUI_error(f'ERROR loading mode file {settings["mode"]}. Internally deriving default settings. Likely launching from outside of LUNAR directory.')
         self.mode = mode
 
         
@@ -69,9 +94,38 @@ class GUI:
             self.font_size = 9
             self.font_type = 'Segoe UI'
             self.defaults = {'family':self.font_type, 'size':self.font_size}
+            
+        # Check if user specified any other font settings
+        font_settings = GUI_scale_settings.font_settings
+        self.int_font = font.nametofont("TkDefaultFont") # font parameters used in internal TK dialogues
+        self.icon_font = font.nametofont("TkIconFont") # font used in file selection dialogue
+        if 'size' in font_settings:
+            if isinstance(font_settings['size'], (int, float)):
+               self.font_size = font_settings['size'] 
+        if 'type' in font_settings:
+            if isinstance(font_settings['type'], str):
+               self.font_type = font_settings['type'] 
+        if 'dialog_size' in font_settings:
+            if isinstance(font_settings['dialog_size'], (int, float)):
+               self.int_font.configure(size=font_settings['dialog_size'])
+               self.icon_font.configure(size=font_settings['dialog_size'])
+        if 'dialog_type' in font_settings:
+            if isinstance(font_settings['dialog_type'], str):
+               self.int_font.configure(family=font_settings['dialog_type'])
+               self.icon_font.configure(family=font_settings['dialog_type'])
+        self.defaults = {'family':self.font_type, 'size':self.font_size}
+            
         self.xpadding = 20
         self.ypadding = 10
         self.maxwidth = 100
+
+        # Check if user specified any other nong-global scaling settings
+        scale_settings = GUI_scale_settings.screen_settings
+        if 'scaling_factor' in scale_settings:
+            if isinstance(scale_settings['scaling_factor'], (int, float)):
+               self.xpadding = int(self.xpadding/scale_settings['scaling_factor'])
+               self.ypadding = int(self.ypadding/scale_settings['scaling_factor'])
+               self.maxwidth = int(self.maxwidth/scale_settings['scaling_factor'])
         
         # adjust based on GUI_SF
         GUI_SF = GUI_zoom/100
@@ -231,9 +285,8 @@ class GUI:
     # Function to get filepath for logfile
     def logfile_path(self):
         ftypes = (('LUNAR log files (.lunar, .log, .txt)', '*.lunar *.log *.txt'), ('all files', '*.*'))
-        path = filedialog.askopenfilename(initialdir=self.filepath, title='Open logfile?', filetypes=ftypes)
+        path = filedialog.askopenfilename(title='Open logfile?', filetypes=ftypes)
         if path:
-            self.filepath = os.path.dirname(os.path.abspath(path))
             path = os.path.relpath(path)
             self.logfile.delete(0, tk.END); self.logfile.insert(0, path);
         return
@@ -269,7 +322,7 @@ class GUI:
     
     # Function to get directory
     def directory_path(self):
-        path =filedialog.askdirectory(initialdir=self.pwd)
+        path =filedialog.askdirectory()
         if path:
             path = os.path.relpath(path)
             self.parent_directory.delete(0, tk.END); self.parent_directory.insert(0, path);

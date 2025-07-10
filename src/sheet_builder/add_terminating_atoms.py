@@ -7,6 +7,12 @@ Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
 """
+##############################
+# Import Necessary Libraries #
+##############################
+import src.sheet_builder.misc_functions as misc_functions
+
+
 ###################################
 # Function to create atoms object #
 ###################################
@@ -27,10 +33,20 @@ def create_atoms(molid, typeint, atomtype, x, y, z, ix, iy, iz):
     return a
 
 
+#################################################
+# Function to check it atom is near edge of box #
+#################################################
+def check_near_edge(x, max_from_edge, xlo, xhi):
+    if abs(x - xlo) < max_from_edge or abs(x + xlo) < max_from_edge: edge = True
+    elif abs(x - xhi) < max_from_edge or abs(x + xhi) < max_from_edge: edge = True 
+    else: edge = False
+    return edge
+
+
 #####################################
 # Function to add terminating atoms #
 #####################################
-def add(atoms, bonds, box, terminating_atoms, log):
+def add(atoms, bonds, box, terminating_atoms, bond_length, log):
     
     # Determine atoms to add
     terminating = terminating_atoms.split(';')
@@ -63,7 +79,9 @@ def add(atoms, bonds, box, terminating_atoms, log):
         
     # Start terminating atoms (assume non-periodic as that is when terminating atoms is required)
     deltas = {'x':set([0]), 'y':set([0]), 'z':set([0])}
-    atoms_count = len(atoms); bonds_count = len(bonds); nbonds = len(bonds)
+    atoms_count = max([max(atoms), len(atoms)]) # Use max of max or len to allow for non-contiguous atomIDs
+    bonds_count = len(bonds)
+    nbonds = bonds_count
     terminator_count = {i:0 for i in terminators}
     bond_length = 1.0 # set all bond lengths as 1.0 for the time being ...
     for id1 in graph:
@@ -102,9 +120,18 @@ def add(atoms, bonds, box, terminating_atoms, log):
                 tmpid = atoms_count
                 
                 # log deltas to adjust simulation cell after
-                deltas['x'].add(tx - x1)
-                deltas['y'].add(ty - y1)
-                deltas['z'].add(tz - z1)
+                dx = tx - x1
+                dy = ty - y1
+                dz = tz - z1
+                if not check_near_edge(x1, bond_length, box['xlo'], box['xhi']):
+                    dx = 0
+                if not check_near_edge(y1, bond_length, box['ylo'], box['yhi']):
+                    dy = 0
+                if not check_near_edge(z1, bond_length, box['zlo'], box['zhi']):
+                    dz = 0
+                deltas['x'].add(dx)
+                deltas['y'].add(dy)
+                deltas['z'].add(dz)
                 
             # Tally terminator_count
             terminator_count[atom_type1] += 1

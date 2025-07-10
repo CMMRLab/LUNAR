@@ -16,12 +16,12 @@ import random
 import math
 
 
-####################################################
-# Function to parse out percentage and BondingType #
-####################################################
+#################################################################################
+# Function to parse out percentage BondingType, percentage, direction and molID #
+#################################################################################
 def parse_bonding_type(string, log):
     # Set defaults
-    bonding_type = ''; percentage = ''
+    bonding_type = ''; bounded = ''
     
     # Start parsing
     starting_char = '<'
@@ -39,13 +39,26 @@ def parse_bonding_type(string, log):
         if not starting_flag and not ending_flag:
             bonding_type = bonding_type + i
         if starting_flag and not ending_flag:
-            percentage = percentage + i
+            bounded = bounded + i
+            
+    # Get strings from bounded
+    bonding_type = bonding_type.strip()
+    bounded = bounded.split(',')
+    if len(bounded) == 3:
+        percentage = bounded[0]
+        direction = bounded[1]
+        try: molID = int(bounded[2])
+        except: molID = bounded[2]
+    else:
+        percentage = ''
+        direction = '+'
+        molID = '*'
     
     # Process generated strings
     try: percentage = float(percentage.strip())
-    except: log.error(f'ERROR functional_atoms {string} is not in the format "BondingType<MaxPercent>". As MaxPercent is not a float or int value.')
-    bonding_type = bonding_type.strip()
-    return bonding_type, percentage
+    except: log.error(f'ERROR functional_atoms {string} is not in the format "BondingType<MaxPercent,Direction,MolID>". As MaxPercent is not a float or int value.')
+    return bonding_type, percentage, direction, molID
+
 
 
 #########################################################################
@@ -73,11 +86,25 @@ def remove_periodically_bonded_atomids(atoms, box, atomid, bonded):
     return new_bonded
 
 
-#####################################
-# Function to add terminating atoms #
-#####################################
-def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
+####################################
+# Function to add functional atoms #
+####################################
+def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, boundary, bond_length, minimum_distance, log):
     if functional_seed > 0: random.seed(functional_seed)
+    
+    # Derived a new minimum_distance if user wants
+    log.out('')
+    if 'cylinder' in str(minimum_distance):
+        largest_diameter = 0
+        try: scale_factor = float(minimum_distance.split(':')[-1])
+        except: scale_factor = 1.0
+        log.out('  Using cylinder minimum_distance option with the following parameters:')
+        log.out(f'    largest_diameter = {largest_diameter}')
+        log.out(f'    scale_factor     = {scale_factor}')
+        log.out( '    minimum_distance = scale_factor*largest_diameter')
+        old_minimum_distance = minimum_distance
+        minimum_distance = scale_factor*largest_diameter
+        log.out(f'  Updated minimum_distance from "{old_minimum_distance}" to {minimum_distance}')
     
     # Define directions to place functional groups. The following options are available for each type:
     #    sheets_direction
@@ -101,33 +128,47 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
     max_x = lx/2; max_y = ly/2; max_z = lz/2;
     
     # Determine atoms to add
-    percents = {} # {BondingType : MaxPercent}
-    ringed = {} # {BondingType : True or False}
-    groups = {} # {BondingType : [list of group atoms]}
+    directions = {} # {(BondingType, molID): [sheets_direction, tubes_direction]}
+    percents = {} # {(BondingType, molID) : MaxPercent}
+    ringed = {} # {(BondingType, molID) : True or False}
+    groups = {} # {(BondingType, molID) : [list of group atoms]}
+    molIDs = set()
     for atom in functional_atoms.split(';'):
         types = atom.split('|')
         if len(types) >= 2:
-            bonding_type, percentage = parse_bonding_type(types[0], log)
+            bonding_type, percentage, direction, molID = parse_bonding_type(types[0], log)
+            molIDs.add(molID)
+            
+            # Update sheets_direction and tubes_direction based on direction
+            if '+' in direction:
+                sheets_direction = 'positive'
+                tubes_direction = 'outward'
+            elif '-' in direction:
+                sheets_direction = 'negative'
+                tubes_direction = 'inward'
+                
+            # Start finding types to add
             adding_types = [i.strip() for n, i in enumerate(types) if n > 0 and len(i) > 0]
-            if bonding_type in groups:
-                log.warn(f'  WARNING BondingType "{bonding_type}" defined twice. Will use last defined BondingType in functional_atoms.')
-            groups[bonding_type] = adding_types
-            percents[bonding_type] = percentage
+            if (bonding_type, molID) in groups:
+                log.warn(f'  WARNING BondingType "{bonding_type}" at molID "{molID}" defined twice. Will use last defined BondingType in functional_atoms.')
+            groups[(bonding_type, molID)] = adding_types
+            percents[(bonding_type, molID)] = percentage
+            directions[(bonding_type, molID)] = [sheets_direction, tubes_direction]
             
             # Determine if the functional group is meant to create a 3-member ring like an epoxide group
             tmp = atom.strip()
             if len(adding_types) and tmp.endswith('|'):
-                ringed[bonding_type] = True
-            else: ringed[bonding_type] = False  
+                ringed[(bonding_type, molID)] = True
+            else: ringed[(bonding_type, molID)] = False  
             
     # Determine newtype integer and log found types
     current_types = sorted(list({atoms[i].type for i in atoms}))
     type_offset = max(current_types)
     types = {} # {(BondingType, TerminatingType) : Type Intger}
-    for bonding_type in groups:
-        percent = percents[bonding_type]
-        adding_types = groups[bonding_type]
-        log.out(f'  Will attempt to add {"-".join(adding_types)} to {percent}% of "{bonding_type}" types.')
+    for bonding_type, molID in groups:
+        percent = percents[(bonding_type, molID)]
+        adding_types = groups[(bonding_type, molID)]
+        log.out(f'  Will attempt to add {"-".join(adding_types)} to {percent}% of "{bonding_type}" types with molID of "{molID}"')
         for terminating_type in adding_types:
             type_offset += 1
             types[(bonding_type, terminating_type)] = type_offset         
@@ -138,54 +179,119 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
         graph[id1].append(id2)
         graph[id2].append(id1)
         
+        
     # Find which atoms can be functionalized based on groups definition
-    functionalizable = {i:[] for i in groups} # {BondingType: [list of possible atoms]}
+    functionalizable = {i[0]:{j:[] for j in molIDs} for i in groups} # {BondingType: {molID}:[list of possible atoms]}
+    wildcard_molID_types = set() # {list of possible atoms for wildcard molIDs}
+    for bonding_type, molID in groups:
+        wildcard_molID_types.add(bonding_type)
+        functionalizable[bonding_type]['*'] = []
     for i in atoms:
         nb = len(graph[i])
-        atom_type = atoms[i].atomtype
-        if atom_type in functionalizable and nb in [2, 3]:
-            functionalizable[atom_type].append(i)
+        atom = atoms[i]
+        molid = atom.molid
+        atom_type = atom.atomtype
+        if atom_type in wildcard_molID_types and nb in [2, 3]:
+            functionalizable[bonding_type]['*'].append(i)
+        if (atom_type, molid) in percents and nb in [2, 3]:
+            functionalizable[atom_type][molid].append(i)            
             
     # Find quantities of atoms to add
-    available = {} # {BondingType : number of available atoms to add functional groups to}
-    quantities = {} # {BondingType : number of functional groups to add to the atoms}
-    for bonding_type in percents:
-        percent = percents[bonding_type]
-        navailable = len(functionalizable[bonding_type])
-        available[bonding_type] = navailable
+    available = {} # {(BondingType, molID) : number of available atoms to add functional groups to}
+    quantities = {} # {(BondingType, molID) : number of functional groups to add to the atoms}
+    for bonding_type, molID in percents:
+        percent = percents[(bonding_type, molID)]
+        navailable = len(functionalizable[bonding_type][molID])
+        available[(bonding_type, molID)] = navailable
         if percent <= 0:
-            quantities[bonding_type] = 0
+            quantities[(bonding_type, molID)] = 0
         elif percent >= 100:
-            quantities[bonding_type] = navailable
+            quantities[(bonding_type, molID)] = navailable
         else:
-            quantities[bonding_type] = math.floor( (percent/100)*navailable )
+            quantities[(bonding_type, molID)] = math.floor( (percent/100)*navailable )
             
+    
+    # The minimum distance constrain is going to require find distances across the PBC,
+    # for this we are going to need to know the boundary and the image flags
+    images, pflags = misc_functions.generate_iflags(boundary, log)
+    scaled_images = [(ix*lx, iy*ly, iz*lz) for (ix, iy, iz) in images]
+            
+        
     # Go through and start finding which atoms will be functionalized
-    all_functionalizable_ids = [i for row in list(functionalizable.values()) for i in row] # [atomIDs that are available for functionalizing]
-    atoms2functionalize = {i:[] for i in quantities} # {BondingType : [list of atoms to functionalize]}
+    all_functionalizable_ids = []
+    for bonding_type in functionalizable:
+        for molID in functionalizable[bonding_type]:
+            all_functionalizable_ids.extend(functionalizable[bonding_type][molID])
+    atoms2functionalize = {i:[] for i in quantities} # {(BondingType, molID): [list of atoms to functionalize]}
     rings2functionalize = {} # {atomID : neighboringID to create ring }
-    for bonding_type in quantities:
-        qty = quantities[bonding_type]
-        ids = functionalizable[bonding_type]
-        if ringed[bonding_type]:
+    functionalized = set() # {atomIDs that have already been functionalized} # Will be useful for distance constraints
+    group_types = {i[0] for i in groups} # {BondingType in all groups}
+    for bonding_type, molID in quantities:
+        qty = quantities[(bonding_type, molID)]
+        ids = functionalizable[bonding_type][molID]
+        if ringed[(bonding_type, molID)]:
             increment = 2
         else: increment = 1
         for n in range(0, qty, increment):
-            random_index = random.randint(0, len(ids)-1)
-            atomid = ids[random_index]
-            atoms2functionalize[bonding_type].append(atomid)
-            del ids[random_index]
-            try: all_functionalizable_ids.remove(atomid)
-            except: pass
+            atomid = None
             
+            # Get and random atomid from anywhere if there is no distance constraint
+            if minimum_distance <= 0 or len(functionalized) == 0:
+                random_index = random.randint(0, len(ids)-1)
+                atomid = ids[random_index]
+                atoms2functionalize[(bonding_type, molID)].append(atomid)
+                functionalized.add(atomid)
+                ids.remove(atomid)
+                try: all_functionalizable_ids.remove(atomid)
+                except: pass
+            
+            # Apply the minimum distance constraint for the atomid (checking periodic distances as well)
+            else: 
+                found = False
+                checked_ids = ids.copy() # We will make a subset of IDs to check, so we can delete them as we go (performance increase)
+                while not found:
+                    test_random_index = random.randint(0, len(checked_ids)-1)
+                    test_atomid = checked_ids[test_random_index]
+                    
+                    # Check if atomid is greater then a minimum_distance away from any already functionalized atomid
+                    test_atom = atoms[test_atomid]; distances = []
+                    periodic_postions = misc_functions.find_periodic_postions(scaled_images, test_atom.x, test_atom.y, test_atom.z, cx, cy, cz, Npos=12)
+                    for funcID in functionalized:
+                        func_atom = atoms[funcID]
+                        x2 = func_atom.x
+                        y2 = func_atom.y
+                        z2 = func_atom.z
+                        
+                        # Where are going to check evey atom as if it is periodic. This can
+                        # be very costly, but for a first implementation, this will work...
+                        distance = min([misc_functions.compute_distance(x1i, y1i, z1i, x2, y2, z2) for x1i, y1i, z1i in periodic_postions])
+                        distances.append(distance)
+                        
+                    if min(distances) >= minimum_distance:
+                        atomid = test_atomid
+                        atoms2functionalize[(bonding_type, molID)].append(atomid)
+                        functionalized.add(atomid)
+                        ids.remove(atomid)
+                        try: all_functionalizable_ids.remove(atomid)
+                        except: pass
+                        found = True
+                    
+                    # Remove atomid from check list
+                    checked_ids.remove(test_atomid)
+                    
+                    # Break out if we run out of atoms
+                    if found or len(checked_ids) == 0:
+                        break
+        
             # Find neighboring atom to use to create ring
-            if ringed[bonding_type]:
-                bonded = [i for i in graph[atomid] if atoms[i].atomtype in groups and i in all_functionalizable_ids]
+            if ringed[(bonding_type, molID)] and atomid is not None:
+                bonded = [i for i in graph[atomid] if atoms[i].atomtype in group_types and i in all_functionalizable_ids]
                 bonded = remove_periodically_bonded_atomids(atoms, box, atomid, bonded)
                 if bonded:
                     random_index = random.randint(0, len(bonded)-1)
                     neighid = bonded[random_index]
                     rings2functionalize[atomid] = neighid
+                    functionalized.add(neighid)
                     
                     # Remove neighid from current ids if it is in ids
                     if neighid in ids:
@@ -195,16 +301,18 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
                     
                     # Go through and remove neighid from functionalizable
                     for i in functionalizable:
-                        if neighid in functionalizable[i]:
-                            functionalizable[i].remove(neighid)            
+                        if neighid in functionalizable[i][molID]:
+                            functionalizable[i][molID].remove(neighid) 
+
         
     # Go through and start functionalizing atoms
-    atoms_count = len(atoms); bonds_count = len(bonds); nbonds = len(bonds)
+    atoms_count = max([max(atoms), len(atoms)]) # Use max of max or len to allow for non-contiguous atomIDs
+    bonds_count = len(bonds)
+    nbonds = bonds_count
     deltas = {'x':set([0]), 'y':set([0]), 'z':set([0])}
     group_count = {i:0 for i in groups}
-    bond_length = 1.0 # set all bond lengths as 1.0 for the time being ...
-    for bonding_type in atoms2functionalize:
-        for id1 in atoms2functionalize[bonding_type]:
+    for bonding_type, molID in atoms2functionalize:
+        for id1 in atoms2functionalize[(bonding_type, molID)]:
             atom1 = atoms[id1]
             atom_type1 = atom1.atomtype
             x1 = atom1.x; y1 = atom1.y; z1 = atom1.z;
@@ -229,10 +337,11 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
             # Fitting plane to 1st neighbors non-periodic positions
             c, normal = ape.fitplane(xyz)
             
-            # Start adding terminators
+            # Start adding functional atoms
             tmpid = id1
             molid = atom1.molid
-            adding_types = groups[atom_type1]
+            adding_types = groups[(atom_type1, molID)]
+            sheets_direction, tubes_direction = directions[(atom_type1, molID)]
             for n, atom_type2 in enumerate(adding_types, 1):
                 # Point functional groups accordingly based on inputs and direction of normal vector
                 tx_pos = x1 + bond_length*(n*normal[0])
@@ -253,9 +362,16 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
                         elif tubes_direction == 'inward': tx = tx_pos; ty = ty_pos; tz = tz_pos
                         else: raise Exception(f'ERROR tubes_direction {tubes_direction} not supported. Supported directions are "inward" or "outward"')
                 elif run_mode == 'sheet':
-                    if sheets_direction == 'positive': tx = tx_pos; ty = ty_pos; tz = tz_pos
-                    elif sheets_direction == 'negative': tx = tx_neg; ty = ty_neg; tz = tz_neg
-                    else: raise Exception(f'ERROR sheets_direction {sheets_direction} not supported. Supported directions are "positive" or "negative"')
+                    diff_pos = [tx_pos-x1, ty_pos-y1, tz_pos-z1]
+                    dominant_direction = max(diff_pos, key=abs)
+                    if dominant_direction > 0:
+                        if sheets_direction == 'positive': tx = tx_pos; ty = ty_pos; tz = tz_pos
+                        elif sheets_direction == 'negative': tx = tx_neg; ty = ty_neg; tz = tz_neg
+                        else: raise Exception(f'ERROR sheets_direction {sheets_direction} not supported. Supported directions are "positive" or "negative"')
+                    else:
+                        if sheets_direction == 'positive': tx = tx_neg; ty = ty_neg; tz = tz_neg
+                        elif sheets_direction == 'negative': tx = tx_pos; ty = ty_pos; tz = tz_pos
+                        else: raise Exception(f'ERROR sheets_direction {sheets_direction} not supported. Supported directions are "positive" or "negative"')
                 else:
                     tx = tx_pos; ty = ty_pos; tz = tz_pos
                 
@@ -300,7 +416,7 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
                     deltas['z'].add(tz - z1)
                 
             # Tally number of functionalized atoms
-            group_count[atom_type1] += natoms_increment
+            group_count[(atom_type1, molID)] += natoms_increment
             
     # Adjust box based on changes in relative atom positions
     scale = 1.0
@@ -325,6 +441,10 @@ def add(atoms, bonds, box, run_mode, functional_atoms, functional_seed, log):
         if total > 0: percent = 100*(added/total)
         else: percent = 0
         log.out('  {:>6} atoms to "{}" ({}/{} = {:.4f}%)'.format(added, i, added, total, percent))
+        desired_percent = percents[i]
+        if percent < desired_percent:
+            log.warn('  {:>6} {} {} {}'.format(len(str(added))*'', ' - WARNING dersired perctage was', desired_percent, 'but could not be achieved due to a minimum distance constraint'))
+        
     log.out('  {:>6} bonds'.format(bonds_count - nbonds))
     
     # Print recommend startup method

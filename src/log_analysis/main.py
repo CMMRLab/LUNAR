@@ -842,7 +842,7 @@ class analysis:
                         if shift: 
                             shift_amount = b0
                             b0 = 0
-                        label = '{} y = {:.6f}x + {:.6f} (shifted by {:.4f}; r2={:.6f})'.format(name, b1, b0, shift_amount, r2)
+                        label = '{} y = {:.10f}x + {:.10f} (shifted by {:.4f}; r2={:.4f})'.format(name, b1, b0, shift_amount, r2)
                         self.log.out('  {}'.format(label))
                         if 'extend' in setting:
                             xreg = [xlo, xhi]
@@ -1580,14 +1580,26 @@ class analysis:
 
             # Optimized wn if user desires and the log value            
             wn_method = str(wn)
-            if wn_method.startswith('op'):
-                wn = signal_processing.butter_optimize_wn_with_power_spectrum(reduced_x, reduced_y, wn_method, write_data, wn_savefig, figname+'_FFT_PSD_wn', dpi)
+            if wn_method.startswith('op') or wn_method.startswith('oa'):
+                wn = signal_processing.butter_optimize_wn_with_FFT(reduced_x, reduced_y, wn_method, write_data, wn_savefig, figname+'_FFT_PSD_wn', dpi)
             if wn_method.startswith('or'):
                 wn = signal_processing.butter_optimize_wn_with_residuals(reduced_x, reduced_y, order, qm, wn_method, wn_savefig, figname+'_Residuals', dpi, delta=0.001)
+            if wn_method.startswith('cve'):
+                wn_error, delta, stop, n = False, 0.001, 1.0, 1
+                if '<' in wn_method and '>' in wn_method:
+                    try:
+                        values = [float(i) for i in wn_method.split('<')[-1].split('>')[0].split(',')]
+                        if len(values) == 3: delta, stop, n = values
+                        else: wn_error = True
+                    except: wn_error = True
+                    if wn_error:
+                        self.log.GUI_error(f'ERROR could not parse wn={wn_method} string. Correct syntax: wn=cve<delta, stop, n>-p')
+                        self.log.GUI_error('Using defaults of delta={}, stop={}, n={} for cross-validation calculations'.format(delta, stop, n))
+                wn = signal_processing.butter_optimize_wn_with_CVE(reduced_x, reduced_y, n, wn_method, order, delta, stop, qm='1,1', savefig=wn_savefig, figname=figname+'_LOOCVE', dpi=dpi)
 
             # Plot PSD
             if psd and isinstance(wn, float) and not wn_method.startswith('op'):
-                signal_processing.generate_and_plot_fft_power_and_wn(reduced_x, reduced_y, wn, write_data, wn_savefig, figname, dpi)
+                signal_processing.generate_and_plot_fft_wn(reduced_x, reduced_y, wn, write_data, wn_savefig, figname, dpi)
 
             # Apply filter
             xfilter = reduced_x

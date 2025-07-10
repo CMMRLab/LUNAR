@@ -10,6 +10,7 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+import src.GUI_scale_settings as GUI_scale_settings
 from src.bond_react_merge.main import main
 import src.io_functions as io_functions
 import src.py_script_modifier as psm
@@ -103,7 +104,6 @@ class bond_react_merge_GUI:
         
         # Find present working directory
         self.pwd = os.getcwd()
-        self.filepath = self.pwd
         self.filename = os.path.join(self.pwd, 'bond_react_merge.py')
 
         # Initialize window
@@ -159,6 +159,39 @@ class bond_react_merge_GUI:
         self.xpadding = 20
         self.ypadding = 10
         self.maxwidth = 125
+        
+        # Check if user specified any other font settings
+        font_settings = GUI_scale_settings.font_settings
+        self.int_font = font.nametofont("TkDefaultFont") # font parameters used in internal TK dialogues
+        self.icon_font = font.nametofont("TkIconFont") # font used in file selection dialogue
+        if 'size' in font_settings:
+            if isinstance(font_settings['size'], (int, float)):
+               self.font_size = font_settings['size'] 
+        if 'type' in font_settings:
+            if isinstance(font_settings['type'], str):
+               self.font_type = font_settings['type'] 
+        if 'dialog_size' in font_settings:
+            if isinstance(font_settings['dialog_size'], (int, float)):
+               self.int_font.configure(size=font_settings['dialog_size'])
+               self.icon_font.configure(size=font_settings['dialog_size'])
+        if 'dialog_type' in font_settings:
+            if isinstance(font_settings['dialog_type'], str):
+               self.int_font.configure(family=font_settings['dialog_type'])
+               self.icon_font.configure(family=font_settings['dialog_type'])
+        self.defaults = {'family':self.font_type, 'size':self.font_size}
+
+        self.xpadding = 20
+        self.ypadding = 10
+        self.maxwidth = 125
+
+        # Check if user specified any other nong-global scaling settings
+        #   extra maxwidth scaling becasuse this is a wide GUI
+        scale_settings = GUI_scale_settings.screen_settings
+        if 'scaling_factor' in scale_settings:
+            if isinstance(scale_settings['scaling_factor'], (int, float)):
+               self.xpadding = int(self.xpadding/scale_settings['scaling_factor'])
+               self.ypadding = int(self.ypadding/scale_settings['scaling_factor'])
+               self.maxwidth = int(self.maxwidth/(scale_settings['scaling_factor']*1.2))
         
         # adjust based on GUI_SF
         self.GUI_zoom = GUI_zoom
@@ -357,12 +390,11 @@ class bond_react_merge_GUI:
     # Function to get filepath for topofile
     def infile_path(self):
         ftypes = (('all files', '*.*'), ('data files', '*.data  *.data.gz'), ('txt files', '*.txt'))
-        paths = filedialog.askopenfilenames(initialdir=self.filepath, title='Open files(s)?', filetypes=ftypes)
+        paths = filedialog.askopenfilenames(title='Open files(s)?', filetypes=ftypes)
         if paths:
             ntags = {'data':0, 'pre':0, 'post':0}
             self.GUI_log.clear_all()
             for path in paths:
-                self.filepath = os.path.dirname(os.path.abspath(path))
                 path = os.path.relpath(path)
                 
                 # Try getting tag from file format naming convention
@@ -448,7 +480,7 @@ class bond_react_merge_GUI:
     
     # Function to get directory
     def directory_path(self):
-        path =filedialog.askdirectory(initialdir=self.pwd)
+        path =filedialog.askdirectory()
         if path:
             path = os.path.relpath(path)
             self.parent_directory.delete(0, tk.END); self.parent_directory.insert(0, path);

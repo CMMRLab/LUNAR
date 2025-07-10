@@ -10,6 +10,7 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+import src.GUI_scale_settings as GUI_scale_settings
 import src.io_functions as io_functions
 import src.py_script_modifier as psm
 import src.clusters as clusters
@@ -37,7 +38,6 @@ class GUI:
         
         # Find present working directory
         self.pwd = os.getcwd()
-        self.filepath = self.pwd
         self.filename = os.path.join(self.pwd, 'cluster_analysis.py')
 
         # Initialize window
@@ -66,6 +66,38 @@ class GUI:
         self.xpadding = 20
         self.ypadding = 10
         self.maxwidth = 85
+        
+        # Check if user specified any other font settings
+        font_settings = GUI_scale_settings.font_settings
+        self.int_font = font.nametofont("TkDefaultFont") # font parameters used in internal TK dialogues
+        self.icon_font = font.nametofont("TkIconFont") # font used in file selection dialogue
+        if 'size' in font_settings:
+            if isinstance(font_settings['size'], (int, float)):
+               self.font_size = font_settings['size'] 
+        if 'type' in font_settings:
+            if isinstance(font_settings['type'], str):
+               self.font_type = font_settings['type'] 
+        if 'dialog_size' in font_settings:
+            if isinstance(font_settings['dialog_size'], (int, float)):
+               self.int_font.configure(size=font_settings['dialog_size'])
+               self.icon_font.configure(size=font_settings['dialog_size'])
+        if 'dialog_type' in font_settings:
+            if isinstance(font_settings['dialog_type'], str):
+               self.int_font.configure(family=font_settings['dialog_type'])
+               self.icon_font.configure(family=font_settings['dialog_type'])
+        self.defaults = {'family':self.font_type, 'size':self.font_size}
+
+        self.xpadding = 20
+        self.ypadding = 10
+        self.maxwidth = 85
+
+        # Check if user specified any other nong-global scaling settings
+        scale_settings = GUI_scale_settings.screen_settings
+        if 'scaling_factor' in scale_settings:
+            if isinstance(scale_settings['scaling_factor'], (int, float)):
+               self.xpadding = int(self.xpadding/scale_settings['scaling_factor'])
+               self.ypadding = int(self.ypadding/scale_settings['scaling_factor'])
+               self.maxwidth = int(self.maxwidth/scale_settings['scaling_factor'])
         
         # adjust based on GUI_SF
         GUI_SF = GUI_zoom/100
@@ -180,9 +212,8 @@ class GUI:
     # Function to get filepath for topofile
     def topofile_path(self):
         ftypes = (('data files', '*.data *.data.gz'), ('all files', '*.*'))
-        path = filedialog.askopenfilename(initialdir=self.filepath, title='Open topofile?', filetypes=ftypes)
+        path = filedialog.askopenfilename(title='Open topofile?', filetypes=ftypes)
         if path:
-            self.filepath = os.path.dirname(os.path.abspath(path))
             path = os.path.relpath(path)
             self.topofile.delete(0, tk.END); self.topofile.insert(0, path);
         return 

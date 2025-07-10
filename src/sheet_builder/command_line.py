@@ -34,7 +34,7 @@ import sys
 
 def print_man_page(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype, sheet_edgetype, types,
                    bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_length, diameter, n, m,
-                   chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, functional_seed, functional_atoms, terminating_atoms):
+                   chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, seed, functional_atoms, terminating_atoms, grafting_files, minimum_distance):
 
     
     # print general command line options
@@ -171,57 +171,164 @@ def print_man_page(sheet_basename, symmetric_tube_basename, chiral_tube_basename
     print('* Options for adding different atoms to sheets and tubes (terminating or functionalization) *')
     print('*********************************************************************************************')
     
+    # print -mdist option
+    print(f'\n -mdist or -md <float>   sheet_builder variable: minimum_distance    hard coded: {minimum_distance}    ')
+    print('   Command line option set the minimum distance value to, that is used when adding grafting files or      ')
+    print('   functional groups. If the minimum_distance value is set to 0 (zero), no minimum distance constraint    ')
+    print('   is applied. *NOTE: this peforms pairwise calculations that are periodic and non-periodic, which can    ')
+    print('   be very computationally intensive depending on the size of the sheets. Currently there is no domain    ')
+    print('   decomposition implentmented here.*                                                                     ')
+    print('                                                                                                          ')
+    print('   When the "minimum_distance" constraint is used for "grafting_files" files an additional keyword syntax ')
+    print('   is available of "cylinder" or "cylinder:SF", where "cylinder" or "cylinder:SF" envokes an option to    ')
+    print('   find out the smallest cylinder that would fit around the grafting fragment. The diameter of this       ')
+    print('   cylinder is then used as the "minimum_distance" constraint. The "SF" in "cylinder:SF" is an optional   ')
+    print('   keyword that sets a scale factor to multiply the diameter by to set the minimum distance constraint.   ')
+    print('   For example say the fit cylinder had a length of 15.0 angstroms and a diameter of 10.0 angstroms. Then ')
+    print('   the following is true:                                                                                 ')
+    print('     cylinder     -> minimum_distance = 10.0                                                              ')
+    print('     cylinder:2   -> minimum_distance = 20.0                                                              ')
+    print('     cylinder:0.5 -> minimum_distance = 5.0                                                               ')
+    print('                                                                                                          ')
+    print('   If you attempt the use the "cylinder" or "cylinder:SF" option for "functional_groups" it will default  ')
+    print('   the minimum distance to 0 (zero), as a single "line" of atoms will not have a cylinder to fit around   ')
+    print('   them. Example usage:                                                                                   ')
+    print('        python3 sheet_builder.py -mdist 6.0')
+    
     # print -fseed option
-    print(f'\n -fseed or -fs <int>   sheet_builder variable: functional_seed    hard coded: {functional_seed}')
+    print(f'\n -fseed or -fs <int>   sheet_builder variable: seed    hard coded: {seed}')
     print('   Command line option to set a seed to the random number generate to define the random atoms the functional')
-    print('   groups will be added to. If the seed value is set to ZERO, the current system time from your computer is')
-    print('   used to provide a seed to the random number generator. Example usage:')
+    print('   groups or grafting files will be added to. will be added to. If the seed value is set to 0 (zero), the ')
+    print('   current system time from your computer is used to provide a seed to the random number generator. Example usage:')
     print('        python3 sheet_builder.py -fseed 12345')
     
     # print -fatoms option
     print(f'\n -fatoms or -fa <string>   sheet_builder variable: functional_atoms    hard coded: {functional_atoms}')
     print("   Command line option to set how functional atoms are added to the sheet or tube and what the functional")
     print("   group is. The string format is as follows:                                                               ")
-    print('     BondingType<MaxPercent>|Type1|Type2|TypeN, where "BondingType" is the atom type to add the function    ')
-    print('     group to, "MaxPercent" is a float or integer type to set the maximum percent of atoms to functionalize ')
-    print('     the "|" character seperates types, and the "TypeN" sets the atom to add.                               ')
+    print('     BondingType<MaxPercent,Direction,molID>|Type1|Type2|TypeN, where "BondingType" is the atom type to add ')
+    print('     the function group to, "MaxPercent" is a float or integer type to set the maximum percent of atoms to  ')
+    print('     functionalize, "Direction" is the direction to stick the functional group, "molID" is the molecule     ')
+    print('     identifier to attached the functional group to and the "|" character seperates types, and the "TypeN"  ')
+    print('     sets the atom to add.                                                                                  ')
     print("                                                                                                            ")
-    print("     For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a carbon sheet or nanotube and the    ")
-    print("     goal was to functionalize 5% of the carbon atoms with -OH functional group. Then the functional_atoms  ")
-    print("     string would be 'C<5>|O|H', which would randomly add the -OH functional group to 5% of the C atoms.    ")
+    print('     The "Direction" character can be "+" or "-" with the following meanings:                               ')
+    print('       Sheets:                                                                                              ')
+    print('         + means point the functional groups in the positive direction                                      ')
+    print('         - means point the functional groups in the positive direction                                      ')
+    print('       Tubes:                                                                                               ')
+    print('         + means point the functional groups point outwards relative to the circular cross-section (points  ')
+    print('           outwards to the circumference)                                                                   ')
+    print('         - means point the functional groups point inwards from the to the circular cross-section (points   ')
+    print('           inwards to the center)                                                                           ')
     print("                                                                                                            ")
-    print("     Additionaly the functional_atoms string can handle multiple BondingType's by seperating them with the  ")
-    print('     ";" character. So the generalized functional_atoms string becomes:                                     ')
-    print("       BondingTypeA<MaxPercentA>|TypeA1|TypeAN; BondingTypeB<MaxPercentB>|TypeB1|TypeBN; ...                ")
+    print('     The "molID" is an integer value starting from 1 and going to nlayers for sheets and ntubes for tubes.  ')
+    print('     The indexing of molIDs is as follows:                                                                  ')
+    print('       Sheets: molID of 1 is the sheet that is the most negative in the normal direction (can be thought of ')
+    print('               as the bottom sheet). Then each sequential sheet that is placed above have their molIDs      ')
+    print('               incremented. For example a 3 layer stack molIDs would be:                                    ')
+    print('                 1 -> bottom sheet                                                                          ')
+    print('                 2 -> middle sheet                                                                          ')
+    print('                 3 -> top sheet                                                                             ')
     print("                                                                                                            ")
-    print("       For example say types = {1:'B', 2:'N', 3:'B', 4:'N'} to generate a Boron-Nitride sheet or tube with  ")
-    print("       alternating B/N atoms and the goal was to functionalize 10% of the Boron atoms with -OH functional   ")
-    print("       group and to functionalize 20% of the Nitride atoms with -H functional group. Then the functional_   ")
-    print("       atoms string would be 'B<10>|O|H; N<20>|H', which would randomly add the -OH functional group to 10% ")
-    print("       of the B atoms and add the -H functional group to 20% of the N atoms.                                ")
+    print('       Tubes:  molID of 1 is the center tube, then each sequential tube that is built outward have their    ')
+    print('               molIDs incremented. For example a 3 concentric generation of tubes would have molIDs:        ')
+    print('                 1 -> center tube                                                                           ')
+    print('                 2 -> middle tube                                                                           ')
+    print('                 3 -> outer most tube                                                                       ')
     print("                                                                                                            ")
-    print("     All examples above will place the atoms in a line along the orthagonal direction from the surface of   ")
-    print("     tube, but say we wanted to added a functional group that resembles an epoxide ring (3 member ring with ")
-    print('     two carbons and 1 oxygen). Then we can add a "|" character to the end of the functional_atoms string.  ')
-    print("     This method currently only works for adding a single atom functional group like oxygen to the sheets   ")
-    print("     or tubes.                                                                                              ")
+    print('     The "*" character acts as a wildcard character to define which molIDs to add the functional groups to, ')
+    print('     where setting the molID to "*", will randomly place the functional groups and any of the molIDs sheets ')
+    print('     or tubes that have been built.                                                                         ')
+    print('                                                                                                            ')
+    print("   For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a 3 layer set of carbon sheets          ")
+    print('   (pointing the functional groups in the positive direction) or 3 concentric nanotubes (pointing the       ')
+    print('   funcational groups in the outward direction) and the goal was to functionalize 5% of the carbon atoms    ')
+    print("   with -OH functional group. Then the functional_atoms string would be 'C<5,+,3>|O|H', which would         ")
+    print('   randomly add the -OH functional group to 5% of the C atoms to the molID of 3 (for sheets that is the top ')
+    print('   sheet and for tubes that is the outer most tube)                                                         ')
     print("                                                                                                            ")
-    print("       For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a carbon sheet or nanotube and the  ")
-    print("       goal was to functionalize 30% of the carbon atoms with the epoxide ring oxygen. Then the             ")
-    print("       functional_atoms string would be 'C<30>|O|', where the last character is the '|' character. This     ")
-    print("       will tell the code to find a first neighbor from the random atom and center the oxygen atom between  ")
-    print("       the first neighbor and itself. Finally, add two bonds to create the epoxide type ring. Note that     ")
-    print("       each time the oxygen atom is added, it functionalizes two carbon atoms at a time. So say the sheet   ")
-    print("       or tube had 100 carbon atoms and the functionalization MaxPercent was set to 30%, then only 15       ")
-    print("       oxygen atoms will be added (not 30).                                                                 ")
+    print('   Additionaly the functional_atoms string can handle multiple BondingTypes by seperating them with the     ')
+    print('   ";" character. So the generalized functional_atoms string becomes:                                       ')
+    print('   TypeA<MaxPercentA,dirA,molidA>|TypeA1|TypeAN; TypeB<MaxPercentB,dirB,molidb>|TypeB1|TypeBN; ...          ')
+    print('                                                                                                            ')
+    print("   For example say types = {1:'B', 2:'N', 3:'B', 4:'N'} to generate a Boron-Nitride sheet or tube with      ")
+    print('   alternating B/N atoms and the goal was to functionalize 10% of the Boron atoms with -OH functional       ')
+    print('   group and to functionalize 20% of the Nitride atoms with -H functional group. Then the functional_atom   ')
+    print("   string would be 'B<10,+,*>|O|H; N<20,+*>|H', which would randomly add the -OH functional group to 10%    ")
+    print('   of the B atoms and add the -H functional group to 20% of the N atoms.                                    ')
+    print("                                                                                                            ")
+    print('   All examples above will place the atoms in a line along the orthagonal direction from the surface of     ')
+    print('   tube, but say we wanted to added a functional group that resembles an epoxide ring (3 member ring with   ')
+    print('   two carbons and 1 oxygen). Then we can add a "|" character to the end of the functional_atoms string.    ')
+    print('   This method currently only works for adding a single atom functional group like oxygen to the sheets or  ')
+    print('   tubes.                                                                                                   ')
+    print('                                                                                                            ')
+    print("     For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a single carbon sheet or single       ")
+    print('     nanotube and the goal was to functionalize 30% of the carbon atoms with the epoxide ring oxygen (that  ')
+    print('     point in the negative direction of the sheet and inwards for the tube). Then the functional_atoms      ')
+    print("     string would be 'C<30,-,*>|O|', where the last character is the '|' character. This will tell the code ")
+    print('     to find a first neighbor from the random atom and center the oxygen atom between the first neighbor    ')
+    print('     and itself. Finally, add two bonds to create the epoxide type ring. Note that each time the oxygen     ')
+    print('     atom is added, it functionalizes two carbon atoms at a time. So say the sheet or tube had 100 carbon   ')
+    print('     atoms and the functionalization MaxPercent was set to 30%, then only 15 oxygen atoms will be added     ')
+    print('     (not 30).                                                                                              ')
+    print('                                                                                                            ')
+    print('   This option is also currently limited to only being able to add one kind of functional group to each     ')
+    print('   type (1-4). So say you wanted to model a graphene sheet of all carbon atoms using the PCFF atom type     ')
+    print('   "cp", but wanted to model functional groups of -O- and -OH. A work around is to use all2lmp.py atom      ')
+    print('   naming scheme summarized as: "AtomType:Name", where the ":"-character provides a delimiter from the true ')
+    print('   atom type and a name a user can supply. You can uniquely name each of the types (1-4) with a ":name".    ')
+    print('                                                                                                            ')
+    print("     For example you could set types {1:'cp:line', 2:'cp:line', 3:'cp:ring', 4:'cp:ring'} and then set the  ")
+    print("     functionalization string as 'cp:line<30,+,*>|O|H; cp:ring<10,+*>|O|'. This will trick sheet_builder    ")
+    print("     into recognizing the atoms as two different types 'cp:line' and 'cp:ring' which will allow you to add  ")
+    print('     two different functional groups to the sheet, while maintaining an atom type all2lmp.py can recognize  ')
+    print('     and automatically parameterize.		                                                                   ')
     print("                                                                                                            ")
     print("   If the functional_atoms entry/string is left blank, this option will not be envoked. Additionally,       ")
     print("   this option requires find_bonds to be True.                                                              ")
-    print('  Example usage:')
-    print('    python3 sheet_builder.py -fatoms C<30>|O|')
+    print("                                                                                                            ")
+    print('   Example usage:')
+    print('    python3 sheet_builder.py -fatoms "C<30,+,*>|O|"')
+    
+    
+    # print -gfiles option
+    print(f'\n -gfiles or -gf <string>   sheet_builder variable: grafting_files    hard coded: {grafting_files}       ')
+    print("   Command line option to set how grafting files are added to the sheet or tube and what the atomID(s) are ")
+    print("   used from the grafting file as the atomID(s) to bond to the sheet or tube. The string format is as      ")
+    print("   follows:                                                                                                ")
+    print('    An entry to supply a string to set how grafting files are added to the sheet or tube and what the      ')
+    print('    atomID(s) are used from the grafting file as the atomID(s) to bond to the sheet or tube. The string    ')
+    print('    format is as follows:                                                                                  ')
+    print('      BondingType<MaxPercent,Direction,molID><id1, id2>|FILENAME.EXT                                       ')
+    print('    The "BondingType<MaxPercent,Direction,molID>" portion descirbing the "BondingType", "MaxPercent",      ')
+    print('    "Direciton", and "molID" are the same as the functional_atoms and are described in that section of     ')
+    print('    this page. Please refer to that section for a more in-depth understanding. FILENAME.EXT is a file that ')
+    print('    defines the new atoms and bonds to graft onto the sheets or tubes. The following per-atom attributes   ')
+    print('    are used from each file extension to set the atom type of the grafted atoms:                           ')
+    print('      .pdb  the per-atom "atom_name" information from this file is used to set the atom type               ')
+    print('      .mol  the per-atom "element" information from this file is used to set the atom type                 ')
+    print('      .sdf  the per-atom "element" information from this file is used to set the atom type                 ')
+    print('      .mol2 the per-atom "element" information from this file is used to set the atom type                 ')
+    print('      .data the per-atom "type label" is the first attempt at being used, if that fails, the per-atom      ')
+    print('            "comment from the Masses" section is the second attempt, and if that fails, the numeric LAMMPS ')
+    print('            atomTypeID is used for the information from this file is used to set the atom typ .            ')
+    print('                                                                                                           ')
+    print('    The "<id1, id2>" portion allows users to set which atomID(s) are used to bond the grafting fragment to ')
+    print('    the sheets by. You may supply one or  two atomIDs with the following meanings:                         ')
+    print('      <id1>      will bond the grafting fragment via one covalent bond between the sheet or tube and the   ')
+    print('                 grafting fragment                                                                         ')
+    print('      <id1, id2> will bond the via two covalent bonds between the sheet or tube and the grafting fragment, ')
+    print('                 making a ring between them (generating properly geometric rings like this is difficult -  ')
+    print('                 therefore this method may not produce nice geometries and it is recommended to use a      ')
+    print('                 "fix nve/limit 0.01" run to intialize a these system in LAMMPS).                          ')
+    print("                                                                                                           ")
+    print('   Example usage:')
+    print('    python3 sheet_builder.py -fatoms "C<7,+,*><15>|EXAMPLES/sheet_builder/PBZ_graft.15.pdb"')
     
     # print -tatoms option
-    print(f'\n -tatoms or -ta <string>   sheet_builder variable: terminating_atoms    hard coded: {terminating_atoms}')
+    print(f'\n -tatoms or -ta <string>   sheet_builder variable: terminating_atoms    hard coded: {terminating_atoms}  ')
     print("   Command line option to set how terminating atoms are added to the sheet or tube and what the termanting  ")
     print("   atoms are. This option requires that periodic_bonds is False, as this creates open valences on the       ")
     print('   "end" atoms of the sheet or tube. The string format is as follows:                                       ')
@@ -246,7 +353,7 @@ def print_man_page(sheet_basename, symmetric_tube_basename, chiral_tube_basename
     print("   If the terminating_atoms entry/string is left blank, this option will not be envoked. Additionally, this ")
     print("   option requires find_bonds to be True.                                                                   ")
     print('  Example usage:')
-    print('    python3 sheet_builder.py -tatoms C|O|H')
+    print('    python3 sheet_builder.py -tatoms "C|O|H"')
     
     
     # print sheet options
@@ -441,7 +548,7 @@ def print_man_page(sheet_basename, symmetric_tube_basename, chiral_tube_basename
 class inputs:
     def __init__(self, commandline_inputs, sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype,
                  sheet_edgetype, types, bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_length,
-                 diameter, n, m, chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, functional_seed, functional_atoms, terminating_atoms):
+                 diameter, n, m, chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, seed, functional_atoms, terminating_atoms, grafting_files, minimum_distance):
         
         # Give access to inputs (update later on if command line over ride is given)
         self.commandline_inputs = commandline_inputs
@@ -472,7 +579,9 @@ class inputs:
         self.n = n
         self.m = m
         
-        self.functional_seed = functional_seed     # '-fseed' or '-fs'
+        self.seed = seed     # '-fseed' or '-fs'
+        self.minimum_distance = minimum_distance # '-mdist' or '-md'
+        self.grafting_files = grafting_files   # '-gfiles' or '-gf'
         self.functional_atoms = functional_atoms   # '-fatoms' or '-fa'
         self.terminating_atoms = terminating_atoms # '-tatoms' or '-ta'
         
@@ -494,13 +603,14 @@ class inputs:
         supported_tags = ['-dir', '-run-mode', '-find-bonds', '-pbc-bonds', '-bond-length', '-type1', '-type2', '-type3', '-type4',
                           '-sheet-name', '-plane', '-sheet-edge', '-length-edge', '-length-perp', '-stacking', '-sheet-spacing', '-nlayers',
                           '-sym-tube-name', '-sym-axis', '-tube-edge', '-sym-length', '-sym-diameter', '-tube-spacing', '-ntubes',
-                          '-chi-tube-name', '-chi-axis', '-chi-length', '-n', '-m', '-fseed', '-fatoms', '-tatoms']
+                          '-chi-tube-name', '-chi-axis', '-chi-length', '-n', '-m', '-fseed', '-fatoms', '-tatoms','-gfiles', '-mdist']
         
         # set shortcut_tags mapping
         shortcut_tags = {'-d':'-dir', '-run':'-run-mode', '-bonds':'-find-bonds', '-pbc':'-pbc-bonds', '-r0':'-bond-length', '-t1':'-type1', '-t2':'-type2', '-t3':'-type3', '-t4':'-type4',
                          '-sname':'-sheet-name', '-p':'-plane', '-sedge':'-sheet-edge', '-le':'-length-edge', '-lp':'-length-perp', '-s':'-stacking', '-ss':'-sheet-spacing', '-nl':'-nlayers',
                          '-stname':'-sym-tube-name', '-sa':'-sym-axis', '-tedge':'-tube-edge', '-sl':'-sym-length','-sd':'-sym-diameter', '-ts':'-tube-spacing', '-nt':'-ntubes',
-                         '-ctname':'-chi-tube-name', '-ca':'-chi-axis', '-cl':'-chi-length', '-n':'-n', '-m':'-m', '-fs':'-fseed', '-fa':'-fatoms', '-ta':'-tatoms'}
+                         '-ctname':'-chi-tube-name', '-ca':'-chi-axis', '-cl':'-chi-length', '-n':'-n', '-m':'-m', '-fs':'-fseed', '-fa':'-fatoms', '-ta':'-tatoms',
+                         '-gf':'-gfiles', '-md':'-mdist'}
         
         # set default variables
         default_variables ={'-dir':self.parent_directory, '-run-mode':self.run_mode, '-find-bonds':self.find_bonds, '-pbc-bonds':self.periodic_bonds,
@@ -510,7 +620,8 @@ class inputs:
                             '-sym-tube-name':self.symmetric_tube_basename, '-sym-axis':self.symmetric_tube_axis, '-tube-edge':self.tube_edgetype,
                             '-sym-length':self.symmetric_length, '-sym-diameter':self.diameter, '-tube-spacing':self.tube_layer_spacing, '-ntubes':self.symmetric_ntubes,
                             '-chi-tube-name':self.chiral_tube_basename, '-chi-axis':self.chiral_tube_axis, '-chi-length':self.chiral_length, '-n':self.n,'-m':self.m,
-                            '-fseed':self.functional_seed, '-fatoms':self.functional_atoms, '-tatoms':self.terminating_atoms}
+                            '-fseed':self.seed, '-fatoms':self.functional_atoms, '-tatoms':self.terminating_atoms,
+                            '-gfiles':self.grafting_files, '-mdist':self.minimum_distance}
         
         # set tag/tag-input pair as empty string and update
         tags = {i:'' for i in supported_tags}
@@ -607,12 +718,23 @@ class inputs:
         # set new -fseed option and print confirmation
         if tags['-fseed']:
             self.functional_seed = int(tags['-fseed'])
-            print('Override confirmation for {:<18} Hard coded input is being overridden with this input: {}'.format('-fseed', self.functional_seed))
+            print('Override confirmation for {:<18} Hard coded input is being overridden with this input: {}'.format('-fseed', self.seed))
+            
+        # set new -mdist option and print confirmation
+        if tags['-mdist']:
+            try: self.minimum_distance = float(tags['-mdist'])
+            except: self.minimum_distance = tags['-mdist']
+            print('Override confirmation for {:<18} Hard coded input is being overridden with this input: {}'.format('-mdist', self.minimum_distance))
             
         # set new -fatoms option and print confirmation
         if tags['-fatoms']:
             self.functional_atoms = tags['-fatoms']
             print('Override confirmation for {:<18} Hard coded input is being overridden with this input: {}'.format('-fatoms', self.functional_atoms))
+            
+        # set new -gfiles option and print confirmation
+        if tags['-gfiles']:
+            self.grafting_files = tags['-gfiles']
+            print('Override confirmation for {:<18} Hard coded input is being overridden with this input: {}'.format('-gfiles', self.grafting_files))
             
         # set new -tatoms option and print confirmation
         if tags['-tatoms']:

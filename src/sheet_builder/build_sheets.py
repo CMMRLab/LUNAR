@@ -94,6 +94,7 @@ def generate(lx, ly, r0, edgetype, types, layer_spacing, nlayers, stacking, plan
         log.error(f"ERROR edgetype {edgetype} is not supported. Supported edgetype's are 'zigzag' or 'armchair'")
     
     # Duplicate base unit to generate sheet
+    molID_attributes = {} # {molID : (length, width, natoms)}
     atoms = {} # { atomID : Atoms Object }
     ID = 0
     if nx == 0: nx = 1
@@ -112,6 +113,7 @@ def generate(lx, ly, r0, edgetype, types, layer_spacing, nlayers, stacking, plan
             if edgetype == 'zigzag': xoffset = 2*r0
             if edgetype == 'armchair': yoffset = 2*r0
         log.out('  edge={} with an edge length={:.4f} and a perpendicular length={:.4f}'.format(edgetype, ny*ringy_span, nx*ringx_span))
+        molID_attributes[n] = (ny*ringy_span, nx*ringx_span, nx*ny*len(base_unit))
         for i in range(nx):
             for j in range(ny):
                 for xx, yy, zz, atomtype, typeint in base_unit:
@@ -132,6 +134,7 @@ def generate(lx, ly, r0, edgetype, types, layer_spacing, nlayers, stacking, plan
                     a.iy = 0
                     a.iz = 0
                     atoms[ID] = a
+                    
                 
     # Create box
     true_lx = nx*ringx_span
@@ -151,8 +154,8 @@ def generate(lx, ly, r0, edgetype, types, layer_spacing, nlayers, stacking, plan
     # If plane is 'xz' or 'yz' rotate atoms
     if plane in ['xz', 'yz']:
         phi = 0; theta = 0; psi = 0;
-        if plane == 'xz': phi = 90
-        if plane == 'yz': theta = 90
+        if plane == 'xz': phi = -90 # negative so molID is in the negative direciton
+        if plane == 'yz': theta = 90 # positive so molID is in the negative direciton
         atoms = misc_functions.rotate_molecule(atoms, phi, theta, psi)
         
         # Reset box based on rotation
@@ -189,5 +192,4 @@ def generate(lx, ly, r0, edgetype, types, layer_spacing, nlayers, stacking, plan
             box['yhi'] += increase
             box['zlo'] -= increase
             box['zhi'] += increase
-            
-    return atoms, box
+    return atoms, box, molID_attributes

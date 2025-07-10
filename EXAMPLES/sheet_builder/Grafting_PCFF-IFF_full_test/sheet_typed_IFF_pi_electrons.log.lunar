@@ -1,0 +1,29 @@
+
+
+Running add_pi_electrons v1.7 / 14 April 2025
+Using Python version 3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]
+Read in EXAMPLES/sheet_builder/Grafting_PCFF-IFF_full_test/sheet_typed_IFF.data LAMMPS datafile
+cp in types2convert was found to be a string, and maps to atomTypeID 3 in sheet_typed_IFF_pi_electrons.data
+add_pi_electrons and reset_charge were both True. Setting reset_charge = False, since add_pi_electrons will adjust charge.
+Converting coeffs to cg1.
+Adding pi electrons and updating coeffs/charges. Created:
+      1764 atoms
+      1728 bonds
+      6048 angles
+Used neighbor_charge_constraint: check-neighbors
+Current system charge: 0.0
+Using path from topofile to set parent_directory ...
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\sheet_builder\Grafting_PCFF-IFF_full_test directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.2293856143951416
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

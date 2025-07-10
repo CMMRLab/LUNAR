@@ -1,0 +1,12 @@
+@<TRIPOS>MOLECULE
+****
+2 1 1 0 0
+SMALL
+USER_CHARGES
+
+
+@<TRIPOS>ATOM
+      1 O          -0.4079   -0.2355    0.0000 O.2       1     ****    0.0000
+      2 H           0.4079    0.2355    0.0000 H         1     ****    0.0000
+@<TRIPOS>BOND
+     1     1     2     1

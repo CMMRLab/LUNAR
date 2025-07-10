@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-February 23, 2025
+Revision 1.3
+June 9, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -12,8 +12,12 @@ Houghton, MI 49931
 ##############################
 import src.sheet_builder.add_terminating_atoms as add_terminating_atoms
 import src.sheet_builder.add_functional_groups as add_functional_groups
+import src.sheet_builder.add_grafting_fragment as add_grafting_fragment
 import src.sheet_builder.add_pi_electrons as add_pi_electrons
 import src.sheet_builder.misc_functions as misc_functions
+
+import src.sheet_builder.shape_cutter as shape_cutter
+
 import src.sheet_builder.command_line as command_line
 import src.sheet_builder.build_sheets as build_sheets
 import src.sheet_builder.build_tubes as build_tubes
@@ -31,15 +35,15 @@ import os
 #####################################
 def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype, sheet_edgetype, types,
          bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_length, diameter, n, m,
-         chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, charges, masses, functional_seed, functional_atoms, terminating_atoms, 
-         commandline_inputs=[], log=None):
+         chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, charges, masses, seed, functional_atoms, terminating_atoms,
+         grafting_files, minimum_distance, cutter, commandline_inputs=[], log=None):
     start_time = time.time()
     
     # Configure log (default is level='production', switch to 'debug' if debuging)
     if log is None:
         log = io_functions.LUNAR_logger()
     log.configure(level='production')
-    #log.configure(level='debug')
+    #log.configure(level='debug', print2console=False)
     
     #########################
     # Command Line Override #
@@ -101,7 +105,7 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
     # Initialize some preliminary information #
     ###########################################
     # set version and print starting information to screen
-    version = 'v1.2 / 23 February 2025'
+    version = 'v1.3 / 9 June 2025'
     log.out(f'\n\nRunning sheet_builder {version} in mode {run_mode}')
     log.out(f'Using Python version {sys.version}')
     
@@ -134,22 +138,42 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
         else: log.error(f"ERROR plane {plane} is not supported. Supported planes are 'xy' or 'xz' or 'yz'")
         basename = sheet_basename
         pflag = True
-        atoms, box = build_sheets.generate(length_in_perpendicular, length_in_edgetype, bond_length, sheet_edgetype, atom_types, sheet_layer_spacing, sheet_nlayers, stacking, plane, periodic_bonds, pflag, log)
+        atoms, box, molID_attributes = build_sheets.generate(length_in_perpendicular, length_in_edgetype, bond_length, sheet_edgetype, atom_types, sheet_layer_spacing, sheet_nlayers, stacking, plane, periodic_bonds, pflag, log)
     elif run_mode in ['chiral-tube', 'symmetric-tube']:
         if run_mode == 'symmetric-tube':
-            if symmetric_tube_axis == 'x': boundary = 'p f f'
-            elif symmetric_tube_axis == 'y': boundary = 'f p f'
-            elif symmetric_tube_axis == 'z': boundary = 'f f p'
+            if symmetric_tube_axis == 'x':
+                boundary = 'p f f'
+                plane = 'yz'
+            elif symmetric_tube_axis == 'y':
+                boundary = 'f p f'
+                plane = 'xz'
+            elif symmetric_tube_axis == 'z':
+                boundary = 'f f p'
+                plane = 'xy'
             basename = symmetric_tube_basename
-            atoms, box = build_tubes.generate_MWCNT(symmetric_length, diameter, bond_length, atom_types, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_tube_axis, periodic_bonds, log)
+            atoms, box, molID_attributes = build_tubes.generate_MWCNT(symmetric_length, diameter, bond_length, atom_types, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_tube_axis, periodic_bonds, log)
         if run_mode == 'chiral-tube':
-            if chiral_tube_axis == 'x': boundary = 'p f f'
-            elif chiral_tube_axis == 'y': boundary = 'f p f'
-            elif chiral_tube_axis == 'z': boundary = 'f f p'
+            if chiral_tube_axis == 'x':
+                boundary = 'p f f'
+                plane = 'yz'
+            elif chiral_tube_axis == 'y':
+                boundary = 'f p f'
+                plane = 'xz'
+            elif chiral_tube_axis == 'z':
+                boundary = 'f f p'
+                plane = 'xy'
             basename = chiral_tube_basename
-            atoms, box = build_tubes.generate_chiral(n, m, chiral_length, bond_length, atom_types, chiral_tube_axis, periodic_bonds, log)
+            atoms, box, molID_attributes = build_tubes.generate_chiral(n, m, chiral_length, bond_length, atom_types, chiral_tube_axis, periodic_bonds, log)
     else: log.error(f"ERROR run_mode {run_mode} is not supported. Supported modes are 'sheet' or 'symmetric-tube' or 'chiral-tube'")    
     log.out(f'  Created: {len(atoms)} atoms')
+    
+    
+    ################################
+    # Cut shapes into sheets/tubes #
+    ################################
+    if cutter:
+        log.out('\n\nCutting shapes into lattice ...')
+        atoms = shape_cutter.cut(atoms, box, bond_length, plane, sheet_edgetype, cutter, log)
     
     
     ##############################
@@ -172,9 +196,9 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
     ##################################################################################################    
     terminating_atoms = terminating_atoms.strip() # remove any white space on ends
     if terminating_atoms:
-        if find_bonds and not periodic_bonds:
+        if find_bonds:# and not periodic_bonds:
             log.out('\n\nAdding terminating atoms ...')
-            atoms, bonds, box = add_terminating_atoms.add(atoms, bonds, box, terminating_atoms, log)
+            atoms, bonds, box = add_terminating_atoms.add(atoms, bonds, box, terminating_atoms, bond_length, log)
         elif not find_bonds:
             log.warn(f'WARNING terminating_atoms = {terminating_atoms}, but find_bonds is False. Set find_bonds as True to add {terminating_atoms}.')
         elif periodic_bonds:
@@ -184,8 +208,17 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
     ###########################################################################################
     # Add functional groups and/or grafting fragments (Prior to adding pi-electrons to allow  #
     # for both functionalization and adding of pi-electrons to unfunctionalized atoms)        #
-    ###########################################################################################   
-    if functional_atoms:
+    ###########################################################################################
+    functional_atoms = functional_atoms.strip() # remove any white space on ends
+    grafting_files = grafting_files.strip() # remove any white space on ends
+    if grafting_files:
+        if find_bonds:
+            log.out('\n\nAdding grafting fragments ...')
+            atoms, bonds, box = add_grafting_fragment.add(atoms, bonds, box, run_mode, grafting_files, seed, functional_atoms, boundary, bond_length, minimum_distance, molID_attributes, log)
+        else:
+            log.warn(f'WARNING grafting_files = {grafting_files}, but find_bonds is False. Set find_bonds as True to add {grafting_files}.')   
+    
+    elif functional_atoms:
         if find_bonds:
             log.out('\n\nAdding functional groups ...')
             atoms, bonds, box = add_functional_groups.add(atoms, bonds, box, run_mode, functional_atoms, seed, boundary, 1.0, minimum_distance, log)

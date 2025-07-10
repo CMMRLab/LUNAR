@@ -18,8 +18,10 @@ Houghton, MI 49931
 # Import Necessary Libraries #
 ##############################
 import src.log_analysis.misc_funcs as misc_funcs
+from matplotlib.ticker import ScalarFormatter
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 
 
@@ -47,7 +49,7 @@ def find_peaks_and_valleys(x, y, prominence=None):
             yvalleys.append( between_peaksy[minimum_index] ) 
             
             # Compute percent difference in y-direction
-            y_peak_avg = (lo + hi)/2
+            y_peak_avg = (ydata[lo] + ydata[hi])/2
             y_valley = between_peaksy[minimum_index]
             avg = y_valley - y_peak_avg
             small = y_valley - min(lo, hi)
@@ -55,28 +57,6 @@ def find_peaks_and_valleys(x, y, prominence=None):
             valley_depths.append( (avg, small, large) )
     return xpeaks, ypeaks, xvalleys, yvalleys, valley_depths
 
-
-##################################################
-# Function to compute X and Y componets of a FFT #
-##################################################
-def compute_FFT(x, y):
-    # Convert to numpy arrays
-    xx = np.array(x)
-    yy = np.array(y)
-    
-    # Define sampling rate and number of data points
-    dx = np.mean(np.abs(np.diff(xx)))
-    if dx != 0: 
-        fs = 1/dx # sampling rate
-    else: fs = xx.shape[0]/(np.max(xx) - np.min(xx))
-    N = xx.shape[0] # number of data points
-    d = 1/fs # sampling space
-
-    # Perform one sided FFT
-    fhat = np.fft.rfft(yy, axis=0, norm='backward')
-    x_fft = np.fft.rfftfreq(N, d=d)
-    y_fft = fhat 
-    return x_fft, y_fft, fs, N
 
 
 ##################################################################################
@@ -230,84 +210,6 @@ def iFFT_filter(x, y, threshold, quadrant_mirror, savefig, figname, dpi, plot_PS
             fig.savefig(figname+'_PSD.jpeg', dpi=dpi)
     return y_filter, quadrant_mirror
 
-
-####################################################
-# Function to compute Power Spectrum Density (PSD) #
-####################################################
-def compute_power_spectral_density(x, y):
-    # Compute one sided FFT
-    x_fft, y_fft, fs, N = compute_FFT(x, y)
-    
-    # One sided power spectrum density
-    x_psd = x_fft.copy()
-    y_psd = np.real( (y_fft*np.conjugate(y_fft))/N )
-    return x_fft, y_fft, x_psd, y_psd, fs, N
-
-
-##############################################
-# Function to convert power to decibels (db) #
-##############################################
-def power_to_db(power, ref_power=1):
-  return 10*np.log10(power/ref_power)
-
-
-##############################################################
-# Function to plot fft, power spectrum and selected wn value #
-##############################################################
-def plot_fft_power_and_wn(x_fft, y_fft, fs, wns, x_psd, y_psd, y_psd_dB, figname, write_data, savefig, dpi, wn_x=None, wn_y=None, cutoff_frequency=None, mean_psd=True):
-    fig_psd, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
-    
-    # Power spectrum plot in natural units
-    ax1.stem(x_psd, y_psd, linefmt='tab:blue', markerfmt='.', label='$|X(f)|^2/N$')
-    if mean_psd:
-        y_psd_mean = np.mean(np.array(y_psd))
-        ax1.axhline(y_psd_mean, ls='--', color='tab:olive', lw=1, label='mean(Power)={:.8f}'.format(y_psd_mean))
-    if wn_x is not None and wn_y is not None and cutoff_frequency is not None:
-        ax1.axvline(cutoff_frequency, ls='--', color='tab:red', lw=1, label='Cutoff={:.8f}'.format(cutoff_frequency))
-    ax1.set_xlabel('Frequency (1/X-units)', fontsize=12)
-    ax1.set_ylabel('Power', fontsize=12)
-    ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.0), fancybox=True, ncol=1, fontsize=12)
-    
-    
-    # Generate second x-axis for axis1
-    def forward_conversion1(x_psd):
-        return x_psd/(0.5*fs)
-    def reverse_conversion1(x_psd):
-        return x_psd
-    second_x1 = ax1.secondary_xaxis('top', functions=(forward_conversion1, reverse_conversion1))
-    second_x1.set_xlabel('$W_n$', fontsize=12)
-    
-    # Power spectrum plot in dB
-    ax2.stem(wns, y_psd_dB, linefmt='tab:blue', markerfmt='.', label='$|X(f)|^2/N$')
-    if wn_x is not None and wn_y is not None and cutoff_frequency is not None:
-        ax2.plot(wn_x, wn_y,  'o', ms=5, color='tab:orange', label='$W_n$ (x={:.6f}; y={:.6f})'.format(wn_x, wn_y))
-        ax2.axvline(wn_x, ls='--', color='tab:red', lw=1, label='Cutoff={:.8f}'.format(cutoff_frequency))
-    ax2.set_xlabel('$W_n$', fontsize=12)
-    ax2.set_ylabel('Power (dB - $ref_{power}$ at mean)', fontsize=12)
-    ax2.legend(loc='upper center', bbox_to_anchor=(0.5, 1.0), fancybox=True, ncol=1, fontsize=12)
-    
-    # Generate second x-axis for axis2
-    def forward_conversion2(wns):
-        return (0.5*fs)*wns
-    def reverse_conversion2(wns):
-        return wns
-    second_x2 = ax2.secondary_xaxis('top', functions=(forward_conversion2, reverse_conversion2))
-    second_x2.set_xlabel('Frequency (1/X-units)', fontsize=12)
-    
-    # finalize plot
-    fig_psd.tight_layout()
-    if savefig:
-        fig_psd.savefig(figname+'.jpeg', dpi=dpi)
-        
-    # Write data to csv
-    if write_data:
-        csv_data = {} # { 'name' : [[xdata], [ydata]], ... }
-        csv_data['FFT'] = [x_fft, y_fft]
-        csv_data['PSD-natural'] = [x_psd, y_psd]
-        csv_data['PSD-dB-at-mean-freq'] = [x_psd, y_psd_dB]
-        csv_data['PSD-dB-at-mean-wns'] = [wns, y_psd_dB]
-        misc_funcs.savedata_to_csv(csv_data, figname+'.csv')
-    return
 
 
 ##############################################################################
@@ -518,114 +420,190 @@ def butter_lowpass_filter(xdata, ydata, wn, order, quadrant_mirror, write_data, 
     return y, quadrant_mirror
 
 
+##############################################
+# Function to convert power to decibels (db) #
+##############################################
+def power_to_db(power, ref_power=1):
+  return 10*np.log10(power/ref_power)
+
+
+##################################################
+# Function to compute X and Y componets of a FFT #
+##################################################
+def compute_FFT(x, y):
+    # Convert to numpy arrays
+    xx = np.array(x)
+    yy = np.array(y)
+    
+    # Define sampling rate and number of data points
+    N = xx.shape[0]                      # number of data points
+    fs = (N-1)/(np.max(xx) - np.min(xx)) # sampling rate
+    d = 1/fs                             # sampling space
+
+    # Perform one sided FFT
+    y_fft = np.fft.rfft(yy, axis=0, norm='backward')
+    freq = np.fft.rfftfreq(N, d=d)
+    
+    # Compute one sided power spectral density from FFT
+    y_psd = np.real( (y_fft*np.conjugate(y_fft))/N )
+    
+    # Compute onde sided amplitudes from FFT
+    y_amp = np.abs(y_fft)/N 
+    y_amp[1:-1] *= 2
+    if N % 2 == 0:
+        y_amp[-1] /= 2
+    return freq, y_fft, y_amp, y_psd, fs, N
+
+
 ###############################################################################
 # Function to plot FFT, Power spectrum, and Wn; if Wn is supplied by the user #
 ###############################################################################
-def generate_and_plot_fft_power_and_wn(xdata, ydata, wn, write_data, savefig, figname, dpi):
-    # Compute power spectrum
-    x_fft, y_fft, x_psd, y_psd, fs, N = compute_power_spectral_density(xdata, ydata)
+def generate_and_plot_fft_wn(xdata, ydata, wn, write_data, savefig, figname, dpi):
+    # Compute power spectrum and find wns
+    freq, y_fft, y_amp, y_psd, fs, N = compute_FFT(xdata, ydata)
+    wns = freq/(0.5*fs)
     
-    # Compute corrected y_fft
-    y_fft = np.abs(np.real(y_fft/(N/2))) 
-    
-    # Convert power spectrum to dB with the mean power as the reference
-    psd_mean = np.mean(y_psd)
-    y_psd_dB = power_to_db(y_psd, psd_mean)
+    # Plot the FFT, Power Spectrum, and nearest Wn    
+    plot_fft_and_wn(freq, y_fft, y_amp, y_psd, wns, fs, wn=wn, threshold=None, mode='psd', figname=figname, write_data=False, savefig=savefig, dpi=dpi)
+    return
 
-    # Find corresponding wns
-    wns = x_psd/(0.5*fs)
+
+#############################################################
+# Function to plot psd or amplitude from fft and a wn value #
+#############################################################
+def plot_fft_and_wn(freq, y_fft, y_amp, y_psd, wns, fs, wn=None, threshold=None, mode='psd', figname='FFT_PSD_amp', write_data=False, savefig=False, dpi=300):
+    #-----------------------------------------#
+    # Setup settings and values based on mode #
+    #-----------------------------------------#
+    # Check for a provided wn
+    if wn is not None:
+        try: index = np.absolute(wns-wn).argmin()
+        except: index = None
+    else: index = None
     
-    # Find nearest index for supplied wn, and compute nearest wn_x and wn_y
-    nearest_index = np.absolute(wns-wn).argmin()
-    wn_x = wns[nearest_index]
-    wn_y = y_psd_dB[nearest_index]
+    # Set up values
+    if mode == 'psd':
+        y = y_psd
+        ylabel = r'Power (Y-units$^2$)'
+        spectral_label = r'$|X(f)|^2/N$'
+    elif mode == 'amp':
+        y = y_amp
+        ylabel = r'Amplitude (Y-units)'
+        spectral_label = r'$||X(f)||/N$'
+    else:
+        raise Exception(f'ERROR mode={mode} is not supported. Supported modes are "psd" or "amp"')
     
-    # Find cutoff frequency
-    cutoff_index = np.min(np.where(wns == wn_x)[0])
-    cutoff_frequency = x_fft[cutoff_index]
     
-    # Plot the FFT, Power Spectrum, and nearest Wn
-    plot_fft_power_and_wn(x_fft, y_fft, fs, wns, x_psd, y_psd, y_psd_dB, figname, write_data, savefig, dpi, wn_x, wn_y, cutoff_frequency, False)
+    #---------------------------#
+    # Plot data on linear-scale #
+    #---------------------------#
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+    ax1.stem(freq, y, linefmt='tab:blue', markerfmt='.', label=spectral_label)
+    if threshold is not None:
+        ax1.axhline(threshold, ls='--', color='tab:olive', lw=1, label='Threshold={:.8f}'.format(threshold))
+    if wn is not None and index is not None:
+        ax1.plot(freq[index], y[index],  'o', ms=5, color='tab:orange', label='$W_n$ (x={:.6f}; y={:.6f})'.format(freq[index], y[index]))
+        ax1.axvline(freq[index], ls='--', color='tab:red', lw=1, label='Cutoff={:.8f}'.format(freq[index]))
+    ax1.set_xlabel('Frequency (1/X-units)', fontsize=12)
+    ax1.set_ylabel(ylabel, fontsize=12)
+    ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.0), fancybox=True, ncol=1, fontsize=12)
+    
+    # Generate second x-axis for axis1
+    def forward_conversion1(freq):
+        return freq/(0.5*fs)
+    def reverse_conversion1(freq):
+        return freq
+    second_x1 = ax1.secondary_xaxis('top', functions=(forward_conversion1, reverse_conversion1))
+    second_x1.set_xlabel('$W_n$', fontsize=12)
+    
+    
+    #------------------------#
+    # Plot data on log-scale #
+    #------------------------#
+    ax2.stem(wns, y, linefmt='tab:blue', markerfmt='.', label=spectral_label)
+    ax2.set_yscale('log')
+    if threshold:
+        ax2.axhline(threshold, ls='--', color='tab:olive', lw=1, label='Threshold={:.8f}'.format(threshold))
+    if wn is not None and index is not None:
+        ax2.plot(wns[index], y[index],  'o', ms=5, color='tab:orange', label='$W_n$ (x={:.6f}; y={:.6f})'.format(wns[index], y[index]))
+        ax2.axvline(wns[index], ls='--', color='tab:red', lw=1, label='Cutoff={:.8f}'.format(wns[index]))
+    ax2.set_xlabel('$W_n$', fontsize=12)
+    ax2.set_ylabel(ylabel, fontsize=12)
+    ax2.legend(loc='upper center', bbox_to_anchor=(0.5, 1.0), fancybox=True, ncol=1, fontsize=12)
+    ax2.xaxis.set_major_formatter(ScalarFormatter())
+    
+    # Generate second x-axis for axis2
+    def forward_conversion2(wns):
+        return (0.5*fs)*wns
+    def reverse_conversion2(wns):
+        return wns
+    second_x2 = ax2.secondary_xaxis('top', functions=(forward_conversion2, reverse_conversion2))
+    second_x2.set_xlabel('Frequency (1/X-units)', fontsize=12)
+    
+    # Finalize plot
+    fig.tight_layout()
+    if savefig:
+        fig.savefig(figname+'.jpeg', dpi=dpi)
+        
+    # Write data to csv
+    if write_data:
+        csv_data = {} # { 'name' : [[xdata], [ydata]], ... }
+        csv_data['FFT'] = [freq, y_fft]
+        csv_data['PSD'] = [freq, y_psd]
+        csv_data['amp'] = [freq, y_amp]
+        misc_funcs.savedata_to_csv(csv_data, figname+'.csv')
     return
 
 
 #####################################################################
 # Function to optimize wn for butter_lowpass_filter using residuals #
 #####################################################################
-def butter_optimize_wn_with_power_spectrum(xdata, ydata, wn_method, write_data, savefig, figname, dpi):
-    # Compute power spectrum
-    x_fft, y_fft, x_psd, y_psd, fs, N = compute_power_spectral_density(xdata, ydata)
+def butter_optimize_wn_with_FFT(xdata, ydata, wn_method, write_data, savefig, figname, dpi):
+    # Compute power spectrum and find wns
+    freq, y_fft, y_amp, y_psd, fs, N = compute_FFT(xdata, ydata)
+    wns = freq/(0.5*fs)
     
-    # Compute corrected y_fft
-    y_fft = np.abs(np.real(y_fft/(N/2))) 
-    
-    # Convert power spectrum to dB with the mean power as the reference
-    psd_mean = np.mean(y_psd)
-    y_psd_dB = power_to_db(y_psd, psd_mean)
-
-    # Find corresponding wns
-    wns = x_psd/(0.5*fs)
-    
-    # Define zero point and find first zero crossing point
-    wn_x = None; wn_y = None; default_wn = 0.01
-    x_cross, y_cross = misc_funcs.value_crossing(x_psd, y_psd_dB, yvalue=0, style='high')
-    if len(x_cross) >= 1:
-        zero_crossing_index = np.absolute(x_psd-x_cross[0]).argmin()
-    else: # Set default if there is no zero crossing
-        zero_crossing_index = np.absolute(wns-default_wn).argmin()
-    
-    # Find optimzed Wn value for the Butterworth filter
-    try:
-        wn_x = wns[zero_crossing_index]
-        wn_y = y_psd_dB[zero_crossing_index]
-        optimized_wn = round(wn_x, 6)
+    # Find threshold value if user supplies an approiapte string: wn=op<thres>-p or wn=oa<thres>-p
+    threshold = 'mean'; wn_error = False
+    if '<' in wn_method and '>' in wn_method:
+        value = wn_method.split('<')[-1].split('>')[0].split(',')[0]
+        print(value)
         
-        # Find cutoff frequency
-        cutoff_index = np.min(np.where(wns == wn_x)[0])
-        cutoff_frequency = x_fft[cutoff_index]
-    except:
-        optimized_wn = default_wn 
-        cutoff_frequency = 1
+        try:
+            values = [float(i) for i in wn_method.split('<')[-1].split('>')[0].split(',')]
+            if len(values) == 1:
+                threshold = values[0]
+            else: wn_error = True
+        except: wn_error = True
+        if wn_error:
+            print(f'ERROR could not parse wn={wn_method} string, will use mean. Correct syntax: wn=op<thres>-p or wn=oa<thres>-p')
+
+    
+    # Find first time psd or amp crosses the threshold
+    wn = None; mode = 'psd'
+    if wn_method.startswith('op'):
+        if threshold == 'mean': threshold = np.mean(y_psd)
+        index = np.min(np.where(y_psd <= threshold)[0])
+        if index == 0: index = 1 # wn cant be the DC-offset
+        wn = wns[index]
+        mode = 'psd'
+    if wn_method.startswith('oa'):
+        if threshold == 'mean': threshold = np.mean(y_amp)
+        index = np.min(np.where(y_amp <= threshold)[0])
+        if index == 0: index = 1 # wn cant be the DC-offset
+        wn = wns[index]
+        mode = 'amp'
+    if wn is None:
+        wn = 0.01
+        print(f'ERROR something went wrong during wn optimztion, using default wn={wn}')
+
     
     # Create new plot
     if wn_method.endswith('-p'):
-        plot_fft_power_and_wn(x_fft, y_fft, fs, wns, x_psd, y_psd, y_psd_dB, figname, write_data, savefig, dpi, wn_x, wn_y, cutoff_frequency, True)
-        
-    # # Try looking at derivatives
-    # dxn_psd, dy1_psd, dy2_psd = misc_funcs.compute_derivative(wns, y_psd)
-    # ix1_psd, iy1_psd = misc_funcs.compute_integral(wns, y_psd)
+        plot_fft_and_wn(freq, y_fft, y_amp, y_psd, wns, fs, wn=wn, threshold=threshold, mode=mode, 
+                        figname=figname, write_data=write_data, savefig=savefig, dpi=dpi)
     
-    # critical_x, critical_y = misc_funcs.value_crossing(dxn_psd, dy1_psd, yvalue=0, style='low')
-    # inflection_x, inflection_y = misc_funcs.value_crossing(dxn_psd, dy2_psd, yvalue=0, style='low')
-    # ymin = min(dy2_psd)    # Lower bound for veritical lines
-    # ymax = max(dy2_psd)    # Lower bound for veritical lines
-        
-    # fig1, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 9))
-    # ax1.plot(x_psd, y_psd)
-    # ax1.set_xlabel('X - PSD')
-    # ax1.set_ylabel('Y - PSD')        
-            
-    # ax2.plot(dxn_psd, dy1_psd)
-    # ax2.set_xlabel('d1 X - PSD')
-    # ax2.set_ylabel('d1 Y - PSD') 
-    
-    # ax3.plot(dxn_psd, dy2_psd)
-    # ax3.set_xlabel('d2 X - PSD')
-    # ax3.set_ylabel('d2 Y - PSD') 
-    
-    # # if critical_x:
-    # #     ax2.vlines(critical_x[0], ymin, ymax, color='tab:red', label='Critical Points')
-    # # if inflection_x:
-    # #     ax3.vlines(inflection_x[0], ymin, ymax, color='tab:red', label='Inflection Points')
-    
-    
-    # ax4.plot(ix1_psd, iy1_psd)
-    # ax4.set_xlabel('i1 X - PSD')
-    # ax4.set_ylabel('i1 Y - PSD') 
-    
-    # fig1.tight_layout()
-    
-    return optimized_wn
+    return wn
 
 
 #####################################################################
@@ -681,3 +659,119 @@ def butter_optimize_wn_with_residuals(xdata, ydata, order, qm, wn_method, savefi
         if savefig:
             fig_res.savefig(figname+'.jpeg', dpi=dpi)
     return optimized_wn
+
+
+#####################################################################
+# Function to optimize wn for butter_lowpass_filter using residuals #
+#####################################################################
+def butter_optimize_wn_with_CVE(xdata, ydata, n, wn_method, order, delta, stop, qm='1,1', savefig=False, figname='BW_CVE', dpi=300):
+    from tqdm import tqdm
+    BWF_write_data, BWF_savefig = False, False
+    fold = math.floor(xdata.size/n)
+    folds = np.array([int(i*n) for i in range(fold-1)])
+    if stop > 1: stop = 1
+    if delta < 0: delta = 1/1000
+    wns = np.arange(delta, stop, delta)
+    cves = np.zeros_like(wns)    
+    print('\n\nStarting wn optimization using cross-validation error ...')
+    for n, wn in tqdm(enumerate(wns), total=wns.size):
+        cve = 0
+        for i in folds:
+            px = np.delete(xdata, i)
+            py = np.delete(ydata, i) 
+            ytemp, qm_temp = butter_lowpass_filter(px, py, wn, order, qm, BWF_write_data, BWF_savefig, figname, dpi, pflag=False)
+            dy = ydata[i] - ytemp[i]
+            cve += dy*dy
+        cves[n] = math.sqrt(cve/px.size)
+        
+    min_index = np.argmin(cves)
+    wn = wns[min_index]
+    cve = cves[min_index]
+
+    if wn_method.endswith('-p'):
+        fig, ax = plt.subplots()
+        ax.plot(wns, cves,  '-o', lw=2, ms=5, color='tab:blue', label='')
+        ax.plot(wn, cve,  'o', ms=7, color='tab:orange', label='Minimum CVE ({:.4f}, {:.4f})'.format(wn, cve))
+        ax.set_xlabel('W$_n$', fontsize=12)
+        ax.set_ylabel('CVE', fontsize=12)
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), fancybox=True, ncol=3, fontsize=12)
+        if savefig:
+            fig.savefig(figname+'.jpeg', dpi=dpi)
+    return wn
+
+############################
+### Perform some testing ###
+############################
+if __name__ == "__main__":  
+    # %matplotlib qt 
+    # %matplotlib inline
+    
+    # Generate stress and strain 
+    max_strain = 0.2
+    max_stress = 150
+    strain = np.linspace(0, max_strain, 2000)
+    stress = max_stress*(1 - np.exp(-strain/max_strain**2))
+    
+    # Generate noisy stress-strain data
+    np.random.seed(73149)
+    noise = np.random.normal(loc=0.0, scale=1.0, size=strain.size)
+    mag = [0, 25, 50, 100]
+    
+    noisy0 = stress + (mag[0]/300)*max_stress*noise
+    noisy1 = stress + (mag[1]/300)*max_stress*noise
+    noisy2 = stress + (mag[2]/300)*max_stress*noise
+    noisy3 = stress + (mag[3]/300)*max_stress*noise
+    
+    
+    # Setup wn string
+    wn_method = 'cve<0.001, 0.05, 1>-p'
+    wn_error = False
+    delta = 0.001
+    stop = 1.0
+    n = 1
+    if '<' in wn_method and '>' in wn_method:
+        try:
+            values = [float(i) for i in wn_method.split('<')[-1].split('>')[0].split(',')]
+            if len(values) == 3:
+                delta, stop, n = values
+            else: wn_error = True
+        except: wn_error = True
+        if wn_error:
+            print(f'ERROR could not parse wn={wn_method} string. Correct syntax: wn=cve<delta, stop, n>-p')
+            print('Using defaults of delta={}, stop={}, n={} for cross-validation calculations'.format(delta, stop, n))
+    
+    
+    # Filter data with settings from above
+    order = 2
+    wn_noisy2 = butter_optimize_wn_with_CVE(strain, noisy2, n, wn_method, order, delta, stop, qm='1,1', savefig=False, figname='BW_CVE', dpi=300)
+    filt2, qm_noisy2 = butter_lowpass_filter(strain, noisy2, wn_noisy2, order, '3,2', False, False, 'figname', 300, pflag=False)
+    
+    
+    # Plot the results
+    fig, ax = plt.subplots()
+    ax.plot(strain, stress, '-', lw=2, color='tab:blue', label='True signal')
+    ax.plot(strain, noisy2, 'o', ms=2, color='tab:cyan', label='{}% Noisy'.format(mag[2]))
+    ax.plot(strain, filt2, 'o', ms=2, color='tab:orange', label='{}% Filtered Noisy'.format(mag[2]))
+    ax.set_xlabel('Strain', fontsize=12)
+    ax.set_ylabel('Stress', fontsize=12)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), fancybox=True, ncol=3, fontsize=12)
+    
+    
+    # Testing leave-one-out
+    xdata = np.array([i for i in range(5)])
+    ydata = xdata**2
+    n = 1
+    
+    fold = math.floor(xdata.size/n)
+    folds = np.array([int(i*n) for i in range(fold-1)])
+    for i in folds:
+        px = np.delete(xdata, i)
+        py = np.delete(ydata, i) 
+        
+        print()
+        print(i)
+        #print(xdata[i], px[i])
+        print(xdata, xdata[i])
+        print(px, px[i])
+    
+

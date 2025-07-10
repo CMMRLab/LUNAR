@@ -25,6 +25,7 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+import src.GUI_scale_settings as GUI_scale_settings
 from tkinter.scrolledtext import ScrolledText
 from tkinter import Toplevel
 import tkinter as tk
@@ -80,6 +81,25 @@ class LUNAR:
         self.xpadding = 20
         self.ypadding = 10
         
+        #  Check if user specified any other font settings
+        font_settings = GUI_scale_settings.font_settings
+        if 'size' in font_settings:
+            if isinstance(font_settings['size'], (int, float)):
+               self.font_size = font_settings['size'] 
+        if 'type' in font_settings:
+            if isinstance(font_settings['type'], str):
+               self.font_type = font_settings['type'] 
+        
+        self.xpadding = 20
+        self.ypadding = 10
+
+        # Check if user specified any other nong-global scaling settings
+        scale_settings = GUI_scale_settings.screen_settings
+        if 'scaling_factor' in scale_settings:
+            if isinstance(scale_settings['scaling_factor'], (int, float)):
+               self.xpadding = self.xpadding/scale_settings['scaling_factor']
+               self.ypadding = self.ypadding/scale_settings['scaling_factor']
+        
         # adjust based on GUI_SF
         self.GUI_zoom = GUI_zoom
         GUI_SF = GUI_zoom/100
@@ -88,6 +108,9 @@ class LUNAR:
         ypadding = int(math.ceil(GUI_SF*self.ypadding))
         font_settings = (self.font_type, font_size)
         
+        #-----------#
+        # LUNAR GUI #
+        #-----------#
         # Initalize  inputs frame
         self.inputs_frame = tk.LabelFrame(self.frame, text='Codes', font=font_settings)
         self.inputs_frame.grid(row=0, column=0, padx=xpadding, pady=ypadding)
@@ -328,7 +351,7 @@ class LUNAR:
         sheet_builder_GUI(sb.sheet_basename, sb.symmetric_tube_basename, sb.chiral_tube_basename, sb.run_mode, sb.parent_directory, sb.length_in_perpendicular, sb.length_in_edgetype,
                           sb.sheet_edgetype, sb.types, sb.bond_length, sb.sheet_layer_spacing, sb.sheet_nlayers, sb.stacking, sb.plane, sb.tube_edgetype, sb.tube_layer_spacing,
                           sb.symmetric_ntubes, sb.symmetric_length, sb.diameter, sb.n, sb.m, sb.chiral_length, sb.symmetric_tube_axis, sb.chiral_tube_axis, sb.find_bonds, sb.periodic_bonds,
-                          sb.charges, sb.masses, sb.functional_seed, sb.functional_atoms, sb.terminating_atoms, self.GUI_zoom)
+                          sb.charges, sb.masses, sb.seed, sb.functional_atoms, sb.terminating_atoms, sb.grafting_files, sb.minimum_distance, sb.cutter, self.GUI_zoom)
         return
         
     # atom_typing_log_processor GUI Run

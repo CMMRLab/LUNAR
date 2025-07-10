@@ -1,0 +1,332 @@
+
+
+Running all2lmp v1.21 / 13 November 2024
+Using Python version 3.11.5 (tags/v3.11.5:cce6ba9, Aug 24 2023, 14:38:34) [MSC v.1936 64 bit (AMD64)]
+Trying Atom Equivalences if needed
+Trying Atom Auto-Equivalences if needed
+Trying to find atom charge based on bond-incs
+Resetting molecule-ids based on cluster analysis
+
+
+Using higher version of parameters for #equivalences N a version: 2.10 
+Using higher version of parameters for #bond_increments h* o* version: 3.30 
+Using higher version of parameters for #bond_increments si si version: 2.20 
+Using higher version of parameters for #bond_increments c si version: 2.20 
+Using higher version of parameters for #bond_increments h si version: 2.20 
+Using higher version of parameters for #bond_increments cp si version: 2.20 
+Using higher version of parameters for #bond_increments c_1 cp version: 2.10 
+Using higher version of parameters for #quartic_bonds cp cp version: 2.10 
+Using higher version of parameters for #quartic_bonds c o_2 version: 2.20 
+Using higher version of parameters for #quartic_bonds c= c=1 version: 3.10 
+Using higher version of parameters for #quartic_bonds c c version: 2.10 
+Using higher version of parameters for #quartic_bonds c h version: 2.10 
+Using higher version of parameters for #quartic_bonds cp h version: 2.10 
+Using higher version of parameters for #quartic_bonds c_1 o_1 version: 2.10 
+Using higher version of parameters for #torsion_1 * c_ p_ * version: 3.30 
+Using higher version of parameters for #torsion_3 c c c h version: 2.10 
+Using higher version of parameters for #torsion_3 h c cp cp version: 2.00 
+Using higher version of parameters for #torsion_3 h c c h version: 2.10 
+Using higher version of parameters for #torsion_3 c c c c version: 2.10 
+Using higher version of parameters for #wilson_out_of_plane c cp cp cp version: 2.00 
+Using higher version of parameters for #wilson_out_of_plane cp cp cp h version: 3.10 
+Using higher version of parameters for #pair_coeffs_9_6 C l version: 3.40 
+Using higher version of parameters for #pair_coeffs_9_6 o * version: 3.40 
+Using higher version of parameters for #pair_coeffs_9_6 c = version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 n = version: 3.10 
+Using higher version of parameters for #pair_coeffs_9_6 n z version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 s ' version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 h * version: 3.30 
+Using higher version of parameters for #pair_coeffs_9_6 h o 2 version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 o _ 1 version: 2.10 
+Using higher version of parameters for #pair_coeffs_9_6 s i version: 2.20 
+Using higher version of parameters for #bondbond13 cp cp cp cp version: 2.10 
+Using higher version of parameters for #middlebondtorsion o_1 c_1 o_2 c version: 2.10 
+
+Read in frc_files/pcff_iff_v1_5_CNT_poly_solv_hpan_hc_mod.frc forcefeild file
+Read in EXAMPLES\sheet_builder\Grafting_PCFF-IFF_full_test\sheet_typed.data LAMMPS datafile
+Read in EXAMPLES\sheet_builder\Grafting_PCFF-IFF_full_test\sheet_typed.nta new-type-assignment file
+
+
+
+Getting force field parameters for the read in system
+
+Checking for atom-type assignment consistency with atom-types in .frc file
+
+
+Finding molecules to reset molids....
+-----------------Cluster Analysis-----------------
+  molID    Size of Fragment     %Size of Fragment    
+--------------------------------------------------
+    1             840                41.67          
+    2             840                41.67          
+    3             336                16.67          
+
+
+WARNING No Bond Increment for atom 1052 and atom 1053, bond pair c2 op 
+WARNING No Bond Increment for atom 1053 and atom 1052, bond pair op c2 
+WARNING No Bond Increment for atom 1080 and atom 1081, bond pair c2 op 
+WARNING No Bond Increment for atom 1081 and atom 1080, bond pair op c2 
+WARNING No Bond Increment for atom 1108 and atom 1109, bond pair c2 op 
+WARNING No Bond Increment for atom 1109 and atom 1108, bond pair op c2 
+WARNING No Bond Increment for atom 1136 and atom 1137, bond pair c2 op 
+WARNING No Bond Increment for atom 1137 and atom 1136, bond pair op c2 
+WARNING No Bond Increment for atom 1164 and atom 1165, bond pair c2 op 
+WARNING No Bond Increment for atom 1165 and atom 1164, bond pair op c2 
+WARNING No Bond Increment for atom 1192 and atom 1193, bond pair c2 op 
+WARNING No Bond Increment for atom 1193 and atom 1192, bond pair op c2 
+WARNING No Bond Increment for atom 1220 and atom 1221, bond pair c2 op 
+WARNING No Bond Increment for atom 1221 and atom 1220, bond pair op c2 
+WARNING No Bond Increment for atom 1248 and atom 1249, bond pair c2 op 
+WARNING No Bond Increment for atom 1249 and atom 1248, bond pair op c2 
+WARNING No Bond Increment for atom 1276 and atom 1277, bond pair c2 op 
+WARNING No Bond Increment for atom 1277 and atom 1276, bond pair op c2 
+WARNING No Bond Increment for atom 1304 and atom 1305, bond pair c2 op 
+WARNING No Bond Increment for atom 1305 and atom 1304, bond pair op c2 
+WARNING No Bond Increment for atom 1332 and atom 1333, bond pair c2 op 
+WARNING No Bond Increment for atom 1333 and atom 1332, bond pair op c2 
+WARNING No Bond Increment for atom 1360 and atom 1361, bond pair c2 op 
+WARNING No Bond Increment for atom 1361 and atom 1360, bond pair op c2 
+WARNING No Bond Increment for atom 1388 and atom 1389, bond pair c2 op 
+WARNING No Bond Increment for atom 1389 and atom 1388, bond pair op c2 
+WARNING No Bond Increment for atom 1416 and atom 1417, bond pair c2 op 
+WARNING No Bond Increment for atom 1417 and atom 1416, bond pair op c2 
+WARNING No Bond Increment for atom 1444 and atom 1445, bond pair c2 op 
+WARNING No Bond Increment for atom 1445 and atom 1444, bond pair op c2 
+WARNING No Bond Increment for atom 1472 and atom 1473, bond pair c2 op 
+WARNING No Bond Increment for atom 1473 and atom 1472, bond pair op c2 
+WARNING No Bond Increment for atom 1500 and atom 1501, bond pair c2 op 
+WARNING No Bond Increment for atom 1501 and atom 1500, bond pair op c2 
+WARNING No Bond Increment for atom 1528 and atom 1529, bond pair c2 op 
+WARNING No Bond Increment for atom 1529 and atom 1528, bond pair op c2 
+WARNING No Bond Increment for atom 1556 and atom 1557, bond pair c2 op 
+WARNING No Bond Increment for atom 1557 and atom 1556, bond pair op c2 
+WARNING No Bond Increment for atom 1584 and atom 1585, bond pair c2 op 
+WARNING No Bond Increment for atom 1585 and atom 1584, bond pair op c2 
+WARNING No Bond Increment for atom 1612 and atom 1613, bond pair c2 op 
+WARNING No Bond Increment for atom 1613 and atom 1612, bond pair op c2 
+WARNING No Bond Increment for atom 1640 and atom 1641, bond pair c2 op 
+WARNING No Bond Increment for atom 1641 and atom 1640, bond pair op c2 
+WARNING No Bond Increment for atom 1668 and atom 1669, bond pair c2 op 
+WARNING No Bond Increment for atom 1669 and atom 1668, bond pair op c2 
+WARNING No Bond Increment for atom 1696 and atom 1697, bond pair c2 op 
+WARNING No Bond Increment for atom 1697 and atom 1696, bond pair op c2 
+WARNING No Bond Increment for atom 1724 and atom 1725, bond pair c2 op 
+WARNING No Bond Increment for atom 1725 and atom 1724, bond pair op c2 
+WARNING No Bond Increment for atom 1752 and atom 1753, bond pair c2 op 
+WARNING No Bond Increment for atom 1753 and atom 1752, bond pair op c2 
+WARNING No Bond Increment for atom 1780 and atom 1781, bond pair c2 op 
+WARNING No Bond Increment for atom 1781 and atom 1780, bond pair op c2 
+WARNING No Bond Increment for atom 1808 and atom 1809, bond pair c2 op 
+WARNING No Bond Increment for atom 1809 and atom 1808, bond pair op c2 
+WARNING No Bond Increment for atom 1836 and atom 1837, bond pair c2 op 
+WARNING No Bond Increment for atom 1837 and atom 1836, bond pair op c2 
+WARNING No Bond Increment for atom 1864 and atom 1865, bond pair c2 op 
+WARNING No Bond Increment for atom 1865 and atom 1864, bond pair op c2 
+WARNING No Bond Increment for atom 1892 and atom 1893, bond pair c2 op 
+WARNING No Bond Increment for atom 1893 and atom 1892, bond pair op c2 
+WARNING No Bond Increment for atom 1920 and atom 1921, bond pair c2 op 
+WARNING No Bond Increment for atom 1921 and atom 1920, bond pair op c2 
+WARNING No Bond Increment for atom 1948 and atom 1949, bond pair c2 op 
+WARNING No Bond Increment for atom 1949 and atom 1948, bond pair op c2 
+WARNING No Bond Increment for atom 1976 and atom 1977, bond pair c2 op 
+WARNING No Bond Increment for atom 1977 and atom 1976, bond pair op c2 
+WARNING No Bond Increment for atom 2004 and atom 2005, bond pair c2 op 
+WARNING No Bond Increment for atom 2005 and atom 2004, bond pair op c2 
+WARNING No Bond Increment for atom 2032 and atom 2033, bond pair c2 op 
+WARNING No Bond Increment for atom 2033 and atom 2032, bond pair op c2 
+
+
+Atoms information has been found
+  EXAMPLES\sheet_builder\Grafting_PCFF-IFF_full_test\sheet_typed.data has some non-zero image flags
+  There are 2016 atoms in 3 molecules in this file
+  The total charge in the system is -0.0000
+
+
+
+
+
+
+WARNING unable to find bondbond info for Bondbond Coeff 3 c2 nn c2
+WARNING unable to find bondbond info for Bondbond Coeff 4 c2 nn cp
+WARNING unable to find bondbond info for Bondbond Coeff 5 c2 op cp
+WARNING unable to find bondbond info for Bondbond Coeff 6 cp c cp
+WARNING unable to find bondbond info for Bondbond Coeff 8 cp c2 nn
+WARNING unable to find bondbond info for Bondbond Coeff 14 hc c2 nn
+WARNING unable to find bondbond info for Bondbond Coeff 15 hc c2 op
+WARNING unable to find bondbond info for Bondbond Coeff 16 nn c2 op
+
+WARNING unable to find bondangle info for Bondangle Coeff 3 c2 nn c2
+WARNING unable to find bondangle info for Bondangle Coeff 4 c2 nn cp
+WARNING unable to find bondangle info for Bondangle Coeff 5 c2 op cp
+WARNING unable to find bondangle info for Bondangle Coeff 6 cp c cp
+WARNING unable to find bondangle info for Bondangle Coeff 8 cp c2 nn
+WARNING unable to find bondangle info for Bondangle Coeff 14 hc c2 nn
+WARNING unable to find bondangle info for Bondangle Coeff 15 hc c2 op
+WARNING unable to find bondangle info for Bondangle Coeff 16 nn c2 op
+
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 1 cp c cp cp
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 2 cp c2 nn cp
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 4 nn c2 cp cp
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 14 c2 cp cp op
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 17 cp c2 nn c2
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 18 hc c2 nn cp
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 19 hc c2 nn c2
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 20 op c2 nn cp
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 21 op c2 nn c2
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 22 cp cp nn c2
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 23 hc c2 op cp
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 24 nn c2 op cp
+WARNING unable to find angleangletorsion info for Angleangletorsion Coeff 25 cp cp op c2
+
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 1 cp c cp cp
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 2 cp c2 nn cp
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 4 nn c2 cp cp
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 14 c2 cp cp op
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 17 cp c2 nn c2
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 18 hc c2 nn cp
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 19 hc c2 nn c2
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 20 op c2 nn cp
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 21 op c2 nn c2
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 22 cp cp nn c2
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 23 hc c2 op cp
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 24 nn c2 op cp
+WARNING unable to find endbondtorsion info for Endbondtorsion Coeff 25 cp cp op c2
+
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 1 cp c cp cp
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 2 cp c2 nn cp
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 4 nn c2 cp cp
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 14 c2 cp cp op
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 17 cp c2 nn c2
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 18 hc c2 nn cp
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 19 hc c2 nn c2
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 20 op c2 nn cp
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 21 op c2 nn c2
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 22 cp cp nn c2
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 23 hc c2 op cp
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 24 nn c2 op cp
+WARNING unable to find middlebondtorsion info for Middlebondtorsion Coeff 25 cp cp op c2
+
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 1 cp c cp cp
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 2 cp c2 nn cp
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 4 nn c2 cp cp
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 14 c2 cp cp op
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 17 cp c2 nn c2
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 18 hc c2 nn cp
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 19 hc c2 nn c2
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 20 op c2 nn cp
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 21 op c2 nn c2
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 22 cp cp nn c2
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 23 hc c2 op cp
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 24 nn c2 op cp
+WARNING unable to find bondbond13 info for Bondbond13 Coeff 25 cp cp op c2
+
+WARNING unable to find angletorsion info for Angletorsion Coeff 1 cp c cp cp
+WARNING unable to find angletorsion info for Angletorsion Coeff 2 cp c2 nn cp
+WARNING unable to find angletorsion info for Angletorsion Coeff 4 nn c2 cp cp
+WARNING unable to find angletorsion info for Angletorsion Coeff 14 c2 cp cp op
+WARNING unable to find angletorsion info for Angletorsion Coeff 17 cp c2 nn c2
+WARNING unable to find angletorsion info for Angletorsion Coeff 18 hc c2 nn cp
+WARNING unable to find angletorsion info for Angletorsion Coeff 19 hc c2 nn c2
+WARNING unable to find angletorsion info for Angletorsion Coeff 20 op c2 nn cp
+WARNING unable to find angletorsion info for Angletorsion Coeff 21 op c2 nn c2
+WARNING unable to find angletorsion info for Angletorsion Coeff 22 cp cp nn c2
+WARNING unable to find angletorsion info for Angletorsion Coeff 23 hc c2 op cp
+WARNING unable to find angletorsion info for Angletorsion Coeff 24 nn c2 op cp
+WARNING unable to find angletorsion info for Angletorsion Coeff 25 cp cp op c2
+
+WARNING unable to find angleangle info for Angleangle Coeff 8 cp c cp cp
+WARNING unable to find angleangle info for Angleangle Coeff 10 cp c2 hc nn
+WARNING unable to find angleangle info for Angleangle Coeff 11 hc c2 hc nn
+WARNING unable to find angleangle info for Angleangle Coeff 12 hc c2 hc op
+WARNING unable to find angleangle info for Angleangle Coeff 13 hc c2 nn op
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         29.51415  angstrom  
+Ly:         29.82000  angstrom  
+Lz:         31.29043  angstrom  
+volume:    2.7539E-20 cm^3      
+mass:      3.2674E-20 grams     
+density:    1.18645   g/cm^3    
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:            2016 
+nbonds:            2628 
+nangles:           5004 
+ndihedrals:        9180 
+nimpropers:        1872 
+- oop:             1440 
+- angleangle:       432 
+
+--------------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers Types
+--------------------------------------------
+natomtypes:          6  
+nbondtypes:          9  
+nangletypes:        16  
+ndihedraltypes:     25  
+nimpropertypes:     13  
+- oop:               7  
+- angleangle:        6  
+
+-------------------------------------
+Parameterization percentage breakdown
+-------------------------------------
+Masses:                      100.00 %
+Pair Coeffs:                 100.00 %
+Bond Coeffs:                 100.00 %
+Angle Coeffs:                100.00 %
+Dihedral Coeffs:             100.00 %
+Improper Coeffs:             100.00 %
+Average MPBADI Coeffs:       100.00 %
+BondBond Coeffs:             50.00  %
+BondAngle Coeffs:            50.00  %
+AngleAngleTorsion Coeffs:    48.00  %
+EndBondTorsion Coeffs:       48.00  %
+MiddleBondTorsion Coeffs:    48.00  %
+BondBond13 Coeffs:           48.00  %
+AngleTorsion Coeffs:         48.00  %
+AngleAngle Coeffs:           61.54  %
+Average (without Bond-incs): 73.44  %
+Bond-incs:                   98.63  %
+
+User is acknowledging that all2lmp.py can not supply a fully parameterized datafile as
+the frc_files/pcff_iff_v1_5_CNT_poly_solv_hpan_hc_mod.frc doesnt contain all parameters
+to parameterize every interaction. The user is responsible for deciding on how to handle
+missing parameters in the written datafile. Please note that it is possible that the inputs
+to all2lmp.py are incorrect causing this message and that a certain atom type maybe wrong, 
+where it might be easier to correct the inputs to all2lmp.py rather then correct the outputs
+of all2lmp.py. Alternativley missing parameters are set to ZEROs, by all2lmp.py and it is
+possible that interaction doesnt require parameters. For instance not all systems require
+dihedral interactions.
+
+
+Using path from topofile to set parent_directory ...
+
+
+Writing LAMMPS datafile
+Writing verbose comment file
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\sheet_builder\Grafting_PCFF-IFF_full_test directory
+
+
+Each energy coeff Header in the written datafile contains style hint flags for
+applying proper settings in LAMMPS to be consistent with the energy definitions
+and ordering of the energy parameters.
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.3930373191833496
+
+
+Number of WARNING(s) and ERROR(s)
+  158 WARNING(s)
+  0 ERROR(s)

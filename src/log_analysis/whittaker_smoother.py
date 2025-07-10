@@ -86,7 +86,6 @@ def sparse_eye_diff(m, d, format='csc'):
 #      'scipy' will use the sparse C-matrix to inverse. The 'numpy' mode is quicker for small data sets, but   #
 #              uses a lot more memory as fully matrices are used. I would recommend 'scipy' as the default due #
 #              to both time and space constraints.                                                             #
-#              benchmarking different ways of computing the h-matrix.                                          #
 #      'fast'  will renormalize the y-data to be multiples of length n (set in the function) to compute the    #
 #              partial h-matrix and scale that up to get the full h-matrix. Eilers default is to use fast      #
 #              when the length of y-data is larger then 1000.                                                  #
@@ -346,7 +345,7 @@ if __name__ == "__main__":
     in1_lmbda = 1_000_000 # Manually take control of lambda
     in1_lmbda = 'op' # use default spacing and do not plot
     in1_lmbda = 'op-p' # use default spacing and plot
-    in1_lmbda = 'op<1e-2, 1e10, 100>-p' # Adjust spacing and plot
+    in1_lmbda = 'op<1e-2, 1e10, 50>-p' # Adjust spacing and plot
     y_smooth, out1_lmbda = smooth(y_noisy, order, in1_lmbda)
     if out1_lmbda is None: out1_lmbda = in1_lmbda
     

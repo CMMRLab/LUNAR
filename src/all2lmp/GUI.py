@@ -10,6 +10,7 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+import src.GUI_scale_settings as GUI_scale_settings
 import src.io_functions as io_functions
 import src.py_script_modifier as psm
 from src.all2lmp.main import main
@@ -36,7 +37,6 @@ class all2lmp_GUI:
         
         # Find present working directory
         self.pwd = os.getcwd()
-        self.filepath = self.pwd
         self.filename = os.path.join(self.pwd, 'all2lmp.py')
 
         # Initialize window
@@ -65,6 +65,38 @@ class all2lmp_GUI:
         self.xpadding = 20
         self.ypadding = 10
         self.maxwidth = 120
+        
+        # Check if user specified any other font settings
+        font_settings = GUI_scale_settings.font_settings
+        self.int_font = font.nametofont("TkDefaultFont") # font parameters used in internal TK dialogues
+        self.icon_font = font.nametofont("TkIconFont") # font used in file selection dialogue
+        if 'size' in font_settings:
+            if isinstance(font_settings['size'], (int, float)):
+               self.font_size = font_settings['size'] 
+        if 'type' in font_settings:
+            if isinstance(font_settings['type'], str):
+               self.font_type = font_settings['type'] 
+        if 'dialog_size' in font_settings:
+            if isinstance(font_settings['dialog_size'], (int, float)):
+               self.int_font.configure(size=font_settings['dialog_size'])
+               self.icon_font.configure(size=font_settings['dialog_size'])
+        if 'dialog_type' in font_settings:
+            if isinstance(font_settings['dialog_type'], str):
+               self.int_font.configure(family=font_settings['dialog_type'])
+               self.icon_font.configure(family=font_settings['dialog_type'])
+        self.defaults = {'family':self.font_type, 'size':self.font_size}
+
+        self.xpadding = 20
+        self.ypadding = 10
+        self.maxwidth = 120
+        
+        # Check if user specified any other nong-global scaling settings
+        scale_settings = GUI_scale_settings.screen_settings
+        if 'scaling_factor' in scale_settings:
+            if isinstance(scale_settings['scaling_factor'], (int, float)):
+               self.xpadding = int(self.xpadding/scale_settings['scaling_factor'])
+               self.ypadding = int(self.ypadding/scale_settings['scaling_factor'])
+               self.maxwidth = int(self.maxwidth/scale_settings['scaling_factor'])
         
         # adjust based on GUI_SF
         GUI_SF = GUI_zoom/100
@@ -341,16 +373,15 @@ class all2lmp_GUI:
         ftypes = (('all files', '*.*'), ('data files', '*.data *.data.gz'), ('mol files', '*.mol'),
                   ('mol2 files', '*.mol2'), ('mdf files', '*.mdf'), ('sdf files', '*.sdf'),
                   ('pdb files', '*.pdb'))
-        path = filedialog.askopenfilename(initialdir=self.filepath, title='Open topofile?', filetypes=ftypes)
+        path = filedialog.askopenfilename(title='Open topofile?', filetypes=ftypes)
         if path:
-            self.filepath = os.path.dirname(os.path.abspath(path))
             path = os.path.relpath(path)
             self.topofile.delete(0, tk.END); self.topofile.insert(0, path);
         return
     
     # Function to get directory
     def directory_path(self):
-        path = filedialog.askdirectory(initialdir=self.pwd)
+        path = filedialog.askdirectory()
         if path:
             path = os.path.relpath(path)
             self.parent_directory.delete(0, tk.END); self.parent_directory.insert(0, path);
@@ -359,8 +390,7 @@ class all2lmp_GUI:
     # Function to get filepath for nta_file
     def nta_file_path(self):
         ftypes = (('all files', '*.*'), ('nta files', '*.nta'), ('car files', '*.car'))
-        path = filedialog.askopenfilename(initialdir=self.filepath, title='Open nta_file?', filetypes=ftypes)
-        self.filepath = os.path.dirname(os.path.abspath(path))
+        path = filedialog.askopenfilename(title='Open nta_file?', filetypes=ftypes)
         if path:
             path = os.path.relpath(path)
             self.nta_file.delete(0, tk.END); self.nta_file.insert(0, path);
@@ -369,7 +399,7 @@ class all2lmp_GUI:
     # Function to get filepath for frc_file
     def frc_file_path(self):
         ftypes = (('frc files', '*.frc'), ('all files', '*.*'))
-        path = filedialog.askopenfilename(initialdir=self.pwd, title='Open frc file?', filetypes=ftypes)
+        path = filedialog.askopenfilename(title='Open frc file?', filetypes=ftypes)
         if path:
             path = os.path.relpath(path)
             self.frc_file.delete(0, tk.END); self.frc_file.insert(0, path);
@@ -378,7 +408,7 @@ class all2lmp_GUI:
     # Function to get filepath for assumed file
     def assumed_path(self):
         ftypes = (('all files', '*.*'), ('assumed files', '*.coeff'))
-        path = filedialog.askopenfilename(initialdir=self.pwd, title='Open assumed coeffs file?', filetypes=ftypes)
+        path = filedialog.askopenfilename(title='Open assumed coeffs file?', filetypes=ftypes)
         if path:
             path = os.path.relpath(path)
             self.assumed.delete(0, tk.END); self.assumed.insert(0, path);

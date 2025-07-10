@@ -66,7 +66,7 @@ def create_atoms(molid, typeint, atomtype, x, y, z, ix, iy, iz):
 ################################
 # Function to add pi-electrons #
 ################################
-def add(atoms, bonds, box, pi_electrons, log):
+def add(atoms, bonds, box, pi_electrons, types, log):
     # Find orginal number of atoms and bonds
     natoms = len(atoms); nbonds = len(bonds);
     
@@ -85,11 +85,13 @@ def add(atoms, bonds, box, pi_electrons, log):
         graph[id2].append(id1)
         
     # Find type_offset to increment new pi-electron types
+    types_seperated = [j.strip() for i in types for j in types[i].split('|')]
     current_types = sorted(list({atoms[i].type for i in atoms}))
     type_offset = max(current_types)
         
     # Start adding pi-electrons
-    atoms_count = len(atoms); bonds_count = len(bonds); 
+    atoms_count = max([max(atoms), len(atoms)]) # Use max of max or len to allow for non-contiguous atomIDs
+    bonds_count = len(bonds)
     bond_length = 0.65 # cg1-cge bond length = 0.6500
     for id1 in graph:
         atom1 = atoms[id1]
@@ -100,7 +102,7 @@ def add(atoms, bonds, box, pi_electrons, log):
         x1 = atom1.x; y1 = atom1.y; z1 = atom1.z;
         
         # Only add pi-electron if it is not an empty string and the neighor count of the atoms is 2 or 3
-        if electron != '' and len(graph[id1]) in [2, 3]:
+        if electron != '' and len(graph[id1]) in [2, 3] and atom1.atomtype in types_seperated:
             
             # Loop through 1st-neighs to get xyz data (remove PBCs as well)
             xyz = []

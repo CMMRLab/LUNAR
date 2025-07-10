@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-September 21st, 2024
+Revision 1.3
+June 9, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -224,59 +224,176 @@ masses = {'cg1': [10.011150, 'C'],
           }
 
 
-###################################################################################################
-### Settings for adding different atom types (terminating of functional) to the sheets or tubes ###
-###################################################################################################
+###############################################################################################################
+### Settings for adding different atom types (terminating of functional or grafting) to the sheets or tubes ###
+###############################################################################################################
 ##############################################################################################################
 # functional_atoms                                                                                           #
 #   An entry to supply a string to set how functional atoms are added to the sheet or tube and what the      #
 #   functional group is. The string format is as follows:                                                    #
-#     BondingType<MaxPercent>|Type1|Type2|TypeN, where "BondingType" is the atom type to add the function    #
-#     group to, "MaxPercent" is a float or integer type to set the maximum percent of atoms to functionalize #
-#     the "|" character seperates types, and the "TypeN" sets the atom to add.                               #
+#     BondingType<MaxPercent,Direction,molID>|Type1|Type2|TypeN, where "BondingType" is the atom type to add #
+#     the function group to, "MaxPercent" is a float or integer type to set the maximum percent of atoms to  #
+#     functionalize, "Direction" is the direction to stick the functional group, "molID" is the molecule     #
+#     identifier to attached the functional group to and the "|" character seperates types, and the "TypeN"  #
+#     sets the atom to add.                                                                                  #
+#	                                                                                                         #
+#     The "Direction" character can be "+" or "-" with the following meanings:                               #
+#       Sheets:                                                                                              #
+#         + means point the functional groups in the positive direction                                      #
+#         - means point the functional groups in the positive direction                                      #
+#		                                                                                                     #
+#       Tubes:                                                                                               #
+#         + means point the functional groups point outwards relative to the circular cross-section (points  #
+#           outwards to the circumference)                                                                   #
+#         - means point the functional groups point inwards from the to the circular cross-section (points   #
+#           inwards to the center)                                                                           #
+#		                                                                                                     #
+#     The "molID" is an integer value starting from 1 and going to nlayers for sheets and ntubes for tubes.  #
+#     The indexing of molIDs is as follows:                                                                  #
+#       Sheets: molID of 1 is the sheet that is the most negative in the normal direction (can be thought of #
+#               as the bottom sheet). Then each sequential sheet that is placed above have their molIDs      #
+#               incremented. For example a 3 layer stack molIDs would be:                                    #
+#                 1 -> bottom sheet                                                                          #
+#                 2 -> middle sheet                                                                          #
+#                 3 -> top sheet                                                                             #
+#				                                                                                             #
+#       Tubes:  molID of 1 is the center tube, then each sequential tube that is built outward have their    #
+#               molIDs incremented. For example a 3 concentric generation of tubes would have molIDs:        #
+#                 1 -> center tube                                                                           #
+#                 2 -> middle tube                                                                           #
+#                 3 -> outer most tube                                                                       #
+#		                                                                                                     #
+#     The "*" character acts as a wildcard character to define which molIDs to add the functional groups to, #
+#     where setting the molID to "*", will randomly place the functional groups and any of the molIDs sheets #
+#     or tubes that have been built.                                                                         #
 #                                                                                                            #
-#     For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a carbon sheet or nanotube and the    #
-#     goal was to functionalize 5% of the carbon atoms with -OH functional group. Then the functional_atoms  #
-#     string would be 'C<5>|O|H', which would randomly add the -OH functional group to 5% of the C atoms.    #
+#   For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a 3 layer set of carbon sheets          #
+#   (pointing the functional groups in the positive direction) or 3 concentric nanotubes (pointing the       #
+#   funcational groups in the outward direction) and the goal was to functionalize 5% of the carbon atoms    #
+#   with -OH functional group. Then the functional_atoms string would be 'C<5,+,3>|O|H', which would         #
+#   randomly add the -OH functional group to 5% of the C atoms to the molID of 3 (for sheets that is the top #
+#   sheet and for tubes that is the outer most tube)                                                         #
+#	                                                                                                         #
+#   Additionaly the functional_atoms string can handle multiple BondingType's by seperating them with the    #
+#   ";" character. So the generalized functional_atoms string becomes:                                       #
+#     TypeA<MaxPercentA,dirA,molidA>|TypeA1|TypeAN; TypeB<MaxPercentB,dirB,molidb>|TypeB1|TypeBN; ...        #
 #                                                                                                            #
-#     Additionaly the functional_atoms string can handle multiple BondingType's by seperating them with the  #
-#     ";" character. So the generalized functional_atoms string becomes:                                     #
-#       BondingTypeA<MaxPercentA>|TypeA1|TypeAN; BondingTypeB<MaxPercentB>|TypeB1|TypeBN; ...                #
+#     For example say types = {1:'B', 2:'N', 3:'B', 4:'N'} to generate a Boron-Nitride sheet or tube with    #
+#     alternating B/N atoms and the goal was to functionalize 10% of the Boron atoms with -OH functional     #
+#     group and to functionalize 20% of the Nitride atoms with -H functional group. Then the functional_atom #
+#     string would be 'B<10,+,*>|O|H; N<20,+*>|H', which would randomly add the -OH functional group to 10%  #
+#     of the B atoms and add the -H functional group to 20% of the N atoms.                                  #
+#		                                                                                                     #
+#   All examples above will place the atoms in a line along the orthagonal direction from the surface of     #
+#   tube, but say we wanted to added a functional group that resembles an epoxide ring (3 member ring with   #
+#   two carbons and 1 oxygen). Then we can add a "|" character to the end of the functional_atoms string.    #
+#   This method currently only works for adding a single atom functional group like oxygen to the sheets or  #
+#   tubes.                                                                                                   #
 #                                                                                                            #
-#       For example say types = {1:'B', 2:'N', 3:'B', 4:'N'} to generate a Boron-Nitride sheet or tube with  #
-#       alternating B/N atoms and the goal was to functionalize 10% of the Boron atoms with -OH functional   #
-#       group and to functionalize 20% of the Nitride atoms with -H functional group. Then the functional_   #
-#       atoms string would be 'B<10>|O|H; N<20>|H', which would randomly add the -OH functional group to 10% #
-#       of the B atoms and add the -H functional group to 20% of the N atoms.                                #
+#     For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a single carbon sheet or single       #
+#     nanotube and the goal was to functionalize 30% of the carbon atoms with the epoxide ring oxygen (that  #
+#     point in the negative direction of the sheet and inwards for the tube). Then the functional_atoms      #
+#     string would be 'C<30,-,*>|O|', where the last character is the "|" character. This will tell the code #
+#     to find a first neighbor from the random atom and center the oxygen atom between the first neighbor    #
+#     and itself. Finally, add two bonds to create the epoxide type ring. Note that each time the oxygen     #
+#     atom is added, it functionalizes two carbon atoms at a time. So say the sheet or tube had 100 carbon   #
+#     atoms and the functionalization MaxPercent was set to 30%, then only 15 oxygen atoms will be added     #
+#     (not 30).                                                                                              #
 #                                                                                                            #
-#     All examples above will place the atoms in a line along the orthagonal direction from the surface of   #
-#     tube, but say we wanted to added a functional group that resembles an epoxide ring (3 member ring with #
-#     two carbons and 1 oxygen). Then we can add a "|" character to the end of the functional_atoms string.  #
-#     This method currently only works for adding a single atom functional group like oxygen to the sheets   #
-#     or tubes.                                                                                              #
+#   This option is also currently limited to only being able to add one kind of functional group to each     #
+#   type (1-4). So say you wanted to model a graphene sheet of all carbon atoms using the PCFF atom type     #
+#   "cp", but wanted to model functional groups of -O- and -OH. A work around is to use all2lmp.py atom      #
+#   naming scheme summarized as: "AtomType:Name", where the ":"-character provides a delimiter from the true #
+#   atom type and a name a user can supply. You can uniquely name each of the types (1-4) with a ":name".    #
 #                                                                                                            #
-#       For example say types = {1:'C', 2:'C', 3:'C', 4:'C'} to generate a carbon sheet or nanotube and the  #
-#       goal was to functionalize 30% of the carbon atoms with the epoxide ring oxygen. Then the             #
-#       functional_atoms string would be 'C<30>|O|', where the last character is the "|" character. This     #
-#       will tell the code to find a first neighbor from the random atom and center the oxygen atom between  #
-#       the first neighbor and itself. Finally, add two bonds to create the epoxide type ring. Note that     #
-#       each time the oxygen atom is added, it functionalizes two carbon atoms at a time. So say the sheet   #
-#       or tube had 100 carbon atoms and the functionalization MaxPercent was set to 30%, then only 15       #
-#       oxygen atoms will be added (not 30).                                                                 #
+#     For example you could set types {1:'cp:line', 2:'cp:line', 3:'cp:ring', 4:'cp:ring'} and then set the  #
+#     functionalization string as 'cp:line<30,+,*>|O|H; cp:ring<10,+*>|O|'. This will trick sheet_builder    #
+#     into recognizing the atoms as two different types 'cp:line' and 'cp:ring' which will allow you to add  #
+#     two different functional groups to the sheet, while maintaining an atom type all2lmp.py can recognize  #
+#     and automatically parameterize.		                                                                 #
+#		                                                                                                     #
+#    If the functional_atoms entry/string is left blank, this option will not be envoked. Additionally, this #
+#    option requires find_bonds to be True.                                                                  #
 #                                                                                                            #
-#   If the functional_atoms entry/string is left blank, this option will not be envoked. Additionally,       #
-#   this option requires find_bonds to be True.                                                              #
-#                                                                                                            #
-# functional_seed                                                                                            #
-#   An entry to supply a seed to the random number generate to define the random atoms the functional groups #
-#   will be added to. If the seed value is set to ZERO, the current system time from your computer is used   #
-#   to provide a seed to the random number generator.                                                        #
-#                                                                                                            #
-# Update functional_atoms and functional_seed as desired.                                                    #
+# Update functional_atoms desired.                                                                           #
 ##############################################################################################################
-#functional_atoms = 'cg1<10>|O|; C<50>|O|'
+#functional_atoms = 'cg1<10,+,*>|O|; C<50,+,*>|O|'
 functional_atoms = ''
-functional_seed = 12345
+
+
+##############################################################################################################
+# grafting_files                                                                                             #
+#     An entry to supply a string to set how grafting files are added to the sheet or tube and what the      #
+#     atomID(s) are used from the grafting file as the atomID(s) to bond to the sheet or tube. The string    #
+#     format is as follows:                                                                                  #
+#       BondingType<MaxPercent,Direction,molID><id1, id2>|FILENAME.EXT                                       #
+#     The "BondingType<MaxPercent,Direction,molID>" portion descirbing the "BondingType", "MaxPercent",      #
+#     "Direciton", and "molID" are the same as the functional_atoms and are described in that section of     #
+#     this page. Please refer to that section for a more in-depth understanding. FILENAME.EXT is a file that #
+#     defines the new atoms and bonds to graft onto the sheets or tubes. The following per-atom attributes   #
+#     are used from each file extension to set the atom type of the grafted atoms:                           #
+#       .pdb  the per-atom "atom_name" information from this file is used to set the atom type               #
+#       .mol  the per-atom "element" information from this file is used to set the atom type                 #
+#       .sdf  the per-atom "element" information from this file is used to set the atom type                 #
+#       .mol2 the per-atom "element" information from this file is used to set the atom type                 #
+#       .data the per-atom "type label" is the first attempt at being used, if that fails, the per-atom      #
+#             "comment from the Masses" section is the second attempt, and if that fails, the numeric LAMMPS #
+#              atomTypeID is used for the information from this file is used to set the atom type            #
+#	                                                                                                         #
+#     The "<id1, id2>" portion allows users to set which atomID(s) are used to bond the grafting fragment to #
+#     the sheets by. You may supply one or  two atomIDs with the following meanings:                         #
+#       <id1>      will bond the grafting fragment via one covalent bond between the sheet or tube and the   #
+#                  grafting fragment                                                                         #
+#       <id1, id2> will bond the via two covalent bonds between the sheet or tube and the grafting fragment, #
+#                  making a ring between them (generating properly geometric rings like this is difficult -  #
+#                  therefore this method may not produce nice geometries and it is recommended to use a      #
+#                  "fix nve/limit 0.01" run to intialize a these system in LAMMPS).                          #
+#                                                                                                            #
+# 	Examples:                                                                                                #
+#       'C<7,+,*><15>|EXAMPLES/sheet_builder/PBZ_graft.15.pdb'                                               #
+#       'C<2,+,3><15>|PBZ_graft.15.mol; C<2,-,1><15>|PBZ_graft.15.mol'                                       #
+#                                                                                                            #
+# Update grafting_files as desired.                                                                          #
+##############################################################################################################
+#grafting_files = 'C<10,+,3><15>|EXAMPLES/sheet_builder/PBZ_graft.15.mol; C<10,-,1><15>|EXAMPLES/sheet_builder/PBZ_graft.15.mol'
+grafting_files = ''
+
+
+##############################################################################################################
+# functional_atoms and grafting_files additional settings                                                    #
+#   minimum_distance                                                                                         #
+#     An entry to supply a minimum distance value to, that is used when adding grafting files or functional  #
+#     groups. If the minimum_distance value is set to 0 (zero), no minimum distance constraint is applied.   #
+#     *NOTE: this peforms pairwise calculations that are periodic and non-periodic, which can be very        #
+#     computationally intensive depending on the size of the sheets. Currently there is no domain            #
+#     decomposition implentmented here.*                                                                     #
+#                                                                                                            #
+#     When the "minimum_distance" constraint is used for "grafting_files" files an additional keyword syntax #
+#     is available of "cylinder" or "cylinder:SF", where "cylinder" or "cylinder:SF" envokes an option to    #
+#     find out the smallest cylinder that would fit around the grafting fragment. The diameter of this       #
+#     cylinder is then used as the "minimum_distance" constraint. The "SF" in "cylinder:SF" is an optional   #
+#     keyword that sets a scale factor to multiply the diameter by to set the minimum distance constraint.   #
+#     For example say the fit cylinder had a length of 15.0 angstroms and a diameter of 10.0 angstroms. Then #
+#     the following is true:                                                                                 #
+#       cylinder     -> minimum_distance = 10.0                                                              #
+#       cylinder:2   -> minimum_distance = 20.0                                                              #
+#       cylinder:0.5 -> minimum_distance = 5.0                                                               #
+#	                                                                                                         #
+#     If you attempt the use the "cylinder" or "cylinder:SF" option for "functional_groups" it will default  #
+#     the minimum distance to 0 (zero), as a single "line" of atoms will not have a cylinder to fit around   #
+#     them.                                                                                                  #
+#                                                                                                            #
+#   seed                                                                                                     #
+#     An entry to supply a seed to the random number generate to define the random atoms the functional      #
+#     groups or grafting files will be added to. If the seed value is set to 0 (zero), the current system    #
+#     time from your computer is used to provide a seed to the random number generator.                      #
+#                                                                                                            #
+# Update minimum_distance and seed as desired.                                                               #
+##############################################################################################################
+minimum_distance = 'cylinder:0.75'
+#minimum_distance = 0
+seed = 12345
+
 
 
 ##############################################################################################################
@@ -308,7 +425,184 @@ functional_seed = 12345
 # Update terminating_atoms as desired.                                                                       #
 ##############################################################################################################
 #terminating_atoms = 'cg1|H; C|H; cg1|H'
+#terminating_atoms = 'C|H'
 terminating_atoms = ''
+
+
+
+
+######################
+### Cutter options ###
+######################
+##############################################################################################################
+# The cutter stack allows for defining different shapes to cut out of a sheet or tube (currently only tested #
+# on sheets). This option can be useful for adding defaults to a sheet or tube or cutting out a shape from a #
+# sheet to shapes like generate quantum dots. This option defines a 2D shape, that is then "extruded" to     #
+# generate a 3D object. Atoms are then categorized as being "inside" the extruded shape or "outside" the     #
+# extruded shape. Each shape has an option for selecting which atoms to delete. The parameters for each      #
+# shape will be set via the following syntax:                                                                #
+#   shape=shape-name;  parm1=value1;  parm2=value2;  parm3=value3;                                           #
+# where parmN is a keyword and valueN is the value corresponding the keyword. Each parm=value pair will have #
+# defaults set, which will be used unless updated by the user. The shape=shape-name will specify the same to #
+# define. The value can be a few strings and can have a few computing operations based on some strings. The  #
+# following strings are supported as a value (which can be treated as python variables - where python math   #
+# is supported):                                                                                             #
+#   a  -> Apothem for unit ring (bond_length*(math.sqrt(3)/2))                                               #
+#   r0 -> Bond length set by bond_length                                                                     #
+#   lx -> Simulation cell length in X-direction                                                              #
+#   ly -> Simulation cell length in Y-direction                                                              #
+#   lz -> Simulation cell length in Z-direction                                                              #
+#   cx -> Simulation cell center in X-direction                                                              #
+#   cy -> Simulation cell center in Y-direction                                                              #
+#   cz -> Simulation cell center in Z-direction                                                              #
+# where math can be performed on each string like:                                                           #
+#   2*r0                                                                                                     #
+#   lx/2                                                                                                     #
+#   cx+cy                                                                                                    #
+#                                                                                                            #
+# The following shape-name(s) are available:                                                                 #
+#                                                                                                            #
+# hex or hexagon                                                                                             #
+#   This option will define a hexagon shape in the following oreitation for each plane with the following    #
+#   parameters:                                                                                              #
+#                                                                                                            #
+#     Y  Z  Y                                                                                                #
+#     ^  ^  ^         s                                                                                      #
+#     |  |  |     * * * * *                                                                                  #
+#     |  |  |    *         *                                                                                 #
+#     |  |  |   *           *                                                                                #
+#     |  |  |  *         R   *                                                                               #
+#     |  |  | *      +------- *                                                                              #
+#     |  |  |  *     |       *                                                                               #
+#     |  |  |   *  a |      *                                                                                #
+#     |  |  |    *   |     *                                                                                 #
+#     |  |  |     * * * * *                                                                                  #
+#     |  |  +------------------> X                                                                           #
+#     |  +---------------------> X                                                                           #
+#     +------------------------> Z                                                                           #
+#                                                                                                            #
+#   where "s" is the side length, "R" being the Circumcircle's Radius, and "a" being the Apothem. The        #
+#   hexagonal shape is by default centered at the centroid of the "center most ring". The following are      #
+#   available keywords and their meanings:                                                                   #
+#     "plane" which sets the plane to define the 2D hexagon on. The available planes are "xy" or "xz" or     #
+#             "yz". The default plane for sheet(s) is the plane in which the sheet(s) are generated on and   #
+#              the default plane for tube(s) is the plane normal to the tube axis. Examples:                 #
+#               plane=xy                                                                                     #
+#               plane=xz                                                                                     #
+#                                                                                                            #
+#     "theta" which sets the rotation to apply to the defined hexagon above in degrees. The rotation occurs  #
+#             about the normal vector to change the oreitation of the defined hexagon. In general this value #
+#             will be 0.0 or 30.0 degrees to make a symmetrical shape relative to the atoms in the lattice.  #
+#             Changing between 0.0 degrees and 30.0 degrees will generated two shapes termed as "hexagon" or #
+#             "snowflake" depending one the theta and sheet_edgetype of "zigzag" or "armchair". It can be    #
+#             cumbersome to determine the correct rotation for each plane and each sheet_edgetype, so a few  #
+#             shortcuts are setup to make this easier. The following shortcuts for theta are:                #
+#                                                                                                            #
+#               +-------------------------+----------+-----------------+-------+                             #
+#               |       short cut         |  plane   |  sheet_edgetype | theta |                             #
+#               +-------------------------+----------+-----------------+-------+                             #
+#               | hexagon or hex or h     |    xy    |     armchair    |  0.0  |                             #
+#               | hexagon or hex or h     |    xy    |     zigzag      | 30.0  |                             #
+#               | hexagon or hex or h     |    xz    |     armchair    |  0.0  |                             #
+#               | hexagon or hex or h     |    xz    |     zigzag      | 30.0  |                             #
+#               | hexagon or hex or h     |    yz    |     armchair    | 30.0  |                             #
+#               | hexagon or hex or h     |    yz    |     zigzag      |  0.0  |                             #
+#               | snowflake or flake or s |    xy    |     armchair    | 30.0  |                             #
+#               | snowflake or flake or s |    xy    |     zigzag      |  0.0  |                             #
+#               | snowflake or flake or s |    xz    |     armchair    | 30.0  |                             #
+#               | snowflake or flake or s |    xz    |     zigzag      |  0.0  |                             #
+#               | snowflake or flake or s |    yz    |     armchair    |  0.0  |                             #
+#               | snowflake or flake or s |    yz    |     zigzag      | 30.0  |                             #
+#               +-------------------------+----------+-----------------+-------+                             #
+#                                                                                                            #
+#             Examples:                                                                                      #
+#               theta=0                                                                                      #
+#               theta=30.0                                                                                   #
+#               theta=hexagon                                                                                #
+#               theta=hex                                                                                    #
+#               theta=h                                                                                      #
+#               theta=s                                                                                      #
+#                                                                                                            #
+#     "len"   which sets the length of the extrusion. The default extrusion length is the length of the box  #
+#             normal to the plane. This can be useful for cutting through different sheets, when nlayers is  #
+#             greater then 1. The center of this length is set at the centroid of the center most ring.      #
+#             Using "len" in combination or "sx" or "sy" or "sz" can shift where the center of the extrusion #
+#             is located. Examples:                                                                          #
+#               len=1.0                                                                                      #
+#               len=lx                                                                                       #
+#               len=ly                                                                                       #
+#               len=2*lz                                                                                     #
+#               len=2*r0                                                                                     #
+#                                                                                                            #
+#     "tol"   which sets the tolerance on the size of the hexagon to cutout. See "a" for details in how      #
+#             tolerance is applied. The default is bond_length/6, which seems to not need to be adjusted.    #
+#             Examples:                                                                                      #
+#               tol=0.1                                                                                      #
+#               tol=r0/10                                                                                    #
+#                                                                                                            #
+#     "del"   which sets the atoms to group for deleting. If value is "in", the atoms within the hexagon     #
+#             will be deleted (adds a defect) and if the value iss "out" that atoms outside the hexagon will #
+#             be deleted (generates a sheet or tube of a certain shape). Examples:                           #
+#               del=in                                                                                       #
+#               del=out                                                                                      #
+#                                                                                                            #
+#    "rxc"    which sets the centroid of the center most ring in the X-direction. The default is the         #
+#             computed centroid, however this can be adjusted if needed (it will be rare to modify this      #
+#             value - it would be better to use "sx"). Examples:                                             #
+#               rxc=0.0                                                                                      #
+#               rxc=xc                                                                                       #
+#               rxc=2*r0                                                                                     #
+#                                                                                                            #
+#    "ryc"    which sets the centroid of the center most ring in the Y-direction. The default is the         #
+#             computed centroid, however this can be adjusted if needed (it will be rare to modify this      #
+#             value - it would be better to use "sx"). Examples:                                             #
+#               ryc=0.0                                                                                      #
+#               ryc=yc                                                                                       #
+#               ryc=2*r0                                                                                     #
+#                                                                                                            #
+#    "rzc"    which sets the centroid of the center most ring in the Z-direction. The default is the         #
+#             computed centroid, however this can be adjusted if needed (it will be rare to modify this      #
+#             value - it would be better to use "sx"). Examples:                                             #
+#               rzc=0.0                                                                                      #
+#               rzc=zc                                                                                       #
+#               rzc=2*r0                                                                                     #
+#                                                                                                            #
+#     "sx"    which sets the shift value to shift the center of the extruded hexagon in the X-direction. The #
+#             default is 0 if not supplied: Examples:                                                        #
+#               sx=10                                                                                        #
+#               sx=1*(2*a)                                                                                   #
+#               sx=1*(1.5*r0)                                                                                #
+#                                                                                                            #
+#     "sy"    which sets the shift value to shift the center of the extruded hexagon in the Y-direction. The #
+#             default is 0 if not supplied: Examples:                                                        #
+#               sy=10                                                                                        #
+#               sy=1*(2*a)                                                                                   #
+#               sy=1*(1.5*r0)                                                                                #
+#                                                                                                            #
+#     "sz"    which sets the shift value to shift the center of the extruded hexagon in the Z-direction. The #
+#             default is 0 if not supplied: Examples:                                                        #
+#               sz=10                                                                                        #
+#               sz=1*(2*a)                                                                                   #
+#               sz=1*(1.5*r0)                                                                                #
+#                                                                                                            #  
+#     "a"     which sets the size of the defined hexagon, based on the Apothem. It has been seen this works  #
+#             best as multiples or r0, to ensure the apothem is set correctly. When using mulitples or r0,   #
+#             the mulitplier value has the meaning of number of rings in each direction (e.g. if "a=2*r0",   #
+#             the maximum "radius" of rings in any direction will be two). Examples:                         #
+#               a=10                                                                                         #
+#               a=2*r0                                                                                       #
+#               a=3*r0                                                                                       #
+#                                                                                                            #	
+# Full examples:                                                                                             #
+#   shape=hexagon; a=3*r0;  del=out; theta=hexagon;  len=lz/2;  sx=1*(2*a);  sy=0*a                          #
+#   shape=hex;     a=4*r0;  del=out; theta=flake;    len=1.0;   sx=0*(2*a);  sy=0*a                          #
+#   shape=hexagon; a=3*r0;  del=in;  theta=hexagon;  len=2.0                                                 #
+#                                                                                                            #
+# Update cutter as desired.                                                                                  #
+##############################################################################################################
+#cutter = ['shape=hex; a=3*r0;  del=out; theta=h;  len=lz/2;  sx=0*(2*a);  sy=0*a']
+#cutter = ['shape=hex;  a=4*r0;  del=out;  theta=hex;  sx=0*(2*a)']
+cutter = []
 
 
 
@@ -381,8 +675,8 @@ sheet_edgetype = 'armchair'
 #                                                                                                            #
 # Update length_in_perpendicular and length_in_edgetype as desired.                                          #
 ##############################################################################################################
-length_in_perpendicular = 20.0
-length_in_edgetype = 10.0
+length_in_perpendicular = 30.0
+length_in_edgetype = 30.0
 
 
 ##############################################################################################################
@@ -540,7 +834,7 @@ chiral_length = 20.0
 #                                                                                                            #
 # Update m and n as desired.                                                                                 #
 ##############################################################################################################
-n = 5
+n = 1
 m = 10
 
 
@@ -580,9 +874,9 @@ if __name__ == "__main__":
         sheet_builder_GUI(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype,
                           sheet_edgetype, types, bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing,
                           symmetric_ntubes, symmetric_length, diameter, n, m, chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds,
-                          charges, masses, functional_seed, functional_atoms, terminating_atoms, GUI_zoom)
+                          charges, masses, seed, functional_atoms, terminating_atoms, grafting_files, minimum_distance, cutter, GUI_zoom)
     else:
         main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode, parent_directory, length_in_perpendicular, length_in_edgetype, sheet_edgetype, types,
              bond_length, sheet_layer_spacing, sheet_nlayers, stacking, plane, tube_edgetype, tube_layer_spacing, symmetric_ntubes, symmetric_length, diameter, n, m,
-             chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, charges, masses, functional_seed, functional_atoms, terminating_atoms, 
-             commandline_inputs=commandline_inputs)
+             chiral_length, symmetric_tube_axis, chiral_tube_axis, find_bonds, periodic_bonds, charges, masses, seed, functional_atoms, terminating_atoms, 
+             grafting_files, minimum_distance, cutter, commandline_inputs=commandline_inputs)
