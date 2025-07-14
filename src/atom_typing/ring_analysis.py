@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 2.1 (2.N's no longer uses Jake's ring code to find cycles')
-June 6th, 2023
+Revision 2.2
+July 15th, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -11,7 +11,6 @@ Houghton, MI 49931
 # Import Necessary Libraries #
 ##############################
 import math
-import time
 
 
 #########################################################
@@ -26,83 +25,69 @@ def find_cycles(m, find_rings, log):
         id1, id2 = m.bonds[i].atomids
         graph[id1].append(id2); graph[id2].append(id1);
     
-    #----------------------------------------------------------------------------------------#
-    # DFS search to find start and end point to use for finding cycles. Implementation:      # 
-    # https://stackoverflow.com/questions/40833612/find-all-cycles-in-a-graph-implementation #
-    # Meant to be called from within a loop like: for path in dfs(graph, start, end):        #
-    # but could be called as paths = list(dfs(graph, start, end)) to get a list of all paths #
-    #----------------------------------------------------------------------------------------#
-    def dfs(graph, start, end):
-        stack = [(start, [])]
+    #------------------------------------------------------------------#
+    # DFS search to find start and end point to use for finding cycles #
+    #------------------------------------------------------------------#
+    def dfs_cycles(graph, start, max_ring):
+        stack = [(start, [start], {start})]
         while stack:
-            vertex, path = stack.pop()
-            if path and vertex == end: yield path; continue;
-            for neighbor in graph[vertex]:
-                if neighbor in path: continue;
-                stack.append((neighbor, path+[neighbor]))
+            current, path, visited = stack.pop()
+            path_size = len(path)
+            for neighbor in graph[current]:
+                if neighbor == start and path_size > 2:
+                    yield path
+                elif neighbor not in visited and neighbor >= start:
+                    new_path = path + [neighbor]
+                    if len(new_path) > max_ring: continue
+                    stack.append((neighbor, new_path, visited | {neighbor}))
         
     #--------------------------------------------------------------------------------#
     # Functions to reduce the size of a graph to speed up execution of dfs algorithm #
     #--------------------------------------------------------------------------------#
-    # Function to find neighs away
-    def find_Nneighs_away(atomID, maxdepth, graph):
-        neighbors=[[] for i in range(maxdepth)]; 
-        neighbors[0]=graph[atomID]; visited=graph[atomID]+[atomID];
-        for n, i in enumerate(neighbors):
-            for j in neighbors[n]:
-                if n+1 < maxdepth:
-                    new = []
-                    for k in graph[j]:
-                        if k not in visited:
-                            visited.append(k); new.append(k);
-                    neighbors[n+1].extend(new)
+    def find_cumulative_neighs(graph, node, max_depth):
+        neighbors = {i+1 : set() for i in range(max_depth)} # { depth : {id1, id2, ...} }
+        neighbors[1] = set(graph[node]) 
+        visited = set(graph[node] + [node])
+        for depth in range(1, max_depth):
+            for i in neighbors[depth]:
+                for j in graph[i]:
+                    if j in visited: continue  
+                    neighbors[depth+1].add(j)
+                    visited.add(j)
         return neighbors
-    
+        
     # Function to generate reduced graph
-    def reduced_graph(atomID, maxdepth, graph, m, elements2walk):
-        rgraph = {}; rgraph[atomID] = graph[atomID];
-        neighs = find_Nneighs_away(atomID, maxdepth, graph)
-        for n, depth in enumerate(neighs, 1): 
-            for ID in depth:
-                if n < len(neighs) and m.atoms[ID].element in elements2walk: rgraph[ID] = graph[ID]
-                else: rgraph[ID] = []
+    def reduced_graph(graph, node, max_depth, m, elements2walk):
+        # We need one additionaly neighbor to generate a graph that terminates after
+        # the max_depth cutoff, hence the "max_depth+1" in find_cumulative_neighs()    
+        neighs = find_cumulative_neighs(graph, node, max_depth+1)    
+        rgraph = {node : graph[node]} # {atomID : [bonded-neighbors] }
+        for depth in neighs: 
+            for i in neighs[depth]:
+                if depth < len(neighs) and m.atoms[i].element in elements2walk: 
+                    rgraph[i] = graph[i]
+                else: rgraph[i] = [] # graph termination
         return rgraph
     
     #-------------------------------------------------------------------------------------------------#
     # Find rings/cycles in the molecular system based on user inputs (will produce tuples of atomIDs) #
     #-------------------------------------------------------------------------------------------------#
-    elements2walk = find_rings['elements2walk']; rings2check = find_rings['rings2check'];
-    maxringsize = math.ceil( 0.5*(max(rings2check)+1) ); cycles = set([]) # hold all unqiue cycles
+    elements2walk = find_rings['elements2walk'] 
+    rings2check = find_rings['rings2check']
+    max_ring = max(rings2check)
+    max_depth = math.ceil(0.5*(max_ring))
+    rings2check = set(rings2check)
+    cycles = set([]) # hold all unqiue cycles
     log.out('Finding rings ...')
-    start_time = time.time()
-    time_per_atom = 0 # DETDA is about 0.0001 (if over 0.25 generate output log)
-    progress_increment = 5; count = 0; natoms = len(graph);
-    nevery = math.ceil(natoms*(progress_increment/100))
-    checked = {i:False for i in graph}
-    use_checked = False; log_progress = False
-    for n, atomID in enumerate(graph, 1):
-        # log progress
-        count += 1
-        if  time_per_atom > 0.25:
-            log_progress = True
-            use_checked = True
-        if log_progress and count % nevery == 0 or log_progress and count in [1, natoms]:
-            current_percent = int(100*count/natoms)
-            elapsed_time = '{:.4f}'.format(time.time() - start_time)
-            message = '    Taking longer then expected ... Completed: {} %. Elapsed time: {} seconds'.format(current_percent, elapsed_time)
-            log.out(message)
+    for atomID in graph:
         
         # Find rings
-        if use_checked and checked[atomID]: continue
         if len(graph[atomID]) == 1 or m.atoms[atomID].element not in elements2walk: continue 
-        rgraph = reduced_graph(atomID, maxringsize, graph, m, elements2walk) # Find reduced graph for speedup
-        for path in dfs(rgraph, start=atomID, end=atomID): # Find all cycles in the reduced graph (rgraph)
-            if len(path) in rings2check and len(path) >= 2: cycles.add(tuple(sorted(path)))    
-            if use_checked:
-                for i in path:
-                    checked[i] = True
-        time_per_atom = (time.time() - start_time)/n
-    if use_checked: log.out('Ring analysis was slow. Sped-up by checking if atom was walked prior from previous paths.')
+        rgraph = reduced_graph(graph, atomID, max_depth, m, elements2walk) # Find reduced graph for speedup
+        for path in dfs_cycles(rgraph, atomID, max_ring): # Find all cycles in the reduced graph (rgraph)
+            if len(path) in rings2check and len(path) >= 2: 
+                cycles.add(tuple(sorted(path)))    
+
     return list(sorted(cycles)), graph
 
 
@@ -156,6 +141,12 @@ class fused_rings:
         checked = {i:False for i in ringIDs}
         clusters = set([])
         for ID in ringIDs:
+            # Skip over ring sizes that are not asked for
+            ring_size = len(ringIDs[ID])
+            if ring_size not in fused2check: 
+                checked[ID] = True
+                continue
+            
             if checked[ID]: continue
             visited=set([ID]); queue=[ID];
             while queue:
@@ -232,11 +223,18 @@ class fused_rings:
         # Analyze fused clusters #
         #------------------------#
         total_rings = len(ringIDs)
+        group_atoms = False
+        if group_atoms:
+            log.out('\n\n#{}LAMMPS Fused ring groups{}'.format(25*'-', 25*'-'))
         for n, cluster in enumerate(self.clusters, 1):
             size, mass = cluster_size_mass(cluster)
             formula = fused_ring_formula(cluster)
             atoms, bonds = find_bonds_in_fused_cluster(cluster)
             nrings = len(cluster)
+            
+            if group_atoms:
+                self.gen_lines(atoms, n, log)
+                log.out('\n')
             
             # Compute pmass, psize, and prings
             pmass = 0; psize = 0; prings = 0;
@@ -262,6 +260,25 @@ class fused_rings:
             for ID in cluster:
                 for atomID in ringIDs[ID]:
                     self.atom2fusedringIDs[atomID] = n
+                    
+    def gen_lines(self, atoms, n, log):
+        atoms = sorted(atoms)
+        group = 'group fused_cluster_{} id'.format(n)
+        nper = 20
+        for n, i in enumerate(range(0, len(atoms), nper)):
+            chunk = atoms[i:i + nper]
+            chunk =  ' '.join(['{:^5}'.format(i) for i in chunk])
+            if n == 0:
+                output = '{} {}'.format(group, chunk)
+            else:
+                output = '{} {}'.format(len(group)*' ', chunk)
+                
+            if n < len(atoms)/nper - 1:
+                output += ' &'
+
+            log.out(output)
+
+        return
         
 
 ##################################################################################

@@ -15,10 +15,15 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 7July2025)
+LUNAR (version 14July2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+14July2025          JDK        - atom_typing.py and auto_morse_bond.py: The ring finding code was rewritten for
+                                                                        a substantial increase in performance of
+                                                                        up to 80x for systems with many paths and
+                                                                        many rings.
+
 7July2025          JDK & TKW   - GUI file dialog: All GUIs file dialog boxes now have "memory" of where you
                                                   during the "last LUNAR session"
 
