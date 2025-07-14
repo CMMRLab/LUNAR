@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 2/20/2025
+# Last edited 7/14/2025
 #
 ************
 * Overview *
@@ -406,6 +406,40 @@
                              :                                  :                                :                                 :
            hybridizations['SpN-*']['natoms'], hybridizations['SpN-*']['Mass'], hybridizations['SpN-*']['%Mass'], hybridizations['SpN-*']['%natoms']
            """ 
+		   
+		   
+*********************
+* logger: Unit cell *
+*********************
+
+  This section will show how to log certain values that are written in the LUNAR/atom_typing.py "System Unit cell, volume, mass, density" table. As
+  an example a table is provided below:
+  
+    ---------------------------------------
+    System Unit cell, volume, mass, density
+    ---------------------------------------
+    lx:        36.186616  angstrom  
+    ly:        45.491967  angstrom  
+    lz:        44.578115  angstrom  
+    volume:    73384.509317 angstrom^3
+    mass:      60019.200000 amu       
+    density:    1.358110  g/cm^3 
+
+  The keyword syntax for this table is as follows:
+    
+	lx or ly or lz or volume or mass or density
+	
+  where lx or ly or lz or volume or mass of density keywords will log each value. Examples:
+  
+       1. Say we wanted to log the filename, the mass and volume. A valid logger string would be:
+           logger = """
+                    filename, mass, volume
+                    """ 
+					
+       2. Say we wanted to log the filename, lx, ly, lz, and volume. A valid logger string would be:
+           logger = """
+                    filename, lx, ly, lz, volume
+                    """ 
 
 *****************************
 * logger: keyword shortcuts *

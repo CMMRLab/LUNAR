@@ -87,12 +87,15 @@ def out(mm, bp, log, version, ff_name):
     ####################################
     # Write molecules/cluster findings #
     ####################################
-    # Write molecules table          
-    log.out('\n\n--------------------------------------------Cluster Analysis-------------------------------------')
+    # Write molecules table   
+    system_mass = sum([mm.molecules.data[i].mass for i in mm.molecules.data])
+    log.out(f'\n\nTotal system mass: {system_mass}')        
+    log.out('--------------------------------------------Cluster Analysis-------------------------------------')
     log.out('{:^10} {:^15} {:^20} {:^15} {:^15} {:^15}'.format('molID', 'Molecule Size', 'Mass', '%Mass', '%Size', 'Molecule Formula'))
     log.out('-------------------------------------------------------------------------------------------------')  
     for i in mm.molecules.data:
         data = mm.molecules.data[i]
+        system_mass += data.mass
         size = '{: >6}'.format(data.size)
         mass = '{:.2f}'.format(data.mass)
         pmass = '{:.2f}'.format(data.pmass)
@@ -261,18 +264,20 @@ def out(mm, bp, log, version, ff_name):
         log.out('\n\n--------------------------------------------------Fused Ring Clusters-----------------------------------------------------')
         log.out('{:<6} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12} {:>35}'.format('FusedID', 'Size', 'Mass', '%Mass', '%Size', 'Nrings', '%Rings', 'FusedRing Formula'))
         log.out('--------------------------------------------------------------------------------------------------------------------------')  
+        sum_percent_mass = 0
         for i in mm.rings.fused.data:
             data = mm.rings.fused.data[i]
-            size = '{: >6}'.format(data.size)
-            mass = '{:.2f}'.format(data.mass)
-            pmass = '{:.2f}'.format(data.pmass)
-            psize = '{:.2f}'.format(data.psize)
-            nrings = '{:>6}'.format(data.nrings)
-            prings = '{:>6}'.format(data.prings)
-            formula = '{:^10}'.format(data.formula)
-            if data.size > 0:
+            if data.size > 0 and data.nrings > 1:
+                sum_percent_mass += data.pmass
+                size = '{: >6}'.format(data.size)
+                mass = '{:.2f}'.format(data.mass)
+                pmass = '{:.2f}'.format(data.pmass)
+                psize = '{:.2f}'.format(data.psize)
+                nrings = '{:>6}'.format(data.nrings)
+                prings = '{:>6}'.format(data.prings)
+                formula = '{:^10}'.format(data.formula)
                 log.out('{:<6} {:>12} {:>12} {:>12} {:>12} {:>12} {:>12} {:>35}'.format(i, size, mass, pmass, psize, nrings, prings, formula))
-
+        log.out(f'Sum percent mass: {sum_percent_mass}')
 
 
     ###############################
@@ -293,6 +298,40 @@ def out(mm, bp, log, version, ff_name):
             if size > 0:# and hybridization != 'all':
                 log.out('{:^20} {:^16} {:^16} {:^16} {:^16}'.format(atomtype, size, mass, pmass, psize))    
 
+
+    ######################################
+    # Write simulation cell related info #
+    ######################################
+    amu2grams = 1/6.02214076e+23
+    system_mass_sum = 0
+    for i in mm.atoms:
+        atom = mm.atoms[i]
+        mass = mm.masses[atom.type]
+        system_mass_sum += mass.coeffs[0]
+        
+    # convert system mass in amu to grams
+    mass = system_mass_sum*amu2grams
+    
+    # Find box dimensions to compute volume
+    angstromcubed2cmcubed = 1e-24
+    xline = mm.xbox_line.split(); yline = mm.ybox_line.split(); zline = mm.zbox_line.split()
+    lx = float(xline[1])-float(xline[0])
+    ly = float(yline[1])-float(yline[0])
+    lz = float(zline[1])-float(zline[0])
+    volume = lx*ly*lz
+    
+    # Compute density
+    density = mass/(volume*angstromcubed2cmcubed)
+    
+    log.out('\n\n---------------------------------------')
+    log.out('System Unit cell, volume, mass, density')
+    log.out('---------------------------------------')
+    log.out('{:<10} {:^10.6f} {:<10}'.format('lx:', lx, 'angstrom'))
+    log.out('{:<10} {:^10.6f} {:<10}'.format('ly:', ly, 'angstrom'))
+    log.out('{:<10} {:^10.6f} {:<10}'.format('lz:', lz, 'angstrom'))
+    log.out('{:<10} {:^10.6f} {:<10}'.format('volume:', volume, 'angstrom^3'))
+    log.out('{:<10} {:^10.6f} {:<10}'.format('mass:', system_mass_sum, 'amu'))
+    log.out('{:<10} {:^10.6f} {:<10}' .format('density:', density, 'g/cm^3'))
             
     #############################
     # Write atom typing results #

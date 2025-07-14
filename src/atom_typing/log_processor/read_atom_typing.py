@@ -34,6 +34,12 @@ class logfile:
         self.atom_types_tally = {} # { 'Atom-type' : {'column-name': column-value} }
         self.by_products_tally = {} # { 'Type' : {'column-name': column-value} }
         self.fused_ringed_clusters = {} # { FusedID : {'column-name': column-value} }
+        self.lx = 0
+        self.ly = 0
+        self.lz = 0 
+        self.mass = 0
+        self.volume = 0 
+        self.density = 0
         
         # Initialize flags
         columns = []
@@ -49,12 +55,14 @@ class logfile:
         ringed_clusters_table = False
         atom_bond_order_table = False
         fused_ringed_clusters_table = False
+        system_unit_cell = False
         relative_line_number = 0
         
         # Parse logfile
         with open(logfile, 'r') as f:
             for linenumber, line in enumerate(f, 1):
                 line = line.strip()
+                #print(line)
                 
                 # Start setting flags
                 if line == '':
@@ -71,6 +79,7 @@ class logfile:
                     ringed_clusters_table = False
                     atom_bond_order_table = False
                     fused_ringed_clusters_table = False
+                    system_unit_cell = False
                     relative_line_number = 0
                 elif 'Elements found in system:' in line:
                     table_body = False
@@ -118,6 +127,9 @@ class logfile:
                 elif 'Ring' in line and 'Count' in line and '%Ring' in line:
                     ring_table = True
                     relative_line_number = 0
+                elif 'System Unit cell, volume, mass, density' in line:
+                    system_unit_cell = True
+                    continue
                 
                 # Start parsing sections
                 if ring_table:
@@ -143,6 +155,13 @@ class logfile:
                     columns, table_body = self.parse_table(line, self.ringed_clusters, columns, table_body)
                 elif fused_ringed_clusters_table:
                     columns, table_body = self.parse_table(line, self.fused_ringed_clusters, columns, table_body)
+                elif system_unit_cell:
+                    line = line.split()
+                    if 'lx:' in line: self.lx = float(line[1])
+                    if 'ly:' in line: self.ly = float(line[1])
+                    if 'lz:' in line: self.lz = float(line[1])
+                    if 'volume:' in line: self.volume = float(line[1])
+                    if 'density:' in line: self.density = float(line[1])
                     
         # Go through and sum up all hybridizations to get system mass
         if self.hybridizations:
@@ -198,10 +217,21 @@ if __name__ == "__main__":
     LUNAR_path = '../../../EXAMPLES/array_processing/atom_typing_logfile_processor/heating_temp_300K_time_0ps_bonds_typed.log.lunar'
     log = logfile(LUNAR_path)
     
-    # Show how to access elements list
+    # Show how to get simulation cell dimensions
     print('\n\n')
-    print('Elements list: ', log.elements)
-    print('System mass  : ', log.mass)
+    print('lx = ', log.lx)
+    print('ly = ', log.ly)
+    print('lz = ', log.lz)
+    print('lz = ', log.lz)
+    print('mass = ', log.mass)
+    print('volume = ', log.volume)
+    print('density = ', log.density)
+    
+    
+    # Show how to access elements list
+    # print('\n\n')
+    # print('Elements list: ', log.elements)
+    # print('System mass  : ', log.mass)
     
     # # Show how to access Table: Cluster Data
     # if log.clusters:

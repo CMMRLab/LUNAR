@@ -16,6 +16,9 @@ src/log_analysis/__pycache__/
 src/log_analysis/modes/__pycache__/
 *.pyc
 
+# ignore quick gpush script
+gpush.sh
+
 # ignore automatic test outputs
 automatic_tests/outputs
 

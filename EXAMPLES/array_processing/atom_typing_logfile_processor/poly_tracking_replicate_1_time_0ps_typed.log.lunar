@@ -1,26 +1,26 @@
 
 
 Using array input option:
- - topofile     : EXAMPLES/array_processing/poly_tracking_replicate_1_time_*.data
- - matched file : EXAMPLES/array_processing\poly_tracking_replicate_1_time_0ps.data
+ - topofile     : EXAMPLES\array_processing\poly_tracking_replicate_1_time_*ps.data
+ - matched file : EXAMPLES\array_processing\poly_tracking_replicate_1_time_0ps.data
  - elapsed time : 0.00 (seconds)
- - progress     : 1 of 8 (12.50%)
+ - progress     : 1 of 6 (16.67%)
 
 
-Running atom_typing v1.10 / 10 May 2024
+Running atom_typing v1.11 / 14 April 2025
 Using Python version 3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]
 Assigning PCFF-IFF atom-types
-Read in EXAMPLES/array_processing\poly_tracking_replicate_1_time_0ps.data LAMMPS datafile
+Read in EXAMPLES\array_processing\poly_tracking_replicate_1_time_0ps.data LAMMPS datafile
 
 
 Using mass_map dictionary to set element symbols ...
-Using path and topfile name from topofile to set bondfile = EXAMPLES/array_processing\poly_tracking_replicate_1_time_0ps.reaxc
+Using path and topfile name from topofile to set bondfile = EXAMPLES\array_processing\poly_tracking_replicate_1_time_0ps.reaxc
 Reading ReaxFF Bond order file and finding bonds ....
-Read in EXAMPLES/array_processing\poly_tracking_replicate_1_time_0ps.reaxc LAMMPS reaxff bond-order file
+Read in EXAMPLES\array_processing\poly_tracking_replicate_1_time_0ps.reaxc LAMMPS reaxff bond-order file
 Finding molecules ...
 Finding rings ...
+Finding fused-ring clusters ...
 Finding atoms hybridization ...
-Using path from topofile to set parent_directory ...
 
 
 Elements found in system:
@@ -49,11 +49,12 @@ Total bonds not created : 29 (due to not meeting specified criteria)
 Element    Element     abo           abo            abo            abo           Max bonded     
 Type        Count    Average       Minimum        Maximum    Standard Deviation    Cut-off    
 ----------------------------------------------------------------------------------------------
-H            1824     0.9570       0.8180         1.0640         0.0204               1         
 C            2520     3.7990       2.0580         4.3960         0.3780               4         
+H            1824     0.9570       0.8180         1.0640         0.0204               1         
 O            516      1.9847       1.7010         2.4310         0.0909               2         
 
 
+Total system mass: 40334.076
 --------------------------------------------Cluster Analysis-------------------------------------
   molID     Molecule Size          Mass              %Mass           %Size      Molecule Formula
 -------------------------------------------------------------------------------------------------
@@ -157,9 +158,22 @@ O            516      1.9847       1.7010         2.4310         0.0909         
     98             11             92.03              0.23            0.23          C6-H4-O1    
     99             11             92.03              0.23            0.23          C6-H4-O1    
    100             11             92.03              0.23            0.23          C6-H4-O1    
-    .               .               .                  .               .              .        
-    .               .               .                  .               .              .        
-    .               .               .                  .               .              .        
+   101             11             92.03              0.23            0.23          C6-H4-O1    
+   102             11             92.03              0.23            0.23          C6-H4-O1    
+   103             11             92.03              0.23            0.23          C6-H4-O1    
+   104             11             92.03              0.23            0.23          C6-H4-O1    
+   105             11             92.03              0.23            0.23          C6-H4-O1    
+   106             11             92.03              0.23            0.23          C6-H4-O1    
+   107             11             92.03              0.23            0.23          C6-H4-O1    
+   108             11             92.03              0.23            0.23          C6-H4-O1    
+   109             11             92.03              0.23            0.23          C6-H4-O1    
+   110             11             92.03              0.23            0.23          C6-H4-O1    
+   111             11             92.03              0.23            0.23          C6-H4-O1    
+   112             11             92.03              0.23            0.23          C6-H4-O1    
+   113             11             92.03              0.23            0.23          C6-H4-O1    
+   114             11             92.03              0.23            0.23          C6-H4-O1    
+   115             11             92.03              0.23            0.23          C6-H4-O1    
+   116             11             92.03              0.23            0.23          C6-H4-O1    
 
 
 By-products criteria: {'method': 'mass', 'criteria': 0.0}
@@ -239,6 +253,61 @@ C3                    3             12             432.00               36
 C5-O1                 6              1              76.00                6
 
 
+--------------------------------------------------Fused Ring Clusters-----------------------------------------------------
+FusedID         Size         Mass        %Mass        %Size       Nrings       %Rings                   FusedRing Formula
+--------------------------------------------------------------------------------------------------------------------------
+1                10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+2                10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+3                10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+4                10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+5                10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+6                10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+7                10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+8                10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+9                10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+10               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+11               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+12               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+13               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+14               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+15               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+16               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+17               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+18               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+19               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+20               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+21               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+22               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+23               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+24               10       128.00         0.32         0.21            4          0.8                        3:C4-O1;1:C6
+25                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+26                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+27                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+28                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+29                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+30                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+31                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+32                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+33                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+34                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+35                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+36                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+37                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+38                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+39                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+40                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+41                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+42                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+43                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+44                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+45                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+46                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+47                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+48                9       112.00         0.28         0.19            2          0.4                        1:C4-O1;1:C6
+49                6        76.00         0.19         0.12            2          0.4                     1:C4-O1;1:C5-O1
+Sum percent mass: 14.589999999999987
+
+
 
 -----------------------------Hybridization Information-------------------------------
      Atom-Type            natoms            Mass            %Mass           %natoms     
@@ -252,6 +321,17 @@ C5-O1                 6              1              76.00                6
        Sp2-O               467            7471.53           18.52             9.61      
        Sp3-O                38             607.96            1.51             0.78      
        all-O               516            8255.48           20.47            10.62      
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+lx:        38.932154  angstrom  
+ly:        38.932154  angstrom  
+lz:        38.932154  angstrom  
+volume:    59009.958627 angstrom^3
+mass:      40334.076000 amu       
+density:    1.135000  g/cm^3    
 
 
 
@@ -353,13 +433,13 @@ op                       415
 pdb_file = skip, so skipping writing of optional .pdb file
 
 
-All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\array_processing\pyro directory
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\array_processing\atom_typing_logfile_processor directory
 
 
 Normal program termination
 
 
-Execution time in seconds: 0.6039924621582031
+Execution time in seconds: 0.6052713394165039
 
 
 Number of WARNING(s) and ERROR(s)
