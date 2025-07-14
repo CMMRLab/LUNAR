@@ -19,6 +19,8 @@ LUNAR (version 14July2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+14July2025          JDK        - lmp2SYBYLmol2.py: Added "array processing" to this module.
+
 14July2025          JDK        - atom_typing.py and auto_morse_bond.py: The ring finding code was rewritten for
                                                                         a substantial increase in performance of
                                                                         up to 80x for systems with many paths and

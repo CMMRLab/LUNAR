@@ -184,218 +184,244 @@ def main(topofile, parent_directory, remove_PBC_bonds, mass_map, addbox, log=Non
     import src.read_lmp as read_lmp
     import src.io_functions as io_functions
     from collections import OrderedDict
+    import glob
+    import time
     import sys
     import os
     
-    # Configure log (default is level='production', switch to 'debug' if debuging)
-    if log is None:
-        log = io_functions.LUNAR_logger()
-    log.configure(level='production')
-    #log.configure(level='debug')
+    #####################################################
+    # Set up Tristan's "array" analysis using recursion #
+    #####################################################
+    if not os.path.isfile(str(topofile)):
+        if log is None: log = io_functions.LUNAR_logger()
+        log.configure(level='production', print2console=True, write2log=True)
+        files = glob.glob(topofile); array_time = time.time()
+        if files:
+            for n, file in enumerate(files, 1):
+                log.clear_all()
+                log.out('\n\nUsing array input option:')
+                log.out(' - topofile     : {}'.format(topofile))
+                log.out(' - matched file : {}'.format(file))
+                log.out(' - elapsed time : {:.2f} (seconds)'.format(time.time() - array_time))
+                log.out(' - progress     : {} of {} ({:.2f}%)'.format(n, len(files), 100*(n/len(files))))
+                try: # we dont want crashes to exit this loop
+                    main(file, parent_directory, remove_PBC_bonds, mass_map, addbox)
+                except: pass
+            print('\a') # Alert
+        else: log.error(f'ERROR topofile: {topofile} unwrapped zero files or does not exist')
+        return
     
+    else:
     
-    ########################################################
-    # set version and print starting information to screen #
-    ########################################################
-    version = 'v1.2 / 16 May 2025'
-    log.out(f'\n\nRunning lmp2SYBYLmol2 {version}')
-    log.out(f'Using Python version {sys.version}')
-    
-    
-    ##########################################################
-    # Read LAMMPS datafile into memory as class "m" applying #
-    # forward mapping of type labels (if applicable)         #
-    ##########################################################
-    if os.path.isfile(topofile):
-        m = read_lmp.Molecule_File(topofile, method='forward', sections=['Atoms', 'Bonds'])
-        log.out(f'Read in {m.filename} LAMMPS datafile')
-    else: log.error(f'ERROR lammps datafile: {topofile} does not exist')
-    basename = os.path.basename(topofile) # Strip path from topofile
-    if basename.endswith('data.gz'):
-        basename = basename.replace('.gz', '') # remove .gz suffix
-    basename = basename[:basename.rfind('.')] # Find file basename
-    log.debug(f'basename = {basename}')
-    
-    
-    ##################################
-    # Function to get element symbol #
-    ##################################
-    def get_element_symbol(m, atomID, mass_map):
-        mass = m.masses[m.atoms[atomID].type].coeffs[0]
-        # Try gettint element symbol
-        element = 'DEFAULT' # Initialize and update if found
-        try: element = [i for i in mass_map if mass in mass_map[i]][0]
-        except: log.error(f'ERROR Not all masses in {topofile} are in the mass_map dictionary. Failed for mass: {mass}')
-        return element
-    
-    
-    #######################################
-    # Setting up directories and where to #
-    # write final files and results to    #
-    #######################################
-    # Find present working directory and find/create paths to store code results
-    pwd = os.getcwd()
-    path = os.path.join(pwd, parent_directory)
-    
-    # If parent_directory == 'topofile' use topofile path as path
-    if 'topofile' in parent_directory:
-        log.out('Using path from topofile to set parent_directory ...')
-        path = io_functions.get_dir_from_topofile(topofile, parent_directory)
-    
-    # Check if path exits. IF not create
-    if not os.path.isdir(path):
-        os.makedirs(path, exist_ok=True)
-        
-    # Change the current working directory to path so all files get written to that directory
-    os.chdir(path)
-    
-    
-    ################################################################
-    # Check if bond is periodic using the minimum image convention #
-    ################################################################
-    # Find box dimensions to remove periodic boundary conditions
-    x = m.xbox_line.split(); y = m.ybox_line.split(); z = m.zbox_line.split();
-    xlo = x[0]; xhi = x[1]; ylo = y[0]; yhi = y[1]; zlo = z[0]; zhi = z[1];
-    lx = float(x[1])-float(x[0]); ly = float(y[1])-float(y[0]); lz = float(z[1])-float(z[0]);
-    
-    # set max_x, max_y, max_z w/ minimum image convention
-    max_x = lx/2; max_y = ly/2; max_z = lz/2;
-    
-    # Function to check bond periodicity status
-    def check_bond_periodicity(m, id1, id2):
-        pbc_flag = False # Intialize and update if bond is periodic
-        x1 = m.atoms[id1].x; y1 = m.atoms[id1].y; z1 = m.atoms[id1].z
-        x2 = m.atoms[id2].x; y2 = m.atoms[id2].y; z2 = m.atoms[id2].z
-        
-        # if bond fails minimum image convention it is periodic
-        if abs(x2 - x1) > max_x: pbc_flag = True
-        if abs(y2 - y1) > max_y: pbc_flag = True
-        if abs(z2 - z1) > max_z: pbc_flag = True
-        return pbc_flag
-    
-    # Find bonds that we want to write
-    bondIDs2write = []
-    for i in m.bonds:
-        id1, id2 = m.bonds[i].atomids
-        if remove_PBC_bonds: pbc_flag = check_bond_periodicity(m, id1, id2)
-        else: pbc_flag = False
-        if not pbc_flag: bondIDs2write.append(i)
+        # Configure log (default is level='production', switch to 'debug' if debuging)
+        if log is None:
+            log = io_functions.LUNAR_logger()
+        log.configure(level='production')
+        #log.configure(level='debug')
         
         
-    # atom positons and bonds to define simulation cell for VMD
-    boxatoms = [(xhi, ylo, zhi), (xlo, ylo, zhi), (xlo, yhi, zhi), (xhi, yhi, zhi),
-                (xhi, ylo, zlo), (xlo, ylo, zlo), (xlo, yhi, zlo), (xhi, yhi, zlo)]
-    boxbonds = [(1, 2), (2, 3), (3, 4), (4, 1), (5, 6), (6, 7),
-                (7, 8), (8, 5), (4, 8), (5, 1), (3, 7), (6, 2)]
-
-
-    ##########################################################################################
-    # Writing new file mol2 with bonds information                                           #
-    # https://chemicbook.com/2021/02/20/mol2-file-format-explained-for-beginners-part-2.html #
-    ##########################################################################################
-    with open(basename+'.mol2','w') as f: 
-        # Write molecule section
-        f.write('@<TRIPOS>MOLECULE\n')
-        f.write(f'{m.header} > lmp2SYBYLmol2 {version} w/remove_PBC_bonds={str(remove_PBC_bonds)}\n')
-        if not addbox:
-            f.write(f'  {len(m.atoms)} {len(bondIDs2write)}    0    0    0\n')
-        else:
-            f.write(f'  {len(m.atoms)+len(boxatoms)} {len(bondIDs2write)+len(boxbonds)}    0    0    0\n')
-        f.write('SMALL\n')
-        f.write('NO_CHARGES\n')
-        f.write('****\n')
-        f.write('Energy = 0\n')
+        ########################################################
+        # set version and print starting information to screen #
+        ########################################################
+        version = 'v1.2 / 16 May 2025'
+        log.out(f'\n\nRunning lmp2SYBYLmol2 {version}')
+        log.out(f'Using Python version {sys.version}')
         
-        # Write Atoms info
-        f.write('\n@<TRIPOS>ATOM\n')
-        m.atoms = dict(OrderedDict(sorted(m.atoms.items()))) # sort to keep IDs as close as possible to orginal
-        id_map = {} # { orginal atomID : New atomID } to make IDs contiguous if not already
-        molids = set([1])
-        for n, i in enumerate(m.atoms, 1):
-            atom = m.atoms[i]
+        
+        ##########################################################
+        # Read LAMMPS datafile into memory as class "m" applying #
+        # forward mapping of type labels (if applicable)         #
+        ##########################################################
+        if os.path.isfile(topofile):
+            m = read_lmp.Molecule_File(topofile, method='forward', sections=['Atoms', 'Bonds'])
+            log.out(f'Read in {m.filename} LAMMPS datafile')
+        else: log.error(f'ERROR lammps datafile: {topofile} does not exist')
+        basename = os.path.basename(topofile) # Strip path from topofile
+        if basename.endswith('data.gz'):
+            basename = basename.replace('.gz', '') # remove .gz suffix
+        basename = basename[:basename.rfind('.')] # Find file basename
+        log.debug(f'basename = {basename}')
+        
+        
+        ##################################
+        # Function to get element symbol #
+        ##################################
+        def get_element_symbol(m, atomID, mass_map):
+            mass = m.masses[m.atoms[atomID].type].coeffs[0]
+            # Try gettint element symbol
+            element = 'DEFAULT' # Initialize and update if found
+            try: element = [i for i in mass_map if mass in mass_map[i]][0]
+            except: log.error(f'ERROR Not all masses in {topofile} are in the mass_map dictionary. Failed for mass: {mass}')
+            return element
+        
+        
+        #######################################
+        # Setting up directories and where to #
+        # write final files and results to    #
+        #######################################
+        # Find present working directory and find/create paths to store code results
+        pwd = os.getcwd()
+        path = os.path.join(pwd, parent_directory)
+        
+        # If parent_directory == 'topofile' use topofile path as path
+        if 'topofile' in parent_directory:
+            log.out('Using path from topofile to set parent_directory ...')
+            path = io_functions.get_dir_from_topofile(topofile, parent_directory)
+        
+        # Check if path exits. IF not create
+        if not os.path.isdir(path):
+            os.makedirs(path, exist_ok=True)
             
-            # Find atoms info
-            element = get_element_symbol(m, i, mass_map)
-            x = '{:>17.4f}'.format(atom.x) # float point
-            y = '{:>10.4f}'.format(atom.y) # float point
-            z = '{:>10.4f}'.format(atom.z) # float point
-            try:
-                subst_id = atom.molid # The ID number of the substructure containing the atom (int)  [VMD RESID Coloring]
-                molid = atom.molid
-            except:
-                subst_id = 1 # The ID number of the substructure containing the atom (int)  [VMD RESID Coloring]
-                molid = 1
-            molids.add(molid)
-            subst_name = '****' # The name of the substructure containing the atom (string)
-            subst_name = '{:>4}'.format('m'+str(molid)) # Will give access through [VMD ResName Coloring]
-            charge = '{:>10.4f}'.format(atom.charge)
+        # Change the current working directory to path so all files get written to that directory
+        os.chdir(path)
+        
+        
+        ################################################################
+        # Check if bond is periodic using the minimum image convention #
+        ################################################################
+        # Find box dimensions to remove periodic boundary conditions
+        x = m.xbox_line.split(); y = m.ybox_line.split(); z = m.zbox_line.split();
+        xlo = x[0]; xhi = x[1]; ylo = y[0]; yhi = y[1]; zlo = z[0]; zhi = z[1];
+        lx = float(x[1])-float(x[0]); ly = float(y[1])-float(y[0]); lz = float(z[1])-float(z[0]);
+        
+        # set max_x, max_y, max_z w/ minimum image convention
+        max_x = lx/2; max_y = ly/2; max_z = lz/2;
+        
+        # Function to check bond periodicity status
+        def check_bond_periodicity(m, id1, id2):
+            pbc_flag = False # Intialize and update if bond is periodic
+            x1 = m.atoms[id1].x; y1 = m.atoms[id1].y; z1 = m.atoms[id1].z
+            x2 = m.atoms[id2].x; y2 = m.atoms[id2].y; z2 = m.atoms[id2].z
             
-            # Add id to map
-            id_map[i] = n
-            
-            # Write atoms info
-            f.write('{:>7} {:<2} {} {} {} {:<2} {:>7} {:>7} {}\n'.format(n, element, x, y, z, element, subst_id, subst_name, charge))
-            
-        # Add in box atoms if flag
-        if addbox:
-            boxID = max(molids) + 1; box_map = {} # { index of location : new atomID }
-            for ID, box in enumerate(boxatoms, 1):
-                n += 1 
-                x, y, z = box
-                element = 'Bx'
-                box_map[ID] = n
-                x = '{:>17.4f}'.format(float(x)); y = '{:>10.4f}'.format(float(y))
-                z = '{:>10.4f}'.format(float(z)); charge = '{:>10.4f}'.format(0);
-                subst_name = 'BOX' 
-                subst_id = boxID
-                f.write('{:>7} {:<2} {} {} {} {:<2} {:>7} {:>7} {}\n'.format(n, element, x, y, z, element, subst_id, subst_name, charge))
-            
-        # Write Bonds info
-        f.write('@<TRIPOS>BOND\n')
-        bondIDs2write = sorted(bondIDs2write) # sort to keep IDs as close as possible to orginal
-        for n, i in enumerate(bondIDs2write, 1):
+            # if bond fails minimum image convention it is periodic
+            if abs(x2 - x1) > max_x: pbc_flag = True
+            if abs(y2 - y1) > max_y: pbc_flag = True
+            if abs(z2 - z1) > max_z: pbc_flag = True
+            return pbc_flag
+        
+        # Find bonds that we want to write
+        bondIDs2write = []
+        for i in m.bonds:
             id1, id2 = m.bonds[i].atomids
-                        
-            # Set bond_type as 1 for now...
-            # Possible options:
-            #    1 = single
-            #    2 = double
-            #    3 = triple
-            #    am = amide
-            #    ar = aromatic
-            #    du = dummy
-            #    un = unknown (cannot be determined from the parameter tables)
-            #    nc = not connected
-            bond_type = '1'
+            if remove_PBC_bonds: pbc_flag = check_bond_periodicity(m, id1, id2)
+            else: pbc_flag = False
+            if not pbc_flag: bondIDs2write.append(i)
             
-            # Write bonds info
-            new_id1 = id_map[id1]; new_id2 = id_map[id2]
-            f.write('{:>6} {:>6} {:>6} {:>6}\n'.format(n, new_id1, new_id2, bond_type))
             
-        if addbox:
-            for id1, id2 in boxbonds:
-                new_id1 = box_map[id1]
-                new_id2 = box_map[id2]
-                bond_type = 'du'
-                n += 1;
-                f.write('{:>6} {:>6} {:>6} {:>6}\n'.format(n, new_id1, new_id2, bond_type)) 
+        # atom positons and bonds to define simulation cell for VMD
+        boxatoms = [(xhi, ylo, zhi), (xlo, ylo, zhi), (xlo, yhi, zhi), (xhi, yhi, zhi),
+                    (xhi, ylo, zlo), (xlo, ylo, zlo), (xlo, yhi, zlo), (xhi, yhi, zlo)]
+        boxbonds = [(1, 2), (2, 3), (3, 4), (4, 1), (5, 6), (6, 7),
+                    (7, 8), (8, 5), (4, 8), (5, 1), (3, 7), (6, 2)]
+    
+    
+        ##########################################################################################
+        # Writing new file mol2 with bonds information                                           #
+        # https://chemicbook.com/2021/02/20/mol2-file-format-explained-for-beginners-part-2.html #
+        ##########################################################################################
+        with open(basename+'.mol2','w') as f: 
+            # Write molecule section
+            f.write('@<TRIPOS>MOLECULE\n')
+            f.write(f'{m.header} > lmp2SYBYLmol2 {version} w/remove_PBC_bonds={str(remove_PBC_bonds)}\n')
+            if not addbox:
+                f.write(f'  {len(m.atoms)} {len(bondIDs2write)}    0    0    0\n')
+            else:
+                f.write(f'  {len(m.atoms)+len(boxatoms)} {len(bondIDs2write)+len(boxbonds)}    0    0    0\n')
+            f.write('SMALL\n')
+            f.write('NO_CHARGES\n')
+            f.write('****\n')
+            f.write('Energy = 0\n')
             
-    #######################
-    # Clean up and ending #
-    #######################
-    # Print file locations and completion of code
-    log.out(f'\n\nAll outputs can be found in {path} directory')
-    log.out('\n\nNormal program termination\n\n')
-    
-    # Show number of warnings and errors
-    log.out_warnings_and_errors()
-    
-    # write log
-    log.write_logged(basename+'.log.lunar')
-    
-    # Change back to the intial directory to keep directory free for deletion
-    os.chdir(pwd)
-    return
+            # Write Atoms info
+            f.write('\n@<TRIPOS>ATOM\n')
+            m.atoms = dict(OrderedDict(sorted(m.atoms.items()))) # sort to keep IDs as close as possible to orginal
+            id_map = {} # { orginal atomID : New atomID } to make IDs contiguous if not already
+            molids = set([1])
+            for n, i in enumerate(m.atoms, 1):
+                atom = m.atoms[i]
+                
+                # Find atoms info
+                element = get_element_symbol(m, i, mass_map)
+                x = '{:>17.4f}'.format(atom.x) # float point
+                y = '{:>10.4f}'.format(atom.y) # float point
+                z = '{:>10.4f}'.format(atom.z) # float point
+                try:
+                    subst_id = atom.molid # The ID number of the substructure containing the atom (int)  [VMD RESID Coloring]
+                    molid = atom.molid
+                except:
+                    subst_id = 1 # The ID number of the substructure containing the atom (int)  [VMD RESID Coloring]
+                    molid = 1
+                molids.add(molid)
+                subst_name = '****' # The name of the substructure containing the atom (string)
+                subst_name = '{:>4}'.format('m'+str(molid)) # Will give access through [VMD ResName Coloring]
+                charge = '{:>10.4f}'.format(atom.charge)
+                
+                # Add id to map
+                id_map[i] = n
+                
+                # Write atoms info
+                f.write('{:>7} {:<2} {} {} {} {:<2} {:>7} {:>7} {}\n'.format(n, element, x, y, z, element, subst_id, subst_name, charge))
+                
+            # Add in box atoms if flag
+            if addbox:
+                boxID = max(molids) + 1; box_map = {} # { index of location : new atomID }
+                for ID, box in enumerate(boxatoms, 1):
+                    n += 1 
+                    x, y, z = box
+                    element = 'Bx'
+                    box_map[ID] = n
+                    x = '{:>17.4f}'.format(float(x)); y = '{:>10.4f}'.format(float(y))
+                    z = '{:>10.4f}'.format(float(z)); charge = '{:>10.4f}'.format(0);
+                    subst_name = 'BOX' 
+                    subst_id = boxID
+                    f.write('{:>7} {:<2} {} {} {} {:<2} {:>7} {:>7} {}\n'.format(n, element, x, y, z, element, subst_id, subst_name, charge))
+                
+            # Write Bonds info
+            f.write('@<TRIPOS>BOND\n')
+            bondIDs2write = sorted(bondIDs2write) # sort to keep IDs as close as possible to orginal
+            for n, i in enumerate(bondIDs2write, 1):
+                id1, id2 = m.bonds[i].atomids
+                            
+                # Set bond_type as 1 for now...
+                # Possible options:
+                #    1 = single
+                #    2 = double
+                #    3 = triple
+                #    am = amide
+                #    ar = aromatic
+                #    du = dummy
+                #    un = unknown (cannot be determined from the parameter tables)
+                #    nc = not connected
+                bond_type = '1'
+                
+                # Write bonds info
+                new_id1 = id_map[id1]; new_id2 = id_map[id2]
+                f.write('{:>6} {:>6} {:>6} {:>6}\n'.format(n, new_id1, new_id2, bond_type))
+                
+            if addbox:
+                for id1, id2 in boxbonds:
+                    new_id1 = box_map[id1]
+                    new_id2 = box_map[id2]
+                    bond_type = 'du' # du = dummy bond
+                    n += 1;
+                    f.write('{:>6} {:>6} {:>6} {:>6}\n'.format(n, new_id1, new_id2, bond_type)) 
+                
+        #######################
+        # Clean up and ending #
+        #######################
+        # Print file locations and completion of code
+        log.out(f'\n\nAll outputs can be found in {path} directory')
+        log.out('\n\nNormal program termination\n\n')
+        
+        # Show number of warnings and errors
+        log.out_warnings_and_errors()
+        
+        # write log
+        log.write_logged(basename+'.log.lunar')
+        
+        # Change back to the intial directory to keep directory free for deletion
+        os.chdir(pwd)
+        return
 
 ###################################
 ### Import needed files and run ###
