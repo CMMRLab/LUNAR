@@ -96,30 +96,33 @@ if __name__ == "__main__":
     start_time = time.time()
     print('\n\nStarting automatic Kemppainen-Muzzy calculations ...')
     for n, logfile in enumerate(logfiles, 1):
-        print('  Analyzing {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
-        
-        # Set mode based on file naming (this will have to be updated for each
-        # user, depending on the naming scheme that is used for their project).
-        if   'shear_1' in logfile: strength_mode = strength_xymode
-        elif 'shear_2' in logfile: strength_mode = strength_xzmode
-        elif 'shear_3' in logfile: strength_mode = strength_yzmode
-        else: raise Exception(f'ERROR can not determine mode based on file naming convention for file {logfile}.')
-        
-        # Update mode['logfile'] and mode['parent_directory'] for loaded mode
-        strength_mode['logfile'] = os.path.join(path, logfile)
-        strength_mode['parent_directory'] = parent_directory
-        
-        # Run analysis and log results
-        analyzed = main.analysis(strength_mode, plot=True, savefig=savefig, dpi=dpi, log=log)
-        
-        # Access outputs from log analysis
-        results = analyzed.outputs['Modulus'] # name of analysis 
-        butterworth = analyzed.outputs['LAMMPS Butterworth Filter']
-        
-        # Log desired results into logger (uncomment print statement to see all available keys)
-        #print(results.keys())
-        logger['Filename'].append(logfile)
-        logger['Yield Strength'].append(results['yield_point_derivative'][1])
+        try:
+            print('  Analyzing {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
+            
+            # Set mode based on file naming (this will have to be updated for each
+            # user, depending on the naming scheme that is used for their project).
+            if   'shear_1' in logfile: strength_mode = strength_xymode
+            elif 'shear_2' in logfile: strength_mode = strength_xzmode
+            elif 'shear_3' in logfile: strength_mode = strength_yzmode
+            else: raise Exception(f'ERROR can not determine mode based on file naming convention for file {logfile}.')
+            
+            # Update mode['logfile'] and mode['parent_directory'] for loaded mode
+            strength_mode['logfile'] = os.path.join(path, logfile)
+            strength_mode['parent_directory'] = parent_directory
+            
+            # Run analysis and log results
+            analyzed = main.analysis(strength_mode, plot=True, savefig=savefig, dpi=dpi, log=log)
+            
+            # Access outputs from log analysis
+            results = analyzed.outputs['Modulus'] # name of analysis 
+            butterworth = analyzed.outputs['LAMMPS Butterworth Filter']
+            
+            # Log desired results into logger (uncomment print statement to see all available keys)
+            #print(results.keys())
+            logger['Filename'].append(logfile)
+            logger['Yield Strength'].append(results['yield_point_derivative'][1])
+        except:
+            print('  FAILED {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
     
     # Invert data and store in a matrix to write to csv file
     ncolumns = len(logger); nrows = max(map(len, list(logger.values())))

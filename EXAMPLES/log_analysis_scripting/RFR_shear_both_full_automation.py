@@ -97,50 +97,51 @@ if __name__ == "__main__":
     
     # Setup logging dictionary to add values to for writing to .csv file later on
     logger = {'Filename': [],
-              'Shear modulus "raw"': [],
-              'Shear modulus "clean"': [],
+              'Shear modulus': [],
               'Yield Strength': []}
     
     # Start automated analysis
     start_time = time.time()
     print('\n\nStarting automatic Kemppainen-Muzzy calculations ...')
     for n, logfile in enumerate(logfiles, 1):
-        print('  Analyzing {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
-        
-        # Set mode based on file naming (this will have to be updated for each
-        # user, depending on the naming scheme that is used for their project).
-        if   'shear_1' in logfile: 
-            elastic_mode = elastic_xymode
-            strength_mode = strength_xymode
-        elif 'shear_2' in logfile:
-            elastic_mode = elastic_xzmode
-            strength_mode = strength_xzmode
-        elif 'shear_3' in logfile:
-            elastic_mode = elastic_yzmode
-            strength_mode = strength_yzmode
-        else: raise Exception(f'ERROR can not determine mode based on file naming convention for file {logfile}.')
-        
-        # Update mode['logfile'] and mode['parent_directory'] for loaded mode
-        elastic_mode['logfile'] = os.path.join(path, logfile)
-        elastic_mode['parent_directory'] = parent_directory
-        strength_mode['logfile'] = os.path.join(path, logfile)
-        strength_mode['parent_directory'] = parent_directory
-        
-        # Run log analysis
-        elastic = main.analysis(elastic_mode, plot=True, savefig=savefig, dpi=dpi, log=log)
-        strength = main.analysis(strength_mode, plot=True, savefig=savefig, dpi=dpi, log=log)
-        
-        # Access outputs from log analysis
-        elastic_results = elastic.outputs['Modulus'] # name of analysis 
-        strength_results = strength.outputs['Modulus'] # name of analysis 
-        butterworth = strength.outputs['LAMMPS Butterworth Filter']
-        
-        # Log desired results into logger (uncomment print statement to see all available keys) to shift the yield strength by
-        #print(results.keys())
-        logger['Filename'].append(logfile)
-        logger['Shear modulus "raw"'].append(elastic_results['b1-raw'])
-        logger['Shear modulus "clean"'].append(elastic_results['b1-clean'])
-        logger['Yield Strength'].append(strength_results['yield_point_derivative'][1])
+        try:
+            print('  Analyzing {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
+            
+            # Set mode based on file naming (this will have to be updated for each
+            # user, depending on the naming scheme that is used for their project).
+            if   'shear_1' in logfile: 
+                elastic_mode = elastic_xymode
+                strength_mode = strength_xymode
+            elif 'shear_2' in logfile:
+                elastic_mode = elastic_xzmode
+                strength_mode = strength_xzmode
+            elif 'shear_3' in logfile:
+                elastic_mode = elastic_yzmode
+                strength_mode = strength_yzmode
+            else: raise Exception(f'ERROR can not determine mode based on file naming convention for file {logfile}.')
+            
+            # Update mode['logfile'] and mode['parent_directory'] for loaded mode
+            elastic_mode['logfile'] = os.path.join(path, logfile)
+            elastic_mode['parent_directory'] = parent_directory
+            strength_mode['logfile'] = os.path.join(path, logfile)
+            strength_mode['parent_directory'] = parent_directory
+            
+            # Run log analysis
+            elastic = main.analysis(elastic_mode, plot=True, savefig=savefig, dpi=dpi, log=log)
+            strength = main.analysis(strength_mode, plot=True, savefig=savefig, dpi=dpi, log=log)
+            
+            # Access outputs from log analysis
+            elastic_results = elastic.outputs['Modulus'] # name of analysis 
+            strength_results = strength.outputs['Modulus'] # name of analysis 
+            butterworth = strength.outputs['LAMMPS Butterworth Filter']
+            
+            # Log desired results into logger (uncomment print statement to see all available keys) to shift the yield strength by
+            #print(results.keys())
+            logger['Filename'].append(logfile)
+            logger['Shear modulus'].append(elastic_results['b1-clean'])
+            logger['Yield Strength'].append(strength_results['yield_point_derivative'][1])
+        except:
+            print('  FAILED {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
     
     # Invert data and store in a matrix to write to csv file
     ncolumns = len(logger); nrows = max(map(len, list(logger.values())))

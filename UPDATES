@@ -15,10 +15,13 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 14July2025)
+LUNAR (version 21July2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+21July2025          JDK        - Adjusted log_analysis RFR-stress-strain example automation in the 
+                                 LUNAR/EXAMPLES/log_analysis_scripting directory
+
 14July2025          JDK        - lmp2SYBYLmol2.py: Added "array processing" to this module.
 
 14July2025          JDK        - atom_typing.py and auto_morse_bond.py: The ring finding code was rewritten for

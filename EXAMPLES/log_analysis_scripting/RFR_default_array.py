@@ -35,7 +35,7 @@ path2lunar = 'C:/Users/jdkem/Desktop/LUNAR'
 
 # Set the relative directory from this script, where LAMMPS logfiles are stored. 
 logfile = '../../**EXAMPLES/log_analysis/RFR_array/*/tensile_*_PBZ_pxld_*_replicate_*_FF_PCFF.log.lammps'
-#logfile = '../../**EXAMPLES/log_analysis/RFR_array/tensile_*_PBZ_pxld_*_replicate_*_FF_PCFF.log.lammps'
+logfile = 'logfiles/Tensile/*.log.lammps'
 
 
 # Set the direction specific settings for log_analysis RFR method
@@ -138,16 +138,13 @@ if __name__ == "__main__":
             # Get Butterworth RFR outputs
             butterworth = analysis.outputs['Butterworth']
             RFR = analysis.outputs['RFR']
-            
-            # Find the shift value from the butterworth data (minimum before the maximum) to shift the yield strength by
-            max_index = butterworth['ydata'].index(max(butterworth['ydata']))
-            ymin = min(butterworth['ydata'][:max_index])
+
             
             # Log results
             logger['Filename'].append(rootname)
             logger['Yield Shift'].append(RFR['b0-clean'])
             logger['Yield Strain'].append(RFR['yield_point_derivative'][0])
-            logger['Yield Strength'].append(RFR['yield_point_derivative'][1] - ymin)
+            logger['Yield Strength'].append(RFR['yield_point_derivative'][1])
             logger['Elastic modulus'].append(RFR['b1-clean'])
             logger['xlo'].append(RFR['xlo'])
             logger['xhi'].append(RFR['xhi'])

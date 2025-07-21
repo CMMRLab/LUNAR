@@ -90,49 +90,49 @@ if __name__ == "__main__":
     
     # Setup logging dictionary to add values to for writing to .csv file later on
     logger = {'Filename': [],
-              'Elastic modulus "raw"': [],
-              'Elastic modulus "clean"': [],
+              'Elastic modulus': [],
               'Yield Strength': [],
               'Poissons ratio - nu1': [],
               'Poissons ratio - nu2': [],
-              'Poissons ratio - nu_avg': [],
-              'Poissons ratio - nu12 (strain averaged)': []}
+              'Poissons ratio - nu_avg': []}
     
     # Start automated analysis
     start_time = time.time()
     print('\n\nStarting automatic Kemppainen-Muzzy calculations ...')
     for n, logfile in enumerate(logfiles, 1):
-        print('  Analyzing {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
+        try:
+            print('  Analyzing {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
+            
+            # Set mode based on file naming (this will have to be updated for each
+            # user, depending on the naming scheme that is used for their project).
+            if   'tensile_1' in logfile: mode = xmode
+            elif 'tensile_2' in logfile: mode = ymode
+            elif 'tensile_3' in logfile: mode = zmode
+            else: raise Exception(f'ERROR can not determine mode based on file naming convention for file {logfile}.')
+            
+            # Update mode['logfile'] and mode['parent_directory'] for loaded mode
+            mode['logfile'] = os.path.join(path, logfile)
+            mode['parent_directory'] = parent_directory
+            
+            # Run analysis and log results
+            analyzed = main.analysis(mode, plot=True, savefig=savefig, dpi=dpi, log=log)
+            
+            # Access outputs from log analysis
+            results = analyzed.outputs['Modulus'] # name of analysis 
+            butterworth = analyzed.outputs['LAMMPS Butterworth Filter']
+            
+            # Log desired results into logger (uncomment print statement to see all available keys)
+            #print(results.keys())
+            logger['Filename'].append(logfile)
+            logger['Elastic modulus'].append(results['b1-clean'])
+            try: logger['Yield Strength'].append(results['yield_point_derivative'][1])
+            except: logger['Yield Strength'].append(None)
+            logger['Poissons ratio - nu1'].append(results['nu1'])
+            logger['Poissons ratio - nu2'].append(results['nu2'])
+            logger['Poissons ratio - nu_avg'].append(results['nu_avg'])
+        except:
+            print('  FAILED {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
         
-        # Set mode based on file naming (this will have to be updated for each
-        # user, depending on the naming scheme that is used for their project).
-        if   'tensile_1' in logfile: mode = xmode
-        elif 'tensile_2' in logfile: mode = ymode
-        elif 'tensile_3' in logfile: mode = zmode
-        else: raise Exception(f'ERROR can not determine mode based on file naming convention for file {logfile}.')
-        
-        # Update mode['logfile'] and mode['parent_directory'] for loaded mode
-        mode['logfile'] = os.path.join(path, logfile)
-        mode['parent_directory'] = parent_directory
-        
-        # Run analysis and log results
-        analyzed = main.analysis(mode, plot=True, savefig=savefig, dpi=dpi, log=log)
-        
-        # Access outputs from log analysis
-        results = analyzed.outputs['Modulus'] # name of analysis 
-        butterworth = analyzed.outputs['LAMMPS Butterworth Filter']
-        
-        # Log desired results into logger (uncomment print statement to see all available keys)
-        #print(results.keys())
-        logger['Filename'].append(logfile)
-        logger['Elastic modulus "raw"'].append(results['b1-raw'])
-        logger['Elastic modulus "clean"'].append(results['b1-clean'])
-        logger['Yield Strength'].append(results['yield_point_derivative'][1])
-        logger['Poissons ratio - nu1'].append(results['nu1'])
-        logger['Poissons ratio - nu2'].append(results['nu2'])
-        logger['Poissons ratio - nu_avg'].append(results['nu_avg'])
-        logger['Poissons ratio - nu12 (strain averaged)'].append(results['nu12'])
-    
     # Invert data and store in a matrix to write to csv file
     ncolumns = len(logger); nrows = max(map(len, list(logger.values())))
     matrix = [[str(None)]*ncolumns for n in range(nrows)]; titles = list(logger.keys())
