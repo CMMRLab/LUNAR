@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 7/14/2025
+# Last edited 8/23/2025
 #
 ************
 * Overview *
@@ -440,6 +440,17 @@
            logger = """
                     filename, lx, ly, lz, volume
                     """ 
+					
+**********************************************
+* logger: Data tables as Python dictionaries *
+**********************************************
+
+  As seen above for all the data tables that atom_typing.py writes, this code reads the data table, where the first column is the key to an
+  internal python dictionary. This means some built-in Python commands can operate on the logger entries such as: min(), max(), sum(), abs(),
+  and len(). For example if you wanted to count the total number of clusters in a clusters table you could set a logger entry as "len(clusters)"
+  or "max(clusters)", since the len() or max() built-in operators are supported (len() gets table length and max() will get max molID, it is 
+  more safe to use len(clusters) as it will return a zero, if no clusters exist; whereas max(clusters) will fail if no clusters exist; however
+  both methods are supported).
 
 *****************************
 * logger: keyword shortcuts *
