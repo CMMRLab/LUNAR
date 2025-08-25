@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Revision 1.0
-February 20, 2025
+Revision 1.1
+August 23, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -186,6 +186,7 @@ def main(mode, savefig=True, dpi=300, log_clear=True, log=None):
     # Setup the globals namespace to limit scope of what eval() can do #
     #------------------------------------------------------------------#
     allowed_builtins = ['min','max','sum','abs','len','map','range','reversed']
+    builtins_startswith = tuple(['{}('.format(i) for i in allowed_builtins])
     copied_builtins = globals()['__builtins__'].copy()
     globals_dict = {'__builtins__': {key:copied_builtins[key] for key in allowed_builtins}}
         
@@ -203,13 +204,30 @@ def main(mode, savefig=True, dpi=300, log_clear=True, log=None):
             string = string.rstrip()
             string = string.strip()            
             value = None
+            # Any user defined shortcuts
             if string in keywords.shortcuts:
                 string = keywords.shortcuts[string]
+            
+            # Char yield calculations
             if string.startswith('CharYield:'):
                 try:
                     mass_initial = float(string.split(':')[-1])
                     value = round(100*(logfile.mass/mass_initial), 4)
                 except: pass
+            
+            # built-in command eval like len(clusters) or len(rings) or max(clusters)
+            if string.startswith(builtins_startswith) and string.endswith(')'):
+                commands = [i for i in allowed_builtins if string.startswith(i)]
+                if len(commands) == 1:
+                    command = commands[0]
+                    try: data_table = string.split('(')[-1].split(')')[0]
+                    except: data_table = ''
+                    string2eval = '{}({}.{})'.format(command, alias, data_table)
+                    globals_dict[alias] = logfile
+                    try: value = eval(string2eval, globals_dict)
+                    except: pass
+            
+            # Normal eval
             else:
                 string2eval = '{}.{}'.format(alias, string)
                 globals_dict[alias] = logfile

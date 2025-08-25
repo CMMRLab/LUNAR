@@ -74,6 +74,9 @@ def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_direct
                 log.out(' - matched file : {}'.format(file))
                 log.out(' - elapsed time : {:.2f} (seconds)'.format(time.time() - array_time))
                 log.out(' - progress     : {} of {} ({:.2f}%)'.format(n, len(files), 100*(n/len(files))))
+                if io_functions.check_outfile_existance(file, ':', parent_directory, filetype='topofile'):
+                    log.warn(f' - WARNING matched file {file} already has been processed and was skipped')
+                    continue
                 if file.endswith('voxels_only.data') or file.endswith('atoms_only.data') or file.endswith('free_only.data'):
                     log.warn(f' - WARNING matched file {file} has free_volume extension. Skipping file to avoid processing a free_volume output.')
                     continue

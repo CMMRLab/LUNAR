@@ -170,6 +170,7 @@ def get_dir_from_topofile(topofile, parent_directory):
     else: path = os.path.dirname(os.path.abspath(topofile))
     return path
 
+
 ###############################################################
 # When python loads a path it may set the directory delimeter #
 # as a '\' however this is not correct for setting in a file  #
@@ -179,4 +180,36 @@ def path_to_string(path):
     string = str(path)
     string = string.replace('\\', '/')
     return string
-    
+
+
+#############################################################
+# Function to check if topofile, logfile, or xrdfile or ... #
+# already exists in a given parent_directory to avoid re-   #
+# processing in a "glob" array processing run.              #
+#############################################################
+def check_outfile_existance(filename, newfile, parent_directory, filetype='topofile', check_per_file=True):
+    # Default is to check each file's existance, prior to processing. If users don't like this
+    # behavior all they have to do is come to this function and set the check_per_file=False
+    # which will then change this behavior across all LUNAR array processing runs.
+    if check_per_file:
+        # Get file basename
+        if filetype != 'topofile': filename = filename.replace(filetype, 'topofile')
+        basename = get_basename(filename, newfile=newfile, character=':', pflag=True)
+        
+        # Find present working directory
+        pwd = os.getcwd()
+        
+        # Find/create paths to store code results
+        path = os.path.join(pwd, parent_directory)
+        
+        # If parent_directory == 'topofile' use topofile path as path
+        if filetype in parent_directory:
+            if filetype != 'topofile': parent_directory = parent_directory.replace(filetype, 'topofile')
+            path = get_dir_from_topofile(filename, parent_directory)
+        
+        # Set full file path to the output '*.log.lunar' file
+        full_path = os.path.join(path, '{}.log.lunar'.format(basename))
+        try: file_exists = os.path.isfile(full_path)
+        except: file_exists = False
+    else: file_exists = False
+    return file_exists

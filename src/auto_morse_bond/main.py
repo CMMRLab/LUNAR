@@ -105,6 +105,9 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
                 log.out(' - elapsed time : {:.2f} (seconds)'.format(time.time() - array_time))
                 log.out(' - progress     : {} of {} ({:.2f}%)'.format(n, len(files), 100*(n/len(files))))
                 root = file[:file.rfind('.')]
+                if io_functions.check_outfile_existance(file, newfile, parent_directory, filetype='topofile'):
+                    log.warn(f' - WARNING matched file {file} already has been processed and was skipped')
+                    continue
                 if newfile.endswith(':') and root.startswith(newfile[:-1]): # prefix
                     log.warn(f' - WARNING matched file {file} already has newfile {newfile} extension and was skipped')
                     continue
