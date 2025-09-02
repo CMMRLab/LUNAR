@@ -29,7 +29,8 @@ def print_man_page(topofile, bondfile, parent_dir, newfile, ff_name, delete_atom
     print('option summary [-tag <tag-input>]:')
     print('python3 atom_typing.py [-topo <topo-filename>] [-bond <bond-filename>] [-dir <new directory name>] [-newfile <string>]')
     print('                       [-ff <force field name>] [-reset-charges <T|F>] [-charge-file <Gasteiger-filename>]')
-    print('                       [-nta-comments <T|F>] [-vdw-scale <float>] [-boundary <string>] [-bond-reset <T|F>] <-gui> <-opt>|<-man>')
+    print('                       [-nta-comments <T|F>] [-vdw-scale <float>] [-boundary <string>] [-bond-reset <T|F>]')
+    print('                       [-del-method <mass or size>] [-del-crit<float>] <-gui> <-opt>|<-man>')
     print('                       [*NOTE: Not all options found in atom_typing.py are currently supported via command line overrides.*]')
 
     print('\n*NOTE: If the command line input options are not used the hard coded inputs in the inputs section of the atom_typing.py')
@@ -198,6 +199,28 @@ def print_man_page(topofile, bondfile, parent_dir, newfile, ff_name, delete_atom
     print('    are dependant on the vdw_radius_scale, boundary, and maxbonded inputs. Example usage:')
     print('        python3 atom_typing.py -bond-reset T')
     
+    # print -del-method option
+    print(f'\n -del-method or -dm atom_typing variable: delete_atoms["method"]    hard coded: {delete_atoms["method"]}')
+    print('    Command line option set the method of how to select which atoms will be deleted. The following methods are available:')
+    print('       "mass"  will search for clusters via mass cut-off where anything less than the -del-crit will be')
+    print('               removed before any analysis occurs such as setting charge or finding atom types.')
+    print()
+    print('       "size"  will search for clusters via number of atoms cut-off where anything less than the -del-crit')
+    print('               will be removed before any analysis occurs such as setting charge or finding atom types.')
+    print('    Example usage:')
+    print('        python3 atom_typing.py -del-method mass  -del-crit 50.0')
+    
+    # print -del-crit option
+    print(f'\n -del-crit or -dc atom_typing variable: delete_atoms["criteria"]    hard coded: {delete_atoms["criteria"]}')
+    print('    Command line option set the criteria used to select which atoms will be deleted. The following methods are available:')
+    print('       "mass"  will search for clusters via mass cut-off where anything less than the -del-crit will be')
+    print('               removed before any analysis occurs such as setting charge or finding atom types.')
+    print()
+    print('       "size"  will search for clusters via number of atoms cut-off where anything less than the -del-crit')
+    print('               will be removed before any analysis occurs such as setting charge or finding atom types.')
+    print('    Example usage:')
+    print('        python3 atom_typing.py -del-method mass  -del-crit 50.0')
+    
     # print -opt or -man option
     print(f'\n -opt or -man   atom_typing variable: print_options    hard coded: {print_options}')
     print('    Will tell atom_typing to only print out avaiable command line options known as tagN and tagN-inputs. This is the')
@@ -264,11 +287,12 @@ class inputs:
         # Check that tag is supported and log if tag from the command line
         # set supported tags
         supported_tags = ['-topo', '-bond', '-dir', '-newfile', '-ff', '-reset-charges', '-vdw-scale', '-pdb', '-charge-file', '-nta-comments',
-                          '-vdw-scale', '-boundary', '-bond-reset']
+                          '-vdw-scale', '-boundary', '-bond-reset', '-del-method', '-del-crit']
         
         # set shortcut_tags mapping
         shortcut_tags = {'-t':'-topo', '-b':'-bond', '-d':'-dir', '-nf':'-newfile', '-f':'-ff', '-rq':'-reset-charges', '-vdw':'-vdw-scale', '-p':'-pdb',
-                         '-qf':'-charge-file', '-nc':'-nta-comments', '-vdw':'-vdw-scale', '-br':'-bond-reset', '-by':'-boundary'}
+                         '-qf':'-charge-file', '-nc':'-nta-comments', '-vdw':'-vdw-scale', '-br':'-bond-reset', '-by':'-boundary', '-dm': '-del-method', 
+                         '-dc': '-del-crit'}
         
         # set default variables
         default_variables ={'-topo': self.topofile, '-bond': self.bondfile, '-dir': self.parent_directory, '-ext': self.newfile, '-ff': self.ff_name,
@@ -378,6 +402,19 @@ class inputs:
         if tags['-bond-reset']:
             self.bonds_via_distance_override = T_F_string2boolean('-bond-reset', (tags['-bond-reset']))
             print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-bond-reset', self.bonds_via_distance_override))
+            
+        # set new -del-method option and print confirmation
+        if tags['-del-method']:
+            self.delete_atoms['method'] = tags['-del-method']
+            print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-del-method', self.delete_atoms['method']))
+            
+        # set new -del-crit option and print confirmation
+        if tags['-del-crit']:
+            try: 
+                self.delete_atoms['criteria'] = float(tags['-del-crit'])
+                print('Override confirmation for {:<18} Hard codeded input is being overridden with this input: {}'.format('-del-crit', self.delete_atoms['criteria']))
+            except:
+                print('Override FAILED for {:<18}, likely because tag input was not a float or an int: {}'.format('-del-crit', tags['-del-crit']))
 
         # print buffer
         print('\n\n')

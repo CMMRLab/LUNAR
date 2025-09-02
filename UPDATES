@@ -15,6 +15,15 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
+LUNAR (version 2September2025)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+2September2025          JDK        - atom_typing.py: added command line interface for the atom deleting options
+                                                     for atom_typing.py
+
+
+-------------------------------------------------------------------------------------------------------------
 LUNAR (version 21July2025)
 
 Date               Developer   Description
