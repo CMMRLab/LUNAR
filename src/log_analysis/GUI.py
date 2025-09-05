@@ -204,7 +204,7 @@ class GUI:
         self.sections_entry = tk.Entry(self.load_frame, width=int(self.maxwidth/4), font=self.font_settings)
         self.sections_entry.insert(0, self.sections)
         self.sections_entry.grid(column=1, row=1)
-        self.sections_label = tk.Label(self.load_frame, text='sections\n(all or 1 or 1,2,3 or 1-3 or 1,2,4-6 or ...)', font=self.font_settings)
+        self.sections_label = tk.Label(self.load_frame, text='sections\n(all or 1 or 1,2,3 or 1-3 or 1,2,4-6 or or -1 or -2 ...)', font=self.font_settings)
         self.sections_label.grid(column=1, row=0)
         
         # xdata drop down menu
@@ -304,7 +304,7 @@ class GUI:
                                   'Regression Fringe Response Modulus', 'LAMMPS data (remove from plot)', 'LAMMPS data (apply moving average)',
                                   'LAMMPS data (apply Butterworth filter)', 'LAMMPS data (apply Whittaker-Eilers)', 'LAMMPS data (fit polynomial)',
                                   'LAMMPS data (LOWESS)', 'LAMMPS data (X-sort)', 'LAMMPS data (apply iFFT filter)', 'write plotted data to csv file',
-                                  'Calculus: Differentiate Data', 'Calculus: Integrate Data']
+                                  'Calculus: Differentiate Data', 'Calculus: Integrate Data', 'Regression Fringe Response Thermal']
         self.supported_methods = sorted(self.supported_methods, key=lambda x: x[0].lower()) # sort list by first letter of each method (x[0].lower())
         self.methods = []; self.xlos = []; self.xhis = []; self.miscs = []; self.names = [];
         for n in range(1, self.nanalysis+1):

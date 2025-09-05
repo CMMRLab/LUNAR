@@ -15,10 +15,12 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 2September2025)
+LUNAR (version 5September2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+5September2025          JDK        - log_analysis.py: changed the color cycle for the "main plot"
+
 2September2025          JDK        - atom_typing.py: added command line interface for the atom deleting options
                                                      for atom_typing.py
 
