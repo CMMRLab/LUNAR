@@ -119,8 +119,9 @@ def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, co
         ###########################################
         # set version and print starting information to screen
         version = 'v1.7 / 14 April 2025'
-        log.out(f'\n\nRunning add_pi_electrons {version}')
-        log.out(f'Using Python version {sys.version}')
+        log.out(f'\n\nRunning add_pi_electrons: {version}')
+        log.out(f'Using Python version: {sys.version}')
+        log.out(f'Using Python executable: {sys.executable}')
         
         
         ##########################################################

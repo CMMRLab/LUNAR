@@ -103,8 +103,9 @@ def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_direct
         
         # set version and print starting information to screen
         version = 'v1.12 / 14 April 2025'
-        log.out(f'\n\nRunning free_volume {version}')
-        log.out(f'Using Python version {sys.version}')
+        log.out(f'\n\nRunning free_volume: {version}')
+        log.out(f'Using Python version: {sys.version}')
+        log.out(f'Using Python executable: {sys.executable}')
         
         #--------------------------------------------------#
         # Define run mode to find voxels to atom distances #

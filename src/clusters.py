@@ -39,8 +39,9 @@ class analysis:
         # set version and print starting information to screen #
         ########################################################
         version = 'v1.5 / 10 April 2025'
-        log.out(f'\n\nRunning cluster_analysis {version}')
-        log.out(f'Using Python version {sys.version}')
+        log.out(f'\n\nRunning cluster_analysis: {version}')
+        log.out(f'Using Python version: {sys.version}')
+        log.out(f'Using Python executable: {sys.executable}')
         
         ##########################################################
         # Read LAMMPS datafile into memory as class "m" applying #

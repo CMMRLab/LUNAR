@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.16
-November 2nd, 2024
+Revision 1.17
+April 14, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -45,9 +45,10 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
     #log.configure(level='debug')
     
     # set version and print starting information to screen
-    version = 'v1.16 / 2 November 2024'
-    log.out(f'\n\nRunning bond_react_merge {version}')
-    log.out(f'Using Python version {sys.version}')
+    version = 'v1.17 / 14 April 2025'
+    log.out(f'\n\nRunning bond_react_merge: {version}')
+    log.out(f'Using Python version: {sys.version}')
+    log.out(f'Using Python executable: {sys.executable}')
 
 
     #########################

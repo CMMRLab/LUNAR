@@ -151,8 +151,9 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
         ###########################################
         # set version and print starting information to screen
         version = 'v1.11 / 14 April 2025'
-        log.out(f'\n\nRunning atom_typing {version}')
-        log.out(f'Using Python version {sys.version}')
+        log.out(f'\n\nRunning atom_typing: {version}')
+        log.out(f'Using Python version: {sys.version}')
+        log.out(f'Using Python executable: {sys.executable}')
         log.out(f'Assigning {ff_name} atom-types')
         
         

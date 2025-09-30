@@ -160,13 +160,13 @@ def parse_lambda_settings(lmbda):
     
     # Split string to get values
     values = string.split(',')
-    if len(values) == 3:
+    if len(values) >= 3:
         min_lambda = float(values[0])
         max_lambda = float(values[1])
         num_lambda = int(float(values[2]))
         successful_parse = True
     else: successful_parse = False
-    return min_lambda, max_lambda, num_lambda, successful_parse
+    return min_lambda, max_lambda, num_lambda, successful_parse, values
 
 
 #################################################################
@@ -182,7 +182,7 @@ def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method):
     #--------------------------------------------------------------------------------------#
     successful_parse = False
     if '<' in lmbda_method and '>' in lmbda_method and lmbda_method.count(',') == 2:
-        min_lambda, max_lambda, num_lambda, successful_parse = parse_lambda_settings(lmbda_method)
+        min_lambda, max_lambda, num_lambda, successful_parse, values = parse_lambda_settings(lmbda_method)
         print(f'User supplied inputs to set lambda spacing and range via {lmbda_method}. Spacing parameters:')
         print('{:>12}: {}'.format('MinLambda', min_lambda))
         print('{:>12}: {}'.format('MaxLambda', max_lambda))

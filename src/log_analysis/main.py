@@ -1459,8 +1459,16 @@ class analysis:
                 #----------------------------#
                 if plot: 
                     fig, ax = plt.subplots()
-                    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
-                    color_index = 0;
+                    #colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+                    #color_index = 0
+                    
+                    # Color wheel defined by matplotlib:
+                    #   colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+                    # However, we can construct our own color wheel to prioritize the colors we want first and we can 
+                    # have way more colors defined than what matplotlib defines. Below is Josh's preferred color wheel
+                    colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:purple', 'tab:red', 'tab:gray','tab:olive', 'tab:cyan', 'tab:pink', 'teal',
+                              'crimson', 'lime', 'tomato',  'blue', 'orange', 'green', 'purple', 'red', 'gray', 'olive', 'cyan', 'pink', 'tab:brown']
+                    color_index = 0
                 csv_data = {} # { label: [[xdata], [ydata]], ... }
                 for data in data2plot:
                     xx = data['x']

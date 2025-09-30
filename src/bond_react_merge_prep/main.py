@@ -75,8 +75,9 @@ def main(topofile, cta_file, newfile, atom_style, parent_directory, rm_unused_co
     ###########################################
     # set version and print starting information to screen
     version = 'v1.4 / 2 April 2023'
-    log.out(f'\n\nRunning bond_react_merge_prep {version}')
-    log.out(f'Using Python version {sys.version}')
+    log.out(f'\n\nRunning bond_react_merge_prep: {version}')
+    log.out(f'Using Python version: {sys.version}')
+    log.out(f'Using Python executable: {sys.executable}')
     
     
     ####################

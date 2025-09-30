@@ -137,8 +137,9 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
         ###########################################
         # set version and print starting information to screen
         version = 'v1.12 / 14 April 2025'
-        log.out(f'\n\nRunning auto_morse_bond {version}')
-        log.out(f'Using Python version {sys.version}')
+        log.out(f'\n\nRunning auto_morse_bond: {version}')
+        log.out(f'Using Python version: {sys.version}')
+        log.out(f'Using Python executable: {sys.executable}')
         
         
         ######################################################################################################

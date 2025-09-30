@@ -106,8 +106,9 @@ def main(sheet_basename, symmetric_tube_basename, chiral_tube_basename, run_mode
     ###########################################
     # set version and print starting information to screen
     version = 'v1.3 / 9 June 2025'
-    log.out(f'\n\nRunning sheet_builder {version} in mode {run_mode}')
-    log.out(f'Using Python version {sys.version}')
+    log.out(f'\n\nRunning sheet_builder: {version} in mode {run_mode}')
+    log.out(f'Using Python version: {sys.version}')
+    log.out(f'Using Python executable: {sys.executable}')
     
     
     #######################################################################################

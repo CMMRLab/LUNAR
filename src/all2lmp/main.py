@@ -131,8 +131,9 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
         ###########################################
         # set version and print starting information to screen
         version = 'v1.22 / 14 April 2025'
-        log.out(f'\n\nRunning all2lmp {version}')
-        log.out(f'Using Python version {sys.version}')
+        log.out(f'\n\nRunning all2lmp: {version}')
+        log.out(f'Using Python version: {sys.version}')
+        log.out(f'Using Python executable: {sys.executable}')
         log.out('Trying Atom Equivalences if needed')
         if use_auto_equivalence: log.out('Trying Atom Auto-Equivalences if needed')
         if use_assumed_auto_fill: log.out('Trying assumed auto fill if needed')
