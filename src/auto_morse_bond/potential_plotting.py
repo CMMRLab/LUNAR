@@ -68,33 +68,33 @@ def figure(m, radius, basename, files2write, version, bondbreak_scale, ff_class,
     if files2write['write_pdffile']:
         pdf = PdfPages(pdf_title)
     
-        # Loop through bond coeffs and plot/save info for writing LMP script
-        break_points = {} # { coeffID : zero break point (if class2 = False)}
-        bond_break = {} # { coeffID : bondbreak_scale*r0 (if class2 = False)}
-        for i in m.alpha_parameter.e_harmonic:
-            # Plot figure
-            morse_flag = False; rcut = 0; d0 = 0;
-            break_points[i] = False; bond_break[i] = False; 
-            if ff_class in [1, '1']: 
-                k, r0 = m.bond_coeffs[i].harmonic
-            if ff_class in [2, '2']:
-                r0, k2, k3, k4 = m.bond_coeffs[i].harmonic 
-            ylo = -( abs(min( m.alpha_parameter.e_harmonic[i] + m.alpha_parameter.e_morse[i])) + 10 )   
-            yhi = 300
-            if bond2style[i] == 'morse': 
-                morse_flag = True
-                bond_break[i] = m.alpha_parameter.rcut[i]
-                d0 = m.alpha_parameter.e_morse[i][-1]
-                yhi = 2.5*d0
+    # Loop through bond coeffs and plot/save info for writing LMP script
+    break_points = {} # { coeffID : zero break point (if class2 = False)}
+    bond_break = {} # { coeffID : bondbreak_scale*r0 (if class2 = False)}
+    for i in m.alpha_parameter.e_harmonic:
+        # Plot figure
+        morse_flag = False; rcut = 0; d0 = 0;
+        break_points[i] = False; bond_break[i] = False; 
+        if ff_class in [1, '1']: 
+            k, r0 = m.bond_coeffs[i].harmonic
+        if ff_class in [2, '2']:
+            r0, k2, k3, k4 = m.bond_coeffs[i].harmonic 
+        ylo = -( abs(min( m.alpha_parameter.e_harmonic[i] + m.alpha_parameter.e_morse[i])) + 10 )   
+        yhi = 300
+        if bond2style[i] == 'morse': 
+            morse_flag = True
+            bond_break[i] = m.alpha_parameter.rcut[i]
+            d0 = m.alpha_parameter.e_morse[i][-1]
+            yhi = 2.5*d0
+        
+        # Create and save figure if desired
+        if files2write['write_pdffile']:
+            fig_i = retFig(m, radius, m.alpha_parameter.e_harmonic[i], m.alpha_parameter.e_morse[i], bondbreak_scale,
+                           i, m.alpha_parameter.morse_harmonic, ylo, yhi, morse_flag, ff_class, rcut, d0)
+            pdf.savefig(fig_i)
             
-            # Create and save figure if desired
-            if files2write['write_pdffile']:
-                fig_i = retFig(m, radius, m.alpha_parameter.e_harmonic[i], m.alpha_parameter.e_morse[i], bondbreak_scale,
-                               i, m.alpha_parameter.morse_harmonic, ylo, yhi, morse_flag, ff_class, rcut, d0)
-                pdf.savefig(fig_i)
-            
-        # Close pdf
-        pdf.close()
+    # Close pdf
+    if files2write['write_pdffile']: pdf.close()
     
     ###############################
     # write fix bond/break script #

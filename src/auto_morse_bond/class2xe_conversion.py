@@ -10,11 +10,28 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+import src.auto_morse_bond.class2xe_plotting as plotting
+import traceback
 import math
 
 
+# Set which xterms are plotted
+plot_xterm = {'bb':   True,
+              'ba':   True,
+              'ebt':  True,
+              'mbt':  True,
+              'bb13': True,
+              }
+
+# plot_xterm['bb'] =   False
+# plot_xterm['ba'] =   False
+# plot_xterm['ebt'] =  False
+# plot_xterm['mbt'] =  False
+# plot_xterm['bb13'] = False
+
+
 # Main linker function for updating crossterms that use r0's
-def update(m, morsefile, potential_styles, include_rcut, log):
+def update(m, morsefile, potential_styles, include_rcut, basename, log):
     # Option to force unused coeffs (such as when using "fix bond/react" to map
     # coeffs to different topologies, leaving unused coeffs) to zero's. This is
     # useful as it will make all bond coeffs be 'morse', all angle and dihedral
@@ -73,8 +90,8 @@ def update(m, morsefile, potential_styles, include_rcut, log):
         bond2type[atomids] = bond.type
             
     # Update crossterm coeffs that are effected by a Morse bond inclusion
-    m = angle_crossterm(m, bond2type, style_old, style_new, potential_styles, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log)
-    m = dihedral_crossterm(m, bond2type, style_old, style_new, potential_styles, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log)
+    m = angle_crossterm(m, bond2type, style_old, style_new, potential_styles, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log)
+    m = dihedral_crossterm(m, bond2type, style_old, style_new, potential_styles, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log)
     
     return m
 
@@ -89,8 +106,17 @@ def find_bond_type(bond2type, id1, id2):
     except: bondtype = None
     return bondtype
 
+# Function to get sign of a value
+def sign(value):
+    sign = 1
+    try:
+        if value >= 0: sign = 1
+        else: sign = -1
+    except: pass
+    return sign
+
 # Function to update angle crossterm
-def angle_crossterm(m, bond2type, style_old, style_new, potential_styles, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log):
+def angle_crossterm(m, bond2type, style_old, style_new, potential_styles, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log):
     # Find bond 12 and bond 23 type from angles
     angle_bond_types_master = {i:([], []) for i in m.angle_coeffs} # { angle-type: ([bondtype1, ...], [bondtype2, ...]) }
     for i in m.angles:
@@ -113,8 +139,8 @@ def angle_crossterm(m, bond2type, style_old, style_new, potential_styles, force_
             angle_bond_types[i] = (type1, type2)
             
     # Update bondbond, and bondangle coeffs
-    m = update_bondbond_coeffs(m, angle_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log)
-    m = update_bondangle_coeffs(m, angle_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log)
+    m = update_bondbond_coeffs(m, angle_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log)
+    m = update_bondangle_coeffs(m, angle_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log)
     
     # Check that angle, bondbond, and bondangle use the same potential for each coeffID
     angle_style_check = {} # {angle-CoeffID : style }
@@ -178,7 +204,7 @@ def angle_crossterm(m, bond2type, style_old, style_new, potential_styles, force_
     return m
 
 # Function to update bondbond coeffs
-def update_bondbond_coeffs(m, angle_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log):
+def update_bondbond_coeffs(m, angle_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log):
     """
     output coeffs format:
       class2xe D alpha r1 r2 <r1cut r2cut>
@@ -201,14 +227,21 @@ def update_bondbond_coeffs(m, angle_bond_types, style_old, style_new, force_unus
     log.out('  - updating bondbond coeffs')
     
     # Find bond 1 and 2 for each bondbond coeff
+    plotting_coeffs = {} # {TypeID:{'class2':[], 'class2xe':[], 'harmonic1':[], 'harmonic2':[], 'morse1':[], 'morse2':[], 'bond_types':[]}
     for i in m.bondbond_coeffs:
         coeff = m.bondbond_coeffs[i]
         coeff.harmonic = coeff.coeffs
         M, r1, r2 = coeff.coeffs
         use_standard = True
         use_zeros = False
+        plot_coeffs = {'class2':coeff.coeffs}
         if len(angle_bond_types[i]) == 2:
             type1, type2 = angle_bond_types[i]
+            plot_coeffs['bond_types'] = [type1, type2]
+            plot_coeffs['harmonic1'] = m.bond_coeffs[type1].harmonic
+            plot_coeffs['harmonic2'] = m.bond_coeffs[type2].harmonic
+            plot_coeffs['morse1'] = m.bond_coeffs[type1].coeffs
+            plot_coeffs['morse2'] = m.bond_coeffs[type2].coeffs
             if len(m.bond_coeffs[type1].coeffs) == 4:
                 style1, D1, alpha1, r01  = m.bond_coeffs[type1].coeffs
                 r1cut = 0
@@ -220,6 +253,8 @@ def update_bondbond_coeffs(m, angle_bond_types, style_old, style_new, force_unus
             if style1 == 'morse' and style2 == 'morse':
                 D = (D1 + D2)/2
                 alpha = math.sqrt( abs(M)/ (2*D) )
+                #if M < 0: alpha = 0
+                D = sign(M)*D # TODO: Checking curvature direction
                 if include_rcut and use_rcut_in_xterms:
                     coeff.coeffs = [style_new, D, alpha, r01, r02, r1cut, r2cut]
                 else:
@@ -237,10 +272,25 @@ def update_bondbond_coeffs(m, angle_bond_types, style_old, style_new, force_unus
             use_standard = False
         if use_standard:
             coeff.coeffs = [style_old, M, r1, r2]
+        
+        # Save coeffs for the plot
+        plot_coeffs['class2xe'] = coeff.coeffs
+        plotting_coeffs[i] = plot_coeffs
+        
+    # Plot the results
+    #basename = ''
+    if basename and plot_xterm['bb']:
+        try:
+            basename = basename + '_bb'
+            coeff_name = 'Bond/bond'
+            plotting.bondbond(m, plotting_coeffs, basename, coeff_name)
+        except:
+            stack_trace_string = traceback.format_exc()
+            log.out(f'ERROR {stack_trace_string}')
     return m
 
 # Function to update bondangle coeffs
-def update_bondangle_coeffs(m, angle_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log):
+def update_bondangle_coeffs(m, angle_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log):
     """
     output coeffs format:
       class2xe D1 D2 alpha1 alpha2 r1 r2  <r1cut r2cut thetacut>
@@ -267,6 +317,7 @@ def update_bondangle_coeffs(m, angle_bond_types, style_old, style_new, force_unu
     log.out('  - updating bondangle coeffs')
     
     # Find bond 1 and 2 for each bondangle coeff
+    plotting_coeffs = {} # {TypeID:{'class2':[], 'class2xe':[], 'harmonic1':[], 'harmonic2':[], 'morse1':[], 'morse2':[], 'bond_types':[]}
     for i in m.bondangle_coeffs:
         coeff = m.bondangle_coeffs[i]
         coeff.harmonic = coeff.coeffs
@@ -274,8 +325,15 @@ def update_bondangle_coeffs(m, angle_bond_types, style_old, style_new, force_unu
         theta0, k2, k3, k4 = m.angle_coeffs[i].coeffs
         use_standard = True
         use_zeros = False
+        plot_coeffs = {'class2':coeff.coeffs}
+        plot_coeffs['angle'] = m.angle_coeffs[i].coeffs
         if len(angle_bond_types[i]) == 2:
             type1, type2 = angle_bond_types[i]
+            plot_coeffs['bond_types'] = [type1, type2]
+            plot_coeffs['harmonic1'] = m.bond_coeffs[type1].harmonic
+            plot_coeffs['harmonic2'] = m.bond_coeffs[type2].harmonic
+            plot_coeffs['morse1'] = m.bond_coeffs[type1].coeffs
+            plot_coeffs['morse2'] = m.bond_coeffs[type2].coeffs
             if len(m.bond_coeffs[type1].coeffs) == 4:
                 style1, D1, alpha1, r01  = m.bond_coeffs[type1].coeffs
                 r1cut = 0
@@ -287,6 +345,10 @@ def update_bondangle_coeffs(m, angle_bond_types, style_old, style_new, force_unu
             if style1 == 'morse' and style2 == 'morse':
                 alpha1 = math.sqrt( abs(N1)/(2*D1) )
                 alpha2 = math.sqrt( abs(N2)/(2*D2) )
+                #if N1 < 0: alpha1 = 0
+                #if N2 < 0: alpha2 = 0
+                D1 = sign(N1)*D1 # TODO: Checking curvature direction
+                D2 = sign(N2)*D2 # TODO: Checking curvature direction
                 if include_rcut and use_rcut_in_xterms:
                     coeff.coeffs = [style_new, D1, D2, alpha1, alpha2, r01, r02, r1cut, r2cut, theta0]
                 else:
@@ -305,10 +367,24 @@ def update_bondangle_coeffs(m, angle_bond_types, style_old, style_new, force_unu
                 
         if use_standard:
             coeff.coeffs = [style_old, N1, N2, r1, r2]
+            
+        # Save coeffs for the plot
+        plot_coeffs['class2xe'] = coeff.coeffs
+        plotting_coeffs[i] = plot_coeffs
+
+    # Plot the results
+    #basename = ''
+    if basename and plot_xterm['ba']:
+        try:
+            basename = basename + '_ba'
+            plotting.bondangle(m, plotting_coeffs, basename)
+        except:
+            stack_trace_string = traceback.format_exc()
+            log.out(f'ERROR {stack_trace_string}')
     return m
 
 # Function to update dihedral crossterm
-def dihedral_crossterm(m, bond2type, style_old, style_new, potential_styles, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log):
+def dihedral_crossterm(m, bond2type, style_old, style_new, potential_styles, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log):
     # Find bond 12, bond 23, and bond 34 type from dihedrals
     dihedral_bond_types_master = {i:([], [], []) for i in m.dihedral_coeffs} # { dihedral-type: ([bondtype1, ...], [bondtype2, ...], [bondtype3, ...]) }
     for i in m.dihedrals:
@@ -335,9 +411,9 @@ def dihedral_crossterm(m, bond2type, style_old, style_new, potential_styles, for
             dihedral_bond_types[i] = (type1, type2, type3)
             
     # Update bondbond13, ... and .. coeffs
-    m = update_middlebondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log)
-    m = update_endbondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log)
-    m = update_bondbond13_coeffs(m, dihedral_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log)
+    m = update_middlebondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log)
+    m = update_endbondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log)
+    m = update_bondbond13_coeffs(m, dihedral_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log)
     
     # Check that dihedral, middlebondtorsion, endbondtorsion, and bondbond13 use the same potential for each coeffID
     dihedral_style_check = {} # {dihedral-CoeffID : style }
@@ -422,7 +498,7 @@ def dihedral_crossterm(m, bond2type, style_old, style_new, potential_styles, for
     return m
 
 # Function to update middlebondtorsion coeffs
-def update_middlebondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log):
+def update_middlebondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log):
     """
     output coeffs format:
       class2xe alpha A1 A2 A3 r2 <r2cut phi1cut phi2cut phi3cut>
@@ -449,6 +525,7 @@ def update_middlebondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new
     log.out('  - updating middlebondtorsion coeffs')
     
     # Find bond 2 for each middlebondtorsion coeff
+    plotting_coeffs = {} # {TypeID:{'class2':[], 'class2xe':[], 'harmonic':[], 'morse':[], 'bond_type1':[]}
     for i in m.middlebondtorsion_coeffs:
         coeff = m.middlebondtorsion_coeffs[i]
         coeff.harmonic = coeff.coeffs
@@ -456,8 +533,13 @@ def update_middlebondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new
         k1, phi1, k2, phi2, k3, phi3 = m.dihedral_coeffs[i].coeffs
         use_standard = True
         use_zeros = False
+        plot_coeffs = {'class2':coeff.coeffs}
+        plot_coeffs['dihedral'] = m.dihedral_coeffs[i].coeffs
         if len(dihedral_bond_types[i]) == 3:
             type1, type2, type3 = dihedral_bond_types[i]
+            plot_coeffs['bond_type'] = [type2]
+            plot_coeffs['harmonic'] = m.bond_coeffs[type2].harmonic
+            plot_coeffs['morse'] = m.bond_coeffs[type2].coeffs
             if len(m.bond_coeffs[type2].coeffs) == 4:
                 style2, D2, alpha2, r02  = m.bond_coeffs[type2].coeffs
                 r2cut = 0
@@ -480,10 +562,24 @@ def update_middlebondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new
             use_standard = False
         if use_standard:
             coeff.coeffs = [style_old, A1, A2, A3, r2]
+            
+        # Save coeffs for the plot
+        plot_coeffs['class2xe'] = coeff.coeffs
+        plotting_coeffs[i] = plot_coeffs
+            
+    # Plot the results
+    #basename = ''
+    if basename and plot_xterm['mbt']:
+        try:
+            basename = basename + '_mbt'
+            plotting.middlebondtorsion(m, plotting_coeffs, basename)
+        except:
+            stack_trace_string = traceback.format_exc()
+            log.out(f'ERROR {stack_trace_string}')
     return m
 
 # Function to update endbondtorsion coeffs
-def update_endbondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log):
+def update_endbondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log):
     """
     output coeffs format:
       class2xe alpha1 alpha2 B1 B2 B3 C1 C2 C3 r1 r3  <r1cut r2cut phi1cut phi2cut phi3cut>
@@ -520,6 +616,7 @@ def update_endbondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new, f
     log.out('  - updating endbondtorsion coeffs')
     
     # Find bond 1 and 3 for each endbondtorsion coeff
+    plotting_coeffs = {} # {TypeID:{'class2':[], 'class2xe':[], 'harmonic1':[], 'harmonic2':[], 'morse1':[], 'morse2':[], 'bond_types':[]}
     for i in m.endbondtorsion_coeffs:
         coeff = m.endbondtorsion_coeffs[i]
         coeff.harmonic = coeff.coeffs
@@ -527,8 +624,15 @@ def update_endbondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new, f
         k1, phi1, k2, phi2, k3, phi3 = m.dihedral_coeffs[i].coeffs
         use_standard = True
         use_zeros = False
+        plot_coeffs = {'class2':coeff.coeffs}
+        plot_coeffs['dihedral'] = m.dihedral_coeffs[i].coeffs
         if len(dihedral_bond_types[i]) == 3:
             type1, type2, type3 = dihedral_bond_types[i]
+            plot_coeffs['bond_types'] = [type1, type3]
+            plot_coeffs['harmonic1'] = m.bond_coeffs[type1].harmonic
+            plot_coeffs['harmonic2'] = m.bond_coeffs[type3].harmonic
+            plot_coeffs['morse1'] = m.bond_coeffs[type1].coeffs
+            plot_coeffs['morse2'] = m.bond_coeffs[type3].coeffs
             if len(m.bond_coeffs[type1].coeffs) == 4:
                 style1, D1, alpha1, r01  = m.bond_coeffs[type1].coeffs
                 r1cut = 0
@@ -555,10 +659,24 @@ def update_endbondtorsion_coeffs(m, dihedral_bond_types, style_old, style_new, f
             use_standard = False
         if use_standard:
             coeff.coeffs = [style_old, B1, B2, B3, C1, C2, C3, r1, r3]
+            
+        # Save coeffs for the plot
+        plot_coeffs['class2xe'] = coeff.coeffs
+        plotting_coeffs[i] = plot_coeffs
+            
+    # Plot the results
+    #basename = ''
+    if basename and plot_xterm['ebt']:
+        try:
+            basename = basename + '_ebt'
+            plotting.endbondtorsion(m, plotting_coeffs, basename)
+        except:
+            stack_trace_string = traceback.format_exc()
+            log.out(f'ERROR {stack_trace_string}')
     return m
 
 # Function to update bondbond13 coeffs
-def update_bondbond13_coeffs(m, dihedral_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, log):
+def update_bondbond13_coeffs(m, dihedral_bond_types, style_old, style_new, force_unused_to_zeros, force_unused_comments, include_rcut, use_rcut_in_xterms, basename, log):
     """
     output coeffs format:
       class2xe D alpha r1 r3 <r1cut r3cut>
@@ -581,14 +699,21 @@ def update_bondbond13_coeffs(m, dihedral_bond_types, style_old, style_new, force
     log.out('  - updating bondbond13 coeffs')
     
     # Find bond 1 and 3 for each bondbond13 coeff
+    plotting_coeffs = {} # {TypeID:{'class2':[], 'class2xe':[], 'harmonic1':[], 'harmonic2':[], 'morse1':[], 'morse2':[], 'bond_types':[]}
     for i in m.bondbond13_coeffs:
         coeff = m.bondbond13_coeffs[i]
         coeff.harmonic = coeff.coeffs
         N, r1, r3 = coeff.coeffs
         use_standard = True
         use_zeros = False
+        plot_coeffs = {'class2':coeff.coeffs}
         if len(dihedral_bond_types[i]) == 3:
             type1, type2, type3 = dihedral_bond_types[i]
+            plot_coeffs['bond_types'] = [type1, type3]
+            plot_coeffs['harmonic1'] = m.bond_coeffs[type1].harmonic
+            plot_coeffs['harmonic2'] = m.bond_coeffs[type3].harmonic
+            plot_coeffs['morse1'] = m.bond_coeffs[type1].coeffs
+            plot_coeffs['morse2'] = m.bond_coeffs[type3].coeffs
             if len(m.bond_coeffs[type1].coeffs) == 4:
                 style1, D1, alpha1, r01  = m.bond_coeffs[type1].coeffs
                 r1cut = 0
@@ -600,6 +725,8 @@ def update_bondbond13_coeffs(m, dihedral_bond_types, style_old, style_new, force
             if style1 == 'morse' and style3 == 'morse':
                 D = (D1 + D3)/2
                 alpha = math.sqrt( abs(N)/ (2*D) )
+                #if N < 0: alpha = 0
+                D = sign(N)*D # TODO: Checking curvature direction
                 if include_rcut and use_rcut_in_xterms:
                     coeff.coeffs = [style_new, D, alpha, r01, r03, r1cut, r3cut]
                 else:
@@ -617,4 +744,19 @@ def update_bondbond13_coeffs(m, dihedral_bond_types, style_old, style_new, force
             use_standard = False
         if use_standard:
             coeff.coeffs = [style_old, N, r1, r3]
+            
+        # Save coeffs for the plot
+        plot_coeffs['class2xe'] = coeff.coeffs
+        plotting_coeffs[i] = plot_coeffs
+            
+    # Plot the results
+    #basename = ''
+    if basename and plot_xterm['bb13']:
+        try:
+            basename = basename + '_bb13'
+            coeff_name = 'Bond/bond 13'
+            plotting.bondbond(m, plotting_coeffs, basename, coeff_name)
+        except:
+            stack_trace_string = traceback.format_exc()
+            log.out(f'ERROR {stack_trace_string}')
     return m

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.12
-April 14, 2025
+Revision 1.13
+October 15, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -242,7 +242,7 @@ mass_map = masses.mass_map
 # Commands for creating Files that this code can write (True or False responses).                         #
 ###########################################################################################################
 files2write = {'write_datafile'  : True,   # File containing new parameters (name *NEWFILE.data)
-               'write_pdffile'   : True,   # File containing plotted morse vs harmonic fits (name *NEWFILE.pdf)
+               'write_pdffile'   : False,  # File containing plotted morse vs harmonic fits (name *NEWFILE.pdf)
                'write_bondbreak' : True,   # File containing fix bond/break fixes with Rmax set (name *NEWFILE.script)
                'write_forcefield': False,  # File containing force field only (name *NEWFILE.FF.data)
                }

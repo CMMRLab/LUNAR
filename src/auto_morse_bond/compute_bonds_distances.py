@@ -59,6 +59,7 @@ class compute:
             t.min = 0
             t.max = 0
             t.std = 0
+            t.lst = []
             self.types[i] = t
        
         
@@ -123,8 +124,9 @@ class compute:
             lst = bond_type_holder[i] 
             try:
                 self.types[i].count = len(lst)
-                self.types[i].avg = '{:.4f}'.format( compute_mean(lst) )
-                self.types[i].min = '{:.4f}'.format( min(lst) )
-                self.types[i].max = '{:.4f}'.format( max(lst) )
-                self.types[i].std = '{:.4f}'.format( compute_standard_deviation(lst) )
+                self.types[i].avg = float('{:.4f}'.format( compute_mean(lst) ))
+                self.types[i].min = float('{:.4f}'.format( min(lst) ))
+                self.types[i].max = float('{:.4f}'.format( max(lst) ))
+                self.types[i].std = float('{:.4f}'.format( compute_standard_deviation(lst) ))
+                self.types[i].lst = lst
             except: pass

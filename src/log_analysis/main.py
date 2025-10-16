@@ -1421,6 +1421,10 @@ class analysis:
                                  'nu1': 'Float defining Poissons ratio from tranverse1 (t1) and axial strain (X-data) linear-relation. If not using t1, returns None',
                                  'nu2': 'Float defining Poissons ratio from tranverse1 (t2) and axial strain (X-data) linear-relation. If not using t2, returns None',
                                  'nu_avg': 'Float defining Poissons ratio found be averaing nu1 and nu2 together. If not using t1 and t2, returns None'}
+                        if not yp_derivative:
+                            yp_derivative = [0, 0]
+                        if not yp_offset:
+                            yp_offset = [0, 0]
                         outputs = {'xdata-raw': xreg_raw,
                                    'ydata-raw': yreg_raw,
                                    'b1-raw': b1_raw,

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Revision 1.12
-April 14, 2025
+Revision 1.13
+October 15, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -40,10 +40,13 @@ import src.auto_morse_bond.atom_info as atom_info
 import src.auto_morse_bond.bond_info as bond_info
 import src.io_functions as io_functions
 import src.write_lmp as write_lmp
+import warnings
 import glob
 import time
 import sys
 import os
+
+warnings.filterwarnings('ignore')
 
 
 ######################################################
@@ -136,7 +139,7 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
         # Initialize some preliminary information #
         ###########################################
         # set version and print starting information to screen
-        version = 'v1.12 / 14 April 2025'
+        version = 'v1.13 / 15 October 2025'
         log.out(f'\n\nRunning auto_morse_bond: {version}')
         log.out(f'Using Python version: {sys.version}')
         log.out(f'Using Python executable: {sys.executable}')
@@ -218,6 +221,31 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
         out2console.out(m, log, version, min_bond_length, coeffs2skip, zero_effected_xterms, alpha_specs, alpha_scale, include_type_labels)
         
         
+        #######################################
+        # Setting up directories and where to #
+        # write final files and results to    #
+        #######################################
+        # Find present working directory
+        pwd = os.getcwd()
+        
+        # Find/create paths to store code results
+        path = os.path.join(pwd, parent_directory)
+        
+        # If parent_directory == 'topofile' use topofile path as path
+        if 'topofile' in parent_directory:
+            log.out('Using path from topofile to set parent_directory ...')
+            path = io_functions.get_dir_from_topofile(topofile, parent_directory)
+        
+        # Check if path exists. IF not create.
+        if not os.path.isdir(path):
+            os.makedirs(path, exist_ok=True)
+            
+        # Change the current working directory to path1
+        # to write all new files to outputs directory
+        os.chdir(path)
+        basename = io_functions.get_basename(topofile, newfile=newfile, character=':', pflag=True)
+        
+        
         ###########################
         # Class2 crossterm issues #
         ###########################
@@ -234,7 +262,9 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
             
         # Convert class2 crossterms to class2xe variant
         if class2xe_update and ff_class in [2, '2']:
-            m = class2xe_conversion.update(m, morsefile, potential_styles, include_rcut, log)
+            if files2write['write_pdffile']: class2xe_basename = basename
+            else: class2xe_basename = ''
+            m = class2xe_conversion.update(m, morsefile, potential_styles, include_rcut, class2xe_basename, log)
             
         # Update bond_coeffs.coeffs if only a single bond style is used
         bond_styles = {m.bond_coeffs[i].coeffs[0] for i in m.bond_coeffs} # will be 'harmonic' or 'class2' or 'morse'
@@ -263,32 +293,8 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
             string = '  '.join([str(i) for i in coeffs])
             log.out('  {} {}'.format(i, string))
         
-        
-        #######################################
-        # Setting up directories and where to #
-        # write final files and results to    #
-        #######################################
-        # Find present working directory
-        pwd = os.getcwd()
-        
-        # Find/create paths to store code results
-        path = os.path.join(pwd, parent_directory)
-        
-        # If parent_directory == 'topofile' use topofile path as path
-        if 'topofile' in parent_directory:
-            log.out('Using path from topofile to set parent_directory ...')
-            path = io_functions.get_dir_from_topofile(topofile, parent_directory)
-        
-        # Check if path exists. IF not create.
-        if not os.path.isdir(path):
-            os.makedirs(path, exist_ok=True)
-            
-        # Change the current working directory to path1
-        # to write all new files to outputs directory
-        os.chdir(path)
     
         # Plotting Morse and Harmonic potentials
-        basename = io_functions.get_basename(topofile, newfile=newfile, character=':', pflag=True)
         m.plotting = potential_plotting.figure(m, radius, basename, files2write, version, bondbreak_scale, ff_class, bond2style, class2xe_update)
     
         # Write lammps datafile 
