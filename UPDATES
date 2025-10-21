@@ -15,10 +15,12 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 16October2025)
+LUNAR (version 21October2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+21October2025           JDK        - atom_typing.py: Attempting to fix MacOS bug on GUI topofile button.
+
 16October2025           JDK        - auto_morse_bond_update.py: Added the ability for the class2-xe conversion
                                                                 to handle crossterms that are "concave down",
                                                                 where it only supported "concave up" facing 

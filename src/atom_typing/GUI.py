@@ -299,13 +299,7 @@ class atom_typing_GUI:
     
     # Function to get filepath for topofile
     def topofile_path(self):
-        path = ''
-        try:
-            ftypes = (('all files', '*.*'), ('data files', '*.data *.data.gz'), ('mol files', '*.mol'),
-                      ('mol2 files', '*.mol2'), ('mdf files', '*.mdf'), ('sdf files', '*.sdf'),
-                      ('pdb files', '*.pdb'))
-            path = filedialog.askopenfilename(title='Open topofile?', filetypes=ftypes)
-        except: path = filedialog.askopenfilename(title='Open topofile?')
+        path = filedialog.askopenfilename(title='Open topofile?')
         if path:
             self.filepath = os.path.dirname(os.path.abspath(path))
             path = os.path.relpath(path)
