@@ -162,6 +162,36 @@ def write_ecoeffs(doc_title, parameters, ff_class, version, include_type_labels)
             for i in parameters.masses:
                 mass = parameters.masses[i]
                 f.write('{:^3} {:^2}\n'.format(i, mass.type))
+                
+                
+        # Write Bond Type Labels if user wants
+        if include_type_labels and parameters.nbonds > 0:
+            f.write('\nBond Type Labels\n\n')
+            for i in parameters.bond_coeffs:
+                bond = parameters.bond_coeffs[i]
+                f.write('{:^3} {:^2}\n'.format(i, string_type_labels(bond.type)))
+            
+        # Write Angle Type Labels if user wants
+        if include_type_labels and parameters.nangles > 0:
+            f.write('\nAngle Type Labels\n\n')
+            for i in parameters.angle_coeffs: 
+                angle = parameters.angle_coeffs[i]
+                f.write('{:^3} {:^2}\n'.format(i, string_type_labels(angle.type)))    
+            
+        # Write Dihedral Type Labels if user wants
+        if include_type_labels and parameters.ndihedraltypes > 0:
+            f.write('\nDihedral Type Labels\n\n')
+            for i in parameters.dihedral_coeffs: 
+                dihedral = parameters.dihedral_coeffs[i]
+                f.write('{:^3} {:^2}\n'.format(i, string_type_labels(dihedral.type))) 
+                
+           
+        # Write Improper Type Labels if user wants
+        if include_type_labels and parameters.nimpropertypes > 0:
+            f.write('\nImproper Type Labels\n\n')
+            for i in parameters.improper_coeffs: 
+                improper = parameters.improper_coeffs[i]
+                f.write('{:^3} {:^2}\n'.format(i, string_type_labels(list(improper.type) + [improper.nb]))) 
         
         # Write massses
         f.write(f'\nMasses # {parameters.mass_comment}\n\n')
@@ -179,15 +209,6 @@ def write_ecoeffs(doc_title, parameters, ff_class, version, include_type_labels)
                 #if include_type_labels: ID = '{t:<{s}}'.format(t=pair.type, s=5)  
                 comment = '{:^2} {:5}'.format('#', pair.type)
                 f.write('{} {} {:^2}\n'.format(ID, string_parameters(pair.coeffs), comment))
-                
-                
-                
-        # Write Bond Type Labels if user wants
-        if include_type_labels and parameters.nbonds > 0:
-            f.write('\nBond Type Labels\n\n')
-            for i in parameters.bond_coeffs:
-                bond = parameters.bond_coeffs[i]
-                f.write('{:^3} {:^2}\n'.format(i, string_type_labels(bond.type)))
             
         # Write bond coeffs
         if parameters.nbonds > 0:
@@ -197,15 +218,7 @@ def write_ecoeffs(doc_title, parameters, ff_class, version, include_type_labels)
                 #if include_type_labels: ID = '{t:<{s}}'.format(t=string_type_labels(bond.type), s=10)
                 comment = '{:^2} {:10}'.format('#', string_parameter_type(bond.type))
                 f.write('{} {} {:^2}\n'.format(ID, string_parameters(bond.coeffs), comment))
-            
-                        
-            
-        # Write Angle Type Labels if user wants
-        if include_type_labels and parameters.nangles > 0:
-            f.write('\nAngle Type Labels\n\n')
-            for i in parameters.angle_coeffs: 
-                angle = parameters.angle_coeffs[i]
-                f.write('{:^3} {:^2}\n'.format(i, string_type_labels(angle.type)))    
+
             
         # Write angle coeffs
         if parameters.nangles > 0:
@@ -216,14 +229,7 @@ def write_ecoeffs(doc_title, parameters, ff_class, version, include_type_labels)
                 comment = '{:^2} {:15}'.format('#', string_parameter_type(angle.type))
                 f.write('{} {} {:^2}\n'.format(ID, string_parameters(angle.coeffs), comment))
             
-            
-            
-        # Write Dihedral Type Labels if user wants
-        if include_type_labels and parameters.ndihedraltypes > 0:
-            f.write('\nDihedral Type Labels\n\n')
-            for i in parameters.dihedral_coeffs: 
-                dihedral = parameters.dihedral_coeffs[i]
-                f.write('{:^3} {:^2}\n'.format(i, string_type_labels(dihedral.type))) 
+
             
         # Write dihedral coeffs
         if parameters.ndihedraltypes > 0:
@@ -233,15 +239,6 @@ def write_ecoeffs(doc_title, parameters, ff_class, version, include_type_labels)
                 #if include_type_labels: ID = '{t:<{s}}'.format(t=string_type_labels(dihedral.type), s=20)
                 comment = '{:^2} {:15}'.format('#', string_parameter_type(dihedral.type))
                 f.write('{} {} {:^2}\n'.format(ID, string_parameters(dihedral.coeffs), comment))
-           
-            
-           
-        # Write Improper Type Labels if user wants
-        if include_type_labels and parameters.nimpropertypes > 0:
-            f.write('\nImproper Type Labels\n\n')
-            for i in parameters.improper_coeffs: 
-                improper = parameters.improper_coeffs[i]
-                f.write('{:^3} {:^2}\n'.format(i, string_type_labels(list(improper.type) + [improper.nb]))) 
                     
         # Write Improper coeffs
         if parameters.nimpropertypes > 0:
