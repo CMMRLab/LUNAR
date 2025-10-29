@@ -15,10 +15,13 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 22October2025)
+LUNAR (version 29October2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+29October2025           JDK        - sheet_builder.py: Made in-built command line override manual compatibile
+                                                       with Python 3.14.
+
 22October2025           JDK        - all2lmp.py: Added type labels to .ECOEFFS output.
 
 21October2025           JDK        - atom_typing.py: Attempting to fix MacOS bug on GUI topofile button.
