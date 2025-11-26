@@ -281,7 +281,7 @@ def find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_a
     velocities = {}  # {atom number : tuple of velocities}
 
     # If user wants molids compute them and reset them
-    if reset_molids:
+    if reset_molids and isinstance(reset_molids, bool):
         log.out('\n\nFinding molecules to reset molids....')
         molecules, molids = ff_functions.clusters(m, log, pflag=True)
         log.out('\n')
@@ -315,7 +315,7 @@ def find_atoms(nta, name, edge, frc, BADI, m, reset_charges, reset_molids, use_a
                     log.warn('WARNING atom-id {} type {} does not exists in the force field file'.format(id1, new_atom_type))
         
         # Reset molids is user wants, else try getting from file, except set as 1
-        if reset_molids:
+        if reset_molids and isinstance(reset_molids, bool):
             molid = molids[id1]
         else:
             try: molid = atom.molid

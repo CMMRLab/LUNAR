@@ -249,7 +249,7 @@ class cell_builder_GUI:
         self.include_type_labels_label.grid(column=3, row=0)
         
         # reset_molids drop down menu
-        styles = ['files', 'offset', 'clusters', 'skip']
+        styles = ['files', 'offset', 'insert', 'clusters', 'skip']
         self.reset_molids = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/11), font=font_settings)
         self.reset_molids.current(styles.index(reset_molids))
         self.reset_molids.grid(column=4, row=1)

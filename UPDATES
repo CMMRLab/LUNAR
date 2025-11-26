@@ -15,10 +15,12 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 29October2025)
+LUNAR (version 26November2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+26November2025          JDK        - cell_builder.py and all2lmp.py: Added more options on how to reset molIDs.
+
 29October2025           JDK        - sheet_builder.py: Made in-built command line override manual compatibile
                                                        with Python 3.14.
 

@@ -98,6 +98,10 @@
                and the 'files' method will create the same result. If the file contains different molIDs on different atoms and you wish to
                maintain the distinction, the 'offset' is the method to use.
 			   
+      'insert' will offset the molIDs in based on when the atoms in a topofile where added to the system. This does a complete reset of molids
+               from the orginal atom molIDs, which is useful for grouping things like "stacked graphite sheets" and then randomly placing the
+               stacks - which means in OVITO each stack can be color coded differently.
+			   
       'clusters' will perform a cluster analysis, where the "clusters" of atoms are determined via bonding connectivity, where the criteria for
                  atoms to be part of the same "cluster" is that the atoms must be linked by at least one covalent bond to the cluster. The
                  clusters are then sorted by the number of atoms, where the largest number of atoms is identified as cluster one, then molIDs
