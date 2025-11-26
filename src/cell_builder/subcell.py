@@ -668,7 +668,7 @@ class constructor:
                         if reset_molids == 'insert':
                             internal_reset_molids = str(ID)
                         else: internal_reset_molids = reset_molids
-                        self.add_molecule_to_system(m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log)
+                        self.add_molecule_to_system(m, fileid, internal_reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log)
                         self.system_mass += compute_system_mass(m)
                         if not inside_box: self.wrap_periodic_atoms()
                         attempts_to_insert.append(j+1)
