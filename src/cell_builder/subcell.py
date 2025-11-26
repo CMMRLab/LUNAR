@@ -612,7 +612,6 @@ class constructor:
         nevery = math.ceil(ndups*(progress_increment/100))
         attempts_to_insert = []; failed = 0;
         for ID in dup2grid:    
-            print(ID)
             # Generate molecules on a lattice
             if not random_packing:
                 xshift, yshift, zshift = grid[dup2grid[ID]] # get x, y, z shift
@@ -666,6 +665,9 @@ class constructor:
                         if not grouping: molecule_insertion[fileid][0] += 1
 
                         # Add molecule to system and break out of maxtry loop
+                        if reset_molids == 'insert':
+                            internal_reset_molids = str(ID)
+                        else: internal_reset_molids = reset_molids
                         self.add_molecule_to_system(m, fileid, reset_molids, occurrences, xshift, yshift, zshift, phi, theta, psi, log)
                         self.system_mass += compute_system_mass(m)
                         if not inside_box: self.wrap_periodic_atoms()
