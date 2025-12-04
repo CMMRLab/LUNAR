@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 6/17/2024
+# Last edited 12/4/2025
 #
 ************
 * Overview *
@@ -174,6 +174,34 @@
                         it means the simulation cell dimensions are set by pre-existing systems. The 'A x A x A' input just tells the code to try
                         randomly inserting molecules into a pre-existing system. If you have a pre-existing system and you want to add more molecules
                         to it, you MUST read-in the topofile with a QTY of ZERO and then set domain to 'A x A x A'.
+						
+    Additional characters and settings can be defined using a semi-colon character (';') and a variable=value pairing. For example the following 
+    variable/value pairs that can be used for changing how atoms are inserted into a domain are:
+	  
+      rs=<string>,     where <string> sets a method for how a "reshift" optimization is performed. The "rs" variable is short for "reshift" to allow
+                       for a more compact variable/value pairing. The following options are available:
+					   
+                         no
+                           Which does shuts off the "reshift" optimization, which is the default if this variable/value pair is not provided.
+						 
+						 insert
+                           Which after a molecule has been randomly inserted using the domain='LxA x LyA x LzA' or domain='A x A x A' options, reshifts
+                           the molecule to be closer to other already inserted molecules into the system. By default the newly inserted molecule stil
+                           needs be close enough that the distance can be found by looking in an atoms domain and its first neighboring domains. This
+                           behavior can be changed by setting rs_cut to a maximum distance to look for neighboring atoms out to further distances, but
+                           increases the cost of the optimization.						   
+					  
+      rs_cut=<float>,   where <float> sets the maximum distance for "rs=insert" that a neighboring atom can be found. By default this distance is set by
+                        the domain sized used for the domain-decompostion and that domains first neighboring domains. The domain size is set to twice the
+                        largest tolerance (or atom size) in the system, thus the default rs_cut is computable via the following equation:
+                          rs_cut_default = 3*(2*tol)
+                        where 3 is due to the domain plus its two nearest neighbors, the 2*tol is the domain size. By testing rs_cut, the best performance
+                        (quickest run times), it seems leaving this variable/value pair as the default is the best.
+	  
+      To use these additional settings they must following or be placed after the normal domain-characters (e.g. after 'LxA x LyA x LzA'...). Full
+      examples using these variable=value pairing seperated by the semi-colon character:
+        '20A x 20A x 20A; rs=insert'
+        '20A x 20A x 20A; rs=insert; rs_cut=10'
 	  
   boundary
     An entry in which to control the boundary of the simulation cell, when inserting molecules. The boundary variable is set up like the LAMMPS

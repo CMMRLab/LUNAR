@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.9
-February 14th, 2025
+Revision 1.10
+December 4, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -224,6 +224,10 @@ def matrix_by_matrix(m1, m2):
 # Function to multiply a vector and a matrix together
 def vector_by_matrix(m1, v1):
     return [sum([x*y for x, y in zip(v1, v2)]) for v2 in m1]
+
+# Function for computing the dot product
+def dot_product(v1, v2):
+    return sum([i*j for i, j in zip(v1, v2)])
 
 
 #############################################################

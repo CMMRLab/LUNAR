@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.10
-October 4th, 2024
+Revision 1.11
+December 4, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -191,6 +191,43 @@ group_monomers_locally = False
 #     domain = 'AxAxA' # box will be defined by files with QTY of ZEROs and will randomly fill that box       #
 #     domain = '10Ax15Ax20A' # will generate box that is 10x15x20A to randomly fill with molecules            #
 #                                                                                                             #
+#   Additional characters and settings can be defined using a semi-colon character (';') and a variable=value #
+#   pairing. For example the following  variable/value pairs that can be used for changing how atoms are      #
+#   inserted into a domain are:                                                                               #
+# 	                                                                                                          #
+#     rs=<string>,     where <string> sets a method for how a "reshift" optimization is performed. The "rs"   #
+#                      variable is short for "reshift" to allow for a more compact variable/value pairing.    #
+#                      The following options are available:                                                   #
+# 					                                                                                          #
+#                        no                                                                                   #
+#                          Which does shuts off the "reshift" optimization, which is the default if this      #
+#                          variable/value pair is not provided.                                               #
+# 						                                                                                      #
+# 						 insert                                                                               #
+#                          Which after a molecule has been randomly inserted using the domain='A x A x A' or  #
+#                          domain='LxA x LyA x LzA' options, reshifts the molecule to be closer to other      #
+#                          already inserted molecules into the system. By default the newly inserted molecule #
+#                          stil needs be close enough that the distance can be found by looking in an atoms   #
+#                          domain and its first neighboring domains. This behavior can be changed by setting  #
+#                          rs_cut to a maximum distance to look for neighboring atoms out to further          #
+#                          distances, but increases the cost of the optimization.                             #
+# 					                                                                                          #
+#     rs_cut=<float>,   where <float> sets the maximum distance for "rs=insert" that a neighboring atom can   #
+#                       be found. By default this distance is set by the domain sized used for the domain     #
+#                       decompostion and that domains first neighboring domains. The domain size is set to    #
+#                       twice the largest tolerance (or atom size) in the system, thus the default rs_cut is  #
+#                       computable via the following equation:                                                #
+#                         rs_cut_default = 3*(2*tol)                                                          #
+#                       where 3 is due to the domain plus its two nearest neighbors, the 2*tol is the domain  #
+#                       size. By testing rs_cut, the best performance (quickest run times), it seems leaving  #
+#                       this variable/value pair as the default is the best.                                  #
+# 	                                                                                                          #
+#     To use these additional settings they must following or be placed after the normal domain-characters    #
+#     (e.g. after 'LxA x LyA x LzA'...). Full examples using these variable=value pairing seperated by the    #
+#     semi-colon character:                                                                                   #
+#      domain = '20A x 20A x 20A; rs=insert'                                                                  #
+#      domain = '20A x 20A x 20A; rs=insert; rs_cut=10'                                                       #
+                                                                                                              #
 # Update domain as desired.                                                                                   #
 ###############################################################################################################
 domain = 'cubic'
@@ -395,6 +432,11 @@ include_type_labels = False
 #              in each file the 'offset' method and the 'files' method will create the same result. If the    #
 #              file contains different molIDs on different atoms and you wish to maintain the distinction,    #
 #              the offset is the method to use.                                                               #
+#                                                                                                             #
+#   'insert'   will offset the molIDs in based on when the atoms in a topofile where added to the system.     #
+#              This does a complete reset of molids from the orginal atom molIDs, which is useful for         #
+#              grouping things like "stacked graphite sheets" and then randomly placing the stacks - which    #
+#              means in OVITO each stack can be color coded differently.                                      #
 #                                                                                                             #
 #	'clusters' will perform a cluster analysis, where the "clusters" of atoms are determined via bonding      #
 #              connectivity, where the criteria for atoms to be part of the same "cluster" is that the atoms  #

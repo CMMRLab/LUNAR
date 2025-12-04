@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-June 17th, 2024
+Revision 1.2
+December 4, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -11,7 +11,9 @@ Houghton, MI 49931
 # Import Necessary Libraries #
 ##############################
 import src.cell_builder.misc_functions as misc_functions
+from itertools import product
 import math
+import time
 
 
 ################################################
@@ -48,7 +50,7 @@ def generate_iflags(boundary, log):
 ###########################################################
 # Function to find N-number of possible periodic postions #
 ###########################################################
-def find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=12):
+def find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=14):
     postions_distance = {} # {distance from center : (pbc-x, pbc-y, pbc-z) }
     for ixlx, iyly, izlz in scaled_images:
         x1i = x1+ixlx; y1i = y1+iyly; z1i = z1+izlz;
@@ -81,113 +83,95 @@ def check_near_edge(x, y, z, max_from_edge, xlo, xhi, ylo, yhi, zlo, zhi):
 # Function to generate domain from system "self" #
 ##################################################
 def generate_domain(sys, domain_size, scaled_images, pflag, log):
-    # Generate domain
+    #-----------------#
+    # Generate domain #
+    #-----------------#
     nxx = math.ceil(sys.lx/domain_size)
     nyy = math.ceil(sys.ly/domain_size)
     nzz = math.ceil(sys.lz/domain_size)
-    cx = (sys.xhi + sys.xlo)/2
-    cy = (sys.yhi + sys.ylo)/2
-    cz = (sys.zhi + sys.zlo)/2
     if nxx == 0: nxx = 1
     if nyy == 0: nyy = 1
-    if nzz == 0: nzz = 1
-    dx = sys.lx/nxx; dy = sys.ly/nyy; dz = sys.lz/nzz;
-    halfdx = dx/2; halfdy = dy/2; halfdz = dz/2; ID = 0;
-    xadd = halfdx + sys.xlo; yadd = halfdy + sys.ylo; zadd = halfdz + sys.zlo;
-    if pflag: log.out('Using {} x {} x {} sub domains of size {:.2f} x {:.2f} x {:.2f} to perform domain decomposition'.format(nxx, nyy, nzz, dx, dy, dz))
+    if nzz == 0: nzz = 1    
+    dxx = sys.lx/nxx
+    dyy = sys.ly/nyy
+    dzz = sys.lz/nzz
+    if pflag: log.out('Using {} x {} x {} sub domains of size {:.2f} x {:.2f} x {:.2f} to perform domain decomposition'.format(nxx, nyy, nzz, dxx, dyy, dzz))
     if pflag: log.out('Finding domain to use cell linked list algorithm for interatomic distance calculations ...')
-    ndomain = nxx*nyy*nzz; progress_increment = 10; count = 0;
-    domain = {} # { domainID : (xlo, xhi, ylo, yhi, zlo, zhi, r, edgeflag) }
+   
+    # Domain-coordinates are indexed starting from
+    # 1-to-nii in the xx, yy, and zz-directions
+    start_time = time.time()
+    coords = list(product(range(1, nxx+1),
+                          range(1, nyy+1),
+                          range(1, nzz+1)))
+
+    # Generate a map from domainID to Domain-coordinates
     indexes_forward = {} #{ domainID : (nx, ny, nz) }
     indexes_reverse = {} #{ (nx, ny, nz) : domainID }
-    for nx in range(nxx):
-        for ny in range(nyy):
-            for nz in range(nzz):
-                # Optional printing of progress
-                if pflag:
-                    count += 1
-                    if 100*count/ndomain % progress_increment == 0:
-                        log.out('    progress: {} %'.format(int(100*count/ndomain)))
+    for ID, xyz in enumerate(coords, start=1):
+        xyz = tuple(xyz)
+        indexes_forward[ID] = xyz
+        indexes_reverse[xyz] = ID
+    ndomain = len(coords)
+    execution_time = (time.time() - start_time)
+    if pflag: log.out('    Time in seconds to generate domain: ' + str(execution_time))
                 
-                # Generate domain center
-                ID += 1
-                xc = nx*dx + xadd
-                yc = ny*dy + yadd
-                zc = nz*dz + zadd
-                xlo_sub = xc - halfdx
-                xhi_sub = xc + halfdx
-                ylo_sub = yc - halfdy
-                yhi_sub = yc + halfdy
-                zlo_sub = zc - halfdz
-                zhi_sub = zc + halfdz
-                r = misc_functions.compute_distance(xc, yc, zc, cx, cy, cz)
-                edgeflag = check_near_edge(xc, yc, zc, domain_size, sys.xlo, sys.xhi, sys.ylo, sys.yhi, sys.zlo, sys.zhi)
-                domain[ID] = (xlo_sub, xhi_sub, ylo_sub, yhi_sub, zlo_sub, zhi_sub, xc, yc, zc, r, edgeflag)
-                indexes_forward[ID] = (nx+1, ny+1, nz+1)
-                indexes_reverse[(nx+1, ny+1, nz+1)] = ID
-
-                
-    # Find domain connectivity (graph)
-    def get_neighboring_indexes(ni, nii):
-        neighs = [ni]
-        if ni-1 < 1:
-            neighs.append(nii)
-        else: neighs.append(ni-1)
-        if ni+1 > nii: 
-            neighs.append(1)
-        else: neighs.append(ni+1)
-        return sorted(neighs)
-    domain_graph = {ID:set() for ID in domain} # { ID : set(bonded IDs) }
-    domain_graph[0] = {ID for ID in domain}
+    #----------------#
+    # Generate graph #
+    #----------------#
     if pflag: log.out('Finding cell linked graph for interatomic distance calculations ...')
+    start_time = time.time()
+    
+    # self+13 neighboring domains. down, east, south priority ordering.
+    neighbor_shifts = [(0, 0, 0),    (0, 0, -1), (0, -1, 0),  (0, -1, -1), (-1, 0, 0), (-1, 0, -1), (-1, -1, 0),
+                       (-1, -1, -1), (-1, 1, 0), (-1, 1, -1), (0, 1, -1),  (1, 1, -1), (1, 0, -1),  (1, -1, -1)]
+    neighbor_shifts = neighbor_shifts[1:] # remove zero shift as we dont need it (part of this comes from Tristan)
+    
+    domain_graph = {ID:set() for ID in indexes_forward} # { ID : set(bonded IDs) }
+    domain_graph[0] = {ID for ID in indexes_forward}
     progress_increment = 10; count = 0;
-    for id1 in domain:
+    for id1 in indexes_forward:
+        nx, ny, nz = indexes_forward[id1]
         # Optional printing of progress
         if pflag:
             count += 1
             if 100*count/ndomain % progress_increment == 0:
                 log.out('    progress: {} %'.format(int(100*count/ndomain)))
+        
+        # Start shifting around Domain-coordinates
+        for ix, iy, iz in neighbor_shifts:
+            mx = nx + ix
+            my = ny + iy
+            mz = nz + iz
+            if mx < 1:
+                mx = nxx
+            elif mx > nxx:
+                mx = 1
                 
-        d1 = domain[id1]
-        x1 = d1[6]; y1 = d1[7]; z1 = d1[8]; r1 = d1[9]; edge1 = d1[10];
-        min_radius = r1 - 2*domain_size
-        max_radius = r1 + 2*domain_size
-        if edge1: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=12)
-        nx, ny, nz = indexes_forward[id1]
-        nxs = get_neighboring_indexes(nx, nxx)
-        nys = get_neighboring_indexes(ny, nyy)
-        nzs = get_neighboring_indexes(nz, nzz)
-        for ix in nxs:
-            for iy in nys:
-                for iz in nzs:
-                    id2 = indexes_reverse[(ix, iy, iz)]
-                    if id1 == id2: continue
-                    if min_radius < domain[id2][9] < max_radius:
-                        d2 = domain[id2]
-                        x2 = d2[6]; y2 = d2[7]; z2 = d2[8]; edge2 = d2[10];
-                        if edge1 and edge2: # periodic
-                            for x1i, y1i, z1i in periodic_postions:
-                                if abs(x1i - x2) > domain_size: continue
-                                elif abs(y1i - y2) > domain_size: continue
-                                elif abs(z1i - z2) > domain_size: continue
-                                domain_graph[id1].add(id2)
-                                domain_graph[id2].add(id1)
-                                break
-                        else: # non-periodic
-                            if abs(x1 - x2) > domain_size: continue
-                            elif abs(y1 - y2) > domain_size: continue
-                            elif abs(z1 - z2) > domain_size: continue
-                            domain_graph[id1].add(id2)
-                            domain_graph[id2].add(id1)
+            if my < 1:
+                my = nyy
+            elif my > nyy:
+                my = 1
+                
+            if mz < 1:
+                mz = nzz
+            elif mz > nzz:
+                mz = 1
+                
+            id2 = indexes_reverse[(mx, my, mz)]
+            domain_graph[id1].add(id2)
+ 
+    execution_time = (time.time() - start_time)
+    if pflag: log.out('    Time in seconds to generate domain connectivity: ' + str(execution_time))
                             
     # setup dict to hold info needed to assign atoms to domain
     atoms2domain = {'indexes_forward':indexes_forward,
                     'indexes_reverse':indexes_reverse,
-                    'cubes': [dx, dy, dz],
+                    'deltas': [dxx, dyy, dzz],
                     'xlo': sys.xlo,
                     'ylo': sys.ylo,
                     'zlo': sys.zlo}
-    return domain, domain_graph, atoms2domain
+    return domain_graph, atoms2domain
 
 
 #####################################
@@ -198,11 +182,11 @@ def assign_atom_a_domainID(x, y, z, atoms2domain):
         xlo = atoms2domain['xlo']
         ylo = atoms2domain['ylo']
         zlo = atoms2domain['zlo']
-        cubes = atoms2domain['cubes']
+        dxx, dyy, dzz = atoms2domain['deltas']
         indexes_reverse = atoms2domain['indexes_reverse']
-        nx = math.ceil( (x-xlo)/cubes[0] )
-        ny = math.ceil( (y-ylo)/cubes[1] )
-        nz = math.ceil( (z-zlo)/cubes[2] )
+        nx = math.ceil( (x - xlo)/dxx )
+        ny = math.ceil( (y - ylo)/dyy )
+        nz = math.ceil( (z - zlo)/dzz )
         domainID = indexes_reverse[(nx, ny, nz)]
     except: domainID = 0
     return domainID
@@ -237,7 +221,7 @@ def mix_LJ_sigmas(sigma1, sigma2, mixing_rule, tolerance):
 ####################################################################
 # Function to check if atom overlaps any in current system: serial #
 ####################################################################
-def overlap_check_serial(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images, atoms2domain):
+def overlap_check(sys, m, linked_lst, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images, atoms2domain):
     # Set default overlap, inside Boolean, and insert_molecule
     overlap = False; inside_box = True; insert_molecule = True
     
@@ -249,6 +233,7 @@ def overlap_check_serial(sys, m, linked_lst, domain, domain_graph, xshift, yshif
     RzRyRx = misc_functions.matrix_by_matrix(RzRy, misc_functions.Rx(phi))
 
     # Check if molecule is inside the box
+    positions = {} # {atomID:(x, y, z)}
     for id1 in m.atoms:
         atom1 = m.atoms[id1]
         if mix_sigma:
@@ -258,6 +243,7 @@ def overlap_check_serial(sys, m, linked_lst, domain, domain_graph, xshift, yshif
         x1 += xshift
         y1 += yshift
         z1 += zshift
+        positions[id1] = (x1, y1, z1)
         if x1 <= sys.xlo + half_atomsize:
             if boundary_conditions[0] == 'f': insert_molecule = False
             inside_box = False
@@ -287,10 +273,7 @@ def overlap_check_serial(sys, m, linked_lst, domain, domain_graph, xshift, yshif
                 pair_coeff1 = m.pair_coeffs[atom1.type].coeffs
                 sigma1 = pair_coeff1[tolerance]
                 half_atomsize = pair_coeff1[tolerance]/2
-            x1, y1, z1 = misc_functions.vector_by_matrix(RzRyRx, [atom1.x, atom1.y, atom1.z])
-            x1 += xshift
-            y1 += yshift
-            z1 += zshift
+            x1, y1, z1 = positions[id1] 
             if not inside_box:
                 if x1 <= sys.xlo: x1 += sys.lx
                 if x1 >= sys.xhi: x1 -= sys.lx
@@ -299,7 +282,7 @@ def overlap_check_serial(sys, m, linked_lst, domain, domain_graph, xshift, yshif
                 if z1 <= sys.zlo: z1 += sys.lz
                 if z1 >= sys.zhi: z1 -= sys.lz
             edgeflag = check_near_edge(x1, y1, z1, 1.1*half_atomsize, sys.xlo, sys.xhi, sys.ylo, sys.yhi, sys.zlo, sys.zhi)
-            if edgeflag: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, sys.cx, sys.cy, sys.cz, Npos=12)
+            if edgeflag: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, sys.cx, sys.cy, sys.cz, Npos=14)
             domainID = assign_atom_a_domainID(x1, y1, z1, atoms2domain)
             domains = list(domain_graph[domainID]) + [domainID]
             for domainID_linked in domains:
@@ -334,133 +317,208 @@ def overlap_check_serial(sys, m, linked_lst, domain, domain_graph, xshift, yshif
     return overlap, inside_box, insert_molecule
 
 
-######################################################################
-# Function to check if atom overlaps any in current system: parallel #
-######################################################################
-# Function to use for multiprocesing
-def overlap_multiprocessing(sys, m, atoms, mix_sigma, tolerance, mixing_rule, RzRyRx, xshift, yshift, zshift, inside_box, scaled_images, atoms2domain, domain_graph, linked_lst):
+################################################################################
+# Function to determine the amount of reshifting to apply to "stack molecules" #
+################################################################################
+def insert_reshift(sys, m, linked_lst, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, 
+                   mixing_rule, boundary_conditions, scaled_images, atoms2domain, reshift_cutoff, domain_depth):
+    # Set default new shifts
+    max_shiftx = 0
+    max_shifty = 0
+    max_shiftz = 0
+    
     # Set mixed and half atom size from tolerance and update later if mix_sigma Boolean Pair Coeffs
     mixed_atomsize = tolerance; half_atomsize = tolerance/2
-    
-    # Check for overlaps
-    overlap = False
-    for id1 in atoms:
-        if overlap: break
-        atom1 = m.atoms[id1]
-        if mix_sigma:
-            pair_coeff1 = m.pair_coeffs[atom1.type].coeffs
-            sigma1 = pair_coeff1[tolerance]
-            half_atomsize = pair_coeff1[tolerance]/2
-        x1, y1, z1 = misc_functions.vector_by_matrix(RzRyRx, [atom1.x, atom1.y, atom1.z])
-        x1 += xshift
-        y1 += yshift
-        z1 += zshift
-        if not inside_box:
-            if x1 <= sys.xlo: x1 += sys.lx
-            if x1 >= sys.xhi: x1 -= sys.lx
-            if y1 <= sys.ylo: y1 += sys.ly
-            if y1 >= sys.yhi: y1 -= sys.ly
-            if z1 <= sys.zlo: z1 += sys.lz
-            if z1 >= sys.zhi: z1 -= sys.lz
-        edgeflag = check_near_edge(x1, y1, z1, 1.1*half_atomsize, sys.xlo, sys.xhi, sys.ylo, sys.yhi, sys.zlo, sys.zhi)
-        if edgeflag: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, sys.cx, sys.cy, sys.cz, Npos=12)
-        domainID = assign_atom_a_domainID(x1, y1, z1, atoms2domain)
-        domains = list(domain_graph[domainID]) + [domainID]
-        for domainID_linked in domains:
-            if overlap: break
-            neighboring_atoms = linked_lst[domainID_linked]
-            for id2 in neighboring_atoms:
-                atom2 = sys.atoms[id2]
-                x2 = atom2.x
-                y2 = atom2.y
-                z2 = atom2.z
-                if mix_sigma:
-                    pair_coeff2 = atom2.pair_coeff
-                    sigma2 = pair_coeff2[tolerance]
-                    mixed_atomsize = mix_LJ_sigmas(sigma1, sigma2, mixing_rule, tolerance)
-                if edgeflag:
-                    for x1i, y1i, z1i in periodic_postions:
-                        if abs(x1i - x2) > mixed_atomsize: continue
-                        elif abs(y1i - y2) > mixed_atomsize: continue
-                        elif abs(z1i - z2) > mixed_atomsize: continue
-                        distance = misc_functions.compute_distance(x1i, y1i, z1i, x2, y2, z2)
-                        if distance <= mixed_atomsize:
-                            overlap = True
-                            break
-                else:
-                    if abs(x1 - x2) > mixed_atomsize: continue
-                    elif abs(y1 - y2) > mixed_atomsize: continue
-                    elif abs(z1 - z2) > mixed_atomsize: continue
-                    distance = misc_functions.compute_distance(x1, y1, z1, x2, y2, z2)
-                    if distance <= mixed_atomsize:
-                        overlap = True
-                        break
-    return overlap
-
-# Funtion to divide atoms list into chunks
-def divide_chunks(lst, n):
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
-
-# Function to that will glue all multiprocessing functions together
-def overlap_check_parallel(sys, m, linked_lst, domain, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images, atoms2domain, np):
-    # These will only be imported if parallel overlap checks get called
-    #from concurrent.futures import ProcessPoolExecutor
-    from concurrent.futures import ThreadPoolExecutor
-    from concurrent.futures import as_completed
-    
-    # Set default overlap, inside Boolean, and insert_molecule
-    overlap = False; inside_box = True; insert_molecule = True
-    
-    # Set mixed and half atom size from tolerance and update later if mix_sigma Boolean Pair Coeffs
-    half_atomsize = tolerance/2
     
     # Find rotational matrix
     RzRy = misc_functions.matrix_by_matrix(misc_functions.Rz(psi), misc_functions.Ry(theta))
     RzRyRx = misc_functions.matrix_by_matrix(RzRy, misc_functions.Rx(phi))
-
-    # Check if molecule is inside the box
-    for id1 in m.atoms:
-        atom1 = m.atoms[id1]
-        if mix_sigma:
-            pair_coeff1 = m.pair_coeffs[atom1.type].coeffs
-            half_atomsize = pair_coeff1[tolerance]/2
-        x1, y1, z1 = misc_functions.vector_by_matrix(RzRyRx, [atom1.x, atom1.y, atom1.z])
-        x1 += xshift
-        y1 += yshift
-        z1 += zshift
-        if x1 <= sys.xlo + half_atomsize:
-            if boundary_conditions[0] == 'f': insert_molecule = False
-            inside_box = False
-        if x1 >= sys.xhi - half_atomsize:
-            if boundary_conditions[0] == 'f': insert_molecule = False
-            inside_box = False
-        if y1 <= sys.ylo + half_atomsize:
-            if boundary_conditions[1] == 'f': insert_molecule = False
-            inside_box = False
-        if y1 >= sys.yhi - half_atomsize:
-            if boundary_conditions[1] == 'f': insert_molecule = False
-            inside_box = False
-        if z1 <= sys.zlo + half_atomsize:
-            if boundary_conditions[2] == 'f': insert_molecule = False
-            inside_box = False
-        if z1 >= sys.zhi - half_atomsize:
-            if boundary_conditions[2] == 'f': insert_molecule = False
-            inside_box = False
-        if not insert_molecule: break
     
-    # Check for overlaps
-    if sys.atoms and insert_molecule:
-        atoms = list(m.atoms.keys())
-        nchunks = math.ceil(len(atoms)/np)
-        overlaps = set()
-        #with ProcessPoolExecutor() as exe:
-        with ThreadPoolExecutor() as exe:
-            results = [exe.submit(overlap_multiprocessing, sys, m, chunked_atoms, mix_sigma, tolerance, mixing_rule, RzRyRx, xshift, yshift, zshift, inside_box, scaled_images, atoms2domain, domain_graph, linked_lst) for chunked_atoms in divide_chunks(atoms, nchunks)]
-            for n, result in enumerate(as_completed(results)):
-                overlap = result.result()
-                overlaps.add(overlap)
-        if True in overlaps:
-            overlap = True
-    return overlap, inside_box, insert_molecule
+    # Distances for shifting atoms
+    if sys.atoms:
+        if domain_depth <= 1:
+            depth_domain_graph = domain_graph
+        else:
+            # Generate a domain graph that is "deep enough" for reshift_cutoff
+            depth_domain_graph = {} # { ID : set(bonded IDs up to max-depth) }
+            for domainID in domain_graph:
+                # domainID=0 is all domains (in-case an atom is not in any domain).
+                # This means we do not need to find cummulative neighbors and only
+                # would slow things down.
+                if domainID == 0:
+                    depth_domain_graph[domainID] = domain_graph[domainID]
+                else:
+                    neighbors = find_cumulative_neighs(domain_graph, domainID, domain_depth)
+                    bonded = set().union(*neighbors.values())
+                    depth_domain_graph[domainID] = bonded
+                    
+        if not isinstance(reshift_cutoff, (int, float)):
+            reshift_cutoff = float('inf') # reset to something extremely large
+        
+        # Start finding distances
+        distances = {} # {(insert_atomID, system_atomID):(dx, dy, dz, distance)}
+        mixed_atomsizes = {} # {(insert_atomID, system_atomID):mixed_atomsize}
+        for id1 in m.atoms:
+            atom1 = m.atoms[id1]
+            if mix_sigma:
+                pair_coeff1 = m.pair_coeffs[atom1.type].coeffs
+                sigma1 = pair_coeff1[tolerance]
+                half_atomsize = pair_coeff1[tolerance]/2
+            x1, y1, z1 = misc_functions.vector_by_matrix(RzRyRx, [atom1.x, atom1.y, atom1.z])
+            x1 += xshift
+            y1 += yshift
+            z1 += zshift
+            
+            inside_box = True
+            if x1 <= sys.xlo + half_atomsize:
+                inside_box = False
+            if x1 >= sys.xhi - half_atomsize:
+                inside_box = False
+            if y1 <= sys.ylo + half_atomsize:
+                inside_box = False
+            if y1 >= sys.yhi - half_atomsize:
+                inside_box = False
+            if z1 <= sys.zlo + half_atomsize:
+                inside_box = False
+            if z1 >= sys.zhi - half_atomsize:
+                inside_box = False
+            if not inside_box:
+                if x1 <= sys.xlo: x1 += sys.lx
+                if x1 >= sys.xhi: x1 -= sys.lx
+                if y1 <= sys.ylo: y1 += sys.ly
+                if y1 >= sys.yhi: y1 -= sys.ly
+                if z1 <= sys.zlo: z1 += sys.lz
+                if z1 >= sys.zhi: z1 -= sys.lz
+            edgeflag = check_near_edge(x1, y1, z1, 1.1*half_atomsize, sys.xlo, sys.xhi, sys.ylo, sys.yhi, sys.zlo, sys.zhi)
+            if edgeflag: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, sys.cx, sys.cy, sys.cz, Npos=14)
+            domainID = assign_atom_a_domainID(x1, y1, z1, atoms2domain)
+            domains = list(depth_domain_graph[domainID]) + [domainID]
+            for domainID_linked in domains:
+                neighboring_atoms = linked_lst[domainID_linked]
+                for id2 in neighboring_atoms:
+                    atom2 = sys.atoms[id2]
+                    x2 = atom2.x
+                    y2 = atom2.y
+                    z2 = atom2.z
+                    if mix_sigma:
+                        pair_coeff2 = atom2.pair_coeff
+                        sigma2 = pair_coeff2[tolerance]
+                        mixed_atomsize = mix_LJ_sigmas(sigma1, sigma2, mixing_rule, tolerance)
+                    if edgeflag:
+                        periodic_distances = {} # {distance:(dx, dy, dz)}
+                        for x1i, y1i, z1i in periodic_postions:
+                            if abs(x1i - x2) > reshift_cutoff: continue
+                            elif abs(y1i - y2) > reshift_cutoff: continue
+                            elif abs(z1i - z2) > reshift_cutoff: continue
+                            dx = x2 - x1i
+                            dy = y2 - y1i
+                            dz = z2 - z1i
+                            distance = math.sqrt(dx*dx + dy*dy + dz*dz)
+                            periodic_distances[distance] = (dx, dy, dz)
+                            
+                        # Select closest periodic image
+                        if not periodic_distances: continue
+                        distance = min(periodic_distances.keys())
+                        if distance <= reshift_cutoff:
+                            dx, dy, dz = periodic_distances[distance]
+                            distances[(id1, id2)] = (dx, dy, dz, distance)
+                            mixed_atomsizes[(id1, id2)] = mixed_atomsize
+                    else:
+                        if abs(x1 - x2) > reshift_cutoff: continue
+                        elif abs(y1 - y2) > reshift_cutoff: continue
+                        elif abs(z1 - z2) > reshift_cutoff: continue
+                        dx = x2 - x1
+                        dy = y2 - y1
+                        dz = z2 - z1
+                        distance = math.sqrt(dx*dx + dy*dy + dz*dz)
+                        if distance <= reshift_cutoff:
+                            distances[(id1, id2)] = (dx, dy, dz, distance)
+                            mixed_atomsizes[(id1, id2)] = mixed_atomsize
 
+            
+        # Define the direction to shift the molecule based on the smallest dx, dy, and dz direciton
+        if distances:
+            # Find the two closests atoms
+            closest_atoms, closests_vector = min(distances.items(), key=lambda kv: abs(kv[1][3]) )
+            dx, dy, dz, distance = closests_vector # d0 = system - insert
+            ux, uy, uz = (-dx/distance, -dy/distance, -dz/distance)
+            
+            # Check position-vector is pointing in the correct direction
+            dot = ux*dx + uy*dy + uz*dz  # = |d| in your current convention
+            if dot > 0:
+                ux, uy, uz = -ux, -uy, -uz
+            
+            t_candidates = []
+            max_shift = None
+            for (id1, id2), (dx, dy, dz, dist) in distances.items():
+                rmin = mixed_atomsizes[(id1, id2)] 
+                rmin2 = rmin*rmin
+            
+                # Current squared distance
+                d2 = dx*dx + dy*dy + dz*dz
+            
+                # If already too close, can't move forward at all
+                if d2 <= rmin2:
+                    max_shift = 0.0
+                    break
+            
+                # Quadratic coefficients for D^2(t) = rmin^2
+                # D^2(t) = |d0 + t*u|^2 = t^2 + 2 (u·d0) t + |d0|^2
+                dot = ux*dx + uy*dy + uz*dz
+                if dot >= 0.0:
+                    # If dot >= 0, moving away or sideways; can't create a new overlap
+                    continue
+                
+                A = 1.0
+                B = 2.0 * dot
+                C = d2 - rmin2
+            
+                disc = B*B - 4.0*A*C
+                if disc < 0.0:
+                    # No real intersection → never reaches exactly rmin along this direction
+                    continue
+            
+                sqrt_disc = math.sqrt(disc)
+                t1 = (-B - sqrt_disc) / (2.0*A)
+                t2 = (-B + sqrt_disc) / (2.0*A)
+            
+                # We’re currently at t = 0 with D^2(0) > rmin^2.
+                # The unsafe region (distance < rmin) lies between the two roots.
+                # So the first time we become unsafe is the smallest positive root.
+                if t1 > 0.0: t_candidates.append(t1)
+                if t2 > 0.0: t_candidates.append(t2)
+            
+            if t_candidates and max_shift != 0.0:
+                max_shift = min(t_candidates)
+            else: max_shift = 0 
+            
+            # Now decompose the shift into components along x,y,z
+            max_shiftx = max_shift*ux
+            max_shifty = max_shift*uy
+            max_shiftz = max_shift*uz
+    return max_shiftx, max_shifty, max_shiftz
+
+
+###########################################################################
+# Function to find cumulative neighbors from a node up to a maximum depth #
+###########################################################################
+def find_cumulative_neighs(graph, node, max_depth):
+    """
+    Finds the cummulative neighbors of a graph starting at
+    a given node and traversing to a maximum depth of max_depth.
+    Depth is defined as follows:
+        
+    1. first neighbors
+    2. second neighbors
+    3. thrid neighbors
+    """
+    neighbors = {i+1 : set() for i in range(max_depth)} # { depth : {id1, id2, ...} }
+    neighbors[1] = set(graph[node]) 
+    visited = set(list(graph[node]) + [node])
+    for depth in range(1, max_depth):
+        for i in neighbors[depth]:
+            for j in graph[i]:
+                if j in visited: continue  
+                neighbors[depth+1].add(j)
+                visited.add(j)
+    return neighbors

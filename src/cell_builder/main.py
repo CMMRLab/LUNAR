@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.10
-October 4th, 2024
+Revision 1.11
+December 4, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -45,7 +45,7 @@ def main(topofiles, force_field_joining, duplicate, distance_scale, newfile, ato
     ########################################################
     # set version and print starting information to screen #
     ########################################################
-    version = 'v1.10 / 4 October 2024'
+    version = 'v1.11 / 4 December 2025'
     log.out(f'\n\nRunning cell_builder: {version}')
     log.out(f'Using Python version: {sys.version}')
     log.out(f'Using Python executable: {sys.executable}')

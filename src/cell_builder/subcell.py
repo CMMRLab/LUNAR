@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.10
-October 4th, 2024
+Revision 1.11
+December 4, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -16,6 +16,55 @@ import random
 import math
 import time
 import os
+
+
+#--------------------------------------------------------#
+# Functions to parse the domain string for user settings #
+#--------------------------------------------------------#
+# Function to parse steps string. A Few examples:
+#   '10A x 10A x 10A'              -> domain = '10A x 10A x 10A' and settings = {}
+#   '10A x 10A x 10A; rs=insert'   -> domain = '10A x 10A x 10A' and settings = {'rs':'insert'}
+def parse_domain(domain):
+    domain_part, semi_colon_count = True, 0
+    domain_only, settings = '', ''
+    for i in domain:
+        if i == ';':
+            domain_part = False
+            semi_colon_count += 1
+            if semi_colon_count == 1:
+                continue
+            
+        if domain_part:
+            domain_only += i
+        else:
+            settings += i
+    
+    # Strip whitespacing
+    domain_only = domain_only.strip()
+    settings = get_misc_setting(settings.strip())
+    return domain_only, settings
+
+
+# Function to parse misc string into dict of settings 
+def get_misc_setting(setting_string):
+    # Setup the globals namespace to limit scope of what eval() can do
+    allowed_builtins = ['min','max','sum','abs','len','map','range','reversed']
+    copied_builtins = globals()['__builtins__'].copy()
+    globals_dict = {'e':math.e, 'pi':math.pi}
+    globals_dict['__builtins__'] = {key:copied_builtins[key] for key in allowed_builtins}
+    
+    # Parse misc string
+    setting = {} # {keyword:float or int or Boolean}
+    tmp1 = setting_string.split(';')
+    for tmp2 in tmp1:
+        tmp3 = tmp2.split('=')
+        if len(tmp3) >= 2:
+            i = tmp3[0].strip()
+            try: j = eval(tmp3[1], globals_dict)
+            except: j = str(tmp3[1])
+            setting[i] = j
+    return setting
+
 
 
 #-------------------------------------#
@@ -98,7 +147,7 @@ def compute_system_density(sys, system_mass):
 #---------------------------------------------------#
 # Function to get domainID on pre-inserted molecule #
 #---------------------------------------------------#
-def update_linked_lst(sys, m, xshift, yshift, zshift, inside_box, linked_lst, domain, atoms2domain):
+def update_linked_lst(sys, m, xshift, yshift, zshift, inside_box, linked_lst, atoms2domain):
     for k in m.atoms:
         newID = k + sys.natoms
         newatom = m.atoms[k]
@@ -164,6 +213,17 @@ class constructor:
         self.nbondbond13 = 0
         self.nangletorsion = 0
         self.system_mass = 0
+        
+        
+        #---------------------------#
+        # Parse any domain settings #
+        #---------------------------#
+        domain, domain_settings = parse_domain(domain)
+        reshift           = domain_settings.get('rs', 'no')
+        reshift_cut       = domain_settings.get('rs_cut', None)
+        try: reshift_cut  = float(reshift_cut)
+        except: pass
+            
         
         #--------------------------------------#
         # Find max span of lattice grid points #
@@ -559,15 +619,21 @@ class constructor:
                     else: log.error(f'ERROR trying to use a Pair Coeff mixing rule, but read-in file {m.filename} does not have Pair Coeffs section')
                         
             # Generate domain_region (set roughly optimized domain_size based on box dimensions)
-            start_time = time.time()
-            domain_size = 1.75*max(atomsizes)
+            domain_size = 2.0*max(atomsizes)
             if domain_size == 0: domain_size = 6.0
-            domain_region, domain_graph, atoms2domain = random_insertion.generate_domain(self, domain_size, scaled_images, pflag, log)
-            execution_time = (time.time() - start_time)
-            if pflag: log.out('Time in seconds to generate domain and domain connectivity: ' + str(execution_time))
+            domain_graph, atoms2domain = random_insertion.generate_domain(self, domain_size, scaled_images, pflag, log)
+            
+            # Compute the number of required neighboring domains for reshifting based on reshift_cut
+            if isinstance(reshift_cut, (int, float)):
+                domain_depth = math.ceil(reshift_cut/domain_size) - 1
+                if domain_depth < 1: domain_depth = 1
+            else:
+                reshift_cut = None
+                domain_depth = 1
+                
             
             # Generate linked_list
-            linked_lst = {i:set() for i in domain_region} # { domainID : atomIDs in domain_region }
+            linked_lst = {i:set() for i in domain_graph} # { domainID : atomIDs in domain_region }
             linked_lst[0] = set() # for any atoms that are not in a domain_region (unwrapped periodic molecules)
             
             # If adding_to_system, assign current atoms to domains and set radius from center of box
@@ -597,6 +663,13 @@ class constructor:
                     log.out("  want to apply a mixing rule, the tolerance should be set to 1. If attempting to")
                     log.out("  use a mixing rule to set the tolerance for atom overlap checks and no Pair Coeffs")
                     log.out("  exist in the read-in LAMMPS datafiles, the code will crash.")
+                    
+                if reshift != 'no':
+                    log.out("\nReshift settings:")
+                    log.out(f"  reshift      = {reshift}")
+                    log.out(f"  reshift_cut  = {reshift_cut}")
+                    log.out(f"  domain_depth = {domain_depth}")
+                    
 
 
                     
@@ -657,11 +730,37 @@ class constructor:
                     zshift = zshift_lst[random.randint(0, len(zshift_lst)-1)]
                     
                     # Check for overlap and determine if any part of the molecule is outside of the box
-                    overlap, inside_box, insert_molecule = random_insertion.overlap_check_serial(self, m, linked_lst, domain_region, domain_graph, xshift, yshift, zshift, phi, theta, psi, tolerance, mix_sigma, mixing_rule, boundary_conditions, scaled_images, atoms2domain) 
+                    overlap, inside_box, insert_molecule = random_insertion.overlap_check(self, m, linked_lst, domain_graph, xshift, yshift, zshift,
+                                                                                          phi, theta, psi, tolerance, mix_sigma, mixing_rule,
+                                                                                          boundary_conditions, scaled_images, atoms2domain) 
                     if insert_molecule and not overlap:
+                        # If user wants the molecule to be reshifted to the min_tolerance, reset these shift values, to
+                        # move molecule closer to others. *NOTE: due to domain-decomp, if there are "system atoms" to far
+                        # away, this reshift = 'insert' wont be able to find those atoms. This actually helps as it should
+                        # keep this operation somewhat "random".*
+                        if reshift == 'insert':
+                            max_shiftx, max_shifty, max_shiftz = random_insertion.insert_reshift(self, m, linked_lst, domain_graph, xshift, yshift, zshift,
+                                                                                                 phi, theta, psi, tolerance, mix_sigma, mixing_rule, 
+                                                                                                 boundary_conditions, scaled_images, atoms2domain,
+                                                                                                 reshift_cut, domain_depth) 
+                            xshift += max_shiftx
+                            yshift += max_shifty
+                            zshift += max_shiftz
+                            overlap, inside_box, insert_molecule = random_insertion.overlap_check(self, m, linked_lst, domain_graph, xshift, yshift, zshift,
+                                                                                                  phi, theta, psi, tolerance, mix_sigma, mixing_rule, 
+                                                                                                  boundary_conditions, scaled_images, atoms2domain) 
+                            if overlap:
+                                xshift -= max_shiftx
+                                yshift -= max_shifty
+                                zshift -= max_shiftz
+                                max_shiftx, max_shifty, max_shiftz = 0, 0, 0
+                            if pflag and min([abs(max_shiftx), abs(max_shifty), abs(max_shiftz)]) > 0:
+                                max_shifts = '({:.2f}, {:.2f}, {:.2f}).'.format(max_shiftx, max_shifty, max_shiftz)
+                                log.out('      - using reshift="insert" on insertID={:<3} and adjusted shifts by {:<25} any_overlapped_atoms={}'.format(ID, max_shifts, overlap))
+                            
                         # Rotate molecule and add to system and update linked list and log that molecule was inserted
                         m = misc_functions.rotate_molecule(m, phi, theta, psi)
-                        linked_lst = update_linked_lst(self, m, xshift, yshift, zshift, inside_box, linked_lst, domain_region, atoms2domain)
+                        linked_lst = update_linked_lst(self, m, xshift, yshift, zshift, inside_box, linked_lst, atoms2domain)
                         if not grouping: molecule_insertion[fileid][0] += 1
 
                         # Add molecule to system and break out of maxtry loop

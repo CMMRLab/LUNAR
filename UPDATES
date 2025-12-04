@@ -14,6 +14,28 @@ Notes for formatting this file
 - Two empty lines should be placed between sections
 
 
+
+-------------------------------------------------------------------------------------------------------------
+LUNAR (version 4DecemberNovember2025)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+4December2025      JDK         - cell_builder.py: Added a "reshift" option for random packing. The random packing
+                                                  prior was purely monte carlo (MC) based. However MC-based methods
+                                                  can be slow and hard to pack to higher densities. The "reshift"
+                                                  option allows for molecules to be reshifted during insertion to
+                                                  be closer to other molecules. This is done via a semi-optimzation
+                                                  method that figures how much to shift, while still not generating 
+                                                  overlapping atoms. This method makes cell_builder a hybrid approach
+                                                  to packing, where it is paritially MC (like the LAMMPS create_atoms 
+                                                  random command) but also has aspects of geometric optimzation like
+                                                  PackMol. This unique combination of MC/optimization means cell_builder
+                                                  now sits at the middle ground between the LAMMPS create_atoms random
+                                                  command and PackMol (but still easier to use for LAMMPS datafiles
+                                                  then PackMol). Initial tests shows it is now feasible within a few
+                                                  minutes to pack a system up to 0.75 g/cc (this is molecule dependant
+                                                  but still quite a large density for packing methods to achieve).
+
 -------------------------------------------------------------------------------------------------------------
 LUNAR (version 26November2025)
 

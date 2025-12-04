@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.3
-October 4th, 2024
+Revision 1.5
+December 4, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -158,6 +158,11 @@ def print_man_page(topofiles, force_field_joining, duplicate, distance_scale, ne
     print('                 file the offset method and the files method will create the same result. If the file contains different')
     print('                 molIDs on different atoms and you wish to maintain the distinction, the offset is the method to use.')
     print()
+    print('        insert   will offset the molIDs in based on when the atoms in a topofile where added to the system.')
+    print('                 This does a complete reset of molids from the orginal atom molIDs, which is useful for')
+    print('                 grouping things like "stacked graphite sheets" and then randomly placing the stacks - which')
+    print('                 means in OVITO each stack can be color coded differently.')
+    print()
     print('        clusters will perform a cluster analysis, where the “clusters” of atoms are determined via bonding connectivity,')
     print('                 where the criteria for atoms to be part of the same “cluster” is that the atoms must be linked by at')
     print('                 least one covalent bond to the cluster. The clusters are then sorted by the number of atoms, where the')
@@ -236,6 +241,44 @@ def print_man_page(topofiles, force_field_joining, duplicate, distance_scale, ne
     print("                        in under a few minutes (depending on the random settings).                              ")
     print()
     print("        A x A x A       where the three 'A' means simulation box is being defined with files of QTY or ZEROs.   ")
+    print()
+    print('   Additional characters and settings can be defined using a semi-colon character (";") and a variable=value ')
+    print('   pairing. For example the following  variable/value pairs that can be used for changing how atoms are      ')
+    print('   inserted into a domain are:                                                                               ')
+    print(' 	                                                                                                          ')
+    print('     rs=<string>,     where <string> sets a method for how a "reshift" optimization is performed. The "rs"   ')
+    print('                      variable is short for "reshift" to allow for a more compact variable/value pairing.    ')
+    print('                      The following options are available:                                                   ')
+    print(' 					                                                                                          ')
+    print('                        no                                                                                   ')
+    print('                          Which does shuts off the "reshift" optimization, which is the default if this      ')
+    print('                          variable/value pair is not provided.                                               ')
+    print(' 						                                                                                      ')
+    print(' 						 insert                                                                               ')
+    print('                          Which after a molecule has been randomly inserted using the domain="A x A x A" or  ')
+    print('                          domain="LxA x LyA x LzA" options, reshifts the molecule to be closer to other      ')
+    print('                          already inserted molecules into the system. By default the newly inserted molecule ')
+    print('                          stil needs be close enough that the distance can be found by looking in an atoms   ')
+    print('                          domain and its first neighboring domains. This behavior can be changed by setting  ')
+    print('                          rs_cut to a maximum distance to look for neighboring atoms out to further          ')
+    print('                          distances, but increases the cost of the optimization.                             ')
+    print(' 					                                                                                          ')
+    print('     rs_cut=<float>,   where <float> sets the maximum distance for "rs=insert" that a neighboring atom can   ')
+    print('                       be found. By default this distance is set by the domain sized used for the domain     ')
+    print('                       decompostion and that domains first neighboring domains. The domain size is set to    ')
+    print('                       twice the largest tolerance (or atom size) in the system, thus the default rs_cut is  ')
+    print('                       computable via the following equation:                                                ')
+    print('                         rs_cut_default = 3*(2*tol)                                                          ')
+    print('                       where 3 is due to the domain plus its two nearest neighbors, the 2*tol is the domain  ')
+    print('                       size. By testing rs_cut, the best performance (quickest run times), it seems leaving  ')
+    print('                       this variable/value pair as the default is the best.                                  ')
+    print(' 	                                                                                                          ')
+    print('     To use these additional settings they must following or be placed after the normal domain-characters    ')
+    print('     (e.g. after LxA x LyA x LzA...). Full examples using these variable=value pairing seperated by the    ')
+    print('     semi-colon character:                                                                                   ')
+    print('      domain = 20A x 20A x 20A; rs=insert                                                                  ')
+    print('      domain = 20A x 20A x 20A; rs=insert; rs_cut=10                                                       ')
+    print()    
     print('    Example usage:')
     print('        python3 cell_builder.py -domain 2x2x4')
     print('        python3 cell_builder.py -domain 10Ax20Ax30A')
