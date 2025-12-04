@@ -184,19 +184,19 @@
                          no
                            Which does shuts off the "reshift" optimization, which is the default if this variable/value pair is not provided.
 						 
-						 insert
-                           Which after a molecule has been randomly inserted using the domain='LxA x LyA x LzA' or domain='A x A x A' options, reshifts
-                           the molecule to be closer to other already inserted molecules into the system. By default the newly inserted molecule stil
-                           needs be close enough that the distance can be found by looking in an atoms domain and its first neighboring domains. This
-                           behavior can be changed by setting rs_cut to a maximum distance to look for neighboring atoms out to further distances, but
-                           increases the cost of the optimization.						   
+                         insert
+                           Which after a molecule has been randomly inserted using the domain='LxA x LyA x LzA' or domain='A x A x A' options,
+                           reshifts the molecule to be closer to other already inserted molecules into the system. By default the newly inserted
+                           molecule still needs be close enough that the distance can be found by looking in an atoms domain and its first neighboring
+                           domains. This behavior can be changed by setting rs_cut to a maximum distance to look for neighboring atoms out to further
+                           distances, but increases the cost of the optimization.						   
 					  
-      rs_cut=<float>,   where <float> sets the maximum distance for "rs=insert" that a neighboring atom can be found. By default this distance is set by
-                        the domain sized used for the domain-decompostion and that domains first neighboring domains. The domain size is set to twice the
-                        largest tolerance (or atom size) in the system, thus the default rs_cut is computable via the following equation:
+      rs_cut=<float>,  where <float> sets the maximum distance for "rs=insert" that a neighboring atom can be found. By default this distance is set
+                       by the domain sized used for the domain-decompostion and that domains first neighboring domains. The domain size is set to
+                       twice the largest tolerance (or atom size) in the system, thus the default rs_cut is computable via the following equation:
                           rs_cut_default = 3*(2*tol)
-                        where 3 is due to the domain plus its two nearest neighbors, the 2*tol is the domain size. By testing rs_cut, the best performance
-                        (quickest run times), it seems leaving this variable/value pair as the default is the best.
+                        where 3 is due to the domain plus its two nearest neighbors, the 2*tol is the domain size. By testing rs_cut, the best
+                        performance (quickest run times), it seems leaving this variable/value pair as the default is the best.
 	  
       To use these additional settings they must following or be placed after the normal domain-characters (e.g. after 'LxA x LyA x LzA'...). Full
       examples using these variable=value pairing seperated by the semi-colon character:
