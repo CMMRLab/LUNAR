@@ -16,10 +16,12 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 4DecemberNovember2025)
+LUNAR (version 8DecemberNovember2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+8December2025      JDK         - sheet_builder.py: Added about a 2x increase in bond finding speed. 
+
 4December2025      JDK         - cell_builder.py: Added a "reshift" option for random packing. The random packing
                                                   prior was purely monte carlo (MC) based. However MC-based methods
                                                   can be slow and hard to pack to higher densities. The "reshift"

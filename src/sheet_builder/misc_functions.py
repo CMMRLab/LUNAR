@@ -10,6 +10,7 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+from itertools import product
 import numpy as np
 import math
 import time
@@ -522,26 +523,22 @@ def find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=15):
     return positions
 
 
-############################################################################################
-# Function to find N-number of closets neighboring domains to an atomic position (x, y, z) #
-############################################################################################
-def find_closets_domains(domain, domain_graph, domainID, x, y, z, Npos=15):
-    postions_distance = {} # { domainID : distance from x,y,z }
-    for ID in domain_graph[domainID]:
-        xc, yc, zc = domain[ID]
-        postions_distance[ID] = compute_distance(x, y, z, xc, yc, zc)
-    
-    # Find the nearest Npos
-    postions_distance = dict(sorted(postions_distance.items(), key=lambda x:x[1] )) # [0=keys;1=values]
-    domains = set()
-    for N, ID in enumerate(postions_distance):
-        if N < Npos: domains.add(ID)
-        else: break
-    
-    # Add the current domain to domains
-    domains.add(domainID)
-    return domains
-
+#####################################
+# Function to assing atom to domain #
+#####################################
+def assign_atom_a_domainID(x, y, z, atoms2domain):
+    try:
+        xlo = atoms2domain['xlo']
+        ylo = atoms2domain['ylo']
+        zlo = atoms2domain['zlo']
+        dxx, dyy, dzz = atoms2domain['deltas']
+        indexes_reverse = atoms2domain['indexes_reverse']
+        nx = math.ceil( (x - xlo)/dxx )
+        ny = math.ceil( (y - ylo)/dyy )
+        nz = math.ceil( (z - zlo)/dzz )
+        domainID = indexes_reverse[(nx, ny, nz)]
+    except: domainID = 0
+    return domainID
 
 ##########################
 # Function to find bonds #
@@ -568,53 +565,81 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
     if nxx == 0: nxx = 1
     if nyy == 0: nyy = 1
     if nzz == 0: nzz = 1
-    dx = lx/nxx; dy = ly/nyy; dz = lz/nzz; ID = 0;
-    xadd = dx/2 + xlo; yadd = dy/2 + ylo; zadd = dz/2 + zlo;
-    if pflag: log.out('Using {} x {} x {} sub domains of size {:.2f} x {:.2f} x {:.2f} to perform domain decomposition'.format(nxx, nyy, nzz, dx, dy, dz))
-    domain = {} # { domainID : (xc, yc, zc) }
-    indexes_forward = {} # { domainID : (nx, ny, nz) }
-    indexes_reverse = {} # { (nx, ny, nz) : domainID }
-    for nx in range(nxx):
-        for ny in range(nyy):
-            for nz in range(nzz):
-                ID += 1
-                xc = nx*dx + xadd
-                yc = ny*dy + yadd
-                zc = nz*dz + zadd
-                domain[ID] = (xc, yc, zc)
-                indexes_forward[ID] = (nx+1, ny+1, nz+1)
-                indexes_reverse[(nx+1, ny+1, nz+1)] = ID
+    dxx = lx/nxx
+    dyy = ly/nyy
+    dzz = lz/nzz
+    if pflag: log.out('Using {} x {} x {} sub domains of size {:.2f} x {:.2f} x {:.2f} to perform domain decomposition'.format(nxx, nyy, nzz, dxx, dyy, dzz))
+
+    
+    # Domain-coordinates are indexed starting from
+    # 1-to-nii in the xx, yy, and zz-directions
+    start_time = time.time()
+    coords = list(product(range(1, nxx+1),
+                          range(1, nyy+1),
+                          range(1, nzz+1)))
+    
+    # Generate a map from domainID to Domain-coordinates
+    indexes_forward = {} #{ domainID : (nx, ny, nz) }
+    indexes_reverse = {} #{ (nx, ny, nz) : domainID }
+    for ID, xyz in enumerate(coords, start=1):
+        xyz = tuple(xyz)
+        indexes_forward[ID] = xyz
+        indexes_reverse[xyz] = ID
+    ndomain = len(coords)
 
                 
     # Find domain connectivity (graph)
-    def get_neighboring_indexes(ni, nii):
-        neighs = [ni]
-        if ni-1 < 1: # lo-side wraps to hi-side for periodicity
-            neighs.append(nii)
-        else: neighs.append(ni-1)
-        if ni+1 > nii: # hi-side wraps to lo-side for periodicity
-            neighs.append(1)
-        else: neighs.append(ni+1)
-        return neighs
-    domain_graph = {ID:set() for ID in domain} # { ID : set(bonded IDs) }
-    domain_graph[0] = {ID for ID in domain}
     if pflag: log.out('  Finding cell linked graph for interatomic distance calculations ...')
-    for id1 in domain:    
+    
+    # self+13 neighboring domains. down, east, south priority ordering.
+    neighbor_shifts = [(0, 0, 0),    (0, 0, -1), (0, -1, 0),  (0, -1, -1), (-1, 0, 0), (-1, 0, -1), (-1, -1, 0),
+                       (-1, -1, -1), (-1, 1, 0), (-1, 1, -1), (0, 1, -1),  (1, 1, -1), (1, 0, -1),  (1, -1, -1)]
+    neighbor_shifts = neighbor_shifts[1:] # remove zero shift as we dont need it (part of this comes from Tristan)
+    
+    domain_graph = {ID:set() for ID in indexes_forward} # { ID : set(bonded IDs) }
+    domain_graph[0] = {ID for ID in indexes_forward}
+    progress_increment = 10; count = 0;
+    for id1 in indexes_forward:
         nx, ny, nz = indexes_forward[id1]
-        nxs = get_neighboring_indexes(nx, nxx)
-        nys = get_neighboring_indexes(ny, nyy)
-        nzs = get_neighboring_indexes(nz, nzz)
-        for ix in nxs:
-            for iy in nys:
-                for iz in nzs:
-                    id2 = indexes_reverse[(ix, iy, iz)]
-                    if id1 == id2: continue
-                    domain_graph[id1].add(id2)
-                    domain_graph[id2].add(id1)
-                            
+        # Optional printing of progress
+        if pflag:
+            count += 1
+            if 100*count/ndomain % progress_increment == 0:
+                log.out('    progress: {} %'.format(int(100*count/ndomain)))
+        
+        # Start shifting around Domain-coordinates
+        for ix, iy, iz in neighbor_shifts:
+            mx = nx + ix
+            my = ny + iy
+            mz = nz + iz
+            if mx < 1:
+                mx = nxx
+            elif mx > nxx:
+                mx = 1
+                
+            if my < 1:
+                my = nyy
+            elif my > nyy:
+                my = 1
+                
+            if mz < 1:
+                mz = nzz
+            elif mz > nzz:
+                mz = 1
+                
+            id2 = indexes_reverse[(mx, my, mz)]
+            domain_graph[id1].add(id2)
+            
+    # setup dict to hold info needed to assign atoms to domain
+    atoms2domain = {'indexes_forward':indexes_forward,
+                    'indexes_reverse':indexes_reverse,
+                    'deltas': [dxx, dyy, dzz],
+                    'xlo': xlo,
+                    'ylo': ylo,
+                    'zlo': zlo}
                         
     # Build linked list
-    linked_lst = {i:set() for i in domain} # { domainID : atoms in domain }
+    linked_lst = {i:set() for i in domain_graph} # { domainID : atoms in domain }
     linked_lst[0] = set()
     atom_domain = {} # { atomID : domainID }
     edgeflags = {} # { atomID : edgeflag }
@@ -627,9 +652,9 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
             
         # Assign to domain
         try:
-            nx = math.ceil( (x-xlo)/dx )
-            ny = math.ceil( (y-ylo)/dy )
-            nz = math.ceil( (z-zlo)/dz )
+            nx = math.ceil( (x-xlo)/dxx )
+            ny = math.ceil( (y-ylo)/dyy )
+            nz = math.ceil( (z-zlo)/dzz )
             domainID = indexes_reverse[(nx, ny, nz)]
         except: domainID = 0
         atom_domain[i] = domainID
@@ -659,7 +684,9 @@ def find_bonds(atoms, box, boundary, r0, tolerance, max_bonds_per_atom, domain_s
         if edgeflags[id1]: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=15)
         if 100*count/natoms % progress_increment == 0:
             if pflag: log.out('    progress: {} %'.format(int(100*count/natoms)))
-        atom_domains = find_closets_domains(domain, domain_graph, atom_domain[id1], x1, y1, z1, Npos=27)
+            
+        domainID = assign_atom_a_domainID(x1, y1, z1, atoms2domain)
+        atom_domains = list(domain_graph[domainID]) + [domainID]
         if not atom_domains: continue
         for domainID in atom_domains:
             for id2 in linked_lst[domainID]:

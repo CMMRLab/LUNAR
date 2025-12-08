@@ -1,47 +1,40 @@
 
 
-Running sheet_builder v1.0 / 18 May 2024 in mode sheet
-Using Python version 3.11.4 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 13:38:37) [MSC v.1916 64 bit (AMD64)]
+Running sheet_builder: v1.3 / 9 June 2025 in mode sheet
+Using Python version: 3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]
+Using Python executable: C:\Users\jdkem\AppData\Local\Programs\Python\Python314\python.exe
 
 
 Generating sheet(s) ...
-  edge=armchair with an edge length=8.5200 and a perpendicular length=19.6761
-  edge=armchair with an edge length=8.5200 and a perpendicular length=19.6761
-  edge=armchair with an edge length=8.5200 and a perpendicular length=19.6761
-  Created: 192 atoms
+  edge=armchair with an edge length=29.8200 and a perpendicular length=29.5141
+  Created: 336 atoms
 
 
 Finding bonds ...
   Boundary flags p p f for finding bonds
-  Using 3 x 2 x 2 sub domains of size 7.1 to perform domain decomposition
-  Finding domain to use cell linked list algorithm for interatomic distance calculations ...
+Using 14 x 14 x 2 sub domains of size 2.11 x 2.13 x 1.68 to perform domain decomposition
   Finding cell linked graph for interatomic distance calculations ...
-  Assigning atoms to each sub domain for interatomic distance calculations ...
     progress: 50 %
     progress: 100 %
+  Assigning atoms to each sub domain for interatomic distance calculations ...
   Finding interatomic distances for bond creation ...
     progress: 50 %
     progress: 100 %
-    Bond generation execution time: 0.018029212951660156 (seconds)
-  Created: 288 bonds
-
-
-Adding pi-electrons of types = {1: 'cge', 2: 'cge', 3: 'cge', 4: 'cge'} ...
-     384 atoms
-     384 bonds
+    Bond generation execution time: 0.007605314254760742 (seconds)
+  Created: 504 bonds
 
 
 Attempting to add charge to system based on charges in charge dictionary ...
   System net charge: 0.000000
 
 
-All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES/sheet_builder directory
+All outputs can be found in C:\Users\jdkem\Desktop\GitHub\LUNAR\EXAMPLES/sheet_builder directory
 
 
 Normal program termination
 
 
-Execution time in seconds: 0.030998706817626953
+Execution time in seconds: 0.014224052429199219
 
 
 Number of WARNING(s) and ERROR(s)
