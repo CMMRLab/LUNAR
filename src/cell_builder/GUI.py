@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.3
-July 3rd, 2024
+Revision 1.5
+December 9, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -188,7 +188,7 @@ class cell_builder_GUI:
         self.remove_button.grid(column=1, row=self.nfiles+1, sticky='news', columnspan=1)
         
         # Button to clear all files
-        self.clear_button = tk.Button(self.inputs_frame, text='clear stack', font=font_settings, width=int(maxwidth/13.75), command=self.clear_all)
+        self.clear_button = tk.Button(self.inputs_frame, text='clear stack', font=font_settings, width=int(maxwidth/10), command=self.clear_all)
         self.clear_button.grid(column=2, row=self.nfiles+1, columnspan=1)
         
         # parent_directory entry
@@ -479,15 +479,27 @@ class cell_builder_GUI:
             density_vol.insert(0, volume)
             density_li.delete(0, 'end')
             density_li.insert(0, length)
+            
+            current = self.domain.get().split(";", 1)[1:]
+            if current:
+                string = '{}A x {}A x {}A;{}'.format(length, length, length, ' '.join(current))
+            else: string = '{}A x {}A x {}A'.format(length, length, length)
+                        
             self.domain.delete(0, 'end')
-            self.domain.insert(0, '{}A x {}A x {}A'.format(length, length, length))
+            self.domain.insert(0, string)
         def insert_cell():
-            volume_cm3 = float(cell_lx.get())*float(cell_ly.get())*float(cell_lz.get())*angstromcubed2cmcubed 
+            volume_cm3 = float(cell_lx.get())*float(cell_ly.get())*float(cell_lz.get())*angstromcubed2cmcubed             
             density_gcm3 = '{:.4f}'.format(system_mass_grams/volume_cm3)
             cell_density.delete(0, 'end')
             cell_density.insert(0, density_gcm3)
+            
+            current = self.domain.get().split(";", 1)[1:]
+            if current:
+                string =  '{}A x {}A x {}A;{}'.format(cell_lx.get(), cell_ly.get(), cell_lz.get(), ' '.join(current))
+            else: string =  '{}A x {}A x {}A'.format(cell_lx.get(), cell_ly.get(), cell_lz.get())
+            
             self.domain.delete(0, 'end')
-            self.domain.insert(0, '{}A x {}A x {}A'.format(cell_lx.get(), cell_ly.get(), cell_lz.get()))
+            self.domain.insert(0, string)
 
         
         # Density calculation
