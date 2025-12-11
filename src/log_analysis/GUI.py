@@ -1073,13 +1073,14 @@ class GUI:
                         self.log.out(' {}'.format(stack_trace_string))
             
             # Finalize the array run
-            plt.show()
-            print('\a') # Alert
             if outputs and dirnames and mode['array_file']:
                 dirname = dirnames[-1]
                 array_file = mode['array_file']
                 output_basename = os.path.join(dirname, array_file)
                 self.array_csv(outputs, abouts, wildcards, output_basename)
+            
+            print('\a') # Alert
+            plt.show()
         else:
             analyzed = main.analysis(mode, plot=True, savefig=savefig, dpi=dpi, log=self.log)
             self.columns = analyzed.columns # Update columns
