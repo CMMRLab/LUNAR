@@ -28,6 +28,16 @@ Date               Developer   Description
                                                   conventions (e.g. tensile_x_cure_55.log.lammps could be set to
                                                   tensile_*_cure*.log.lammps where wilcards = [strain_direction,
                                                   cure_state] = ['x', 55]).
+										
+                                                  In addition to this update a new X- and Y-compute has been added
+                                                  called "Function call variable switching" or FCVS for short that
+                                                  allows different X-columns and Y-columns to be swapped based on
+                                                  logfile naming conventions. Examples using these FCVS calls are
+                                                  demonstrated for RFR-mechanical analysis in:
+                                                    LUNAR/EXAMPLES/log_analysis/modes/default_array_partial_name_RFR_Butterworth_X_Y_Z_modulus.py
+                                                    LUNAR/EXAMPLES/log_analysis/modes/default_array_partial_name_RFR_Butterworth_XY_XZY_YZ_modulus.py
+                                                    LUNAR/EXAMPLES/log_analysis/modes/default_array_wild_match_RFR_Butterworth_X_Y_Z_modulus.py
+                                                    LUNAR/EXAMPLES/log_analysis/modes/default_array_wild_match_RFR_Butterworth_XY_XZY_YZ_modulus.py
 
 9December2025      JDK         - cell_builder.py: GUI updates to make 'reshift' option easier to use.
 
