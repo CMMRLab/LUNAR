@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.7
-April 14, 2025
+Revision 1.8
+December 11, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -113,6 +113,7 @@ types2convert = ['cp']
 newfile = ':_pi_electrons'
 
 
+
 ##############################################################################################################
 # Python string variable to set how to handle charge on "compounds" (materials that are not either pure      #
 # graphite or CNT or fullerene, where there are other atom types bonded to the aromatic carbon atoms). The   #
@@ -146,7 +147,7 @@ newfile = ':_pi_electrons'
 #                                                                                                            #
 # Update neighbor_charge_constraint as needed.                                                               #
 ##############################################################################################################
-neighbor_charge_constraint = 'accumulate-neighbor'
+neighbor_charge_constraint = 'check-neighbors'
 
 
 ##############################################################################################################
@@ -256,11 +257,9 @@ parent_directory = 'topofile'
 # from the carbon atom that it is added to and LAMMPS will rewrap and atoms that are outside of the          #
 # simulation cell when reading the file. However, some systems like a graphite system may have a simulation  #
 # cell size that is too small for adequate re-wrapping of the pi-electron and it may cause errors. In these  #
-# cases, it is beneficial to reset the simulation cell size. When the simulation cell size is reset the span #
-# of all atoms is found and 0.5 angstrom buffer is added to the max span of all the atoms. If the new        #
-# simulation cell size becomes smaller than the original simulation cell, the original simulation cell size  #
-# in that direction will be used instead (i.e. this operation will only ever grow a simulation cell and      #
-# never shrink the simulation cell).                                                                         #
+# cases, it is beneficial to reset the simulation cell size. When the simulation cell size is reset the      #
+# maximum distance between the any added pi-electron and the any orginal atom is used to increment the       #
+# simulation cell to be larger in each direction.                                                            #
 #                                                                                                            #
 # Update reset_simulation_cell as desired.                                                                   #
 ##############################################################################################################
@@ -278,10 +277,6 @@ reset_simulation_cell = False
 ##############################################################################################################
 include_type_labels = False
 
-
-use_GUI = False
-neighbor_charge_constraint = 'check-neighbors'
-topofile = 'EXAMPLES/sheet_builder/Grafting_PCFF-IFF_full_test/sheet_typed_IFF.data'
 
 
 
