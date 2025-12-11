@@ -52,8 +52,8 @@ s31 = "{}{}{}".format('${', 'f_sxz_ave', '}')
 svm = "( (({s11}-{s22})**2 + ({s22}-{s33})**2 + ({s33}-{s11})**2 + 6*({s23}**2 + {s31}**2 + {s12}**2))/2 )**0.5".format(s11=s11, s22=s22, s33=s33, s12=s12, s23=s23, s31=s31)
 
 # analysis list
-analysis = [['LAMMPS data (apply Butterworth filter)', '', '', 'qm=msr; psd=False; csv=False; savefig=all; order=2; wn=op', 'LAMMPS Butterworth Filter'],
-            ['Regression Fringe Response Modulus', '', '', 'shift=ymin; minxhi=0.01; maxxhi=0.0; xlo=rfs; yp=1; csv=False; savefig=all', 'Modulus']]
+analysis = [['LAMMPS data (apply Butterworth filter)', '', '', 'qm=msr; psd=False; csv=False; savefig=all; order=2; wn=op', 'Butterworth'],
+            ['Regression Fringe Response Modulus', '', '', 'shift=ymin; minxhi=0.01; maxxhi=0.0; xlo=rfs; yp=1; csv=False; savefig=all', 'RFR-mechanical']]
 
 # loadable mode
 mode = {'logfile': 'EXAMPLES/log_analysis/shear_2_EPON_862_pxld_88.2_replicate_1_FF_PCFF-class2xe.log.lammps',

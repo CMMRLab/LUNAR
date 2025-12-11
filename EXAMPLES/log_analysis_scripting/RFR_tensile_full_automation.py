@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-October 23rd, 2024
+Revision 1.1
+December 11, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -30,8 +30,12 @@ import os
 # Set path of LUNAR folder. For example if full path:
 # fullpath = 'C:/Users/USER/Desktop/LUNAR'
 # path2lunar = 'C:/Users/USER/Desktop/LUNAR'
-path2lunar = 'C:/Users/jdkem/Desktop/LUNAR'
-
+#
+# This example is using a rel-path so this file can be instantly
+# called from inside LUNAR/EXAMPLES/log_analysis scripting, but
+# if abs-path is provide, this file can be placed anywhere on 
+# your C-drive and LUNAR can still be found
+path2lunar = '../../'
 
 # Set the relative directory from this script, where LAMMPS logfiles are stored. 
 files_directory = 'logfiles/Tensile'
@@ -98,8 +102,9 @@ if __name__ == "__main__":
     
     # Start automated analysis
     start_time = time.time()
-    print('\n\nStarting automatic Kemppainen-Muzzy calculations ...')
+    print('\n\nStarting automatic RFR calculations ...')
     for n, logfile in enumerate(logfiles, 1):
+        successful = False
         try:
             print('  Analyzing {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
             
@@ -116,22 +121,35 @@ if __name__ == "__main__":
             
             # Run analysis and log results
             analyzed = main.analysis(mode, plot=True, savefig=savefig, dpi=dpi, log=log)
+            #print( list(analyzed.outputs.keys()) )
             
             # Access outputs from log analysis
-            results = analyzed.outputs['Modulus'] # name of analysis 
-            butterworth = analyzed.outputs['LAMMPS Butterworth Filter']
-            
-            # Log desired results into logger (uncomment print statement to see all available keys)
-            #print(results.keys())
-            logger['Filename'].append(logfile)
-            logger['Elastic modulus'].append(results['b1-clean'])
-            try: logger['Yield Strength'].append(results['yield_point_derivative'][1])
-            except: logger['Yield Strength'].append(None)
-            logger['Poissons ratio - nu1'].append(results['nu1'])
-            logger['Poissons ratio - nu2'].append(results['nu2'])
-            logger['Poissons ratio - nu_avg'].append(results['nu_avg'])
+            results = analyzed.outputs['RFR-mechanical'] # name of analysis 
+    
+            # Log desired results into logger
+            modulus = results['b1']
+            strength = results['yield_point_derivative'][1]
+            poissons_1 = results['nu1']
+            poissons_2 = results['nu2']
+            poissons_avg = results['nu_avg']
+            successful = True
         except:
             print('  FAILED {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
+            modulus = None
+            strength = None
+            poissons_1 = None
+            poissons_2 = None
+            poissons_avg = None
+            
+        # Log desired results into logger
+        print('\n\n')
+        if successful:
+            logger['Filename'].append(logfile)
+            logger['Elastic modulus'].append(modulus)
+            logger['Yield Strength'].append(strength)
+            logger['Poissons ratio - nu1'].append(poissons_1)
+            logger['Poissons ratio - nu2'].append(poissons_2)
+            logger['Poissons ratio - nu_avg'].append(poissons_avg)
         
     # Invert data and store in a matrix to write to csv file
     ncolumns = len(logger); nrows = max(map(len, list(logger.values())))

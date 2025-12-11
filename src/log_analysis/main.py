@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-November 18th, 2024
+Revision 1.3
+November 10, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -1402,37 +1402,27 @@ class analysis:
                             self.log.out('  be the same as Modulus "raw".\n\n')
                 
                         # Grant access to Muzzy-modulus-data outside of this class
-                        about = {'xdata-raw': 'List of X-data defining the linear-regresion model fit to "raw MD data", order [xlo, xhi].',
-                                 'ydata-raw': 'List of Y-data defining the linear-regresion model fit to "raw MD data", order [ylo, yhi].',
-                                 'b1-raw': 'Float value of b1 parameter (slope) for general equation of line y = b1*x + b0, when linear regression is fit to "raw MD data".',
-                                 'b0-raw': 'Float value of b0 parameter (Y-intercept) for general equation of line y = b1*x + b0, when linear regression is fit to "raw MD data".',
-                                 'b1-raw-ci': 'b1 confidence_interval of {} or None if not computed'.format(confidence_interval),
-                                 'b0-raw-ci': 'b0 confidence_interval of {} or None if not computed'.format(confidence_interval),
-                                 'xdata-clean': 'List of X-data defining the linear-regresion model fit to "cleaned MD data", order [xlo, xhi].',
-                                 'ydata-clean': 'List of Y-data defining the linear-regresion model fit to "cleaned MD data", order [ylo, yhi].',
-                                 'b1-clean': 'Float value of b1 parameter (slope) for general equation of line y = b1*x + b0, when linear regression is fit to "cleaned MD data".',
-                                 'b0-clean': 'Float value of b0 parameter (Y-intercept) for general equation of line y = b1*x + b0, when linear regression is fit to "cleaned MD data".',
-                                 'b1-clean-ci': 'b1 confidence_interval of {} or None if not computed'.format(confidence_interval),
-                                 'b0-clean-ci': 'b0 confidence_interval of {} or None if not computed'.format(confidence_interval),
+                        about = {'xdata': 'List of X-data defining the linear-regresion model fit to "cleaned MD data", order [xlo, xhi].',
+                                 'ydata': 'List of Y-data defining the linear-regresion model fit to "cleaned MD data", order [ylo, yhi].',
+                                 'b1': 'Float value of b1 parameter (slope) for general equation of line y = b1*x + b0, when linear regression is fit to "cleaned MD data".',
+                                 'b0': 'Float value of b0 parameter (Y-intercept) for general equation of line y = b1*x + b0, when linear regression is fit to "cleaned MD data".',
+                                 'b1-ci': 'b1 confidence_interval of {} or None if not computed'.format(confidence_interval),
+                                 'b0-ci': 'b0 confidence_interval of {} or None if not computed'.format(confidence_interval),
                                  'xlo': 'Float value of X-lo value of the found linear-region of the stress-strain curve',
                                  'xhi': 'Float value of X-hi value of the found linear-region of the stress-strain curve',
-                                 'yield_point_derivative': 'List of floats found from yield point determination, using derivative methods. Order [X-yp, Y-yp] or [] if not using yp. NOTE: SHIFTED based on shift method',
-                                 'yield_point_offset': 'List of floats found from yield point determination, using offset methods. Order [X-yp, Y-yp] or [] if not using offset. NOTE: SHIFTED based on shift method',
+                                 'yield_point_derivative': 'List of floats found from yield point determination, using derivative methods. Order [X-yp, Y-yp] or [None, None] if not using yp. NOTE: SHIFTED based on shift method',
+                                 'yield_point_offset': 'List of floats found from yield point determination, using offset methods. Order [X-yp, Y-yp] or [None, None] if not using offset. NOTE: SHIFTED based on shift method',
                                  'nu1': 'Float defining Poissons ratio from tranverse1 (t1) and axial strain (X-data) linear-relation. If not using t1, returns None',
                                  'nu2': 'Float defining Poissons ratio from tranverse1 (t2) and axial strain (X-data) linear-relation. If not using t2, returns None',
-                                 'nu_avg': 'Float defining Poissons ratio found be averaing nu1 and nu2 together. If not using t1 and t2, returns None'}
+                                 'nu_avg': 'Float defining Poissons ratio found be averaging nu1 and nu2 together. If not using t1 and t2, returns None'}
                         if not yp_derivative:
-                            yp_derivative = [0, 0]
+                            yp_derivative = [None, None]
                         if not yp_offset:
-                            yp_offset = [0, 0]
-                        outputs = {'xdata-raw': xreg_raw,
-                                   'ydata-raw': yreg_raw,
-                                   'b1-raw': b1_raw,
-                                   'b0-raw': b0_raw,      
-                                   'xdata-clean': xreg_clean,
-                                   'ydata-clean': yreg_clean,
-                                   'b1-clean': b1_clean,
-                                   'b0-clean': b0_clean,
+                            yp_offset = [None, None]
+                        outputs = {'xdata': xreg_clean,
+                                   'ydata': yreg_clean,
+                                   'b1': b1_clean,
+                                   'b0': b0_clean,
                                    'xlo': xlo_out,
                                    'xhi': xhi_out,
                                    'yield_point_derivative': yp_derivative,
@@ -1440,21 +1430,36 @@ class analysis:
                                    'nu1': nu1,
                                    'nu2': nu2,
                                    'nu_avg': nu_avg}
+                        
                         if t12_avg:
                             about['nu12_avg'] = 'Float defining Poissons ratio from average t1 and t2 and axial strain (X-data) linear-relation. If not using t1 and t2, returns None'
                             outputs['nu12_avg'] = nu12_avg
-                        if ci_raw is not None:
-                            outputs['b0-raw-ci'] = ci_raw[0]
-                            outputs['b1-raw-ci'] = ci_raw[1]
-                        else:
-                            outputs['b0-raw-ci'] = None
-                            outputs['b1-raw-ci'] = None
                         if ci_clean is not None:
-                            outputs['b0-clean-ci'] = ci_clean[0]
-                            outputs['b1-clean-ci'] = ci_clean[1]
+                            outputs['b0-ci'] = ci_clean[0]
+                            outputs['b1-ci'] = ci_clean[1]
                         else:
-                            outputs['b0-clean-ci'] = None
-                            outputs['b1-clean-ci'] = None
+                            outputs['b0-ci'] = None
+                            outputs['b1-ci'] = None
+                            
+                        # Update based on raw setting
+                        if raw:
+                            about['xdata-raw'] = 'List of X-data defining the linear-regresion model fit to "raw MD data", order [xlo, xhi].'
+                            about['ydata-raw'] = 'List of Y-data defining the linear-regresion model fit to "raw MD data", order [ylo, yhi].'
+                            about['b1-raw'] = 'Float value of b1 parameter (slope) for general equation of line y = b1*x + b0, when linear regression is fit to "raw MD data".'
+                            about['b0-raw'] = 'Float value of b0 parameter (Y-intercept) for general equation of line y = b1*x + b0, when linear regression is fit to "raw MD data".'
+                            about['b1-raw-ci'] = 'b1 confidence_interval of {} or None if not computed'.format(confidence_interval)
+                            about['b0-raw-ci'] = 'b0 confidence_interval of {} or None if not computed'.format(confidence_interval)
+                            outputs['xdata-raw'] = xreg_raw
+                            outputs['ydata-raw'] = yreg_raw
+                            outputs['b1-raw'] = b1_raw
+                            outputs['b0-raw'] = b0_raw  
+                            if ci_raw is not None:
+                                outputs['b0-raw-ci'] = ci_raw[0]
+                                outputs['b1-raw-ci'] = ci_raw[1]
+                            else:
+                                outputs['b0-raw-ci'] = None
+                                outputs['b1-raw-ci'] = None
+                            
                         self.outputs[name] = outputs
                         self.about[name] = about
                 

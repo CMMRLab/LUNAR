@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-October 23rd, 2024
+Revision 1.1
+December 11, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -31,7 +31,12 @@ import os
 # Set path of LUNAR folder. For example if full path:
 # fullpath = 'C:/Users/USER/Desktop/LUNAR'
 # path2lunar = 'C:/Users/USER/Desktop/LUNAR'
-path2lunar = 'C:/Users/jdkem/Desktop/LUNAR'
+#
+# This example is using a rel-path so this file can be instantly
+# called from inside LUNAR/EXAMPLES/log_analysis scripting, but
+# if abs-path is provide, this file can be placed anywhere on 
+# your C-drive and LUNAR can still be found
+path2lunar = '../../'
 
 
 # Set the relative directory from this script, where LAMMPS logfiles are stored. 
@@ -98,12 +103,14 @@ if __name__ == "__main__":
     # Setup logging dictionary to add values to for writing to .csv file later on
     logger = {'Filename': [],
               'Shear modulus': [],
-              'Yield Strength': []}
+              'Shear yield strength': [],
+              'Von Mises yield Strength': []}
     
     # Start automated analysis
     start_time = time.time()
-    print('\n\nStarting automatic Kemppainen-Muzzy calculations ...')
+    print('\n\nStarting automatic RFR calculations ...')
     for n, logfile in enumerate(logfiles, 1):
+        successful = False
         try:
             print('  Analyzing {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
             
@@ -119,6 +126,7 @@ if __name__ == "__main__":
                 elastic_mode = elastic_yzmode
                 strength_mode = strength_yzmode
             else: raise Exception(f'ERROR can not determine mode based on file naming convention for file {logfile}.')
+
             
             # Update mode['logfile'] and mode['parent_directory'] for loaded mode
             elastic_mode['logfile'] = os.path.join(path, logfile)
@@ -131,17 +139,28 @@ if __name__ == "__main__":
             strength = main.analysis(strength_mode, plot=True, savefig=savefig, dpi=dpi, log=log)
             
             # Access outputs from log analysis
-            elastic_results = elastic.outputs['Modulus'] # name of analysis 
-            strength_results = strength.outputs['Modulus'] # name of analysis 
-            butterworth = strength.outputs['LAMMPS Butterworth Filter']
+            elastic_results = elastic.outputs['RFR-mechanical'] # name of analysis 
+            strength_results = strength.outputs['RFR-mechanical'] # name of analysis 
             
-            # Log desired results into logger (uncomment print statement to see all available keys) to shift the yield strength by
-            #print(results.keys())
-            logger['Filename'].append(logfile)
-            logger['Shear modulus'].append(elastic_results['b1-clean'])
-            logger['Yield Strength'].append(strength_results['yield_point_derivative'][1])
+            
+            modulus = elastic_results['b1']
+            strength = elastic_results['yield_point_derivative'][1]
+            VM_strength = strength_results['yield_point_derivative'][1]
+            successful = True
         except:
             print('  FAILED {:>4} of {:<4} File={}'.format(n, len(logfiles), logfile))
+            modulus = None
+            strength = None
+            VM_strength = None
+       
+        # Log desired results into logger
+        print('\n\n')
+        if successful:
+            logger['Filename'].append(logfile)
+            logger['Shear modulus'].append(modulus)
+            logger['Shear yield strength'].append(strength)
+            logger['Von Mises yield Strength'].append(VM_strength)
+            
     
     # Invert data and store in a matrix to write to csv file
     ncolumns = len(logger); nrows = max(map(len, list(logger.values())))

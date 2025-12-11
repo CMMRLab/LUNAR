@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 4/4/2025
+# Last edited 12/11/2025
 #
 ************
 * Overview *
@@ -34,7 +34,7 @@
     the files to that location on your machine. Additionally, relative directories can be made based on the logfile path, for example setting
     parent_directory to "logfile/new_directory" will create a "new_directory" folder where the logfile is currently or setting parent_directory
     to "logfile/../" will write the outputs one directory "backwards" from where the logfile is stored or setting parent_directory to
-    "log_file/../results" will create a "results" folder one directory "backwards" from where the logfile is stored.
+    "logfile/../results" will create a "results" folder one directory "backwards" from where the logfile is stored.
 	
   mode file
     Button to load in a "mode file" used to setup all settings within the log_analysis GUI. You may also directly type the filename in the entry to
@@ -114,6 +114,16 @@
 	   
   Finally, the "array processing" can be used for a large number of files that may take long durations. Therefore during an array processing
   run a "ding" alert will be sounded once all files are processed.
+  
+  The LUNAR/src/log_analysis.py code allows for the ability to automatical log results across an "array processing" run. To automatically log results
+  during an "array processing" run the "array_file" entry must not be empty. This entry allows you to specify the basename of the output auto-logging
+  files. For the ability to change variables like:
+    - X-data
+    - Y-data
+    - X-compute
+    - Y-compute
+    - Misc settings per method
+  please see the "Function call variable switching" section in "compute help" doc accessible by clicking the "compute help" button.
   
 ***********
 * Methods *

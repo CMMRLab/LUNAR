@@ -1,0 +1,56 @@
+
+
+--------------------------------------------------------------------------------------
+                              Inputs and Data2load sections
+--------------------------------------------------------------------------------------
+  logfile=C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\log_analysis_scripting\logfiles/Shear\shear_1_EPON_862_pxld_88.2_replicate_1_FF_PCFF-class2xe.log.lammps
+  keywords=['Step', 'Temp']
+  sections=1
+  xdata=v_etruexy
+  ydata=f_sxy_ave
+  len(xdata)=3751
+  len(ydata)=3751
+  xlabel=True Strain
+  xlabel=True Stress (MPa)
+  nevery=1
+  xlo was not provided for "LAMMPS data (apply Butterworth filter)", using minimum (0)
+  xhi was not provided for "LAMMPS data (apply Butterworth filter)", using maximum (0.13749189)
+  xlo was not provided for "Regression Fringe Response Modulus", using minimum (0)
+  xhi was not provided for "Regression Fringe Response Modulus", using maximum (0.13749189)
+  Implementing: LAMMPS data (apply butterworth filter) with qm=msr; psd=False; csv=False; savefig=all; order=2; wn=op settings
+  Using path from logfile to set parent_directory ...
+  Using path from logfile to set parent_directory ...
+
+
+--------------------------------------------------------------------------------------
+method=Regression Fringe Response Modulus; xlo=0; xhi=0.13749189; mi
+sc=shift=ymin; minxhi=0.01; maxxhi=0.0; xlo=rfs; yp=1; csv=False; sa
+vefig=all default-offset=0 default-ci=0 default-ds=0 default-dd=3 de
+fault-grid=off default-t1=[] default-t2=[]; name="RFR-mechanical"
+--------------------------------------------------------------------------------------
+  Shifting all Y-data by min(y-data)=14.168860922850941
+  RFR equation of line RFR-mechanical y = 1112.554177x + -14.185848 (shifted by 14.1689; $r^2$=0.997475)
+  RFR Modulus found the "apparent offset" to compute the yield strength to be 0.004379
+  RFR Modulus found xlo=0.015078424 and xhi=0.033087577
+  RFR Modulus found the yield point from derivative as (0.041862, 27.920060)
+
+  -------------------Table of outputs-------------------
+    Modulus                     : 1112.554177052788
+      - proportional limit (x)  : 0.033087577
+      - proportional limit (y)  : 36.794735353558565
+      - Y-intercept             : -14.185847569198136
+      - r^2                     : 0.9974746126423258
+
+    Yield point "derivative"    : 27.920060305710045
+      - "apparent offset"       : 0.004378650482704041
+  ----------------------------------------------------
+
+
+  cite-cite-cite-cite-cite-cite-cite-cite-cite-cite
+  This method implements the work found at: https://doi.org/10.26434/chemrxiv-2025-fk935
+  which should be cited if used for analyzing your LAMMPS data.
+  cite-cite-cite-cite-cite-cite-cite-cite-cite-cite
+
+  Using path from logfile to set parent_directory ...
+Execution time in seconds: 1.512568712234497
+  Using path from logfile to set parent_directory ...

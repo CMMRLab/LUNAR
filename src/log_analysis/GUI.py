@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-November 11th, 2024
+Revision 1.3
+November 10, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -14,15 +14,21 @@ import src.GUI_scale_settings as GUI_scale_settings
 import src.log_analysis.read_log as read_log
 import src.io_functions as io_functions
 import src.log_analysis.main as main
+import src.glob_wildcards as glob_wildcards
+import matplotlib.pyplot as plt
 from tkinter.scrolledtext import ScrolledText
 from tkinter import filedialog
 from tkinter import Toplevel
 from tkinter import ttk
 import tkinter as tk
+import traceback
+import warnings
 import glob
 import time
 import math
+import copy
 import os
+warnings.filterwarnings('ignore')
 
 
 
@@ -35,6 +41,7 @@ class GUI:
         # Configure log (default is level='production', switch to 'debug' if debuging)
         self.log=io_functions.LUNAR_logger()
         self.log.configure(level='production')
+        #self.log.configure(level='production', print2console=False)
 
         # Find present working directory
         self.pwd = os.getcwd()
@@ -58,7 +65,8 @@ class GUI:
                     'ycompute': '',
                     'analysis': [],
                     'nevery': '1',
-                    'parent_directory': 'logfile'}
+                    'parent_directory': 'logfile',
+                    'array_file': ''}
             self.log.GUI_error(f'ERROR loading mode file {settings["mode"]}. Internally deriving default settings. Likely launching from outside of LUNAR directory.')
 
         self.columns = ['Step'];
@@ -165,7 +173,7 @@ class GUI:
         self.parent_directory_button.grid(column=0, row=1)
         
         # modes
-        self.modefile = tk.Entry(self.inputs_frame, width=int(1.05*self.maxwidth), font=self.font_settings)
+        self.modefile = tk.Entry(self.inputs_frame, width=int(1.075*self.maxwidth), font=self.font_settings)
         self.modefile.insert(0, settings['mode'])
         self.modefile.grid(column=1, row=2)
         self.modefile_button = tk.Button(self.inputs_frame, text='mode file', font=self.font_settings, command=self.modefile_path)
@@ -173,11 +181,20 @@ class GUI:
         
         # load_replace_logfile drop down menu
         styles = [True, False]
-        self.load_replace_logfile = ttk.Combobox(self.inputs_frame, values=styles, width=int(self.maxwidth/10), font=self.font_settings)
+        self.load_replace_logfile = ttk.Combobox(self.inputs_frame, values=styles, width=int(self.maxwidth/9), font=self.font_settings)
         self.load_replace_logfile.current(styles.index(settings['replace_logfile_when_loading_mode']))
         self.load_replace_logfile.grid(column=4, row=2)
         self.load_replace_logfile_label = tk.Label(self.inputs_frame, text='Replace logfile when loading mode', font=self.font_settings)
         self.load_replace_logfile_label.grid(column=3, row=2)
+        
+        # array_file entry
+        try: array_file = mode['array_file']
+        except: array_file = ''
+        self.array_file = tk.Entry(self.inputs_frame, width=int(1.45*self.maxwidth), font=self.font_settings)
+        self.array_file.insert(0, array_file)
+        self.array_file.grid(column=1, row=3, columnspan=4)
+        self.array_file_label = tk.Label(self.inputs_frame, text='array_file', font=self.font_settings)
+        self.array_file_label.grid(column=0, row=3) 
 
         
         # Add padding to all frames in self.inputs_frame
@@ -607,8 +624,13 @@ class GUI:
             with open(txt, 'r') as f:
                 for line in f:
                     if line.startswith('#'): continue
-                    # Strip comment's and split by whitespace
-                    line = line.split('#')[0]
+                    # Strip comment's if '!#' not in line,
+                    # else use the '!#' combination to keep
+                    # the '#' character
+                    if '!#' not in line:
+                        line = line.split('#')[0]
+                    else:
+                        line = line.replace('!#', '#')
                     line = line.rstrip()
                     logged.append(line)
         except: # except something failed
@@ -626,8 +648,13 @@ class GUI:
             with open(txt, 'r') as f:
                 for line in f:
                     if line.startswith('#'): continue
-                    # Strip comment's and split by whitespace
-                    line = line.split('#')[0]
+                    # Strip comment's if '!#' not in line,
+                    # else use the '!#' combination to keep
+                    # the '#' character
+                    if '!#' not in line:
+                        line = line.split('#')[0]
+                    else:
+                        line = line.replace('!#', '#')
                     line = line.rstrip()
                     logged.append(line)
         except: # except something failed
@@ -737,7 +764,12 @@ class GUI:
                     f.write("{:>8}{}: '{}',\n".format('',"'ycompute'", self.ycompute_entry.get()))
                     f.write("{:>8}{}: {},\n".format('',"'analysis'", 'analysis'))
                     f.write("{:>8}{}: '{}',\n".format('',"'nevery'", self.nevery_entry.get()))
-                    f.write("{:>8}{}: '{}'\n".format('',"'parent_directory'", io_functions.path_to_string(self.parent_directory.get())))
+                    f.write("{:>8}{}: '{}',\n".format('',"'parent_directory'", io_functions.path_to_string(self.parent_directory.get())))
+                    
+                    try: array_file = self.array_file.get()
+                    except: array_file = ''
+                    f.write("{:>8}{}: '{}',\n".format('',"'array_file'", array_file))
+                    
                     f.write("{:>8}{}\n\n".format('', '}'))
                 os.chdir(self.pwd)
             return
@@ -822,6 +854,11 @@ class GUI:
         self.nevery_entry.delete(0, tk.END)
         self.nevery_entry.insert(0, self.nevery)
         
+        try: array_file = mode['array_file']
+        except: array_file = ''
+        self.array_file.delete(0, tk.END)
+        self.array_file.insert(0, array_file)
+        
         # Start updating analysis
         self.clear_all()
         nloaded = len(self.methods)
@@ -876,6 +913,10 @@ class GUI:
         mode['ycompute'] = self.ycompute_entry.get()
         mode['nevery'] = self.nevery_entry.get()
         mode['parent_directory'] = self.parent_directory.get()
+        
+        try: array_file = self.array_file.get()
+        except: array_file = ''
+        mode['array_file'] = array_file
         mode['analysis'] = []
         for n, (i, j, k, l, m)  in enumerate(zip(self.methods, self.xlos, self.xhis, self.miscs, self.names)):
             analysis = [i.get(), j.get(), k.get(), l.get(), m.get()]
@@ -888,39 +929,451 @@ class GUI:
         # Set up Tristan's "array" analysis using recursion
         if not os.path.isfile(str(mode['logfile'])):
             files = glob.glob(mode['logfile']); array_time = time.time(); analyzed = None; 
-            outputs = {} # {filename : dict-of-outputs}
+            wildcards = {} # {filename : [wildcard1, wildcard2, ...]}
+            outputs   = {} # {filename : dict-of-outputs}
+            abouts    = {} # {filename : dict-of-outputs}
+            dirnames  = [] # [dirname1, dirname2, ...]
             if files:
+                outer_mode = copy.deepcopy(mode)
                 for n, file in enumerate(files, 1):
+                    plt.close('all')
                     self.log.clear_all()
                     self.log.out('\n\nUsing array input option:')
-                    self.log.out(' - logfile      : {}'.format(mode['logfile']))
-                    self.log.out(' - matched file : {}'.format(file))
-                    self.log.out(' - elapsed time : {:.2f} (seconds)'.format(time.time() - array_time))
-                    self.log.out(' - progress     : {} of {} ({:.2f}%)'.format(n, len(files), 100*(n/len(files))))
+                    self.log.out(' - logfile       : {}'.format(mode['logfile']))
+                    self.log.out(' - matched file  : {}'.format(file))
+                    self.log.out(' - elapsed time  : {:.2f} (seconds)'.format(time.time() - array_time))
+                    self.log.out(' - progress      : {} of {} ({:.2f}%)'.format(n, len(files), 100*(n/len(files))))
                     if file.endswith('.jpeg') or file.endswith('.log.lunar') or file.endswith('.eps'):
                         self.log.warn(f' - WARNING matched file {file} has an extension that does not make sense to process. Skipping file')
                         continue
-                    mode['logfile'] = file
+                    
+                    # We will be mutating the mode, so make a deep copy to avoid
+                    # weird mutation issues by making incremental modifications
+                    inner_mode = copy.deepcopy(outer_mode)
+                    inner_mode['logfile'] = file
+                    wilcards_lst = glob_wildcards.get_glob_wildcards(mode['logfile'], file)
+                    
+                    # Check if user wants to use an X-compute and Y-compute to set 
+                    # X-data and Y-data columns based on info in the logfile name
+                    xcompute = inner_mode['xcompute'].strip()
+                    ycompute = inner_mode['ycompute'].strip()
+                    if xcompute.startswith('partial_name(') and ycompute.startswith('partial_name('):
+                        try:
+                            xpartial_to_variable = self.partial_name(xcompute)
+                            ypartial_to_variable = self.partial_name(ycompute)
+                            same_keys = set(xpartial_to_variable.keys()) == set(ypartial_to_variable.keys())
+                            if same_keys:
+                                parital_matched_key = None
+                                for key in xpartial_to_variable:
+                                    if key in file:
+                                        parital_matched_key = key
+                                        break
+                                
+                                # Set up variables
+                                if parital_matched_key is not None:
+                                    x_variable, x_analysis_dict = xpartial_to_variable[parital_matched_key]
+                                    y_variable, y_analysis_dict = ypartial_to_variable[parital_matched_key]
+                                    self.log.out(' - partial_name(): {} -> {}'.format(xcompute, x_variable))
+                                    self.log.out(' - partial_name(): {} -> {}'.format(ycompute, y_variable))
+                                    
+                                    # Update the xdata, ydata, xcompute, and ycompute keys
+                                    compute_chars = ['${', '}']
+                                    if all(c in x_variable for c in compute_chars):
+                                        inner_mode['xcompute'] = x_variable
+                                    else:
+                                        inner_mode['xcompute'] = ''
+                                        inner_mode['xdata'] = x_variable
+                                        
+                                    if all(c in y_variable for c in compute_chars):
+                                        inner_mode['ycompute'] = y_variable
+                                    else:
+                                        inner_mode['ycompute'] = ''
+                                        inner_mode['ydata'] = y_variable
+                                    
+                                    # Update the analysis columns
+                                    analysis_dict = {**x_analysis_dict, **y_analysis_dict}
+                                    for n, (method, xlo, xhi, misc, name) in enumerate(inner_mode['analysis']):
+                                        settings = self.get_misc_setting(misc, use_eval=True)
+                                        for key in analysis_dict:
+                                            if key in settings:
+                                                self.log.out(' - partial_name("{}", {}): {} -> {}'.format(method, key, settings[key], analysis_dict[key]))
+                                                settings[key] = analysis_dict[key]
+                                        new_misc = '; '.join( ['{}={}'.format(key, value) for key, value in settings.items()] )
+                                        inner_mode['analysis'][n][3] = new_misc 
+                            else:
+                                self.log.out(' - partial_name() x != y: {} != {}'.format(xcompute, ycompute))
+                                self.log.out(' - Skipping and hoping for the best (using supplied "xdata" and "ydata" columns)')
+                        except: pass
+                    
+                    if xcompute.startswith('wild_match(') and ycompute.startswith('wild_match('):
+                        try:
+                            xwildcard_to_variable = self.wild_match(xcompute)
+                            ywildcard_to_variable = self.wild_match(ycompute)
+                            same_keys = set(xwildcard_to_variable.keys()) == set(ywildcard_to_variable.keys())
+                            if same_keys:
+                                wilcards_set = {('wildcards[{}]'.format(n), str(value)) for n, value in enumerate(wilcards_lst)}
+                                wildcard_matched_key = None
+                                for key in xwildcard_to_variable:
+                                    if key in wilcards_set:
+                                        wildcard_matched_key = key
+                                        break
+    
+                                # Set up variables
+                                if wildcard_matched_key is not None:
+                                    x_variable, x_analysis_dict = xwildcard_to_variable[wildcard_matched_key]
+                                    y_variable, y_analysis_dict = ywildcard_to_variable[wildcard_matched_key]
+                                    self.log.out(' - wild_match()  : {} -> {}'.format(xcompute, x_variable))
+                                    self.log.out(' - wild_match()  : {} -> {}'.format(ycompute, y_variable))
+                                    
+                                    # Update the xdata, ydata, xcompute, and ycompute keys
+                                    compute_chars = ['${', '}']
+                                    if all(c in x_variable for c in compute_chars):
+                                        inner_mode['xcompute'] = x_variable
+                                    else:
+                                        inner_mode['xcompute'] = ''
+                                        inner_mode['xdata'] = x_variable
+                                        
+                                    if all(c in y_variable for c in compute_chars):
+                                        inner_mode['ycompute'] = y_variable
+                                    else:
+                                        inner_mode['ycompute'] = ''
+                                        inner_mode['ydata'] = y_variable
+                                        
+                                    # Update the analysis columns
+                                    analysis_dict = {**x_analysis_dict, **y_analysis_dict}
+                                    for n, (method, xlo, xhi, misc, name) in enumerate(inner_mode['analysis']):
+                                        settings = self.get_misc_setting(misc, use_eval=True)
+                                        for key in analysis_dict:
+                                            if key in settings:
+                                                self.log.out(' - partial_name("{}", {}): {} -> {}'.format(method, key, settings[key], analysis_dict[key]))
+                                                settings[key] = analysis_dict[key]
+                                        new_misc = '; '.join( ['{}={}'.format(key, value) for key, value in settings.items()] )
+                                        inner_mode['analysis'][n][3] = new_misc 
+                            else:
+                                self.log.out(' - wild_match()   x != y: {} != {}'.format(xcompute, ycompute))
+                                self.log.out(' - Skipping and hoping for the best (using supplied "xdata" and "ydata" columns)')
+                        except: pass
+                    
                     try: # we dont want crashes to exit this loop
-                        analyzed = main.analysis(mode, plot=True, savefig=savefig, dpi=dpi, log=self.log, log_clear=False)
+                        analyzed = main.analysis(inner_mode, plot=True, savefig=savefig, dpi=dpi, log=self.log, log_clear=False)
+                        
+                        basename = analyzed.get_basename_and_builder_dirs()
+                        basename =  io_functions.path_to_string(basename)
+                        dirnames.append(os.path.dirname(basename))
+                        
+                        wildcards[file] = wilcards_lst
                         outputs[file] = analyzed.outputs
-                    except: pass
-            print('\a') # Alert
-            # if outputs:
-            #     self.array_csv(outputs)
+                        abouts[file] = analyzed.about
+                        self.log.out(' - analysis state: SUCCESS')
+
+                    except: 
+                        stack_trace_string = traceback.format_exc()
+                        self.log.out(' - analysis state: FAILED')
+                        self.log.out(' - traceback     :')
+                        self.log.out(' {}'.format(stack_trace_string))
+            
+            # Finalize the array run
+            #print('\a') # Alert
+            if outputs and dirnames and mode['array_file']:
+                dirname = dirnames[-1]
+                array_file = mode['array_file']
+                output_basename = os.path.join(dirname, array_file)
+                self.array_csv(outputs, abouts, wildcards, output_basename)
         else:
             analyzed = main.analysis(mode, plot=True, savefig=savefig, dpi=dpi, log=self.log)
             self.columns = analyzed.columns # Update columns
             #self.popup(self.log.logged, title='Outputs', width=150)
         return
     
-    def array_csv(self, outputs):
-        data2skip = set(['Raw-data'])
+    def wild_match(self, compute):
+        # Strip function_name and parentheses
+        stripped = ''
+        left_parentheses = False
+        right_parentheses_removed = compute.strip()
+        if right_parentheses_removed.endswith(')'):
+            right_parentheses_removed = right_parentheses_removed[:-1]
+        for i in right_parentheses_removed:
+            if i == '(':
+                left_parentheses = True
+                continue
+            if left_parentheses:
+                stripped += i
+        
+        # Generate map
+        wildcard_to_variable = {} # {('wildcard[i]', 'match'):['variable', {'keyword':'key_var'}]}
+        split = stripped.split(',')
+        for pair in split:
+            if not pair: continue
+        
+            # We need to support semi-colon stringing operations
+            # to tie back to a specific analysis run
+            semi_colon = pair.split(';', 1)
+            before = semi_colon[0]
+            after  = semi_colon[1:]
+            if after:
+                after = ' '.join(after)
+                after_semi_colon = after.split(';')
+                analysis_dict = {}
+                for string in after_semi_colon:
+                    equate = string.split('=')
+                    if len(equate) == 2:
+                        keyword = equate[0].strip()
+                        key_var = equate[1].strip()
+                        analysis_dict[keyword] = key_var
+            else: analysis_dict = {}
+            
+            # Determine partial_to_variable
+            paired = before.split('=')
+            if len(paired) == 3:
+                wildcard = paired[0].strip()
+                match    = paired[1].strip()
+                variable = paired[2].strip()
+                wildcard_to_variable[(wildcard, match)] = [variable, analysis_dict]
+        return wildcard_to_variable
+    
+    def partial_name(self, compute):
+        # Strip function_name and parentheses
+        stripped = ''
+        left_parentheses = False
+        right_parentheses_removed = compute.strip()
+        if right_parentheses_removed.endswith(')'):
+            right_parentheses_removed = right_parentheses_removed[:-1]
+        for i in right_parentheses_removed:
+            if i == '(':
+                left_parentheses = True
+                continue
+            if left_parentheses:
+                stripped += i
+        
+        # Generate map
+        partial_to_variable = {} # {'partial_name':['variable', {'keyword':'key_var'}], ... }
+        split = stripped.split(',')
+        for pair in split:
+            if not pair: continue
+            
+            # We need to support semi-colon stringing operations
+            # to tie back to a specific analysis run
+            semi_colon = pair.split(';', 1)
+            before = semi_colon[0]
+            after  = semi_colon[1:]
+            if after:
+                after = ' '.join(after)
+                after_semi_colon = after.split(';')
+                analysis_dict = {}
+                for string in after_semi_colon:
+                    equate = string.split('=')
+                    if len(equate) == 2:
+                        keyword = equate[0].strip()
+                        key_var = equate[1].strip()
+                        analysis_dict[keyword] = key_var
+            else: analysis_dict = {}
+            
+            # Determine partial_to_variable
+            paired = before.split('=')
+            if len(paired) == 2:
+                partial = paired[0].strip()
+                variable = paired[1].strip()
+                partial_to_variable[partial] = [variable, analysis_dict]
+        return partial_to_variable
+    
+    def get_misc_setting(self, misc, use_eval=True):
+        # Setup the globals namespace to limit scope of what eval() can do
+        allowed_builtins = ['min','max','sum','abs','len','map','range','reversed']
+        copied_builtins = globals()['__builtins__'].copy()
+        globals_dict = {}
+        globals_dict['__builtins__'] = {key:copied_builtins[key] for key in allowed_builtins}
+        
+        # Parse misc string
+        setting = {} # {keyword:float or int or Boolean}
+        tmp1 = misc.split(';')
+        for tmp2 in tmp1:
+            tmp3 = tmp2.split('=')
+            if len(tmp3) >= 2:
+                i = tmp3[0].strip()
+                if use_eval:
+                    try: j = eval(tmp3[1], globals_dict)
+                    except: j = str(tmp3[1])
+                else: j = str(tmp3[1])
+                setting[i] = j
+        return setting
+    
+    def array_csv(self, outputs, abouts, wildcards, basename, max_len=10):
+        # sub_analysis to skip
+        sub2skip = ['xdata-raw', 'ydata-raw', 'xdata-clean', 'ydata-clean', 'xdata', 'ydata',
+                    'lo_bounds', 'hi_bounds', 'lo_line', 'hi_line', 'lo_reg_x', 'hi_reg_x', 'lo_reg_y', 'hi_reg_y']
+        
+        # Find all unique columns
+        all_wildcards = set() # {Nwildcards1, Nwildcards2, ...}
+        all_outputs   = []    # ['analyis|sub-analysis',  'analyis|sub-analysis[index]', ...]
+        all_abouts    = {}    # {output-name:about-text}
         for file in outputs:
-            print()
-            print(file)
-            for data in outputs[file]:
-                if data in data2skip: continue
-                if len(outputs[file][data]) > 10: continue
-                print(data, outputs[file][data])
+            all_wildcards.add(len(wildcards[file]))
+            for analysis in outputs[file]:
+                for sub_analysis in outputs[file][analysis]:
+                    if sub_analysis in sub2skip: continue
+                    column = '{}|{}'.format(analysis, sub_analysis)    
+                    data = outputs[file][analysis][sub_analysis]
+                    about = abouts[file][analysis][sub_analysis]
+                    if isinstance(data, (list, tuple)):
+                        if len(data) > max_len: continue
+                        for n, value in enumerate(data):
+                            if value is None: continue
+                            list_column = '{}[{}]'.format(column, n)
+                            if list_column not in all_outputs:
+                                all_outputs.append(list_column)
+                    else:
+                        if data is None: continue
+                        if column not in all_outputs:
+                            all_outputs.append(column)
+                    
+                    # Log here in-case of a continue due to data being
+                    # X-data or Y-data (or similar such as smoothed data)
+                    all_abouts[column] = about
+
+        # Start making unique data structure to hold all possible combinations
+        # of wildards and computes - initialize all with None's in case value
+        # is missing.
+        all_outputs = sorted(all_outputs, key=lambda s: s[0])
+        columns = ['wildcards[{}]'.format(i) for i in range(max(all_wildcards))]
+        columns.extend( list(all_outputs) )
+        csv_data = {} # {'filename':{'wildcards[0]':'wildcard', 'Modulus|b1-raw':value, ... Nanalysis*Nsub-analysis},  ... Nfiles}
+        for file in outputs:
+            # Initialize all columns
+            csv_data[file] = {i:str(None) for i in columns}
+            
+            # Upate wildcards
+            for n, wildard in enumerate(wildcards[file]):
+                column = 'wildcards[{}]'.format(n)
+                csv_data[file][column] = wildard
+            
+            # Update analysis|sub-analysis data
+            for analysis in outputs[file]:
+                for sub_analysis in outputs[file][analysis]:
+                    if sub_analysis in sub2skip: continue
+                    column = '{}|{}'.format(analysis, sub_analysis)    
+                    data = outputs[file][analysis][sub_analysis]
+                    if isinstance(data, (list, tuple)):
+                        if len(data) > max_len: continue
+                        for n, value in enumerate(data):
+                            if value is None: continue
+                            list_column = '{}[{}]'.format(column, n)
+                            value = str(value)
+                            value = value.replace(',', '-')
+                            csv_data[file][list_column] = value
+                    else:
+                        if data is None: continue
+                        value = str(data)
+                        value = value.replace(',', '-')
+                        csv_data[file][column] = value
+
+            
+        # Write output info
+        try:
+            output_name = '{}_output.csv'.format(basename)
+            with open(output_name, 'w') as f:
+                # Join with comma's and write titles
+                titles = ', '.join(['filename'] + columns)
+                f.write('{}\n'.format(titles))
+                
+                # Write rows
+                for file in csv_data:
+                    data = csv_data[file]
+                    outputs = [str(file)]
+                    for column in columns:
+                        outputs.append(str(data[column]))
+                    f.write('{}\n'.format(', '.join(outputs)))
+            self.log.out(f'Successfully wrote: {output_name}')
+        except: 
+            stack_trace_string = traceback.format_exc()
+            self.log.out(f'ERROR could not write {output_name}. File is likely open in another program.')
+            self.log.out('Traceback:')
+            self.log.out(stack_trace_string)
+
+            
+        # Write about info
+        try:
+            about_name = '{}_about.txt'.format(basename)
+            with open(about_name, 'w') as f:
+                f.write('This file contains details about the array_file header naming. Please note that if the about\n')
+                f.write('details is a list, the actual column name in the corresponding *_output.csv file will be \n')
+                f.write('indexed like a python list (starting at index 0). For example:\n')
+                f.write('\n')
+                f.write('  Calling "Regression Fringe Response Modulus" and setting the Name as RFR-mechanical\n')
+                f.write('  the yield point computed via derivatives will have a columns:\n')
+                f.write('    RFR-mechanical|yield_point_derivative[0] -> X-location of yield point\n')
+                f.write('    RFR-mechanical|yield_point_derivative[1] -> Y-location of yield point\n')
+                f.write('\n')
+                f.write('  Since the about statement defines this value as a list:\n')
+                f.write('    List of floats found from yield point determination, using derivative methods.\n')
+                f.write('    Order [X-yp, Y-yp] or [None, None] if not using yp. NOTE: SHIFTED based on\n')
+                f.write('    shift method\n')
+                
+                longest_key = max(all_abouts, key=len)
+                max_len = len(longest_key)
+                top_bottom = (max_len + 4)*'*'
+                text_len = 2*max_len
+                for key in all_abouts:
+                    about = all_abouts[key]                
+                    header = '* {:^{width}} *'.format(key, width=max_len)
+                    wrapped = '\n'.join(about[i:i+text_len].lstrip() for i in range(0, len(about), text_len))
+                    f.write('\n\n')
+                    f.write('{}\n'.format(top_bottom))
+                    f.write('{}\n'.format(header))
+                    f.write('{}\n'.format(top_bottom))
+                    f.write('{}\n'.format(wrapped))
+            self.log.out(f'Successfully wrote: {about_name}')
+        except: 
+            stack_trace_string = traceback.format_exc()
+            self.log.out(f'ERROR could not write {about_name}. File is likely open in another program.')
+            self.log.out('Traceback:')
+            self.log.out(stack_trace_string)
         return
+    
+def partial_name(compute):
+    # Strip function_name and parentheses
+    stripped = ''
+    left_parentheses = False
+    right_parentheses_removed = compute.strip()
+    if right_parentheses_removed.endswith(')'):
+        right_parentheses_removed = right_parentheses_removed[:-1]
+    for i in right_parentheses_removed:
+        if i == '(':
+            left_parentheses = True
+            continue
+        if left_parentheses:
+            stripped += i
+    
+    # Generate map
+    partial_to_variable = {} # {'partial_name':['variable', {'keyword':'key_var'}], ... }
+    split = stripped.split(',')
+    for pair in split:
+        if not pair: continue
+        
+        # We need to support semi-colon stringing operations
+        # to tie back to a specific analysis run
+        semi_colon = pair.split(';', 1)
+        before = semi_colon[0]
+        after  = semi_colon[1:]
+        if after:
+            after = ' '.join(after)
+            after_semi_colon = after.split(';')
+            analysis_dict = {}
+            for string in after_semi_colon:
+                equate = string.split('=')
+                if len(equate) == 2:
+                    keyword = equate[0].strip()
+                    key_var = equate[1].strip()
+                    analysis_dict[keyword] = key_var
+        else: analysis_dict = {}
+        
+        # Determine partial_to_variable
+        paired = before.split('=')
+        if len(paired) == 2:
+            partial = paired[0].strip()
+            variable = paired[1].strip()
+            partial_to_variable[partial] = [variable, analysis_dict]
+    return partial_to_variable
+
+compute = 'partial_name( tensile_1=v_etruex; t1=v_etruey; t2=v_etruez,   tensile_2=v_etruey,   tensile_3=v_etruez  )'
+partial_to_variable = partial_name(compute)
+#print(partial_to_variable)

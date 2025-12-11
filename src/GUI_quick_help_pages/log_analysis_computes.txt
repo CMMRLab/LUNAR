@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 2/13/2025
+# Last edited 12/11/2025
 #
 *******************
 * Compute options *
@@ -108,5 +108,133 @@
 	
   Say we wanted to convert true stress to engineering stress in the Z-direction, then the compute would be:
     ${f_szz_ave}*(${Lx}*${Ly})/(${Lx}[0]*${Ly}[0])
+	
+************************************
+* Function call variable switching *
+*               and                *
+*     array_file auto-logging      *
+************************************
+
+  The LUNAR/src/log_analysis.py code allows for the ability to automatical log results across an "array processing" run. To automatically log results
+  during an "array processing" run the "array_file" entry must not be empty. This entry allows you to specify the basename of the output auto-logging
+  files.
+  
+  One challenge in automatic logging of results is the need for dynamic switch variables like:
+    - X-data
+    - Y-data
+    - X-compute
+    - Y-compute
+    - Misc settings per method
+  based on a file naming convention. This is supported via an option termed as "Function call variable switching" or FCVS for short. Where you can 
+  supply a string in the X-compute or Y-compute entries that is formatted similar to a normal function call in python. For a demonstration of using
+  the FCVS option, we will assume that logfile="tensile_*_pxld_*_replicate_*_FF_PCFF.log.lammps" and have a directory with the following files:
+  
+    EXAMPLES
+    |---log_analysis
+    |   |--- tensile_1_pxld_80_replicate_1_FF_PCFF.log.lammps
+    |   |------wildcards = [strain_direction, crosslink_density, replicate] = [1, 80, 1]
+    |   |
+    |   |--- tensile_2_pxld_85_replicate_2_FF_PCFF.log.lammps
+    |   |------wildcards = [strain_direction, crosslink_density, replicate] = [2, 85, 2]
+    |   |
+    |   |--- tensile_3_pxld_90_replicate_3_FF_PCFF.log.lammps
+    |   |------wildcards = [strain_direction, crosslink_density, replicate] = [3, 90, 3]
 		
+    where the logfile="tensile_*_pxld_*_replicate_*_FF_PCFF.log.lammps" has wildcards = [strain_direction, crosslink_density,
+    replicate]. Each file also has different data columns logged with different meanings, where an example is as such:
+	
+      !# This file was strain in the X-direction so the principal strain and stress should be in the X-direction and
+      !# the transverse strains are in the Y- and Z-directions, which are important for a stress-strain analysis.
+      tensile_1_pxld_80_replicate_1_FF_PCFF.log.lammps
+	    
+        Step    Temp     Strain_x    Strain_y    Strain_z    Stress_x    Stress_y    Stress_z    
+        0       299.000  0.000       0.000       0.000        0.000      0.000       0.000
+        1000    300.000  0.010       0.003       0.003       25.000      0.001       0.001 
+        2000    301.000  0.020       0.004       0.004       50.000      0.015       0.005
+        :       :        :           :           :           :           :           :		
+		
+      !# This file was strain in the Y-direction so the principal strain and stress should be in the Y-direction and
+      !# the transverse strains are in the X- and Z-directions, which are important for a stress-strain analysis.
+      tensile_2_pxld_85_replicate_2_FF_PCFF.log.lammps
+	    
+        Step    Temp     Strain_x    Strain_y    Strain_z    Stress_x    Stress_y    Stress_z    
+        0       299.000  0.000       0.000       0.000       0.000       0.000       0.000
+        1000    300.000  0.003       0.010       0.004       0.005       25.000      0.001
+        2000    301.000  0.004       0.020       0.003       0.010       50.000      0.015
+        :       :        :           :           :           :           :           :		
+		
+      !# This file was strain in the Z-direction so the principal strain and stress should be in the Z-direction and
+      !# the transverse strains are in the X- and Y-directions, which are important for a stress-strain analysis.
+      tensile_3_pxld_90_replicate_3_FF_PCFF.log.lammps
+	    
+        Step    Temp     Strain_x    Strain_y    Strain_z    Stress_x    Stress_y    Stress_z    
+        0       299.000  0.000       0.000       0.000       0.000       0.000       0.000
+        1000    300.000  0.003       0.004       0.010       0.005       0.001       25.000
+        2000    301.000  0.004       0.003       0.020       0.010       0.015       50.000
+        :       :        :           :           :           :           :           :	
+		
+  Please observe the Strain_x, Strain_y, Strain_z, Stress_x, Stress_y, Stress_z columns closely, where if the strain was applied in the X-direction
+  the strain and stress in that direction increase quicker then the off-axis values. These examples will form the basis for how to use FCVS. The
+  following functions are supported:
+    +----------------------------------------------------------------+
+    | partial_name(partial_1=variable_1,  partial_2=variable_2, ...) |
+    +----------------------------------------------------------------+
+	  
+      The "partial_name()" function allows for a parital string to be matched with a part of the filename and then set the variable for that
+      direction.
+		
+        Example: 1 !# Basic usage
+          X-compute = "partial_name( tensile_1=Strain_x,   tensile_2=Strain_y,   tensile_3=Strain_z  )"
+          Y-compute = "partial_name( tensile_1=Stress_x,   tensile_2=Stress_y,   tensile_3=Stress_z  )"
+		  
+          Then each filename can be mapped to a specific X-data or Y-data column from above.
+		  
+        Example: 2 !# Vectorized computes are still supported, for example assume Stress is in atm and we want to convert stress to MPa.
+          X-compute = "partial_name( tensile_1=Strain_x,               tensile_2=Strain_y,               tensile_3=Strain_z              )"
+          Y-compute = "partial_name( tensile_1=0.101325*${Stress_x},   tensile_2=0.101325*${Stress_y},   tensile_3=0.101325*${Stress_z}  )"
+		  
+          Then each filename can be mapped to a specific X-data or Y-compute.
+		  
+        Example: 3 !# Passing additional misc-settings to Analysis option methods (like "Regression Fringe Response Modulus" t1 and t2 keywords)
+          X-compute = "partial_name( tensile_1=Strain_x; t1=Strain_y; t2=Strain_z,   tensile_2=Strain_y,   tensile_3=Strain_z  )"
+          Y-compute = "partial_name( tensile_1=Stress_x,                             tensile_2=Stress_y,   tensile_3=Stress_z  )"
+		  
+          The semi-colon can be used for setting more keyword/variable pairs like "tensile_1=Strain_x; t1=Strain_y; t2=Strain_z", where the 
+          transverse direction t1 and t2 can be set as Strain_y and Strain_z respectively. Please note that the Y- and Z-direciton t1 and t2 
+          keyword/variable pairs have not been set in this example to make the example fit on the page, but would be required for an actually
+          run.
+		  
+    +------------------------------------------------------------------------------------------------+		  
+    | wild_match(wildcards[index_1]=value_1=variable_1,  wildcards[index_2]=value_2=variable_2, ...) |
+    +------------------------------------------------------------------------------------------------+
+	
+     The "wild_match()" function allows for the matching of wildcard in the wildcards list to a specific value and then the set the variable for
+     that direction. This is accomplished via a two-equals notation where:
+       wildcards[index]=value=variable
+	     index    : is the index of the wildcard from the wildcards
+         value    : is the value that needs to be satisfied to override the variable
+         variable : is the variable to dynamically set
+     For example if X- and Y-computes are set as:
+	 
+        Example: 1 !# Basic usage
+          X-compute = "partial_name( wildcards[0]=1=Strain_x,   wildcards[0]=2=Strain_y,   wildcards[0]=3=Strain_z  )"
+          Y-compute = "partial_name( wildcards[0]=1=Stress_x,   wildcards[0]=2=Stress_y,   wildcards[0]=3=Stress_z  )"
+		  
+          Then each wilcard can be matched to a value and that value can be mapped to a X-data or Y-data column from above. In this case index=0
+          for the strain direction.
+		  
+        Example: 2 !# Vectorized computes are still supported, for example assume Stress is in atm and we want to convert stress to MPa.
+          X-compute = "partial_name(wildcards[0]=1=Strain_x,             wildcards[0]=2=Strain_y,             wildcards[0]=3=Strain_z)"
+          Y-compute = "partial_name(wildcards[0]=1=0.101325*${Stress_x}, wildcards[0]=2=0.101325*${Stress_y}, wildcards[0]=3=0.101325*${Stress_z})"
+		  
+          Then each filename can be mapped to a specific X-data or Y-compute.
+		  
+        Example: 3 !# Passing additional misc-settings to Analysis option methods (like "Regression Fringe Response Modulus" t1 and t2 keywords)
+          X-compute = "partial_name( wildcards[0]=1=Strain_x; t1=Strain_y; t2=Strain_z,   wildcards[0]=2=Strain_y,   wildcards[0]=3=Strain_z  )"
+          Y-compute = "partial_name( wildcards[0]=1=Stress_x,                             wildcards[0]=2=Stress_y,   wildcards[0]=3=Stress_z  )"
+		  
+          The semi-colon can be used for setting more keyword/variable pairs like "tensile_1=Strain_x; t1=Strain_y; t2=Strain_z", where the 
+          transverse direction t1 and t2 can be set as Strain_y and Strain_z respectively. Please note that the Y- and Z-direciton t1 and t2 
+          keyword/variable pairs have not been set in this example to make the example fit on the page, but would be required for an actually
+          run.
 

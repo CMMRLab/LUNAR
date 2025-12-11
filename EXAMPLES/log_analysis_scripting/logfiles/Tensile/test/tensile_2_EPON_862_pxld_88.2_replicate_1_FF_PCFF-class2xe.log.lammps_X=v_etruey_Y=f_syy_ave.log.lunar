@@ -1,0 +1,65 @@
+
+
+--------------------------------------------------------------------------------------
+                              Inputs and Data2load sections
+--------------------------------------------------------------------------------------
+  logfile=C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\log_analysis_scripting\logfiles/Tensile\tensile_2_EPON_862_pxld_88.2_replicate_1_FF_PCFF-class2xe.log.lammps
+  keywords=['Step', 'Temp']
+  sections=1
+  xdata=v_etruey
+  ydata=f_syy_ave
+  len(xdata)=3751
+  len(ydata)=3751
+  xlabel=True Strain
+  xlabel=True Stress (MPa)
+  nevery=1
+  xlo was not provided for "LAMMPS data (apply Butterworth filter)", using minimum (-3.3306691e-16)
+  xhi was not provided for "LAMMPS data (apply Butterworth filter)", using maximum (0.13976194)
+  xlo was not provided for "Regression Fringe Response Modulus", using minimum (-3.3306691e-16)
+  xhi was not provided for "Regression Fringe Response Modulus", using maximum (0.13976194)
+  Implementing: LAMMPS data (apply butterworth filter) with qm=msr; psd=False; csv=False; savefig=all; order=2; wn=op settings
+  Using path from logfile to set parent_directory ...
+  Using path from logfile to set parent_directory ...
+
+  Applying Butterworth filter to "t1" transverse strain direcion.
+
+  Applying Butterworth filter to "t2" transverse strain direcion.
+
+
+--------------------------------------------------------------------------------------
+method=Regression Fringe Response Modulus; xlo=-3.3306691e-16; xhi=0.1
+3976194; misc=shift=ymin; minxhi=0.0025; maxxhi=0.0; xlo=rfs; yp=1; of
+fset=0.0; t1=v_etruex; t2=v_etruez; csv=False; savefig=all default-ci=
+0 default-ds=0 default-dd=3 default-grid=off; name="RFR-mechanical"
+--------------------------------------------------------------------------------------
+  Shifting all Y-data by min(y-data)=0.0698302454252077
+  RFR equation of line RFR-mechanical y = 3447.178517x + 0.028598 (shifted by 0.0698; $r^2$=0.999940)
+  RFR Modulus found the "apparent offset" to compute the yield strength to be 0.002749
+  RFR Modulus found xlo=-3.3306691e-16 and xhi=0.0025168301
+  RFR Modulus found the yield point from derivative as (0.007809, 23.250866)
+  RFR Modulus found the poissons ratio's to be nu_1=0.453373, nu_2=0.411354, nu_avg=0.432363
+
+  -------------------Table of outputs-------------------
+    Modulus                     : 3447.1785172947657
+      - proportional limit (x)  : 0.0025168301
+      - proportional limit (y)  : 8.774391083918637
+      - Y-intercept             : 0.028598186092593528
+      - r^2                     : 0.9999403128974772
+
+    Yield point "derivative"    : 23.250866003236993
+      - "apparent offset"       : 0.0027494842676830528
+
+    Poissons ratio "nu_1"       : 0.4533727454194883
+    Poissons ratio "nu_2"       : 0.41135365317567396
+    Poissons ratio "nu_avg"     : 0.43236319929758116
+  ----------------------------------------------------
+
+
+  cite-cite-cite-cite-cite-cite-cite-cite-cite-cite
+  This method implements the work found at: https://doi.org/10.26434/chemrxiv-2025-fk935
+  which should be cited if used for analyzing your LAMMPS data.
+  cite-cite-cite-cite-cite-cite-cite-cite-cite-cite
+
+  Using path from logfile to set parent_directory ...
+Execution time in seconds: 2.1578712463378906
+  Using path from logfile to set parent_directory ...

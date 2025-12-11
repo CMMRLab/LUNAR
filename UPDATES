@@ -16,10 +16,19 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 9DecemberNovember2025)
+LUNAR (version 11DecemberNovember2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+11December2025     JDK         - log_analysis.py: Added an auto-logging option, where if wildcards are used in 
+                                                  the logfile name, multiple files can be processed in one run 
+                                                  and all the results will be tabulted into a file. The file 
+                                                  will also log wildcards, for quicker processing and the wild
+                                                  cards are typically an independant variable in most MD-naming
+                                                  conventions (e.g. tensile_x_cure_55.log.lammps could be set to
+                                                  tensile_*_cure*.log.lammps where wilcards = [strain_direction,
+                                                  cure_state] = ['x', 55]).
+
 9December2025      JDK         - cell_builder.py: GUI updates to make 'reshift' option easier to use.
 
 8December2025      JDK         - sheet_builder.py: Added about a 2x increase in bond finding speed. 

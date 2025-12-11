@@ -173,7 +173,6 @@ def parse_lambda_settings(lmbda):
 # Function to increment lambda's, compute cve, and minimize cve #
 #################################################################
 def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method):
-    from tqdm import tqdm
     
     #--------------------------------------------------------------------------------------#
     # Check for user values based on lmbda_method = 'op<MinLambda,MaxLambda,NumLambda>' or #
@@ -223,9 +222,13 @@ def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method):
     # Compute course CVE "spectra" #
     #------------------------------#
     # Compute the course Cross-validation error (CVE) for each lamba
-    course_lambdas = np.geomspace(min_lambda, max_lambda, num=num_lambda, endpoint=True, dtype='float64', axis=0)
+    if min_lambda > 0:
+        course_lambdas = np.geomspace(min_lambda, max_lambda, num=num_lambda, endpoint=True, dtype='float64', axis=0)
+    else:
+        course_lambdas = np.geomspace(1e-16, max_lambda, num=num_lambda, endpoint=True, dtype='float64', axis=0)
+        course_lambdas = np.insert(course_lambdas, 0, 0)
     print(f'\nComputing Course Cross-validation error for {len(course_lambdas)} different lambdas ...'); course_cves = []
-    for n, lmbda in enumerate(tqdm(course_lambdas)):
+    for n, lmbda in enumerate(course_lambdas):
         z, cve = Whittaker_Eilers_without_interpolation(y, d, lmbda, compute_cve=True, cve_mode=cve_mode)
         course_cves.append(cve)
         
@@ -257,7 +260,7 @@ def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method):
     # Compute the fine Cross-validation error (CVE) for each lambda on
     lo_pass = False; hi_pass = False; npoints = len(course_lambdas)-1; fine_lambdas_cves = {} # {lambda:cve}
     print(f'\nComputing Fine Cross-validation error for {2*npoints} different lambdas moving from course minimum outward ...');
-    for n in tqdm(range(npoints)):
+    for n in range(npoints):
         # Compute CVE on both sides of the minimum
         lo_lambda = lo_fine_lambdas[n]; hi_lambda = hi_fine_lambdas[n]
         lo_z, lo_cve = Whittaker_Eilers_without_interpolation(y, d, lo_lambda, compute_cve=True, cve_mode=cve_mode)

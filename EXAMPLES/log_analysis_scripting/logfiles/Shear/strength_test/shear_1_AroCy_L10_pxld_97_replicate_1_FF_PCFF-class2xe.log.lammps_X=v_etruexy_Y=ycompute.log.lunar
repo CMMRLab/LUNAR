@@ -1,0 +1,59 @@
+
+
+--------------------------------------------------------------------------------------
+                              Inputs and Data2load sections
+--------------------------------------------------------------------------------------
+  logfile=C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\log_analysis_scripting\logfiles/Shear\shear_1_AroCy_L10_pxld_97_replicate_1_FF_PCFF-class2xe.log.lammps
+  keywords=['Step', 'Temp']
+  sections=1
+  xdata=v_etruexy
+  ydata=
+  ycompute=( ((${f_sxx_ave}-${f_syy_ave})**2 + (${f_syy_ave}-${f_szz_ave})**2 + (${f_szz_ave}-${f_sxx_ave})**2 + 6*(${f_syz_ave}**2 + ${f_sxz_ave}**2 + ${f_sxy_ave}**2))/2 )**0.5
+  "( ((${f_sxx_ave}-${f_syy_ave})**2 + (${f_syy_ave}-${f_szz_ave})**2 + (${f_szz_ave}-${f_sxx_ave})**2 + 6*(${f_syz_ave}**2 + ${f_sxz_ave}**2 + ${f_sxy_ave}**2))/2 )**0.5" was succesfully evaluted.
+
+  len(xdata)=3751
+  len(ydata)=3751
+  xlabel=True Strain
+  xlabel=Von Mises Stress (MPa)
+  nevery=1
+  xlo was not provided for "LAMMPS data (apply Butterworth filter)", using minimum (0)
+  xhi was not provided for "LAMMPS data (apply Butterworth filter)", using maximum (0.13821396)
+  xlo was not provided for "Regression Fringe Response Modulus", using minimum (0)
+  xhi was not provided for "Regression Fringe Response Modulus", using maximum (0.13821396)
+  Implementing: LAMMPS data (apply butterworth filter) with qm=msr; psd=False; csv=False; savefig=all; order=2; wn=op settings
+  Using path from logfile to set parent_directory ...
+  Using path from logfile to set parent_directory ...
+
+
+--------------------------------------------------------------------------------------
+method=Regression Fringe Response Modulus; xlo=0; xhi=0.13821396; mi
+sc=shift=ymin; minxhi=0.01; maxxhi=0.0; xlo=rfs; yp=1; csv=False; sa
+vefig=all default-offset=0 default-ci=0 default-ds=0 default-dd=3 de
+fault-grid=off default-t1=[] default-t2=[]; name="RFR-mechanical"
+--------------------------------------------------------------------------------------
+  Shifting all Y-data by min(y-data)=32.15835062685173
+  RFR equation of line RFR-mechanical y = 1488.096050x + -34.267006 (shifted by 32.1584; $r^2$=0.996872)
+  RFR Modulus found the "apparent offset" to compute the yield strength to be 0.000471
+  RFR Modulus found xlo=0.065503573 and xhi=0.081908644
+  RFR Modulus found the yield point from derivative as (0.083628, 89.435496)
+
+  -------------------Table of outputs-------------------
+    Modulus                     : 1488.096050476568
+      - proportional limit (x)  : 0.081908644
+      - proportional limit (y)  : 119.77927463105726
+      - Y-intercept             : -34.26700563208571
+      - r^2                     : 0.9968720121869515
+
+    Yield point "derivative"    : 89.43549576763859
+      - "apparent offset"       : 0.00047139071943474997
+  ----------------------------------------------------
+
+
+  cite-cite-cite-cite-cite-cite-cite-cite-cite-cite
+  This method implements the work found at: https://doi.org/10.26434/chemrxiv-2025-fk935
+  which should be cited if used for analyzing your LAMMPS data.
+  cite-cite-cite-cite-cite-cite-cite-cite-cite-cite
+
+  Using path from logfile to set parent_directory ...
+Execution time in seconds: 1.3235700130462646
+  Using path from logfile to set parent_directory ...
