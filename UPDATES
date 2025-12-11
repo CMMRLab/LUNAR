@@ -20,6 +20,8 @@ LUNAR (version 11DecemberNovember2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+11December2025     JDK         - bond_react_merge.py: 
+
 11December2025     JDK         - add_pi_electrons.py: Changed how the reset_simulation_cell option grows the
                                                       simulation cell to work better with partially periodic
                                                       cells.

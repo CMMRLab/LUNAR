@@ -384,8 +384,11 @@ class find:
                     if neighs_4_deep_edge:
                         molecule_types = [self.pre_types[i] for i in neighs_4_deep_edge if i not in self.pre_edge]
                         reverse_map = {self.pre_types[i]:i for i in neighs_4_deep_edge  if i not in self.pre_edge}
+                        if not molecule_types:
+                            molecule_types = [self.pre_types[i] for i in neighs_4_deep_edge]
+                            reverse_map = {self.pre_types[i]:i for i in neighs_4_deep_edge}
                         types_sorted = [item for items, c in Counter(molecule_types).most_common() for item in [items] * c]
-                        
+
                         most_unqiue_type = types_sorted[-1]; most_unqiue_id = reverse_map[most_unqiue_type];
                         comment = '{:^5}    pre-molid: {:^5}    Count of type on pre-molid (that are at least 4-deep from any edge atom): {:^5}'.format(most_unqiue_type, molid+1,  molecule_types.count(most_unqiue_type))
                         self.InitiatorIDs[most_unqiue_id] = comment
