@@ -1540,7 +1540,7 @@ class analysis:
                     ax.legend(loc='upper left', bbox_to_anchor=(1.0, 1.0), fancybox=True, ncol=1)
                     fig.set_size_inches(12, 4, forward=True)
                     fig.tight_layout()
-                    plt.show()
+                    
                     
                     # Save current image
                     if savefig:

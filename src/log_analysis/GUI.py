@@ -1073,7 +1073,8 @@ class GUI:
                         self.log.out(' {}'.format(stack_trace_string))
             
             # Finalize the array run
-            #print('\a') # Alert
+            plt.show()
+            print('\a') # Alert
             if outputs and dirnames and mode['array_file']:
                 dirname = dirnames[-1]
                 array_file = mode['array_file']
@@ -1083,6 +1084,7 @@ class GUI:
             analyzed = main.analysis(mode, plot=True, savefig=savefig, dpi=dpi, log=self.log)
             self.columns = analyzed.columns # Update columns
             #self.popup(self.log.logged, title='Outputs', width=150)
+            plt.show()
         return
     
     def wild_match(self, compute):
