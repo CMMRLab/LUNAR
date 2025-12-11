@@ -20,6 +20,10 @@ LUNAR (version 11DecemberNovember2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+11December2025     JDK         - add_pi_electrons.py: Changed how the reset_simulation_cell option grows the
+                                                      simulation cell to work better with partially periodic
+                                                      cells.
+
 11December2025     JDK         - log_analysis.py: Added an auto-logging option, where if wildcards are used in 
                                                   the logfile name, multiple files can be processed in one run 
                                                   and all the results will be tabulted into a file. The file 

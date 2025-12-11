@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.7
-April 14, 2025
+Revision 1.8
+December 11, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -118,7 +118,7 @@ def main(topofile, types2convert, atom_style, reset_charges, net_zero_charge, co
         # Initialize some preliminary information #
         ###########################################
         # set version and print starting information to screen
-        version = 'v1.7 / 14 April 2025'
+        version = 'v1.8 / 11 December 2025'
         log.out(f'\n\nRunning add_pi_electrons: {version}')
         log.out(f'Using Python version: {sys.version}')
         log.out(f'Using Python executable: {sys.executable}')

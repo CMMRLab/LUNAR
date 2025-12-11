@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-November 4th, 2023
+Revision 1.2
+December 11, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -177,9 +177,9 @@ def print_man_page(topofile, types2convert, atom_style, reset_charges, net_zero_
     print('    the image flag from the carbon atom that it is added to and LAMMPS will rewrap and atoms that are outside of the simulation cell')
     print('    when reading the file. However, some systems like a graphite system may have a simulation cell size that is too small for adequate')
     print('    re-wrapping of the pi-electron and it may cause errors. In these cases, it is beneficial to reset the simulation cell size. When')
-    print('    the simulation cell size is reset the span of all atoms is found and 0.5 angstrom buffer is added to the max span of all the atoms.')
-    print('    If the new simulation cell size becomes smaller than the original simulation cell, the original simulation cell size in that')
-    print('    direction will be used instead (i.e. this operation will only ever grow a simulation cell and never shrink the simulation cell).')
+    print('    the simulation cell size is reset the maximum distance between the any added pi-electron and the any orginal atom is used to')
+    print('    increment the simulation cell to be larger in each direction.')
+
     print('    Example usage:')
     print('        python3 add_pi_electrons.py -reset-box T')
     

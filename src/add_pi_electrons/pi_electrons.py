@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-Oct 3rd, 2023
+Revision 1.2
+December 11, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -170,6 +170,7 @@ def add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset
     atoms2add = {} # { atomID : atom object }
     nb_criteria = [2,3] # only add pi-electrons to atoms that have 2 or 3 bonded neighbors
     accetable_neightypes = types2convert + [cg1, cge]
+    deltas = {'x':set([0]), 'y':set([0]), 'z':set([0])}
     for id1 in m.atoms:
         atom1 = m.atoms[id1]
         
@@ -234,9 +235,12 @@ def add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset
             #--------------------------------------------------#
             atoms_count += 1
             pi1 = atoms_count # For finding cge-cg1-cge angle
-            x1 = atom1.x + 0.65*normal[0] # cg1-cge bond length = 0.6500
-            y1 = atom1.y + 0.65*normal[1] # cg1-cge bond length = 0.6500
-            z1 = atom1.z + 0.65*normal[2] # cg1-cge bond length = 0.6500
+            x1 = float(atom1.x + 0.65*normal[0]) # cg1-cge bond length = 0.6500
+            y1 = float(atom1.y + 0.65*normal[1]) # cg1-cge bond length = 0.6500
+            z1 = float(atom1.z + 0.65*normal[2]) # cg1-cge bond length = 0.6500
+            deltas['x'].add(float(0.65*normal[0]))
+            deltas['y'].add(float(0.65*normal[1]))
+            deltas['z'].add(float(0.65*normal[2]))
             atoms2add[pi1] = create_atoms(x1, y1, z1, atom1.ix, atom1.iy, atom1.iz, atom1.molid, 'cge/C', cge_q, cge)
             if m.velocities:
                 try: vel = m.velocities[id1]
@@ -269,9 +273,12 @@ def add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset
             #--------------------------------------------------#
             atoms_count += 1
             pi2 = atoms_count # For finding cge-cg1-cge angle
-            x1 = atom1.x - 0.65*normal[0] # cg1-cge bond length = 0.6500
-            y1 = atom1.y - 0.65*normal[1] # cg1-cge bond length = 0.6500
-            z1 = atom1.z - 0.65*normal[2] # cg1-cge bond length = 0.6500
+            x1 = float(atom1.x - 0.65*normal[0]) # cg1-cge bond length = 0.6500
+            y1 = float(atom1.y - 0.65*normal[1]) # cg1-cge bond length = 0.6500
+            z1 = float(atom1.z - 0.65*normal[2]) # cg1-cge bond length = 0.6500
+            deltas['x'].add(float(0.65*normal[0]))
+            deltas['y'].add(float(0.65*normal[1]))
+            deltas['z'].add(float(0.65*normal[2]))
             atoms2add[pi2] = create_atoms(x1, y1, z1, atom1.ix, atom1.iy, atom1.iz, atom1.molid, 'cge/C', cge_q, cge)
             if m.velocities:
                 try: vel = m.velocities[id1]
@@ -333,40 +340,33 @@ def add(m, types2convert, charges, graph, log, neighbor_charge_constraint, reset
     
     ##########################
     # Reset box dims if flag #
-    ##########################
-    # Function to adjust box (only grows box, will never let box shrink)
-    def adjust_cell(box_corner, dim, add2box):
-        if dim < 0: 
-            newdim = dim - add2box
-            if newdim > box_corner:
-                newdim = dim
-        else:
-            newdim = dim + add2box
-            if newdim < box_corner:
-                newdim = dim
-        return newdim
+    ##########################    
+    # Function to adjust box (only grows box, will never let box shrink)    
+    def adjust_cell(box_corner, delta):
+        new_corner = box_corner
+        if box_corner < 0:
+            new_corner -= delta
+        else: new_corner += delta
+        return new_corner
     if reset_simulation_cell and m.xy == 0 and m.xz == 0 and m.yz == 0:
         log.out('Resetting simulation cell dimensions after adding pi-electrons ...')
-        x = []; y = []; z = [];
-        for i in m.atoms:
-            atom = m.atoms[i]
-            x.append(atom.x)
-            y.append(atom.y)
-            z.append(atom.z)
-            
-        # Find lo/hi and ln values
-        xlo_pos = min(x); xhi_pos = max(x);
-        ylo_pos = min(y); yhi_pos = max(y);
-        zlo_pos = min(z); zhi_pos = max(z);
+
+        # Adjust box based on changes in relative atom positions
+        scale = 1.0
+        try: max_dx = scale*max([abs(i) for i in deltas['x']])
+        except: max_dx = 0
+        try: max_dy = scale*max([abs(i) for i in deltas['y']])
+        except: max_dy = 0
+        try: max_dz = scale*max([abs(i) for i in deltas['z']])
+        except: max_dz = 0
         
         # adjust cell directions by plus_minus
-        add2box = 0.5 # add extra to each direction
-        xlo = adjust_cell(xlo, xlo_pos, add2box)
-        xhi = adjust_cell(xhi, xhi_pos, add2box)
-        ylo = adjust_cell(ylo, ylo_pos, add2box)
-        yhi = adjust_cell(yhi, yhi_pos, add2box)
-        zlo = adjust_cell(zlo, zlo_pos, add2box)
-        zhi = adjust_cell(zhi, zhi_pos, add2box)
+        xlo = adjust_cell(xlo, max_dx)
+        xhi = adjust_cell(xhi, max_dx)
+        ylo = adjust_cell(ylo, max_dy)
+        yhi = adjust_cell(yhi, max_dy)
+        zlo = adjust_cell(zlo, max_dz)
+        zhi = adjust_cell(zhi, max_dz)
     
         # Create box lines
         m.xbox_line = '{:>12.9f} {:^9.9f} {} {}'.format(xlo, xhi, 'xlo', 'xhi')

@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 5/21/2024
+# Last edited 12/11/2025
 #
 ************
 * Overview *
@@ -160,9 +160,8 @@
     inherits the image flag from the carbon atom that it is added to and LAMMPS will rewrap and atoms that are outside of the simulation cell
     when reading the file. However, some systems like a graphite system may have a simulation cell size that is too small for adequate re-
     wrapping of the pi-electron and it may cause errors. In these cases, it is beneficial to reset the simulation cell size. When the simulation
-    cell size is reset the span of all atoms is found and 0.5 angstrom buffer is added to the max span of all the atoms. If the new simulation
-    cell size becomes smaller than the original simulation cell, the original simulation cell size in that direction will be used instead (i.e.
-    this operation will only ever grow a simulation cell and never shrink the simulation cell).
+    cell size is reset the maximum distance between the any added pi-electron and the any orginal atom is used to increment the simulation cell
+    to be larger in each direction.
 	
   include_type_labels
     A drop-down menu to select the Boolean to include LAMMPS TypeLabels in the written LAMMPS datafile or the written LAMMPS molecule files. If
