@@ -374,22 +374,21 @@ class find:
                     mol_neigh = {i:{n:j for n, j in enumerate(bfs_neighs_depth(i, mol_graph)[:6], 1)} for i in mol if i in mol_edges} # Find neighs 6 deep from edge atoms
                     
                     # Find all neighbors from all edges that are at least 4-neighs deep from any edge
-                    neighs_4_deep_edge = []
+                    neighs_3_deep_edge = []
                     for i in mol_neigh:
                         depth = mol_neigh[i]
                         for j in depth:
-                            if j >= 4:
-                                neighs_4_deep_edge.extend(depth[j])
-                    neighs_4_deep_edge = sorted(set(neighs_4_deep_edge)) # Remove duplicates and sort
-                    if neighs_4_deep_edge:
-                        molecule_types = [self.pre_types[i] for i in neighs_4_deep_edge if i not in self.pre_edge]
-                        reverse_map = {self.pre_types[i]:i for i in neighs_4_deep_edge  if i not in self.pre_edge}
-                        if not molecule_types:
-                            molecule_types = [self.pre_types[i] for i in neighs_4_deep_edge]
-                            reverse_map = {self.pre_types[i]:i for i in neighs_4_deep_edge}
+                            if j >= 3:
+                                neighs_3_deep_edge.extend(depth[j])
+                    neighs_3_deep_edge = sorted(set(neighs_3_deep_edge)) # Remove duplicates and sort
+                    if neighs_3_deep_edge:
+                        molecule_types = [self.pre_types[i] for i in neighs_3_deep_edge if i not in self.pre_edge]
+                        if not molecule_types: molecule_types = [self.pre_types[i] for i in neighs_3_deep_edge]
+                        reverse_map = {self.pre_types[i]:i for i in neighs_3_deep_edge}
                         types_sorted = [item for items, c in Counter(molecule_types).most_common() for item in [items] * c]
 
-                        most_unqiue_type = types_sorted[-1]; most_unqiue_id = reverse_map[most_unqiue_type];
+                        most_unqiue_type = types_sorted[-1]
+                        most_unqiue_id = reverse_map[most_unqiue_type]
                         comment = '{:^5}    pre-molid: {:^5}    Count of type on pre-molid (that are at least 4-deep from any edge atom): {:^5}'.format(most_unqiue_type, molid+1,  molecule_types.count(most_unqiue_type))
                         self.InitiatorIDs[most_unqiue_id] = comment
                         
