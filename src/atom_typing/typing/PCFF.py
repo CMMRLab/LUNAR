@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-January 18th, 2023
+Revision 1.1
+December 15, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -497,7 +497,7 @@ def nta(mm, basename, ff_name):
             # Strict PCFF atom-typing that occurs after User defined atom-typing attempts #
             #-----------------------------------------------------------------------------#
             # o_1     15.99940      O          1        oxygen in carbonyl group
-            if ring == 0 and elements1.count('C') == 1 and 'C' in elements2 and 'O' not in elements2:              
+            if ring == 0 and elements1.count('C') == 1 and 'C' in elements2:# and 'O' not in elements2:              
                 atom.nta_type = 'o_1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -549,7 +549,7 @@ def nta(mm, basename, ff_name):
                 
             # o_2     15.99940      O          2        ester oxygen
             # oe       15.99940      O          2        sp3 oxygen  in ester
-            elif ring == 0  and len(rings1) == rings1.count(0) and elements1.count('C') == 2 and tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=1) == 1 and elements2.count('C') == 2:              
+            elif ring == 0  and len(rings1) == rings1.count(0) and elements1.count('C') == 2 and tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=1) == 1 and elements2.count('C') >= 1:              
                 atom.nta_type = 'o_2'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
