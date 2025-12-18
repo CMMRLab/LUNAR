@@ -172,7 +172,7 @@ def parse_lambda_settings(lmbda):
 #################################################################
 # Function to increment lambda's, compute cve, and minimize cve #
 #################################################################
-def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method):
+def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method, basename=''):
     
     #--------------------------------------------------------------------------------------#
     # Check for user values based on lmbda_method = 'op<MinLambda,MaxLambda,NumLambda>' or #
@@ -252,10 +252,10 @@ def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method):
     
     # Reset the min_lambda and max_lamdba values and generate lo/hi fine_lambdas based on
     # len(course_lambdas) to perform a "moving from course minimum outward search"
-    min_lambda = course_lambdas[lo_index] 
-    max_lambda = course_lambdas[hi_index] 
-    lo_fine_lambdas = np.flip(np.linspace(min_lambda, course_optimized_lambda, len(course_lambdas))[:-1])
-    hi_fine_lambdas = np.linspace(max_lambda, course_optimized_lambda, len(course_lambdas))[:-1]
+    min_lambda_fine = course_lambdas[lo_index] 
+    max_lambda_fine = course_lambdas[hi_index] 
+    lo_fine_lambdas = np.flip(np.linspace(min_lambda_fine, course_optimized_lambda, len(course_lambdas))[:-1])
+    hi_fine_lambdas = np.linspace(max_lambda_fine, course_optimized_lambda, len(course_lambdas))[:-1]
     
     # Compute the fine Cross-validation error (CVE) for each lambda on
     lo_pass = False; hi_pass = False; npoints = len(course_lambdas)-1; fine_lambdas_cves = {} # {lambda:cve}
@@ -289,15 +289,33 @@ def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method):
     # Plot the CVE vs lambda plot
     if str(lmbda_method).endswith('-p'):
         fs = 12
-        fig, ax = plt.subplots(figsize=(7, 4))
-        ax.semilogx(course_lambdas, course_cves, ls='-', lw=4, color='tab:blue', label=r"CVEs based on course $\lambda$'s")
-        ax.semilogx(fine_lambdas, fine_cves, ls='-', lw=4, color='tab:green', label=r"CVEs based on fine $\lambda$'s  ")
-        ax.plot(course_optimized_lambda, course_optimized_cve, 'o', mfc='tab:cyan', mec='black', ms=12, lw=3, label='Course Minimum CVE (x={:.2f}; y={:.2f})'.format(course_optimized_lambda, course_optimized_cve))
-        ax.plot(fine_optimized_lambda, fine_optimized_cve, 'o', mfc='lime', mec='black', ms=12, lw=3, label='Fine Minimum CVE (x={:.2f}; y={:.2f})'.format(fine_optimized_lambda, fine_optimized_cve))
-        ax.set_xlabel(r'$\lambda$', fontsize=fs)
-        ax.set_ylabel('Cross-validation error (CVE)', fontsize=fs)
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.2), fancybox=True, ncol=2, fontsize=0.75*fs)
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(1*7, 2*4))
+        
+        ax1.semilogx(course_lambdas, course_cves, ls='-', lw=4, color='tab:blue', label=r"CVEs based on course $\lambda$'s")
+        ax1.semilogx(fine_lambdas, fine_cves, ls='-', lw=4, color='tab:green', label=r"CVEs based on fine $\lambda$'s  ")
+        ax1.plot(course_optimized_lambda, course_optimized_cve, 'o', mfc='tab:cyan', mec='black', ms=12, lw=3, label='Course Minimum CVE (x={:.2f}; y={:.2f})'.format(course_optimized_lambda, course_optimized_cve))
+        ax1.plot(fine_optimized_lambda, fine_optimized_cve, 'o', mfc='lime', mec='black', ms=12, lw=3, label='Fine Minimum CVE (x={:.2f}; y={:.2f})'.format(fine_optimized_lambda, fine_optimized_cve))
+        ax1.set_xlabel(r'$\lambda$', fontsize=fs)
+        ax1.set_ylabel('Cross-validation error (CVE)', fontsize=fs)
+        ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.2), fancybox=True, ncol=2, fontsize=0.75*fs)
+        
+        diff_lambda = abs((max(fine_lambdas) - min(fine_lambdas))/len(fine_lambdas))
+        xlo = min(fine_lambdas) - 4*diff_lambda
+        xhi = max(fine_lambdas) + 20*diff_lambda
+        reduce_indices = np.where( (course_lambdas >= xlo) & (course_lambdas <= xhi) )[0]
+        course_cves = np.array(course_cves)
+        ax2.semilogx(course_lambdas[reduce_indices], course_cves[reduce_indices], ls='-', lw=4, color='tab:blue', label=r"CVEs based on course $\lambda$'s")
+        ax2.semilogx(fine_lambdas, fine_cves, ls='-', lw=4, color='tab:green', label=r"CVEs based on fine $\lambda$'s  ")
+        ax2.plot(course_optimized_lambda, course_optimized_cve, 'o', mfc='tab:cyan', mec='black', ms=12, lw=3, label='Course Minimum CVE (x={:.2f}; y={:.2f})'.format(course_optimized_lambda, course_optimized_cve))
+        ax2.plot(fine_optimized_lambda, fine_optimized_cve, 'o', mfc='lime', mec='black', ms=12, lw=3, label='Fine Minimum CVE (x={:.2f}; y={:.2f})'.format(fine_optimized_lambda, fine_optimized_cve))
+        ax2.set_xlabel(r'$\lambda$', fontsize=fs)
+        ax2.set_ylabel('Cross-validation error (CVE)', fontsize=fs)
+    
         fig.tight_layout()
+        if basename:
+            figname = basename+'_WE_LOO-CVE.jpeg'
+            print(f'Rendering {figname}')
+            fig.savefig(figname, dpi=300)
     return fine_optimized_lambda
 
 
@@ -307,11 +325,11 @@ def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method):
 #   order = order of smoother (number of data points smoother uses - 2 is a good default)  #
 #   lmbda = controls "smoothness" can be an integer or 'op' for optimize                   #
 ############################################################################################
-def smooth(ydata, order, lmbda):
+def smooth(ydata, order, lmbda, basename=''):
     ydata = np.array(ydata.copy())
     # Automatic lambda optimization
     if str(lmbda).startswith('op'):
-        optimal_lambda = Whittaker_Eilers_optimize_lambda(ydata, order, lmbda)
+        optimal_lambda = Whittaker_Eilers_optimize_lambda(ydata, order, lmbda, basename=basename)
         lmbda = optimal_lambda 
     else: optimal_lambda = None
     smoothed, cve = Whittaker_Eilers_without_interpolation(ydata, order, lmbda, False)
