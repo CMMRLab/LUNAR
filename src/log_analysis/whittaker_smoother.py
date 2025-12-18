@@ -289,6 +289,7 @@ def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method, basename=''):
     # Plot the CVE vs lambda plot
     if str(lmbda_method).endswith('-p'):
         fs = 12
+        label_rel_pos = (0.005, 0.99)
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(1*7, 2*4))
         
         ax1.semilogx(course_lambdas, course_cves, ls='-', lw=4, color='tab:blue', label=r"CVEs based on course $\lambda$'s")
@@ -298,6 +299,7 @@ def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method, basename=''):
         ax1.set_xlabel(r'$\lambda$', fontsize=fs)
         ax1.set_ylabel('Cross-validation error (CVE)', fontsize=fs)
         ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.2), fancybox=True, ncol=2, fontsize=0.75*fs)
+        ax1.text(*label_rel_pos, '(a)', transform=ax1.transAxes, fontsize=fs, fontweight='bold', va='top', ha='left')
         
         diff_lambda = abs((max(fine_lambdas) - min(fine_lambdas))/len(fine_lambdas))
         xlo = min(fine_lambdas) - 4*diff_lambda
@@ -310,6 +312,7 @@ def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method, basename=''):
         ax2.plot(fine_optimized_lambda, fine_optimized_cve, 'o', mfc='lime', mec='black', ms=12, lw=3, label='Fine Minimum CVE (x={:.2f}; y={:.2f})'.format(fine_optimized_lambda, fine_optimized_cve))
         ax2.set_xlabel(r'$\lambda$', fontsize=fs)
         ax2.set_ylabel('Cross-validation error (CVE)', fontsize=fs)
+        ax2.text(*label_rel_pos, '(b)', transform=ax2.transAxes, fontsize=fs, fontweight='bold', va='top', ha='left')
     
         fig.tight_layout()
         if basename:
