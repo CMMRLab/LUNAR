@@ -301,9 +301,10 @@ def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method, basename=''):
         ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.2), fancybox=True, ncol=2, fontsize=0.75*fs)
         ax1.text(*label_rel_pos, '(a)', transform=ax1.transAxes, fontsize=fs, fontweight='bold', va='top', ha='left')
         
-        diff_lambda = abs((max(fine_lambdas) - min(fine_lambdas))/len(fine_lambdas))
-        xlo = min(fine_lambdas) - 4*diff_lambda
-        xhi = max(fine_lambdas) + 20*diff_lambda
+        try: xlo = course_lambdas[lo_index-1]
+        except: xlo = course_lambdas[lo_index] 
+        try: xhi = course_lambdas[hi_index+1]
+        except: xhi = course_lambdas[hi_index] 
         reduce_indices = np.where( (course_lambdas >= xlo) & (course_lambdas <= xhi) )[0]
         course_cves = np.array(course_cves)
         ax2.semilogx(course_lambdas[reduce_indices], course_cves[reduce_indices], ls='-', lw=4, color='tab:blue', label=r"CVEs based on course $\lambda$'s")
