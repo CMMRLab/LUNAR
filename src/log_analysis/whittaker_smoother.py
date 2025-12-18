@@ -274,7 +274,7 @@ def Whittaker_Eilers_optimize_lambda(y, d, lmbda_method, basename=''):
         
         # If both lo_pass and hi_pass we have started increasing on 
         # both sides of the course minimum and break out of this loop
-        if lo_pass and hi_pass: break 
+        #if lo_pass and hi_pass: break 
     
     # Sort fine_lambdas_cves in ascending order based on lambda for cleaner plotting
     fine_lambdas_cves = dict(sorted(fine_lambdas_cves.items()))
