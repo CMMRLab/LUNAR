@@ -607,6 +607,7 @@ class GUI:
     # Closing command    
     def closing(self):
         print('Terminating log_analysis GUI'); self.root.destroy();
+        plt.close('all')
         return
     
     # Function to toggle if replacing log file during loading mode

@@ -16,10 +16,13 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 15DecemberNovember2025)
+LUNAR (version 18DecemberNovember2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+18December2025     JDK         - log_analysis.py: Added that once the GUI closes, all open plots are closed as
+                                                  well. 
+
 15December2025     JDK         - atom_typing.py: Fixed issue for PMMA atom typing of oxygens.
 
 11December2025     JDK         - bond_react_merge.py: Fixed issue for finding InitiatorIDs for small templates.
