@@ -16,10 +16,15 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 18DecemberNovember2025)
+LUNAR (version 19December2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+19December2025     JDK         - log_analysis.py: Changed Whittaker-Eilers smoother Leave-one-out cross-validation
+                                                  plot. Also added basic support for estimating Ultimate tensile
+                                                  strength based of the RFR-derivative method. This is expeirmental
+                                                  and not be be trusted, but is possibly useful
+
 18December2025     JDK         - log_analysis.py: Added that once the GUI closes, all open plots are closed as
                                                   well. 
 

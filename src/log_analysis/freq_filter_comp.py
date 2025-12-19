@@ -41,7 +41,10 @@ dx = np.max(strain) - np.min(strain)
 dy = np.max(stress) - np.min(stress)
 x_mag = dx/1000
 y_mag = dy/6
-y_noisy = stress + y_mag*np.random.randn(strain.size) + y_mag*np.sin(2*np.pi*x_mag)
+
+print(y_mag)
+
+y_noisy = stress + y_mag*np.random.randn(strain.size) #+ y_mag*np.sin(2*np.pi*x_mag)
 
 
 # Setup figure options for filtering
@@ -58,7 +61,7 @@ y_iFFT, qm_iFFT = signals.iFFT_filter(strain, y_noisy, iFFT_threshold, iFFT_qm, 
 
 # Filter with the Butterworth method
 BW_wn = 'op'
-BW_qm = 'msr'
+BW_qm = '3,2' #'msr'
 BW_order = 2
 write_data = False
 if BW_wn.startswith('op'):
@@ -76,7 +79,7 @@ ax1.set_xlabel('Time')
 ax1.set_ylabel('Signal')
 
 ax2.plot(strain, y_iFFT, '-', lw=2.0, color='tab:red', label='iFFT filter qm={}={}'.format(iFFT_qm, qm_iFFT))
-ax2.plot(strain, y_BW, '-', lw=2.0, color='tab:orange', label='Butterworth filter qm={}={}; order={}'.format(BW_qm, BW_order, qm_BM))
+ax2.plot(strain, y_BW, '-', lw=2.0, color='tab:orange', label='Butterworth filter qm={}={}; order={}'.format(BW_qm, qm_BM, BW_order))
 ax2.legend(loc='lower right', bbox_to_anchor=(1, 0), fancybox=True, ncol=1, fontsize=8)
 ax2.set_xlabel('Time')
 ax2.set_ylabel('Cleaned Signal')
@@ -88,8 +91,10 @@ ax3.set_xlabel('Time')
 ax3.set_ylabel('Cleaned Signal')
 
 ax4.plot(strain, stress, '-', lw=2.0, color='tab:blue', label='True Signal')
-ax4.plot(strain, y_BW, '-', lw=2.0, color='tab:orange', label='Butterworth filter qm={}={}; order={}'.format(BW_qm, BW_order, qm_BM))
+ax4.plot(strain, y_BW, '-', lw=2.0, color='tab:orange', label='Butterworth filter qm={}={}; order={}'.format(BW_qm, qm_BM, BW_order))
 ax4.legend(loc='lower right', bbox_to_anchor=(1, 0), fancybox=True, ncol=1, fontsize=8)
 ax4.set_xlabel('Time')
 ax4.set_ylabel('Cleaned Signal')
 fig.tight_layout()
+
+plt.show()

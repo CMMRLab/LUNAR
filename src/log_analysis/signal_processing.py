@@ -147,7 +147,7 @@ def iFFT_filter(x, y, threshold, quadrant_mirror, savefig, figname, dpi, plot_PS
     #--------------------------#
     # Compute and plot the PSD #
     #--------------------------#
-    x_fft, y_fft, x_psd, y_psd, fs, N = compute_power_spectral_density(xdata, ydata)
+    x_fft, y_fft, x_psd, y_psd, fs, N = compute_FFT(xdata, ydata)
     if 'mean' in str(threshold):
         # Attempt getting scaling factor as threshold could be:
         #   'mean'

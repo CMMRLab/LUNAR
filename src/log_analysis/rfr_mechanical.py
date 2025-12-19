@@ -242,7 +242,7 @@ def check_yp(x, y, xlmp, ylmp, yp_derivative):
 #              extension, but just the basename name - for example 'Kemppainen-Muzzy-Modulus')                   #
 #    dpi = Int to set the dots per inch of the saved figure                                                      #
 ##################################################################################################################
-def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stress_units, write_data, derivative_span, derivative_degree, grid, t_12_avg, savefig, figname, dpi):
+def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, stress_units, write_data, derivative_span, derivative_degree, grid, t_12_avg, savefig, figname, dpi):
     #--------------------------------------------------------------------------------------#
     # Internal plotting options (True to plot, False not to). The following are available: #
     #    ffs_stats, which plots the statistic evolution of the 2nd forward fringe slope.   #
@@ -262,6 +262,47 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
     # decreases with time for compression or unloading tests, we need to "reverse" the stress and strain lists.  #
     #------------------------------------------------------------------------------------------------------------#
     if strain[-1] < strain[0]: strain.reverse(); stress.reverse()
+    
+    #----
+    # Update maxxhi is users asked for 'r2' method
+    # if maxxhi == 'r2' or 1 == 1:
+    #     def maximum_peak(rfr):
+    #         # Find peaks
+    #         from scipy.signal import find_peaks
+    #         xdata = np.array(rfr['fringe']); ydata = np.array(rfr['r-squared']);
+    #         peaks, properties = find_peaks(ydata, prominence=None)
+    #         xpeaks = xdata[peaks]; ypeaks = ydata[peaks]
+            
+    #         # Find maximum peak index
+    #         maxdex = np.argmax(ypeaks)
+    #         max_x = xpeaks[maxdex]
+    #         max_y = ypeaks[maxdex]
+            
+    #         # Related max-peak to rfr-data indexes
+    #         rfr_index = np.argmin(np.abs(xdata - max_x))
+            
+    #         rfr['xpeaks'] = list(xpeaks)
+    #         rfr['ypeaks'] = list(ypeaks)
+    #         return rfr, rfr_index
+        
+        
+    #     ffs_outputs_r2 = compute_fringe_slope(strain, stress, min_strain=minxhi, max_strain=None, direction='forward', stats=True)
+    #     ffs_outputs_r2, maxdex = maximum_peak(ffs_outputs_r2)
+        
+    #     fig0, ax = plt.subplots(figsize=(6, 4))
+        
+    #     # Find maximum r2 value
+    #     maxxhi = ffs_outputs_r2['fringe'][maxdex]
+    #     max_r2 = ffs_outputs_r2['r-squared'][maxdex]
+        
+        
+    #     ax.plot(ffs_outputs_r2['fringe'], ffs_outputs_r2['r-squared'], '-', lw=3, color='tab:blue', label='$r^2$')
+    #     ax.plot(ffs_outputs_r2['xpeaks'], ffs_outputs_r2['ypeaks'], '*', ms=8, color='tab:cyan', label='Peaks')
+    #     ax.plot(maxxhi, max_r2, 'o', ms=10, color='tab:cyan', label='maxxhi')
+    #     ax.set_xlabel('Forward fringe strain')
+    #     ax.set_ylabel('Forward fringe $r^2$')
+    #     ax.legend()
+        
          
     #--------------------------------------------------------------------------------------------#
     # First time: Find xhi by walking from near zero strain to max strain and maximizing modulus #
@@ -387,8 +428,9 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
     #   yp = 1 or  2 or  3 or ..., Means take first or second or third or ... valley as the xhi_yield
     #   yp = 'min-d' means use the minimum of the 2nd derivative bound between the maximum 2nd derivative after the linear region
     #   yp = 'min-v' means use the minimum valley of the 2nd derivatives
-    xhi_yield = None; yhi_yield = None; yield_point_derivative = []; strain_yield = []; stress_yield = [];
-    if isinstance(yp, int) and yp != 0 or yp in ['min-2d', 'min-v', 'max-d', 'min-r2d2']:        
+    xhi_yield = None; yhi_yield = None; yield_point_derivative = []; strain_yield = []; stress_yield = []; 
+    xhi_ultimate = None; yhi_ultimate = None; ultimate_point = []
+    if isinstance(yp, int) and yp != 0 or yp in ['min-2d', 'min-v', 'max-d', 'min-r2d2'] or isinstance(up, int) and up != 0:        
         
         # Re-compute forward fringe slopes (ffs) moving 1-data point at a time for a 3rd time (in-case "maxxhi" option was used and then find the fringe and slopes after "xhi")
         rstrain, rstress = misc_funcs.reduce_data(strain, stress, xlo, max(strain))
@@ -447,31 +489,53 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
         valleys = [(x, y, d[0], d[1], d[2]) for x, y, d in zip(xvalleys, yvalleys, valley_depths)] # [ (x-value, y-value, avg-depth, small-depth, large-depth) ]
         
         # Set yield point based on yp index, if there are any valleys, else default to minimum 2nd derivative
-        if valleys and isinstance(yp, int):
+        if valleys and isinstance(yp, int) or isinstance(up, int):
             csv_data['reduced-fringe-slope-2nd-derivative-peaks'] = [xpeaks, ypeaks]
             csv_data['reduced-fringe-slope-2nd-derivative-valleys'] = [xvalleys, yvalleys]
             # valleys = sorted(valleys, key=lambda x: x[2]) # Sort by valley depth
             # valleys = sorted(valleys, key=lambda x: x[1]) # Sort by yvalley value
-            try:
-                yield_index = yp - 1
+            if isinstance(yp, int):
+                try:
+                    yield_index = yp - 1
+                    indexes = [i for i in range(len(valleys))]
+                    if yield_index in indexes: 
+                        xhi_yield, yhi_yield, avg_depth, small_depth, large_depth = valleys[yield_index]
+                        csv_data['fringe-slope-2nd-derivative-valley-index={}'.format(yp)] = [[xhi_yield], [yhi_yield], 1]
+                    else:
+                        print(f'  WARNING could not find xhi yield point. Input yp = {yp}, attempting to find nearest valley.')
+                        closes_index = misc_funcs.closest(indexes, yield_index)
+                        xhi_yield, yhi_yield = valleys[closes_index]
+                        csv_data['fringe-slope-2nd-derivative-valley-index={}'.format(closes_index+1)] = [[xhi_yield], [yhi_yield]]
+                        print(f'    yp of {closes_index+1} found yield point')
+                        
+                    # Find closests strain value to min_2d_fringe
+                    x_yield = misc_funcs.closest(strain, xhi_yield)
+                    y_yield = stress[strain.index(x_yield)]
+                    poisson_xhis.append(x_yield)
+                    yield_point_derivative = [x_yield, y_yield]
+                except: print('  WARNING linear region is near end of stress-strain. Cant compute yield strength.')
+            
+            # Testing ultimate predictions
+            if isinstance(up, int):                
+                # Find index in values
                 indexes = [i for i in range(len(valleys))]
-                if yield_index in indexes: 
-                    xhi_yield, yhi_yield, avg_depth, small_depth, large_depth = valleys[yield_index]
-                    csv_data['fringe-slope-2nd-derivative-valley-index={}'.format(yp)] = [[xhi_yield], [yhi_yield], 1]
+                if up > 0: ultimate_index = up - 1
+                else: ultimate_index = len(indexes) - abs(up)
+                if ultimate_index in indexes: 
+                    xhi_ultimate, yhi_ultimate, avg_depth, small_depth, large_depth = valleys[ultimate_index]
+                    csv_data['fringe-slope-2nd-derivative-valley-index={}'.format(up)] = [[xhi_ultimate], [yhi_ultimate], 1]
                 else:
                     print(f'  WARNING could not find xhi yield point. Input yp = {yp}, attempting to find nearest valley.')
-                    closes_index = misc_funcs.closest(indexes, yield_index)
-                    xhi_yield, yhi_yield = valleys[closes_index]
-                    csv_data['fringe-slope-2nd-derivative-valley-index={}'.format(closes_index+1)] = [[xhi_yield], [yhi_yield]]
-                    print(f'    yp of {closes_index+1} found yield point')
+                    closes_index = misc_funcs.closest(indexes, ultimate_index)
+                    xhi_ultimate, yhi_ultimate = valleys[closes_index]
+                    csv_data['fringe-slope-2nd-derivative-valley-index={}'.format(closes_index+1)] = [[xhi_ultimate], [yhi_ultimate]]
+                    print(f'    up of {closes_index+1} found ultimate point')
                     
                 # Find closests strain value to min_2d_fringe
-                x_yield = misc_funcs.closest(strain, xhi_yield)
-                y_yield = stress[strain.index(x_yield)]
-                poisson_xhis.append(x_yield)
-                yield_point_derivative = [x_yield, y_yield]
-            except: print('  WARNING linear region is near end of stress-strain. Cant compute yield strength.')
-            
+                x_ultimate = misc_funcs.closest(strain, xhi_ultimate)
+                y_ultimate = stress[strain.index(x_ultimate)]
+                ultimate_point = [x_ultimate, y_ultimate]
+                    
         # Set yield point based on maximum valley depth
         elif valleys and yp == 'max-d':
             try:
@@ -707,7 +771,7 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
         #ax2.set_xlim(xlimits)
         if grid == 'on':
             ax2.grid()
-    
+        
     # Plot yield strength (if using derivative option)
     if yp != 0 or yp in ['min-2d', 'min-v', 'max-d', 'min-r2d2', 'mean(r2)-3s', 'max(r2)-3s', 'max-3ffs', 'min-4ffs']:
         # Plot yield strength method
@@ -823,7 +887,6 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
             ax3.legend(loc='lower right', bbox_to_anchor=(1, 0), fancybox=True, ncol=1, fontsize=10)
             if grid == 'on':
                 ax3.grid()
-            
 
         # Plot stress-vs-strain, yield region, and yield strength
         ax4.plot(strain, stress, '-', lw=4, color='tab:blue', label='Stress')
@@ -854,7 +917,15 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
         ax4.set_xlim(xlimits)
         if grid == 'on':
             ax4.grid()
-    
+            
+    # Plot yield strength (if using derivative option)
+    if up != 0 and xvalleys and yvalleys:
+        ax3.plot(xhi_ultimate, yhi_ultimate, 'o', ms=10.0, markeredgecolor='black', color='tab:purple', label='Ultimate point (x,y):\n ({:.4f}, {:.4f})'.format(xhi_ultimate, yhi_ultimate))
+        ax3.legend(loc='lower right', bbox_to_anchor=(1, 0), fancybox=True, ncol=1, fontsize=8)
+        if ultimate_point:
+            ax4.plot(ultimate_point[0], ultimate_point[1], 'o', ms=10.0, markeredgecolor='black', color='tab:purple', label='Ultimate point from "up" (x,y):\n ({:.4f}, {:.4f}) NOT SHIFTED YET'.format(*ultimate_point))
+            ax4.legend(loc='lower right', bbox_to_anchor=(1, 0), fancybox=True, ncol=1, fontsize=8)
+            
     # Apply tight layout to avoid overlapping plots and save plot if user wants
     fig1.tight_layout()
     if '0' not in str(savefig) and '1' in str(savefig) or 'all' in str(savefig):
@@ -1085,6 +1156,33 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
         #---------------------------------#
         # "Regionized" stress-strain plot #
         #---------------------------------#
+        fig4, ax1 = plt.subplots(figsize=(dim, dim))
+        
+        # Generate noisy data
+        noise = (35/100)*max(stress)*np.random.normal(loc=0.0, scale=1/3, size=len(strain))
+        noisy_stress = np.array(stress) + noise
+        noisy_strain = np.array(strain)
+        
+        # Fill in data with some interpolations
+        xvals = np.linspace(min(noisy_strain), max(noisy_strain), 3*len(noisy_strain))
+        yinterp = np.interp(xvals, noisy_strain, noisy_stress)
+        
+        
+        ax1.plot(xvals, yinterp, '.', ms=8, color='#bbbbbbff', label='MD simulation')
+        ax1.plot(strain, stress, '-', lw=line_width, color='#2c7fb8ff', label='Filtered Curve')
+        set_axis_thickness(ax1, axis_thickness)
+        ax1.set_xlim(xlimits)
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+        #ax1.axis('off')
+        if legends:
+            ax1.legend()
+        fig4.tight_layout()
+        if '0' not in str(savefig):
+            fig4.savefig(figname+'_published_0.jpeg', dpi=dpi)
+            fig4.savefig(figname+'_published_0.eps', dpi=dpi, format='eps')
+        
+        
         fig4, ax1 = plt.subplots(figsize=(dim, dim))
         regionized_strain_stress = regionize(strain, stress, regions)
         for region in regionized_strain_stress:
@@ -1643,4 +1741,4 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1, t2, stre
                     for i, j in zip(x, y):
                         f.write('{} {}\n'.format(i, j))
         
-    return xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12
+    return xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12, ultimate_point

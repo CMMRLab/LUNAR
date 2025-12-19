@@ -13,8 +13,7 @@ Houghton, MI 49931
 import src.log_analysis.vectorized_string_compute as vectorized_string_compute
 import src.log_analysis.whittaker_smoother as whittaker_smoother
 import src.log_analysis.signal_processing as signal_processing
-import src.log_analysis.rfr_modulus as rfr_modulus
-import src.log_analysis.rfr_thermal as rfr_thermal
+import src.log_analysis.rfr_mechanical as rfr_mechanical
 import src.log_analysis.misc_funcs as misc_funcs
 import src.log_analysis.read_log as read_log
 import src.io_functions as io_functions
@@ -317,7 +316,7 @@ class analysis:
                         # Perform Whittaker-Eilers smoothing
                         self.log.out('  Implementing: LAMMPS data (Whittaker-Eilers smoothing) with {} settings'.format(misc))
                         figname = '{}_X={}_Y={}_Whittaker-Eilers'.format(self.get_basename_and_builder_dirs(), xdata, ydata)
-                        x, y = self.whittaker_eilers_smoothing(x, y, xlo, xhi, LAMMPS_order, LAMMPS_lmbda)
+                        x, y = self.whittaker_eilers_smoothing(x, y, xlo, xhi, LAMMPS_order, LAMMPS_lmbda, mode['xlabel'], mode['ylabel'], figname)
                         data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
                         
                         # Log info from method for use in other analysis such as RFR stres-strain analysis for transverse strain "cleaning"
@@ -571,7 +570,7 @@ class analysis:
                         
                         # Perform Whittaker-Eilers smoothing
                         figname = '{}_X={}_Y={}_Whittaker-Eilers-Non-LAMMPS'.format(self.get_basename_and_builder_dirs(), xdata, ydata)
-                        x, y = self.whittaker_eilers_smoothing(x, y, xlo, xhi, order, lmbda)
+                        x, y = self.whittaker_eilers_smoothing(x, y, xlo, xhi, order, lmbda, mode['xlabel'], mode['ylabel'], figname)
                         data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
                         
                         # Grant access to Whittaker-Eilers-data outside of this class
@@ -967,118 +966,14 @@ class analysis:
                         
                         self.log.out(self.format_analysis(method, xlo, xhi, misc, name))
                         self.integrate_data(x, y, xlo, xhi, order, write_data, mode['xlabel'], mode['ylabel'], c_savefig, figname, dpi)
-                        
-                    #--------------------------------------------------------------------------#
-                    # Find the elastic constants using the "Regression Fringe Response" Method #
-                    #--------------------------------------------------------------------------#
-                    if method == 'Regression Fringe Response Thermal':
-                        figname = '{}_X={}_Y={}_RFR_thermal'.format(self.get_basename_and_builder_dirs(), xdata, ydata)
-                        setting = self.get_misc_setting(misc)
-                        
-                        if 'minspan' in setting:
-                            min_span = setting['minspan']
-                        else: min_span=25; misc += ' default-minspace=25';
-                        
-                        if 'rtemp' in setting:
-                            rtemp = setting['rtemp']
-                        else: rtemp=tuple([]); misc += ' default-rtemp=()';
-                        
-                        # Get X- and Y-units
-                        if '(' in mode['xlabel'] and ')' in mode['xlabel']:
-                            tmp1 = mode['xlabel'].rpartition('(')
-                            tmp2 = tmp1[2].rpartition(')')
-                            x_units = '({})'.format(tmp2[0])
-                        else: x_units = ''
-                        if '(' in mode['ylabel'] and ')' in mode['ylabel']:
-                            tmp1 = mode['ylabel'].rpartition('(')
-                            tmp2 = tmp1[2].rpartition(')')
-                            y_units = '({})'.format(tmp2[0])
-                        else: y_units = ''
-                        
-                        self.log.out(self.format_analysis(method, xlo, xhi, misc, name))
-                        rfr_thermal_outputs = self.rfr_thermal(x, y, xlo, xhi, min_span, rtemp, x_units, y_units, figname, dpi)
-                        
-
-                        # plot and log lo-CTE Results                        
-                        x_reg = rfr_thermal_outputs['lo_reg_x']
-                        y_reg = rfr_thermal_outputs['lo_reg_y']
-                        b0, b1, r2 = rfr_thermal_outputs['lo_line']
-                        label = '{} y = {:.6f}x + {:.6f} ("lo-CTE"; $r^2$={:.6f})'.format(name, b1, b0, r2)
-                        self.log.out('  {}'.format(label))
-                        regdata = self.plot_parms(x=x_reg, y=y_reg, style='both', marker='|', line='--', size=12, label=label, shiftable=False)
-                        data2plot.append(regdata)
-                        
-                        # plot and log hi-CTE Results                        
-                        x_reg = rfr_thermal_outputs['hi_reg_x']
-                        y_reg = rfr_thermal_outputs['hi_reg_y']
-                        b0, b1, r2 = rfr_thermal_outputs['hi_line']
-                        label = '{} y = {:.6f}x + {:.6f} ("hi-CTE"; $r^2$={:.6f})'.format(name, b1, b0, r2)
-                        self.log.out('  {}'.format(label))
-                        regdata = self.plot_parms(x=x_reg, y=y_reg, style='both', marker='|', line='--', size=12, label=label, shiftable=False)
-                        data2plot.append(regdata)
-                        
-                        # plot and log Tg results
-                        intersection = rfr_thermal_outputs['tg']
-                        label = '{} CTE intersection (Tg; x={:.4f}; y={:.4f})'.format(name, intersection[0], intersection[1])
-                        self.log.out('  {}'.format(label))
-                        tg_data = self.plot_parms(x=intersection[0], y=intersection[1], style='point', marker='p', line='-', size=12, label=label, shiftable=False)
-
-                        # plot "linear regression extensions"
-                        x_extension = [rfr_thermal_outputs['lo_reg_x'][-1], intersection[0], rfr_thermal_outputs['hi_reg_x'][0]]
-                        y_extension = [rfr_thermal_outputs['lo_reg_y'][-1], intersection[1], rfr_thermal_outputs['hi_reg_y'][0]]
-                        label = '{} CTE intersection extensions'.format(name)
-                        ext_data = self.plot_parms(x=x_extension, y=y_extension, style='both', marker='|', line='--', size=12, label=label, shiftable=False)
-                        data2plot.append(ext_data)
-                        data2plot.append(tg_data) # Append this here so it is "in front"
-                    
-                        # plot and log transition data
-                        transition = rfr_thermal_outputs['transition']
-                        label = '{} transition region (xlo={:.4f}; xhi={:.4f})'.format(name, transition[0], transition[1])
-                        self.log.out('  {}'.format(label))
-                        miny = [min(y) for _ in transition]
-                        transitiondata = self.plot_parms(x=transition, y=miny, style='both', marker='|', line='-', size=12, label=label, shiftable=False)
-                        data2plot.append(transitiondata)
-                        
-                        
-                        # Create nice table of outputs for easy copy and pasting
-                        self.log.out('\n{:>2}-------------------Table of outputs-------------------'.format(''))
-                        self.log.out('{:>4}{:<28}: {}'.format('', 'Tg', rfr_thermal_outputs['tg'][0]))
-                        self.log.out('{:>4}{:<28}: {}'.format('', 'Lo-CTE', rfr_thermal_outputs['lo_cte']))
-                        self.log.out('{:>4}{:<28}: {}'.format('', 'Hi-CTE', rfr_thermal_outputs['hi_cte']))
-                        self.log.out('{:>4}{:<28}: {}'.format('', 'Lo-slope', rfr_thermal_outputs['lo_line'][1]))
-                        self.log.out('{:>4}{:<28}: {}'.format('', 'Hi-slope', rfr_thermal_outputs['hi_line'][1]))
-                        self.log.out('{:>4}{:<28}: {}'.format('', 'Volume average', rfr_thermal_outputs['vol_avg']))
-                        self.log.out('{:>4}{:<28}: {}'.format('', 'Lo-transition', min(transition)))
-                        self.log.out('{:>4}{:<28}: {}'.format('', 'Hi-transition', max(transition)))
-                        self.log.out('{:>4}{:<28}: {}'.format('', 'Transition span',  max(transition)-min(transition)))
-                        self.log.out('{:>2}{}\n'.format('', '------------------------------------------------------'))
-                        
-                        
-                        # Grant access to Muzzy-modulus-data outside of this class
-                        about = {'lo_bounds': 'Lower bounds for "cold CTE"',
-                                 'hi_bounds': 'Upper bounds for "hot CTE"',
-                                 'lo_line': 'Linear regression parameters for lo-CTE [b0, b1, r^2]',
-                                 'hi_line': 'Linear regression parameters for hi-CTE [b0, b1, r^2]',
-                                 'tg': 'Glass transition point [xpoint, ypoint]',
-                                 'lo_cte': 'if rtemp provided Lo-CTE as a float; else None',
-                                 'hi_cte': 'if rtemp provided hi-CTE as a float; else None',
-                                 'vol_avg': 'if rtemp provided volume as a float; else None',
-                                 'transition': 'Transition region [xlo, xhi]',
-                                 'lo_reg_x': 'Lower linear regression X-data [x1, x2]', 
-                                 'lo_reg_y': 'Lower linear regression Y-data [y1, y2]', 
-                                 'hi_reg_x': 'Upper linear regression X-data [x1, x2]', 
-                                 'hi_reg_y': 'Upper linear regression Y-data [y1, y2]'}
-                        
-                        self.outputs[name] = rfr_thermal_outputs
-                        self.about[name] = about
 
                      
                     #--------------------------------------------------------------------------#
                     # Find the elastic constants using the "Regression Fringe Response" Method #
                     #--------------------------------------------------------------------------#
                     # Check for 'Kemppainen-Muzzy Modulus' for backwards compatability. This will eventually be depricated
-                    if method == 'Regression Fringe Response Modulus' or method == 'Kemppainen-Muzzy Modulus': 
-                        figname = '{}_X={}_Y={}_RFR_Modulus'.format(self.get_basename_and_builder_dirs(), xdata, ydata)
+                    if method == 'Regression Fringe Response Mechanical' or method == 'Regression Fringe Response Modulus' or method == 'Kemppainen-Muzzy Modulus': 
+                        figname = '{}_X={}_Y={}_RFR_Mechanical'.format(self.get_basename_and_builder_dirs(), xdata, ydata)
                         setting = self.get_misc_setting(misc)
                         
                         # Raw is a hidden flag due to Tristan. He wants people to see
@@ -1104,6 +999,10 @@ class analysis:
                         if 'yp' in setting:
                             yp = setting['yp']
                         else: yp = 0; misc += ' default-yp=0';
+                        
+                        if 'up' in setting:
+                            up = setting['up']
+                        else: up = 0; misc += ' default-up=0';
                         
                         if 'offset' in setting:
                             offset = setting['offset']
@@ -1195,11 +1094,11 @@ class analysis:
                                     LAMMPS_order, LAMMPS_lmbda = cleaning_settings[lmp_cleaning]
                                     if t1_tmp: 
                                         self.log.out('\n  Applying Whittaker-Eilers to "t1" transverse strain direcion.')
-                                        xdummy, t1_tmp = self.whittaker_eilers_smoothing(xlmp, t1_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, LAMMPS_order, LAMMPS_lmbda)
+                                        xdummy, t1_tmp = self.whittaker_eilers_smoothing(xlmp, t1_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, LAMMPS_order, LAMMPS_lmbda, 'Axial strain', 'Transverse strain (t1)', figname+'_t1')
                                         t1.append(t1_tmp)
                                     if t2_tmp:
                                         self.log.out('\n  Applying Whittaker-Eilers to "t2" transverse strain direcion.')
-                                        xdummy, t2_tmp = self.whittaker_eilers_smoothing(xlmp, t2_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, LAMMPS_order, LAMMPS_lmbda) 
+                                        xdummy, t2_tmp = self.whittaker_eilers_smoothing(xlmp, t2_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, LAMMPS_order, LAMMPS_lmbda, 'Axial strain', 'Transverse strain (t2)', figname+'_t2') 
                                         t2.append(t2_tmp)
                                 
                                 if lmp_cleaning == 'LAMMPS data (apply Butterworth filter)':
@@ -1255,9 +1154,9 @@ class analysis:
                         
                         # Perform the RFR-analysis
                         self.log.out(self.format_analysis(method, xlo, xhi, misc, name))
-                        xlo_out, xhi_out, yield_point_derivative, yield_point_offset, nu1, nu2, nu12_avg = self.rfr_modulus(x, y, xlo, xhi, minxhi, maxxhi, xlo_method, yp,
-                                                                                                                            offset, t1, t2, stress_units, write_data, derivative_span,
-                                                                                                                            derivative_degree, grid, t12_avg, rfr_savefig, figname, dpi)
+                        xlo_out, xhi_out, yield_point_derivative, yield_point_offset, nu1, nu2, nu12_avg, ultimate_point = self.rfr_mechanical(x, y, xlo, xhi, minxhi, maxxhi, xlo_method, yp, up,
+                                                                                                                                               offset, t1, t2, stress_units, write_data, derivative_span,
+                                                                                                                                               derivative_degree, grid, t12_avg, rfr_savefig, figname, dpi)
                         
                         # Fit linear regression model to x/y and xlmp/ylmp (if no "LAMMPS data (i)" is used x/y and xlmp/ylmp will be the same )
                         b0_clean, b1_clean, xreg_clean, yreg_clean, r2_clean, ci_clean = self.linear_regression(x, y, xlo_out, xhi_out, confidence_interval)
@@ -1290,10 +1189,12 @@ class analysis:
                             yp_derivative[1] -= shift_amount
                         if yp_offset:
                             yp_offset[1] -= shift_amount
+                        if ultimate_point:
+                            ultimate_point[1] -= shift_amount
 
                         # Clean the data based on standing stress wave
                         # if yp_derivative:
-                        #     rfr_modulus.check_yp(x, y, xlmp, ylmp, yp_derivative)
+                        #     rfr_mechanical.check_yp(x, y, xlmp, ylmp, yp_derivative)
                             
                         # Plot "raw fit"
                         if raw:
@@ -1327,6 +1228,12 @@ class analysis:
                             yielding = self.plot_parms(x=yp_offset[0], y=yp_offset[1], style='point', marker='o', line='-', size=8, label=label, shiftable=False)
                             data2plot.append(yielding)
                             
+                        # Plot ultimate point calculations
+                        if ultimate_point:
+                            label = '{} ultimate point from derivative ({}, {})'.format(name, ultimate_point[0], ultimate_point[1])
+                            ultimate = self.plot_parms(x=ultimate_point[0], y=ultimate_point[1], style='point', marker='o', line='-', size=8, label=label, shiftable=False)
+                            data2plot.append( ultimate)
+                        
                         # Log some outputs
                         self.log.out(f'  RFR Modulus found xlo={xlo_out} and xhi={xhi_out}')
                         if yp_derivative:
@@ -1414,11 +1321,14 @@ class analysis:
                                  'yield_point_offset': 'List of floats found from yield point determination, using offset methods. Order [X-yp, Y-yp] or [None, None] if not using offset. NOTE: SHIFTED based on shift method',
                                  'nu1': 'Float defining Poissons ratio from tranverse1 (t1) and axial strain (X-data) linear-relation. If not using t1, returns None',
                                  'nu2': 'Float defining Poissons ratio from tranverse1 (t2) and axial strain (X-data) linear-relation. If not using t2, returns None',
-                                 'nu_avg': 'Float defining Poissons ratio found be averaging nu1 and nu2 together. If not using t1 and t2, returns None'}
+                                 'nu_avg': 'Float defining Poissons ratio found be averaging nu1 and nu2 together. If not using t1 and t2, returns None',
+                                 'ultimate_point': 'List of floats found from ultimate point determination, using derivative methods. Order [X-up, Y-up] or [None, None] if not using up. NOTE: SHIFTED based on shift method',}
                         if not yp_derivative:
                             yp_derivative = [None, None]
                         if not yp_offset:
                             yp_offset = [None, None]
+                        if not ultimate_point:
+                            ultimate_point = [None, None]
                         outputs = {'xdata': xreg_clean,
                                    'ydata': yreg_clean,
                                    'b1': b1_clean,
@@ -1429,7 +1339,8 @@ class analysis:
                                    'yield_point_offset': yp_offset,
                                    'nu1': nu1,
                                    'nu2': nu2,
-                                   'nu_avg': nu_avg}
+                                   'nu_avg': nu_avg,
+                                   'ultimate_point': ultimate_point}
                         
                         if t12_avg:
                             about['nu12_avg'] = 'Float defining Poissons ratio from average t1 and t2 and axial strain (X-data) linear-relation. If not using t1 and t2, returns None'
@@ -1758,10 +1669,10 @@ class analysis:
     #--------------------------------------------------#
     # Method implementing a Whittaker-Eilers smoothing #
     #--------------------------------------------------#
-    def whittaker_eilers_smoothing(self, x, y, xlo, xhi, order, lmbda):
+    def whittaker_eilers_smoothing(self, x, y, xlo, xhi, order, lmbda, xlabel, ylabel, figname):
         reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
         if reduced_x and reduced_y:
-            smoothed, optimal_lambda = whittaker_smoother.smooth(reduced_y, order, lmbda)
+            smoothed, optimal_lambda = whittaker_smoother.smooth(reduced_x, reduced_y, order, lmbda, xlabel=xlabel, ylabel=ylabel, basename=figname)
             if optimal_lambda is not None:
                 self.log.out(f'    Optimized lambda for Whittaker-Eilers smoothing was found to be {optimal_lambda}.')
         else:
@@ -1875,7 +1786,7 @@ class analysis:
     #------------------------------------------------------------------------------#
     # Method implementing the Kemppainen-Muzzy stress-strain analysis calculations #
     #------------------------------------------------------------------------------#
-    def rfr_modulus(self, x, y, xlo, xhi, minxhi, maxxhi, xlo_method, yp, offset, t1, t2,stress_units, write_data, derivative_span, derivative_degree, grid, t_12_avg, savefig, figname, dpi):
+    def rfr_mechanical(self, x, y, xlo, xhi, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2,stress_units, write_data, derivative_span, derivative_degree, grid, t_12_avg, savefig, figname, dpi):
         strain, stress = misc_funcs.reduce_data(x, y, xlo, xhi)
         t1_reduced = []; t2_reduced = []
         for trans1 in t1:
@@ -1885,29 +1796,13 @@ class analysis:
             xdummy, t2_tmp = misc_funcs.reduce_data(x, trans2, xlo, xhi)
             t2_reduced.append(t2_tmp)
         if strain and stress:
-            out = rfr_modulus.compute(strain, stress, minxhi, maxxhi, xlo_method, yp, offset, t1_reduced, t2_reduced, stress_units, write_data,
-                                      derivative_span, derivative_degree, grid, t_12_avg, savefig, figname, dpi)
-            xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12 = out
+            out = rfr_mechanical.compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1_reduced, t2_reduced, stress_units, write_data,
+                                         derivative_span, derivative_degree, grid, t_12_avg, savefig, figname, dpi)
+            xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12, ultimate_point = out
         else:
-            xlo = min(x); xhi = max(x);  yield_point_derivative = []; yield_point_offset = []; nu1 = None; nu2 = None;
+            xlo = min(x); xhi = max(x);  yield_point_derivative = []; yield_point_offset = []; nu1 = None; nu2 = None; ultimate_point = []
             self.log.GUI_error(f'ERROR (Regression Fringe Response Modulus) no LAMMPS data in xrange {xlo} - {xhi}')
-        return xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12
-    
-    def rfr_thermal(self, x, y, xlo, xhi, min_span, rtemp, x_units, y_units, figname, dpi):
-        reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
-        if reduced_x and reduced_y:
-            outputs = rfr_thermal.compute(reduced_x, reduced_y, min_span, rtemp, x_units, y_units, figname, dpi)
-        else:
-            outputs = {'lo_bounds': [min(x), max(x)],
-                       'hi_bounds': [min(x), max(x)],
-                       'lo_line': 3*[0],
-                       'hi_line': 3*[0],
-                       'tg': [0.0, 0.0],
-                       'lo_reg_x': [min(x), max(x)], 
-                       'lo_reg_y': [min(y), max(y)], 
-                       'hi_reg_x': [min(x), max(x)], 
-                       'hi_reg_y': [min(y), max(y)]}
-        return outputs
+        return xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12, ultimate_point
     
     #---------------------------------------------#
     # Method implementing derivative calculations #

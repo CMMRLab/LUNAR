@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 12/11/2025
+# Last edited 12/19/2025
 #
 ************
 * Overview *
@@ -502,7 +502,7 @@
           savefig=1
           savefig=all
 		  
-    - "Regression Fringe Response Modulus"
+    - "Regression Fringe Response Mechanical" or "Regression Fringe Response Modulus"
         This method implements the "Regression Fringe Response Modulus" (RFR-modulus) calculation to find where to fit the linear regression model
         to, by walking along the LAMMPS data and fitting a linear regression model to each data increment. This is denoted as fringe-slope, where
         the fringe is being used to "feel" for a yielding event causing non-linearity in the stress-vs-strain plot. Once the fringe slopes are found
@@ -626,7 +626,14 @@
               ds=0
               ds=10; dd=5
               ds=hlr; dd=10
-		  
+		
+        up=<int> where <int> is a negative or positive value. The keyword "up" means "ultimate point" and the <int> value sets an integer defining the
+        valley index (moving from low strain to high strain, with index starting at 1) of the 2nd derivative of fringe slope. This method is built on
+        top of the idea that yp=<int> is defining, where it maybe possible to predict an ultimate tensile strength using this method. NOTE: this is 
+        currently expeirmental and should not be trusted until further validation. When "up" is negative it acts like pythons negative indexing, where
+        "-1" will find the last valley, "-2" will find the second to last valley, .... It is currently thought that the ultimate tensile strength
+        should be at the last valley, thus if attempting to use this option it is recommended to set "up=-1".
+		
         offset=<float>, where <float> is the percent offset to find the yield strength (usually 0.002) by moving the linear regression fit by <float>
         offset in the positive X-direrction. The intersection is then found numerically by minimizing the distance between the stress-strain curve and
         the offset line. NOTE both the "yp" and "offset" option can be used simultaneously. Examples:

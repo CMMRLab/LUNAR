@@ -315,13 +315,14 @@ class GUI:
 
         
         # file selection button and qty
+        if not self.analysis: self.analysis = [['skip', '', '', '', '']]
         self.nanalysis = len(self.analysis)
         self.supported_methods = ['average', 'linear regression', 'moving average', 'hyperbola', 'piecewise-regression', 'cursor', 'skip',
                                   'spline-integration', 'Whittaker-Eilers', 'minimum', 'maximum', 'Butterworth (low pass)', 'iFFT filter', 'LOWESS',
-                                  'Regression Fringe Response Modulus', 'LAMMPS data (remove from plot)', 'LAMMPS data (apply moving average)',
+                                  'Regression Fringe Response Mechanical', 'LAMMPS data (remove from plot)', 'LAMMPS data (apply moving average)',
                                   'LAMMPS data (apply Butterworth filter)', 'LAMMPS data (apply Whittaker-Eilers)', 'LAMMPS data (fit polynomial)',
                                   'LAMMPS data (LOWESS)', 'LAMMPS data (X-sort)', 'LAMMPS data (apply iFFT filter)', 'write plotted data to csv file',
-                                  'Calculus: Differentiate Data', 'Calculus: Integrate Data', 'Regression Fringe Response Thermal']
+                                  'Calculus: Differentiate Data', 'Calculus: Integrate Data']
         self.supported_methods = sorted(self.supported_methods, key=lambda x: x[0].lower()) # sort list by first letter of each method (x[0].lower())
         self.methods = []; self.xlos = []; self.xhis = []; self.miscs = []; self.names = [];
         for n in range(1, self.nanalysis+1):
@@ -871,6 +872,7 @@ class GUI:
             
             if method not in self.supported_methods:
                 self.supported_methods.append(method)
+                self.methods[n].configure(values=self.supported_methods)
             try: 
                 index = self.supported_methods.index(method)
                 self.methods[n].current(index)

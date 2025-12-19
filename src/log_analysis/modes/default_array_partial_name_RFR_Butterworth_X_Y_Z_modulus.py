@@ -11,7 +11,7 @@ Purpose: Mode to find xxx
 """
 # analysis list
 analysis = [['LAMMPS data (apply Butterworth filter)', '', '', 'qm=msr; psd=False; csv=False; savefig=all; order=2; wn=op', 'Butterworth'],
-            ['Regression Fringe Response Modulus', '', '', 'shift=ymin; minxhi=0.005; maxxhi=0.0; xlo=rfs; yp=1; offset=0.0; t1=v_etruey; t2=v_etruez; csv=False; savefig=all', 'RFR-mechanical'],
+            ['Regression Fringe Response Modulus', '', '', 'shift=ymin; minxhi=0.005; maxxhi=0.0; xlo=rfs; yp=1; offset=0.0; up=-1; t1=v_etruey; t2=v_etruez; csv=False; savefig=all', 'RFR-mechanical'],
             ['maximum', '', '', '', 'UTS']]
 
 # loadable mode

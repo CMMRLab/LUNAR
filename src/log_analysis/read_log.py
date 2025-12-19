@@ -13,6 +13,11 @@ Houghton, MI 49931
     *                                                 *
     ***************************************************
 """
+##############################
+# Import Necessary Libraries #
+##############################
+import re
+
 ############################################################
 # Helper functions to use outside of this file for getting #
 # sections from thermo file (appends zeros when needed)    #
@@ -38,7 +43,7 @@ def most_frequent(List):
     return max(set(List), key = List.count)
 
 # Function to get int valued sectionIDs from strings like:
-#    'all' or  '1,2,3'  or  '1-4'  or  '1,3-5'
+#    'all' or  '1,2,3'  or  '1-4'  or  '1,3-5' or '-1' or '-2'
 def get_sections(log_sections, sections):
     # Force sections to be a string for this, so users can supply ints if they want
     sections = str(sections); sectionIDs = []
@@ -48,16 +53,30 @@ def get_sections(log_sections, sections):
         IDs = sections.split(',')
         for i in IDs:
             if '-' in i:
-                span = i.split('-')
-                if len(span) == 2:
-                    if check_int(span[0]) and check_int(span[1]):
-                        span = [int(j) for j in span]
-                        lo = min(span); hi = max(span);
-                        for j in range(hi - lo + 1):
-                            if j+lo in log_sections:
-                                sectionIDs.append(j+lo)
-                    else: print(f'  WARNING span {i} value(s) are not an int values. skipping.')
-                else: print(f'  WARNING section span was not of length two {i}')
+                try: digits = [int(i) for i in re.split(r'(\d+)', sections) if i.isdigit()]
+                except: digits = []
+                
+                # If there is a single digit, assume the '-' character is
+                # is like the negative index operator of python
+                if len(digits) == 1:
+                    flipped = sorted(log_sections, reverse=False)[int(sections)]
+                    sectionIDs.append(flipped)
+                
+                # If there are multiple digits, assume the '-' character is
+                # for stringing together sections (e.g '1-4', '3-6', ...)
+                elif len(digits) > 1:
+                    span = i.split('-')
+                    if len(span) == 2:
+                        if check_int(span[0]) and check_int(span[1]):
+                            span = [int(j) for j in span]
+                            lo = min(span); hi = max(span);
+                            for j in range(hi - lo + 1):
+                                if j+lo in log_sections:
+                                    sectionIDs.append(j+lo)
+                        else: print(f'  WARNING span {i} value(s) are not an int values. skipping.')
+                    else: print(f'  WARNING section span was not of length two {i}')
+                    
+                
             else:
                 if check_int(i):
                     if int(i) in log_sections:
@@ -134,8 +153,9 @@ class file:
                 elif 'ERROR' in line: data_flag = False
                 if data_flag:
                     if len(line) != len(indexes):
-                        print(f'\n  WARNING skipping over line {self.nlines} in log file due to incomplete data series. Line {self.nlines}: ')
-                        print('     {}'.format(' '.join(line) ))
+                        pass
+                        # print(f'\n  WARNING skipping over line {self.nlines} in log file due to incomplete data series. Line {self.nlines}: ')
+                        # print('     {}'.format(' '.join(line) ))
                     else:
                         success = True
                         for n, i in enumerate(line):
@@ -189,3 +209,18 @@ class file:
                         data[column].extend(zeros)
                     else: data[column] = zeros
         return data
+    
+if __name__ == "__main__":
+    sections = '4'
+    sections = '-1'
+    log_sections = [1, 2, 3, 4]
+    
+    flip = sorted(log_sections, reverse=False)[int(sections)]
+    
+    sections = '5-7'
+    
+    # split sections based on digits
+    digits = [int(i) for i in re.split(r'(\d+)', sections) if i.isdigit()]
+    print(digits)
+    
+    print(sections, log_sections, flip)
