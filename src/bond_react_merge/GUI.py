@@ -239,7 +239,7 @@ class bond_react_merge_GUI:
         self.remove_button.grid(column=1, row=self.nfiles+1, sticky='news', columnspan=1)
         
         # Button to clear all files
-        self.clear_button = tk.Button(self.inputs_frame, text='clear stack', font=font_settings, width=int(maxwidth/14.375), command=self.clear_all)
+        self.clear_button = tk.Button(self.inputs_frame, text='clear stack', font=font_settings, width=int(maxwidth/12), command=self.clear_all)
         self.clear_button.grid(column=2, row=self.nfiles+1, columnspan=1)
         
         # parent_directory entry
