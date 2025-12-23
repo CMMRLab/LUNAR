@@ -430,7 +430,7 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
     #   yp = 'min-v' means use the minimum valley of the 2nd derivatives
     xhi_yield = None; yhi_yield = None; yield_point_derivative = []; strain_yield = []; stress_yield = []; 
     xhi_ultimate = None; yhi_ultimate = None; ultimate_point = []
-    if isinstance(yp, int) and yp != 0 or yp in ['min-2d', 'min-v', 'max-d', 'min-r2d2'] or isinstance(up, int) and up != 0:        
+    if isinstance(yp, int) and yp != 0 or yp in ['min-2d', 'min-v', 'max-d', 'min-r2d2'] or isinstance(up, int):        
         
         # Re-compute forward fringe slopes (ffs) moving 1-data point at a time for a 3rd time (in-case "maxxhi" option was used and then find the fringe and slopes after "xhi")
         rstrain, rstress = misc_funcs.reduce_data(strain, stress, xlo, max(strain))
@@ -516,7 +516,7 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
                 except: print('  WARNING linear region is near end of stress-strain. Cant compute yield strength.')
             
             # Testing ultimate predictions
-            if isinstance(up, int):                
+            if isinstance(up, int) and up != 0:                
                 # Find index in values
                 indexes = [i for i in range(len(valleys))]
                 if up > 0: ultimate_index = up - 1

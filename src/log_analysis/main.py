@@ -1672,7 +1672,7 @@ class analysis:
     def whittaker_eilers_smoothing(self, x, y, xlo, xhi, order, lmbda, xlabel, ylabel, figname):
         reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
         if reduced_x and reduced_y:
-            smoothed, optimal_lambda = whittaker_smoother.smooth(reduced_x, reduced_y, order, lmbda, xlabel=xlabel, ylabel=ylabel, basename=figname)
+            smoothed, optimal_lambda, fig = whittaker_smoother.smooth(reduced_x, reduced_y, order, lmbda, xlabel=xlabel, ylabel=ylabel, basename=figname)
             if optimal_lambda is not None:
                 self.log.out(f'    Optimized lambda for Whittaker-Eilers smoothing was found to be {optimal_lambda}.')
         else:

@@ -291,6 +291,7 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
     fine_optimized_lambda = fine_lambdas[fine_minimum_index]
         
     # Plot the CVE vs lambda plot
+    fig = None
     if str(lmbda_method).endswith('-p'):
         # Color wheel defined by matplotlib:
         #   colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
@@ -370,7 +371,7 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
             figname = basename+'_WE_LOO-CVE.jpeg'
             print(f'Rendering {figname}')
             fig.savefig(figname, dpi=300)
-    return fine_optimized_lambda
+    return fine_optimized_lambda, fig
 
 
 ############################################################################################
@@ -384,11 +385,11 @@ def smooth(xdata, ydata, order, lmbda, xlabel='', ylabel='', basename=''):
     y = np.array(ydata.copy())
     # Automatic lambda optimization
     if str(lmbda).startswith('op'):
-        optimal_lambda = Whittaker_Eilers_optimize_lambda(x, y, order, lmbda, xlabel=xlabel, ylabel=ylabel, basename=basename)
+        optimal_lambda, fig = Whittaker_Eilers_optimize_lambda(x, y, order, lmbda, xlabel=xlabel, ylabel=ylabel, basename=basename)
         lmbda = optimal_lambda 
-    else: optimal_lambda = None
+    else: optimal_lambda, fig = None, None
     smoothed, cve = Whittaker_Eilers_without_interpolation(y, order, lmbda, False)
-    return smoothed, optimal_lambda
+    return smoothed, optimal_lambda, fig
 
 
 
