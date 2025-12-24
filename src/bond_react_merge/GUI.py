@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.3
-May 13th, 2024
+Revision 1.4
+December 24, 2025
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -99,7 +99,7 @@ def guess_file_tag(file, ntags, GUI_log):
 class bond_react_merge_GUI:
     def __init__(self, files, parent_directory, newfile, atom_style, generate_map_file, write_rxn_mol2files, 
                  write_rxn_datafiles, write_moleculefiles, print_options, commandline_inputs, map_near_edge_rxn_charges,
-                 molecule_file_options, include_type_labels, GUI_zoom, nfiles=6, scroll_bar=False):
+                 molecule_file_options, include_type_labels, GUI_zoom, nfiles=6):
 
         
         # Find present working directory
@@ -117,31 +117,10 @@ class bond_react_merge_GUI:
 
         
         # Initalize main frame
-        if not scroll_bar:
-            self.root.resizable(width=False, height=False)
-            self.frame = tk.Frame(self.root)
-            self.frame.pack()
+        self.root.resizable(width=False, height=False)
+        self.frame = tk.Frame(self.root)
+        self.frame.pack()
 
-        
-        # Initialize window with a scroll bar
-        else:
-            GUI_SF = GUI_zoom/100
-            height = 20*nfiles + 450
-            width = 1000
-            height = int(math.ceil(GUI_SF*height))
-            width = int(math.ceil(GUI_SF*width))
-            if GUI_SF > 1.0: width += int(math.ceil(width/3.25*GUI_SF))
-            self.root.minsize(width, height)
-            self.frame1 = tk.Frame(self.root)
-            self.frame1.pack(fill=tk.BOTH, expand=1)
-            self.canvas = tk.Canvas(self.frame1)
-            self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
-            self.scrollbar = ttk.Scrollbar(self.frame1, orient=tk.VERTICAL, command=self.canvas.yview)
-            self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-            self.canvas.configure(yscrollcommand=self.scrollbar.set)
-            self.canvas.bind('<Configure>', lambda e: self.canvas.configure(scrollregion = self.canvas.bbox('all')))
-            self.frame = tk.Frame(self.canvas)
-            self.canvas.create_window((0,0), window=self.frame, anchor='nw')
             
         #-----------------------------------------------#
         # Set default sizes to use throughout this code #
@@ -180,10 +159,6 @@ class bond_react_merge_GUI:
                self.icon_font.configure(family=font_settings['dialog_type'])
         self.defaults = {'family':self.font_type, 'size':self.font_size}
 
-        self.xpadding = 20
-        self.ypadding = 10
-        self.maxwidth = 125
-
         # Check if user specified any other nong-global scaling settings
         #   extra maxwidth scaling becasuse this is a wide GUI
         scale_settings = GUI_scale_settings.screen_settings
@@ -197,164 +172,208 @@ class bond_react_merge_GUI:
         self.GUI_zoom = GUI_zoom
         GUI_SF = GUI_zoom/100
         font_size = int(math.ceil(GUI_SF*self.font_size))
-        xpadding = int(math.ceil(GUI_SF*self.xpadding))
-        ypadding = int(math.ceil(GUI_SF*self.ypadding))
-        maxwidth = int(math.ceil(GUI_SF*self.maxwidth))
-        font_settings = (self.font_type, font_size)
+        self.font_settings = (self.font_type, font_size)
+        self.xpadding = int(math.ceil(GUI_SF*self.xpadding))
+        self.ypadding = int(math.ceil(GUI_SF*self.ypadding))
+        self.maxwidth = int(math.ceil(GUI_SF*self.maxwidth))
 
         
         #--------------#
         # Inputs frame #
         #--------------#
         # Initalize  inputs frame
-        self.inputs_frame = tk.LabelFrame(self.frame, text='Inputs', font=font_settings)
-        self.inputs_frame.grid(row=0, column=0, columnspan=2, padx=xpadding, pady=ypadding)
+        self.inputs_frame = tk.LabelFrame(self.frame, text='Inputs', font=self.font_settings)
+        self.inputs_frame.grid(row=0, column=0, columnspan=2, padx=self.xpadding, pady=self.ypadding)
+        
+        # Column widths in "characters" (Tkinter uses char units for Entry/Label width)
+        self.colw_file   = int(self.maxwidth)
+        self.colw_tag    = int(self.maxwidth/10)
+        self.hdr_kwargs  = dict(font=self.font_settings, anchor="center") # anchor makes text align center
         
         # file selection labels
-        self.file_label = tk.Label(self.inputs_frame, text='files stack', font=font_settings)
+        self.file_label = tk.Label(self.inputs_frame, text='files stack', width=self.colw_file, **self.hdr_kwargs)
         self.file_label.grid(column=0, row=0, columnspan=2)
-        self.file_label = tk.Label(self.inputs_frame, text='file-tag', font=font_settings)
+        self.file_label = tk.Label(self.inputs_frame, text='file-tag', width=self.colw_tag, **self.hdr_kwargs)
         self.file_label.grid(column=2, row=0)
+        
+        # --- scrollable region container (canvas + scrollbar) ---
+        self.scroll_canvas = tk.Canvas(self.inputs_frame, highlightthickness=0)
+        self.scroll_canvas.grid(column=0, row=1, columnspan=6, sticky="nsew")
+        
+        self.scrollbar = ttk.Scrollbar(self.inputs_frame, orient="vertical", command=self.scroll_canvas.yview)
+        self.scrollbar.grid(column=6, row=1, sticky="ns")
+        self.scroll_canvas.configure(yscrollcommand=self.scrollbar.set)
+        
+        # This frame will contain the Entry/Combobox rows
+        self.rows_frame = tk.Frame(self.scroll_canvas)
+        
+        # Put peaks_rows_frame inside canvas
+        self._rows_window = self.scroll_canvas.create_window((0, 0), window=self.rows_frame, anchor="nw")
+        
+        # Grid canvas + scrollbar BELOW header row
+        self.scroll_canvas.grid(column=0, row=1, columnspan=6, sticky="nsew")
+        self.scrollbar.grid(column=3, row=1, sticky="ns")
+        
+        # Make canvas expand
+        self.inputs_frame.grid_columnconfigure(0, weight=1)
+        self.inputs_frame.grid_rowconfigure(1, weight=1)
+        
+        # Start calling scrolling methods
+        self.rows_frame.bind("<Configure>", self._on_rows_configure)
+        self.scroll_canvas.bind("<Configure>", self._on_canvas_configure)
+        
+        self.scroll_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        self.scroll_canvas.bind_all("<Button-4>", lambda e: self.peaks_scroll_canvas.yview_scroll(-1, "units"))
+        self.scroll_canvas.bind_all("<Button-5>", lambda e: self.peaks_scroll_canvas.yview_scroll(1, "units"))
+                
+        # Optional: set an initial visible height (will be adjusted later)
+        self._visible_rows = nfiles + 1
         
         # file selection button and qty
         lst_files = list(files.items()); self.nfiles = nfiles; self.files = []; self.tags = []; self.ntabs = 0;
+        self.update_scroll_height(max_visible_rows=self._visible_rows)
         for n in range(1, self.nfiles+1):
             try: intialfile = list(lst_files)[n-1][1]; intialtag = list(lst_files)[n-1][0];
             except: intialfile = ''; intialtag = '';
-            self.file = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+            self.file = tk.Entry(self.rows_frame, width=self.colw_file, font=self.font_settings)
             self.file.insert(0, intialfile)
             self.file.grid(column=0, row=n, columnspan=2)
             self.files.append(self.file)
-            self.tag = tk.Entry(self.inputs_frame, width=int(maxwidth/11.5), font=font_settings)
+            
+            self.tag = tk.Entry(self.rows_frame, width=self.colw_tag, font=self.font_settings)
             self.tag.insert(0, intialtag)
             self.tag.grid(column=2, row=n)
             self.tags.append(self.tag)
         
         # Button to add a file
-        self.file_button = tk.Button(self.inputs_frame, text='add file(s) to stack', font=font_settings, command=self.infile_path)
-        self.file_button.grid(column=0, row=self.nfiles+1, columnspan=1)
+        self.file_button = tk.Button(self.inputs_frame, text='add file(s) to stack', font=self.font_settings, command=self.infile_path)
+        self.file_button.grid(column=0, row=2, columnspan=1)
         
         # Button to remove a file
-        self.remove_button = tk.Button(self.inputs_frame, text='remove last file from stack', font=font_settings, width=int(maxwidth/1.915), command=self.remove_file)
-        self.remove_button.grid(column=1, row=self.nfiles+1, sticky='news', columnspan=1)
+        self.remove_button = tk.Button(self.inputs_frame, text='remove last file from stack', font=self.font_settings, width=int(self.maxwidth/1.915), command=self.remove_file)
+        self.remove_button.grid(column=1, row=2, sticky='news', columnspan=1)
         
         # Button to clear all files
-        self.clear_button = tk.Button(self.inputs_frame, text='clear stack', font=font_settings, width=int(maxwidth/12), command=self.clear_all)
-        self.clear_button.grid(column=2, row=self.nfiles+1, columnspan=1)
+        self.clear_button = tk.Button(self.inputs_frame, text='clear stack', font=self.font_settings, width=int(self.maxwidth/12), command=self.clear_all)
+        self.clear_button.grid(column=2, row=2, columnspan=1)
         
         # parent_directory entry
-        self.parent_directory = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.parent_directory = tk.Entry(self.inputs_frame, width=self.maxwidth, font=self.font_settings)
         self.parent_directory.insert(0, parent_directory)
-        self.parent_directory.grid(column=1, row=self.nfiles+2, columnspan=2)
-        self.dir_button = tk.Button(self.inputs_frame, text='parent_directory', font=font_settings, command=self.directory_path)
-        self.dir_button.grid(column=0, row=self.nfiles+2)
+        self.parent_directory.grid(column=1, row=3, columnspan=2)
+        self.dir_button = tk.Button(self.inputs_frame, text='parent_directory', font=self.font_settings, command=self.directory_path)
+        self.dir_button.grid(column=0, row=3)
         
         # newfile entry
-        self.newfile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.newfile = tk.Entry(self.inputs_frame, width=self.maxwidth, font=self.font_settings)
         self.newfile.insert(0, newfile)
-        self.newfile.grid(column=1, row=self.nfiles+3, columnspan=2)
-        self.newfile_label = tk.Label(self.inputs_frame, text='newfile', font=font_settings)
-        self.newfile_label.grid(column=0, row=self.nfiles+3)
+        self.newfile.grid(column=1, row=4, columnspan=2)
+        self.newfile_label = tk.Label(self.inputs_frame, text='newfile', font=self.font_settings)
+        self.newfile_label.grid(column=0, row=4)
 
-        # Add padding to all frames in self.inputs_frame
+        # Add padding to all frames in self.rows_frame
         for widget in self.inputs_frame.winfo_children():
-            widget.grid_configure(padx=xpadding, pady=int(ypadding/2))
+            widget.grid_configure(padx=self.xpadding, pady=int(self.ypadding/2))
+            
+        # Add padding to all frames in self.inputs_frame
+        for widget in self.rows_frame.winfo_children():
+            widget.grid_configure(padx=self.xpadding, pady=int(self.ypadding/2))
             
         
         #---------------#
         # Options frame #
         #---------------#
         # Initalize  options frame
-        self.options_frame = tk.LabelFrame(self.frame, text='Options', font=font_settings)
-        self.options_frame.grid(row=1, column=0, columnspan=2, sticky='news', padx=xpadding, pady=ypadding)
+        self.options_frame = tk.LabelFrame(self.frame, text='Options', font=self.font_settings)
+        self.options_frame.grid(row=1, column=0, columnspan=2, sticky='news', padx=self.xpadding, pady=self.ypadding)
         
         # atom_style drop down
         styles = ['full', 'charge', 'molecular', 'angle', 'bond', 'atomic', 'dipole', 'dpd', 'line']
-        self.atom_style = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/8), font=font_settings)
+        self.atom_style = ttk.Combobox(self.options_frame, values=styles, width=int(self.maxwidth/8), font=self.font_settings)
         self.atom_style.current(styles.index(atom_style))
         self.atom_style.grid(column=0, row=1)
-        self.atom_style_label = tk.Label(self.options_frame, text='atom_style', font=font_settings)
+        self.atom_style_label = tk.Label(self.options_frame, text='atom_style', font=self.font_settings)
         self.atom_style_label.grid(column=0, row=0)
         
         # generate_map_file drop down menu
         styles = [True, False]
-        self.generate_map_file = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/8), font=font_settings)
+        self.generate_map_file = ttk.Combobox(self.options_frame, values=styles, width=int(self.maxwidth/8), font=self.font_settings)
         self.generate_map_file.current(styles.index(generate_map_file))
         self.generate_map_file.grid(column=1, row=1)
-        self.generate_map_file_label = tk.Label(self.options_frame, text='generate_map_file', font=font_settings)
+        self.generate_map_file_label = tk.Label(self.options_frame, text='generate_map_file', font=self.font_settings)
         self.generate_map_file_label.grid(column=1, row=0)
         
         # write_rxn_mol2files drop down menu
         styles = [True, False]
-        self.write_rxn_mol2files = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/8), font=font_settings)
+        self.write_rxn_mol2files = ttk.Combobox(self.options_frame, values=styles, width=int(self.maxwidth/8), font=self.font_settings)
         self.write_rxn_mol2files.current(styles.index(write_rxn_mol2files))
         self.write_rxn_mol2files.grid(column=2, row=1)
-        self.write_rxn_mol2files_labels_label = tk.Label(self.options_frame, text='write_rxn_mol2files', font=font_settings)
+        self.write_rxn_mol2files_labels_label = tk.Label(self.options_frame, text='write_rxn_mol2files', font=self.font_settings)
         self.write_rxn_mol2files_labels_label.grid(column=2, row=0)
         
         # write_rxn_datafiles drop down menu
         styles = [True, False]
-        self.write_rxn_datafiles = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/8), font=font_settings)
+        self.write_rxn_datafiles = ttk.Combobox(self.options_frame, values=styles, width=int(self.maxwidth/8), font=self.font_settings)
         self.write_rxn_datafiles.current(styles.index(write_rxn_datafiles))
         self.write_rxn_datafiles.grid(column=3, row=1)
-        self.write_rxn_datafiles_label = tk.Label(self.options_frame, text='write_rxn_datafiles', font=font_settings)
+        self.write_rxn_datafiles_label = tk.Label(self.options_frame, text='write_rxn_datafiles', font=self.font_settings)
         self.write_rxn_datafiles_label.grid(column=3, row=0)
         
         # write_mol_datafiles drop down menu
         styles = [True, False]
-        self.write_moleculefiles = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/8), font=font_settings)
+        self.write_moleculefiles = ttk.Combobox(self.options_frame, values=styles, width=int(self.maxwidth/8), font=self.font_settings)
         self.write_moleculefiles.current(styles.index(write_moleculefiles))
         self.write_moleculefiles.grid(column=4, row=1)
-        self.write_moleculefiles_label = tk.Label(self.options_frame, text='write_moleculefiles', font=font_settings)
+        self.write_moleculefiles_label = tk.Label(self.options_frame, text='write_moleculefiles', font=self.font_settings)
         self.write_moleculefiles_label.grid(column=4, row=0)
         
         # map_near_edge_rxn_charges drop down menu
         self.edgeq = [i for i in range(10)]; self.edgeq.insert(0, False);
         self.edgeqmap = {str(i):i for i in self.edgeq}
-        self.map_near_edge_rxn_charges = ttk.Combobox(self.options_frame, values=self.edgeq, width=int(maxwidth/10), font=font_settings)
+        self.map_near_edge_rxn_charges = ttk.Combobox(self.options_frame, values=self.edgeq, width=int(self.maxwidth/10), font=self.font_settings)
         self.map_near_edge_rxn_charges.current(self.edgeq.index(include_type_labels))
         self.map_near_edge_rxn_charges.grid(column=0, row=3)
-        self.map_near_edge_rxn_charges_label = tk.Label(self.options_frame, text='map_near_edge_rxn_charges', font=font_settings)
+        self.map_near_edge_rxn_charges_label = tk.Label(self.options_frame, text='map_near_edge_rxn_charges', font=self.font_settings)
         self.map_near_edge_rxn_charges_label.grid(column=0, row=2)
 
         # include_type_labels drop down menu
         styles = [True, False]
-        self.include_type_labels = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/10), font=font_settings)
+        self.include_type_labels = ttk.Combobox(self.options_frame, values=styles, width=int(self.maxwidth/10), font=self.font_settings)
         self.include_type_labels.current(styles.index(include_type_labels))
         self.include_type_labels.grid(column=1, row=3)
-        self.include_type_labels_label = tk.Label(self.options_frame, text='include_type_labels', font=font_settings)
+        self.include_type_labels_label = tk.Label(self.options_frame, text='include_type_labels', font=self.font_settings)
         self.include_type_labels_label.grid(column=1, row=2)
                 
         # molecule_file_options entry
-        self.molecule_file_options = tk.Entry(self.options_frame, width=int(maxwidth/1.5), font=font_settings)
+        self.molecule_file_options = tk.Entry(self.options_frame, width=int(self.maxwidth/1.5), font=self.font_settings)
         self.molecule_file_options.insert(0, ','.join(molecule_file_options))
         self.molecule_file_options.grid(column=2, row=3, columnspan=4)
-        self.molecule_file_options_label = tk.Label(self.options_frame, text='molecule_file_options (comma separated w/no whitespace)', font=font_settings)
+        self.molecule_file_options_label = tk.Label(self.options_frame, text='molecule_file_options (comma separated w/no whitespace)', font=self.font_settings)
         self.molecule_file_options_label.grid(column=2, row=2, columnspan=4)
         
         # Add padding to all frames in self.inputs_frame
         for widget in self.options_frame.winfo_children():
-            widget.grid_configure(padx=xpadding, pady=int(ypadding/2))
+            widget.grid_configure(padx=self.xpadding, pady=int(self.ypadding/2))
             
         
         #------------#
         # Run button #
         #------------#
-        self.run = tk.Button(self.frame, text='Run LUNAR/bond_react_merge.py', font=font_settings, command=self.run_LUNAR)
-        self.run.grid(row=2, column=0, columnspan=2, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
+        self.run = tk.Button(self.frame, text='Run LUNAR/bond_react_merge.py', font=self.font_settings, command=self.run_LUNAR)
+        self.run.grid(row=2, column=0, columnspan=2, sticky='news', padx=int(self.xpadding/2), pady=int(self.ypadding/2))
         
                 
         #-----------------#
         # update defaults #
         #-----------------#
-        self.update = tk.Button(self.frame, text='Save the current GUI settings as the default GUI settings', font=font_settings, command=self.update_py_script)
-        self.update.grid(row=3, column=0, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
+        self.update = tk.Button(self.frame, text='Save the current GUI settings as the default GUI settings', font=self.font_settings, command=self.update_py_script)
+        self.update.grid(row=3, column=0, sticky='news', padx=int(self.xpadding/2), pady=int(self.ypadding/2))
 
         #------------#
         # Quick help #
         #------------#
-        self.quick_help = tk.Button(self.frame, text='Quick help', font=font_settings, command=self.quickhelp)
-        self.quick_help.grid(row=3, column=1, sticky='news', padx=int(xpadding/2), pady=int(ypadding/2))
+        self.quick_help = tk.Button(self.frame, text='Quick help', font=self.font_settings, command=self.quickhelp)
+        self.quick_help.grid(row=3, column=1, sticky='news', padx=int(self.xpadding/2), pady=int(self.ypadding/2))
         
         
         #------------------------#
@@ -368,6 +387,62 @@ class bond_react_merge_GUI:
     #################################
     # Functions to call as commands #
     #################################
+    #--------------------------------#
+    # Scrollable peaks stack methods #
+    #--------------------------------#
+    # Track scrollregion changes when rows resize
+    def _on_rows_configure(self, event=None):
+        self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
+    
+    # Keep the embedded frame width synced to canvas width
+    def _on_canvas_configure(self, event):
+        self.scroll_canvas.itemconfigure(self._rows_window, width=event.width)
+        
+    # Mousewheel scrolling (Windows/macOS/Linux)
+    def _on_mousewheel(self, event):
+        # Windows: event.delta; Linux uses Button-4/5 bindings below
+        if event.delta:
+            self.scroll_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+            
+    def update_scroll_height(self, max_visible_rows=10):
+        """
+        Limit the visible height of the scroll canvas to ~max_visible_rows worth of widgets.
+        """
+        # pick a representative widget height (use existing row if available)
+        try:
+            row_h = self.files[0].winfo_reqheight()
+        except: row_h = 25  # fallback
+    
+        # include some padding
+        desired = min(self.nfiles, max_visible_rows)*(row_h + int(self.ypadding/2)) + 4
+        self.scroll_canvas.configure(height=desired)
+        
+    # Method to destroy peak rows
+    def destroy_rows(self, keep_first_row=True):
+        """
+        Destroys the dynamic peak row widgets (Entries/Comboboxes) and clears tracking lists.
+        If keep_first_row=True, keeps row 1 (index 0) widgets and destroys the rest.
+        """
+        if keep_first_row: start = 1
+        else: start = 0
+    
+        # destroy widgets from the end (safer)
+        for idx in range(len(self.files)-1, start-1, -1):
+            for w in (self.files[idx], self.tags[idx]):
+                try: w.destroy()
+                except: pass
+    
+        # shrink lists
+        self.files = self.files[:start]
+        self.tags  = self.tags[:start]
+
+        # update npeaks to match what remains
+        self.nfiles = len(self.files)
+        return
+    
+    #----------------#
+    # Normal methods #
+    #----------------#
     # Quick help button
     def quickhelp(self):
         try: # Try to get text from GUI_help_page.txt file
@@ -424,37 +499,26 @@ class bond_react_merge_GUI:
     
     # Function to add files to GUI, during overload conditions
     def add_overloaded_filebox(self):    
-        # adjust based on GUI_SF
-        GUI_SF = self.GUI_zoom/100
-        font_size = int(math.ceil(GUI_SF*self.font_size))
-        xpadding = int(math.ceil(GUI_SF*self.xpadding))
-        ypadding = int(math.ceil(GUI_SF*self.ypadding))
-        maxwidth = int(math.ceil(GUI_SF*self.maxwidth))
-        font_settings = (self.font_type, font_size)
-        
         # Add file box
         self.nfiles += 1
-        self.file = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.file = tk.Entry(self.rows_frame, width=self.colw_file, font=self.font_settings)
         self.file.insert(0, self.overloadfile)
         self.file.grid(column=0, row=self.nfiles, columnspan=2)
         self.files.append(self.file)
-        self.tag = tk.Entry(self.inputs_frame, width=int(maxwidth/11.5), font=font_settings)
+        self.tag = tk.Entry(self.rows_frame, width=self.colw_tag, font=self.font_settings)
         self.tag.insert(0, self.overloadtag)
         self.tag.grid(column=2, row=self.nfiles)
         self.tags.append(self.tag)
         
-        # adjust packing of other things in inputs frame
-        self.file_button.grid(column=0, row=self.nfiles+1, columnspan=1)
-        self.remove_button.grid(column=1, row=self.nfiles+1, sticky='news', columnspan=1)
-        self.clear_button.grid(column=2, row=self.nfiles+1, columnspan=1)
-        self.parent_directory.grid(column=1, row=self.nfiles+2, columnspan=2)
-        self.dir_button.grid(column=0, row=self.nfiles+2)
-        self.newfile.grid(column=1, row=self.nfiles+3, columnspan=2)
-        self.newfile_label.grid(column=0, row=self.nfiles+3)
-        
-        # Add padding to all frames in self.inputs_frame
+        # Add padding to all frames in self.rows_frame
         for widget in self.inputs_frame.winfo_children():
-            widget.grid_configure(padx=xpadding, pady=int(ypadding/2))
+            widget.grid_configure(padx=self.xpadding, pady=int(self.ypadding/2))
+            
+        # Add padding to all frames in self.inputs_frame
+        for widget in self.rows_frame.winfo_children():
+            widget.grid_configure(padx=self.xpadding, pady=int(self.ypadding/2))
+            
+        self.update_scroll_height(max_visible_rows=self._visible_rows)
         return
     
     # Function to remove a file from self.files
@@ -476,6 +540,9 @@ class bond_react_merge_GUI:
         for n, i in enumerate(self.tags):
             try: self.tags[n].delete(0, tk.END)
             except: pass
+        
+        self.destroy_rows(keep_first_row=True)
+        self.update_scroll_height(max_visible_rows=1)
         return
     
     # Function to get directory

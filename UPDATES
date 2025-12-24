@@ -16,10 +16,13 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 23December2025)
+LUNAR (version 24December2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+24December2025     JDK         - bond_react_merge.py and cell_builder.py: Made the "file-stack" scrollable to 
+                                                                          handle a large number of files.
+
 23December2025     JDK         - log_analysis.py: Changed Whittaker-Eilers smoother Leave-one-out cross-validation
                                                   plot. Also added basic support for estimating Ultimate tensile
                                                   strength based of the RFR-derivative method. This is expeirmental

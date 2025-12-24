@@ -44,16 +44,6 @@ Houghton, MI 49931
 #   maxfiles = 4 # GUI will load with 4 files slots and the GUI will automatically add more when "overloaded"               #
 #   maxfiles = 8 # GUI will load with 8 files slots and the GUI will automatically add more when "overloaded"               #
 #                                                                                                                           #
-# Python boolean variable (True or False) to set if the GUI will will have a horizontal scroll bar or not, since it is      #
-# conceivable that a large number of files could create a GUI that requires more screen space then what your computer has   #
-# can offer. Where the scroll bar can then be a handy thing to have on the GUI. The current implementation of the scroll bar#
-# sometimes requires the user to "Maximize" the GUI and then "Collapse" the GUI again to allow the scroll bar to scroll the #
-# entire GUI. This is determined to be a Tkinter issue (the modules used to build the GUIs) and is likely very little that  #
-# can be done to address that type of behavior. In light of this the scroll bar option has been given a boolean to use      #
-# (True) or not to use (False). Examples:                                                                                   #
-#   scroll_bar = True  # GUI will have scroll bar to scroll GUI and the GUI size will be "locked" during initialization     #
-#   scroll_bar = False # GUI will NOT have scroll bar to scroll GUI and the GUI size will be be able to "grow"              #
-#                                                                                                                           #
 # Python int value to range from 0 to 200 to control the GUI zoom. Where it option was added to account for the different   #
 # ways individuals have their OS display settings setup. A GUI_zoom = 100, means that default settings are used, whereas a  #
 # GUI_zoom = 120 means increase GUI size by 20% and GUI_zoom = 80 means decrease GUI by 20%. Examples:                      #
@@ -62,7 +52,6 @@ Houghton, MI 49931
 #                                                                                                                           #
 # Update use_GUI, GUI_zoom, scroll_bar, and maxfiles as desired.                                                            #
 #############################################################################################################################
-scroll_bar = False
 use_GUI = True
 GUI_zoom = 100
 maxfiles = 6
@@ -457,7 +446,7 @@ if __name__ == "__main__":
         print('\n\n\nbond_react_merge is currently running in GUI mode, where all GUI inputs are intialized from bond_react_merge.\n\n\n')
         bond_react_merge_GUI(files, parent_directory, newfile, atom_style, generate_map_file, write_rxn_mol2files, write_rxn_datafiles,
                              write_moleculefiles, print_options, commandline_inputs, map_near_edge_rxn_charges, molecule_file_options,
-                             include_type_labels, GUI_zoom, nfiles=maxfiles, scroll_bar=scroll_bar)
+                             include_type_labels, GUI_zoom, nfiles=maxfiles)
     else:
         # If not commandline_inputs the code is running in IDE/command line mode with out command line inputs
         # this means that all inputs to the code are handled in the Inputs section below this block of code.

@@ -230,7 +230,7 @@ class LUNAR:
         # Run bond_react_merge_GUI
         bond_react_merge_GUI(brm.files, brm.parent_directory, brm.newfile, brm.atom_style, brm.generate_map_file, brm.write_rxn_mol2files, 
                              brm.write_rxn_datafiles, brm.write_moleculefiles, brm.print_options, [], brm.map_near_edge_rxn_charges, brm.molecule_file_options,
-                             brm.include_type_labels, self.GUI_zoom, nfiles=brm.maxfiles, scroll_bar=brm.scroll_bar)
+                             brm.include_type_labels, self.GUI_zoom, nfiles=brm.maxfiles)
         return
     
     # bond_react_mergeprep GUI Run
@@ -265,7 +265,7 @@ class LUNAR:
         # Run cell_builder_GUI
         cell_builder_GUI(cb.files, cb.force_field_joining, cb.duplicate, cb.distance_scale, cb.newfile, cb.atom_style, cb.parent_directory, cb.max_rotations, cb.reset_molids,
                          cb.unwrap_atoms_via_image_flags, cb.include_type_labels, cb.group_monomers_locally, cb.seed, cb.domain, cb.maxtry, cb.tolerance, cb.mixing_rule,
-                         cb.boundary, self.GUI_zoom, nfiles=cb.maxfiles, scroll_bar=cb.scroll_bar)
+                         cb.boundary, self.GUI_zoom, nfiles=cb.maxfiles)
         return
     
     # add_pi_electrons GUI Run

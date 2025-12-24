@@ -48,17 +48,6 @@ Houghton, MI 49931
 #   maxfiles = 4 # GUI will load with 4 files slots and the GUI will automatically add more when "overloaded" #
 #   maxfiles = 8 # GUI will load with 8 files slots and the GUI will automatically add more when "overloaded" #
 #                                                                                                             #
-# Python boolean variable (True or False) to set if the GUI will will have a horizontal scroll bar or not,    #
-# since it is conceivable that a large number of files could create a GUI that requires more screen space     #
-# then what your computer has can offer. Where the scroll bar can then be a handy thing to have on the GUI.   #
-# The current implementation of the scroll bar sometimes requires the user to "Maximize" the GUI and then     #
-# "Collapse" the GUI again to allow the scroll bar to scroll the entire GUI. This is determined to be a       #
-# Tkinter issue (the modules used to build the GUIs) and is likely very little that can be done to address    #
-# that type of behavior. In light of this the scroll bar option has been given a boolean to use (True) or not #
-# to use (False). Examples:                                                                                   #
-#   scroll_bar = True  # GUI will have scroll bar to scroll GUI and the GUI size will be "locked"             #
-#   scroll_bar = False # GUI will NOT have scroll bar to scroll GUI and the GUI size will be be able to "grow"#
-#                                                                                                             #
 # Python int value to range from 0 to 200 to control the GUI zoom. Where it option was added to account for   #
 # the different ways individuals have their OS display settings setup. A GUI_zoom = 100, means that default   #
 # settings are used, whereas a GUI_zoom = 120 means increase GUI size by 20% and GUI_zoom = 80 means decrease #
@@ -68,7 +57,6 @@ Houghton, MI 49931
 #                                                                                                             #
 # Update use_GUI, GUI_zoom, and maxfiles as desired.                                                          #
 ###############################################################################################################
-scroll_bar = False
 use_GUI = True
 GUI_zoom = 100
 maxfiles = 4
@@ -502,7 +490,7 @@ if __name__ == "__main__":
         print('\n\n\ncell_builder is currently running in GUI mode, where all GUI inputs are intialized from cell_builder.\n\n\n')
         cell_builder_GUI(files, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations, reset_molids,
                          unwrap_atoms_via_image_flags, include_type_labels, group_monomers_locally, seed, domain, maxtry, tolerance, mixing_rule, boundary,
-                         GUI_zoom, nfiles=maxfiles, scroll_bar=scroll_bar)
+                         GUI_zoom, nfiles=maxfiles)
     else:   
         # Run main cell_builder
         main(files, force_field_joining, duplicate, distance_scale, newfile, atom_style, parent_directory, max_rotations,
