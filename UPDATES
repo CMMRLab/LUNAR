@@ -16,10 +16,12 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 24December2025)
+LUNAR (version 29December2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+29December2025     JDK         - All GUIs that have modes now have the "traditional" save dialogbox pop-up. 
+
 24December2025     JDK         - bond_react_merge.py and cell_builder.py: Made the "file-stack" scrollable to 
                                                                           handle a large number of files.
 

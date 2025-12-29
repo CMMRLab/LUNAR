@@ -322,7 +322,7 @@ class GUI:
                                   'Regression Fringe Response Mechanical', 'LAMMPS data (remove from plot)', 'LAMMPS data (apply moving average)',
                                   'LAMMPS data (apply Butterworth filter)', 'LAMMPS data (apply Whittaker-Eilers)', 'LAMMPS data (fit polynomial)',
                                   'LAMMPS data (LOWESS)', 'LAMMPS data (X-sort)', 'LAMMPS data (apply iFFT filter)', 'write plotted data to csv file',
-                                  'Calculus: Differentiate Data', 'Calculus: Integrate Data']
+                                  'Calculus: Differentiate Data', 'Calculus: Integrate Data', 'Regression Fringe Response Thermal']
         self.supported_methods = sorted(self.supported_methods, key=lambda x: x[0].lower()) # sort list by first letter of each method (x[0].lower())
         self.methods = []; self.xlos = []; self.xhis = []; self.miscs = []; self.names = [];
         for n in range(1, self.nanalysis+1):
@@ -683,132 +683,88 @@ class GUI:
         
     # Function to save current GUI settings as a mode
     def save_mode(self):
-        # Function to get directory
-        def directory_path():
-            path = filedialog.askdirectory(initialdir=self.pwd)
-            if path:
-                path = os.path.relpath(path)
-                parent_directory.delete(0, tk.END); parent_directory.insert(0, path);
-        
-        # save_mode print(__doc__)
-        def save():
-            if filename.get() == '':
-                self.log.GUI_error('ERROR attempting to save GUI settings as mode, but filename is blank.')
-            elif filename.get().count(' ') > 0:
-                self.log.GUI_error(f'ERROR attempting to save GUI settings as mode, but filename "{filename.get()}" has whitespaces. Use "_" to seperate words.')
-            else:
-                # setup path and where to write
-                path = os.path.join(self.pwd, parent_directory.get())
-                name = '{}.py'.format(filename.get())
-                self.log.out(f'"{name}" will be saved at {path}')
-                if not os.path.isdir(path):
-                    os.makedirs(path, exist_ok=True)
-                os.chdir(path)
+        modes_dir = self.modespath
+        if os.path.isdir(modes_dir):
+            path = filedialog.asksaveasfilename(defaultextension=".py",
+                                                filetypes=[("Pyton files", "*.py")],
+                                                initialdir=modes_dir)
+        else:
+            path = filedialog.asksaveasfilename(defaultextension=".py",
+                                                filetypes=[("Pyton files", "*.py")])
+            
+        if path:
                 
-                # Write new file and change back to pwd
-                with open(name, 'w') as f:
-                    f.write('# -*- coding: utf-8 -*-\n')
-                    f.write('"""\n')
-                    f.write('Created by log_analysis.py to store a mode dictionary\n')
-                    f.write('called "mode", which will then allow all settings to be\n')
-                    f.write('loaded by clicking on this file within log_anaylsis.py.\n\n')
-                    f.write('{}'.format(about.get('1.0', tk.END)))
-                    f.write('"""\n')
-                    
-                    f.write('# analysis list\n')
-                    if len(self.methods) > 0:
-                        analysis = [] # [method, xlo, xhi, miscs, names]
-                        for i, j, k, l, m  in zip(self.methods, self.xlos, self.xhis, self.miscs, self.names):
-                            try: 
-                                method = i.get(); xlo = j.get(); xhi = k.get(); misc = l.get(); name = m.get();
-                                if method != 'skip':
-                                    analysis.append([method, xlo, xhi, misc, name])
+            # Write new file and change back to pwd
+            with open(path, 'w') as f:
+                f.write('# -*- coding: utf-8 -*-\n')
+                f.write('"""\n')
+                f.write('Created by log_analysis.py to store a mode dictionary\n')
+                f.write('called "mode", which will then allow all settings to be\n')
+                f.write('loaded by clicking on this file within log_anaylsis.py.\n\n')
+                #f.write('{}'.format(about.get('1.0', tk.END)))
+                f.write('"""\n')
+                
+                f.write('# analysis list\n')
+                if len(self.methods) > 0:
+                    analysis = [] # [method, xlo, xhi, miscs, names]
+                    for i, j, k, l, m  in zip(self.methods, self.xlos, self.xhis, self.miscs, self.names):
+                        try: 
+                            method = i.get(); xlo = j.get(); xhi = k.get(); misc = l.get(); name = m.get();
+                            if method != 'skip':
+                                analysis.append([method, xlo, xhi, misc, name])
+                        except: pass
+                    if analysis:
+                        f.write('analysis = [')
+                        for n, (method, xlo, xhi, misc, name) in enumerate(analysis, 1):
+                            if method == 'skip': continue
+                            try:
+                                if xlo == '': xlo = "'{}'".format(xlo)
+                                if xhi == '': xhi = "'{}'".format(xhi)
+                                string = "['{}', {}, {}, '{}', '{}']".format(method, xlo, xhi, misc, name)
+                                
+                                if n < len(analysis): string += ','
+                                else: string += ']'
+                                
+                                if n == 1: f.write("{}\n".format(string))
+                                else: f.write("{:>12}{}\n".format('', string))
                             except: pass
-                        if analysis:
-                            f.write('analysis = [')
-                            for n, (method, xlo, xhi, misc, name) in enumerate(analysis, 1):
-                                if method == 'skip': continue
-                                try:
-                                    if xlo == '': xlo = "'{}'".format(xlo)
-                                    if xhi == '': xhi = "'{}'".format(xhi)
-                                    string = "['{}', {}, {}, '{}', '{}']".format(method, xlo, xhi, misc, name)
-                                    
-                                    if n < len(analysis): string += ','
-                                    else: string += ']'
-                                    
-                                    if n == 1: f.write("{}\n".format(string))
-                                    else: f.write("{:>12}{}\n".format('', string))
-                                except: pass
-                        else: f.write('analysis = []\n')
                     else: f.write('analysis = []\n')
-                    f.write('\n')
-                    
-                    f.write('# loadable mode\n')
-                    f.write("mode = {")
-                    f.write("{}{}: '{}',\n".format('', "'logfile'", io_functions.path_to_string(self.logfile.get())))
-                    keywords = ["'{}'".format(str(i)) for i in self.keywords_entry.get().split(',')]
-                    f.write("{:>8}{}: [{}],\n".format('',"'keywords'", ', '.join(keywords)))
-                    f.write("{:>8}{}: '{}',\n".format('',"'sections'", self.sections_entry.get()))
-                    
-                    if "'" in self.xdata_dropdown.get():
-                        f.write('{:>8}{}: "{}",\n'.format('', '"xdata"', self.xdata_dropdown.get()))
-                    else:
-                        f.write("{:>8}{}: '{}',\n".format('',"'xdata'", self.xdata_dropdown.get()))
-                    
-                    if "'" in self.ydata_dropdown.get():
-                        f.write('{:>8}{}: "{}",\n'.format('', '"ydata"', self.ydata_dropdown.get()))
-                    else:    
-                        f.write("{:>8}{}: '{}',\n".format('',"'ydata'", self.ydata_dropdown.get()))
-                    
-                    f.write("{:>8}{}: '{}',\n".format('',"'xlabel'", self.xlabel_entry.get()))
-                    f.write("{:>8}{}: '{}',\n".format('',"'ylabel'", self.ylabel_entry.get()))
-                    f.write("{:>8}{}: '{}',\n".format('',"'xcompute'", self.xcompute_entry.get()))
-                    f.write("{:>8}{}: '{}',\n".format('',"'ycompute'", self.ycompute_entry.get()))
-                    f.write("{:>8}{}: {},\n".format('',"'analysis'", 'analysis'))
-                    f.write("{:>8}{}: '{}',\n".format('',"'nevery'", self.nevery_entry.get()))
-                    f.write("{:>8}{}: '{}',\n".format('',"'parent_directory'", io_functions.path_to_string(self.parent_directory.get())))
-                    
-                    try: array_file = self.array_file.get()
-                    except: array_file = ''
-                    f.write("{:>8}{}: '{}',\n".format('',"'array_file'", array_file))
-                    
-                    f.write("{:>8}{}\n\n".format('', '}'))
-                os.chdir(self.pwd)
-            return
-        
+                else: f.write('analysis = []\n')
+                f.write('\n')
+                
+                f.write('# loadable mode\n')
+                f.write("mode = {")
+                f.write("{}{}: '{}',\n".format('', "'logfile'", io_functions.path_to_string(self.logfile.get())))
+                keywords = ["'{}'".format(str(i)) for i in self.keywords_entry.get().split(',')]
+                f.write("{:>8}{}: [{}],\n".format('',"'keywords'", ', '.join(keywords)))
+                f.write("{:>8}{}: '{}',\n".format('',"'sections'", self.sections_entry.get()))
+                
+                if "'" in self.xdata_dropdown.get():
+                    f.write('{:>8}{}: "{}",\n'.format('', '"xdata"', self.xdata_dropdown.get()))
+                else:
+                    f.write("{:>8}{}: '{}',\n".format('',"'xdata'", self.xdata_dropdown.get()))
+                
+                if "'" in self.ydata_dropdown.get():
+                    f.write('{:>8}{}: "{}",\n'.format('', '"ydata"', self.ydata_dropdown.get()))
+                else:    
+                    f.write("{:>8}{}: '{}',\n".format('',"'ydata'", self.ydata_dropdown.get()))
+                
+                f.write("{:>8}{}: '{}',\n".format('',"'xlabel'", self.xlabel_entry.get()))
+                f.write("{:>8}{}: '{}',\n".format('',"'ylabel'", self.ylabel_entry.get()))
+                f.write("{:>8}{}: '{}',\n".format('',"'xcompute'", self.xcompute_entry.get()))
+                f.write("{:>8}{}: '{}',\n".format('',"'ycompute'", self.ycompute_entry.get()))
+                f.write("{:>8}{}: {},\n".format('',"'analysis'", 'analysis'))
+                f.write("{:>8}{}: '{}',\n".format('',"'nevery'", self.nevery_entry.get()))
+                f.write("{:>8}{}: '{}',\n".format('',"'parent_directory'", io_functions.path_to_string(self.parent_directory.get())))
+                
+                try: array_file = self.array_file.get()
+                except: array_file = ''
+                f.write("{:>8}{}: '{}',\n".format('',"'array_file'", array_file))
+                
+                f.write("{:>8}{}\n\n".format('', '}'))        
         self.log.out('Saving current GUI settings as a mode')
-        save_frame = Toplevel(self.root)
-        save_frame.title('Save GUI settings as mode')
-        save_frame.resizable(width=False, height=False)
-        
-        filename = tk.Entry(save_frame, width=67, font=self.font_settings)
-        filename.insert(0, 'FML_analysis_description')
-        filename.bind("<Button-1>", lambda a: filename.delete(0, tk.END))
-        filename.grid(column=1, row=0)
-        filename_label = tk.Label(save_frame, text='filename (no .py extension)', font=self.font_settings)
-        filename_label.grid(column=0, row=0)
-        
-        about = tk.Text(save_frame, width=50, height=4)
-        about.insert(tk.END, 'Date: XX/YY/ZZZZ\n')
-        about.insert(tk.END, 'Author: John Doe\n')
-        about.insert(tk.END, 'Purpose: Mode to find xxx\n')
-        about.grid(column=1, row=1)
-        about_label = tk.Label(save_frame, text='about mode', font=self.font_settings)
-        about_label.grid(column=0, row=1)
-        
-        parent_directory = tk.Entry(save_frame, width=67, font=self.font_settings)
-        parent_directory.insert(0, self.modespath)
-        parent_directory.grid(column=1, row=2)
-        dir_button = tk.Button(save_frame, text='parent_directory', font=self.font_settings, command=directory_path)
-        dir_button.grid(column=0, row=2)
-        
-        save_btn = tk.Button(save_frame, width=85, text='save as mode', command=save, font=self.font_settings)
-        save_btn.grid(column=0, row=3, columnspan=3)        
+        return
 
-        # Add padding to all frames in self.analysis_frame
-        for widget in save_frame.winfo_children():
-            widget.grid_configure(padx=self.xpadding, pady=int(self.ypadding/3))
-        save_frame.mainloop()
     
     # Function to load mode
     def load_mode(self, mode):       
