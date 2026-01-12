@@ -98,6 +98,14 @@ def nta(mm, basename, ff_name):
     ########################################################
     a = open(basename+'_assumed.txt', 'w')
     f = open(basename+'_failed.txt', 'w')
+    
+    # Function to count number of difference of IDs (meant for ringIDs and fusedringID to DRIEDING's _RB types)
+    def count_diff_of_IDs(ID, IDs):
+        count = 0
+        if ID in IDs:
+            for i in IDs:
+                if i != ID: count += 1
+        return count
 
     ########################################################    
     # Loop through mm.atoms and start assigning atom-types #
@@ -134,14 +142,6 @@ def nta(mm, basename, ff_name):
         atom.nta_info = 'FAILED TO BE TYPED:  element: {}, ring: {}, nb: {}'.format(element, ring, nb)
         #print(i, ringID, ringIDs1, 'fused:  ', fusedringID, fusedringIDs1)
 
-        # Function to count number of difference of IDs (meant for ringIDs and fusedringID to DRIEDING's _RB types)
-        def count_diff_of_IDs(ID, IDs):
-            count = 0
-            if ID in IDs:
-                for i in IDs:
-                    if i != ID: count += 1
-            return count
-            
 
         ######################################################################################
         # Sp1 Carbon atom typing (ordering of nested if/elif/else statements set precedence) #
@@ -423,19 +423,19 @@ def nta(mm, basename, ff_name):
             # Strict DREIDING atom-typing that occurs after User defined atom-typing attempts #
             #---------------------------------------------------------------------------------#                
             # N_R         14.007000   N         3            Sp2 aromatic Nitrogen with 0-implicit hydrogens
-            if nb == 3 and ring >= 5:
+            if nb == 2 and ring >= 5:
                 tally['found'] += 1
                 atom.nta_type = 'N_R'
                 atom.nta_info = 'Correctly found'
                 
             # N_R1        15.015000   N         2            Sp2 aromatic Nitrogen with 1-implicit hydrogens
-            elif nb == 2 and ring >= 5 and use_implicit_Hs_on_Nitrogen:
+            elif nb == 1 and ring >= 5 and use_implicit_Hs_on_Nitrogen:
                 tally['found'] += 1
                 atom.nta_type = 'N_R'
                 atom.nta_info = 'Correctly found'
                 
             # N_21Mid     15.015000   N         2            Sp2 non-aromatic Nitrogen with 1-implicit hydrogens in the "middle" of a molecule bonded to an Sp3 atom (uniquely named by Josh to help all2lmp set correct torsions)
-            elif nb <= 2 and use_implicit_Hs_on_Nitrogen and 'Sp3' in hybrid1 and len(elements3) == 0: # if no 3rd-neighbors it must be at the center like in propene (CH2-CH1-CH3) or acetate anion (CH3-C-OO)
+            elif nb <= 1 and use_implicit_Hs_on_Nitrogen and 'Sp3' in hybrid1 and len(elements3) == 0: # if no 3rd-neighbors it must be at the center like in propene (CH2-CH1-CH3) or acetate anion (CH3-C-OO)
                 tally['found'] += 1
                 atom.nta_type = 'N_21Mid'
                 atom.nta_info = 'Correctly found'
@@ -447,13 +447,13 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
             
             # N_21        15.015000   N         2            Sp2 non-aromatic Nitrogen with 1-implicit hydrogens
-            elif nb <= 2 and use_implicit_Hs_on_Nitrogen:
+            elif nb <= 1 and use_implicit_Hs_on_Nitrogen:
                 tally['found'] += 1
                 atom.nta_type = 'N_21'
                 atom.nta_info = 'Correctly found'
                 
             # N_2         14.007000   N         3            Sp2 non-aromatic Nitrogen with 0-implicit hydrogens
-            elif nb == 3:
+            elif nb == 2:
                 tally['found'] += 1
                 atom.nta_type = 'N_2'
                 atom.nta_info = 'Correctly found'
@@ -479,25 +479,25 @@ def nta(mm, basename, ff_name):
             # Strict DREIDING atom-typing that occurs after User defined atom-typing attempts #
             #---------------------------------------------------------------------------------#
             # N_33        17.031000   N         1            Sp3 hybridized Nitrogen with 3-implicit hydrogens
-            if nb == 1 and use_implicit_Hs_on_Nitrogen:
+            if nb == 0 and use_implicit_Hs_on_Nitrogen:
                 tally['found'] += 1
                 atom.nta_type = 'N_33'
                 atom.nta_info = 'Correctly found'
                 
             # N_32        16.023000   N         2            Sp3 hybridized Nitrogen with 2-implicit hydrogens
-            elif nb == 2 and use_implicit_Hs_on_Nitrogen:
+            elif nb == 1 and use_implicit_Hs_on_Nitrogen:
                 tally['found'] += 1
                 atom.nta_type = 'N_32'
                 atom.nta_info = 'Correctly found'
                 
             # N_31        15.015000   N         3            Sp3 hybridized Nitrogen with 1-implicit hydrogens
-            elif nb == 3 and use_implicit_Hs_on_Nitrogen:
+            elif nb == 2 and use_implicit_Hs_on_Nitrogen:
                 tally['found'] += 1
                 atom.nta_type = 'N_31'
                 atom.nta_info = 'Correctly found'
                 
             # N_3         14.007000   N         4            Sp3 hybridized Nitrogen with 0-implicit hydrogens
-            elif nb == 4:
+            elif nb == 3:
                 tally['found'] += 1
                 atom.nta_type = 'N_3'
                 atom.nta_info = 'Correctly found'
