@@ -174,7 +174,7 @@ def parse_lambda_settings(lmbda):
 #################################################################
 # Function to increment lambda's, compute cve, and minimize cve #
 #################################################################
-def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel='', basename=''):
+def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel='', basename='', colors=None):
     
     #--------------------------------------------------------------------------------------#
     # Check for user values based on lmbda_method = 'op<MinLambda,MaxLambda,NumLambda>' or #
@@ -293,12 +293,15 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
     # Plot the CVE vs lambda plot
     fig = None
     if str(lmbda_method).endswith('-p'):
-        # Color wheel defined by matplotlib:
-        #   colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
-        # However, we can construct our own color wheel to prioritize the colors we want first and we can 
-        # have way more colors defined than what matplotlib defines. Below is Josh's preferred color wheel
-        colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:purple', 'tab:red', 'tab:gray','tab:olive', 'tab:cyan', 'tab:pink', 'teal',
-                  'crimson', 'lime', 'tomato',  'blue', 'orange', 'green', 'purple', 'red', 'gray', 'olive', 'cyan', 'pink', 'tab:brown']
+        if isinstance(colors, (tuple , list)):
+            colors = colors
+        else:
+            # Color wheel defined by matplotlib:
+            #   colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+            # However, we can construct our own color wheel to prioritize the colors we want first and we can 
+            # have way more colors defined than what matplotlib defines. Below is Josh's preferred color wheel
+            colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:purple', 'tab:red', 'tab:gray','tab:olive', 'tab:cyan', 'tab:pink', 'teal',
+                      'crimson', 'lime', 'tomato',  'blue', 'orange', 'green', 'purple', 'red', 'gray', 'olive', 'cyan', 'pink', 'tab:brown']
         
         # Function to walk around the color wheel defined by colors and get the next color,
         # if the color index is exceeds the color wheel, it will reset the color index to 0
@@ -343,8 +346,7 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
         nplotted = 8 # maximum number of plotted lambdas
         modulus = math.floor(len(course_lambdas)/nplotted)
         color_index = 0
-        color, color_index = walk_colors(color_index, colors)
-        ax3.plot(x, y, '-', lw=5, color=color, label='Raw data')
+        ax3.plot(x, y, '-', lw=5, color='tab:blue', label='Raw data')
         for n, (lamda, z, cve) in enumerate(zip(course_lambdas, course_zs, course_cves), 1):
             if n%modulus == 0:
                 course_z, course_cve = Whittaker_Eilers_without_interpolation(y, d, lamda, compute_cve=False, cve_mode=cve_mode)
@@ -380,12 +382,12 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
 #   order = order of smoother (number of data points smoother uses - 2 is a good default)  #
 #   lmbda = controls "smoothness" can be an integer or 'op' for optimize                   #
 ############################################################################################
-def smooth(xdata, ydata, order, lmbda, xlabel='', ylabel='', basename=''):
+def smooth(xdata, ydata, order, lmbda, xlabel='', ylabel='', basename='', colors=None):
     x = np.array(xdata.copy())
     y = np.array(ydata.copy())
     # Automatic lambda optimization
     if str(lmbda).startswith('op'):
-        optimal_lambda, fig = Whittaker_Eilers_optimize_lambda(x, y, order, lmbda, xlabel=xlabel, ylabel=ylabel, basename=basename)
+        optimal_lambda, fig = Whittaker_Eilers_optimize_lambda(x, y, order, lmbda, xlabel=xlabel, ylabel=ylabel, basename=basename, colors=colors)
         lmbda = optimal_lambda 
     else: optimal_lambda, fig = None, None
     smoothed, cve = Whittaker_Eilers_without_interpolation(y, order, lmbda, False)

@@ -16,10 +16,12 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 12January2025)
+LUNAR (version 14January2025)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+14January2025      JDK         - log_analysis.py: Added color control for Whittaker-Eilers optimization plot.
+
 12January2025      JDK         - atom_typing.py:  Adjusted sp3 nitrogen typing behavior.
 
 
