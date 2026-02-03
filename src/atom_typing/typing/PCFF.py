@@ -462,7 +462,7 @@ def nta(mm, basename, ff_name):
                 
             # hsi      1.00800      H         1        silane hydrogen
             elif elements1[0] == 'S' and formula == 'H4-S1':
-                atom.nta_type = 'hs'; tally['found'] += 1;
+                atom.nta_type = 'hsi'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # hs       1.00797      H         1        hydrogen bonded to sulfur
