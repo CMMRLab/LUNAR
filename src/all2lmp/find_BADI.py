@@ -468,7 +468,7 @@ def improper_types(impropers, angleangles, nta, m, ff_class, reduce_DREIDING_ADI
         
         # ff_class == 'd' and reduce_DREIDING_ADI_types swap outer atoms to X
         if ff_class == 'd' and reduce_DREIDING_ADI_types:
-            improper_type = ('X', nta2, 'X', 'X')
+            improper_type = (nta2, 'X', 'X', 'X')
         
         # Add improper type to improper set
         improper_types_set.add(improper_type)
@@ -504,7 +504,7 @@ def improper_types(impropers, angleangles, nta, m, ff_class, reduce_DREIDING_ADI
         
         # ff_class == 'd' and reduce_DREIDING_ADI_types swap outer atoms to X
         if ff_class == 'd' and reduce_DREIDING_ADI_types:
-            angleangle_type = ('X', nta2, 'X', 'X')
+            angleangle_type = (nta2, 'X', 'X', 'X')
         
         # Add improper type to improper set
         angleangle_types_set.add(angleangle_type)

@@ -1870,6 +1870,17 @@ def find_improper_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
         order = (type1, type2, type3, type4)
         equiv = (type1, type2, type3, type4)
         match = (type1, type2, type3, type4)
+        
+                                
+        # Iakovos Delasoudas DREIDING improper ordering issue 2/3/2026.
+        if ff_class == 'd':
+            order = (type2, type1, type3, type4)
+            equiv = (type2, type1, type3, type4)
+            match = (type2, type1, type3, type4)
+            type1 = 'X'
+            type2 = order[1]
+            type3 = 'X'
+            type4 = 'X'
 
         # Find improper number based on n, either from improper_types_dict or angleangle_types_dict
         if n < len(BADI.improper_types_dict):
@@ -1991,6 +2002,15 @@ def find_improper_parameters(frc, BADI, use_auto_equivalence, use_assumed_auto_f
                         
                         # Find correct order of real types based on assumed type ordering (aa_order)
                         order = assumed_impropertypes_order_remap2_realtypes_order(aa_order, type1, type2, type3, type4, log)
+
+        # Iakovos Delasoudas DREIDING improper ordering issue 2/3/2026.
+        if ff_class == 'd':
+            m1, m2, m3, m4 = match
+            o1, o2, o3, o4 = order
+            e1, e2, e3, e4 = equiv
+            match = (m2, m1, m3, m4)
+            order = (o2, o1, o3, o4)
+            equiv = (e2, e1, e3, e4)
 
         ##################################################
         # only find impropers that are impropers and     #
@@ -2188,6 +2208,7 @@ def find_impropers(nta, BADI, improper_map, m, sort_remap_atomids, ff_class, log
     impropers = {}   # {improper number : improper object}
     
     # Find angles info
+    m = 0
     for n, (id1, id2, id3, id4) in enumerate(BADI.impropers):
         type1 = nta[id1]; type2 = nta[id2]; type3 = nta[id3]; type4 = nta[id4];
         
@@ -2219,8 +2240,8 @@ def find_impropers(nta, BADI, improper_map, m, sort_remap_atomids, ff_class, log
             number = dict2search[(type4, type2, type1, type3)]
         elif (type4, type2, type3, type1) in dict2search:
             number = dict2search[(type4, type2, type3, type1)]  
-        elif ('X', type2, 'X', 'X') in dict2search and ff_class == 'd':
-            number = dict2search[('X', type2, 'X', 'X')]
+        elif (type2, 'X', 'X', 'X') in dict2search and ff_class == 'd':
+            number = dict2search[(type2, 'X', 'X', 'X')]
         else:
             log.error('ERROR Finding Improper Type for improper ordering')
         
@@ -2249,9 +2270,13 @@ def find_impropers(nta, BADI, improper_map, m, sort_remap_atomids, ff_class, log
             elif ordering == (type4, type2, type3, type1):
                 improper_type = (type4, type2, type3, type1)
                 atomids = [id4, id2, id3, id1]
-            elif ordering == ('X', type2, 'X', 'X') and ff_class == 'd':
-                improper_type = ('X', type2, 'X', 'X')
-                atomids = [id1, id2, id3, id4]
+            elif ordering == (type2, 'X', 'X', 'X') and ff_class == 'd':
+                # Iakovos Delasoudas DREIDING improper ordering issue 2/3/2026.
+                improper_type = (type2, 'X', 'X', 'X')
+                atomids = [id2, id1, id3, id4]
+                if nb > 3: continue
+                
+                
             else:
                 log.error('ERROR Finding Improper Type for improper ordering')  
         # if not sort_remap_atomids use orginal ordering
@@ -2265,7 +2290,8 @@ def find_impropers(nta, BADI, improper_map, m, sort_remap_atomids, ff_class, log
         i.nb = nb_type
         i.symbol = improper_type
         i.atomids = atomids
-        impropers[n+1] = i
+        impropers[m+1] = i
+        m += 1
     return impropers
 
 
