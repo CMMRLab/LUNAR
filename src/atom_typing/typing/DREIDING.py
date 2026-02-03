@@ -325,19 +325,19 @@ def nta(mm, basename, ff_name):
             # Strict DREIDING atom-typing that occurs after User defined atom-typing attempts #
             #---------------------------------------------------------------------------------#
             # O_R         15.999000   0         2            Sp2 aromatic Oxygen with 0-implicit hydrogens
-            if ring >= 5 and nb == 3:
+            if ring >= 5 and nb == 2:
                 tally['found'] += 1
                 atom.nta_type = 'O_R'
                 atom.nta_info = 'Correctly found'
                 
             # O_R1        17.007000   0         1            Sp2 aromatic Oxygen with 1-implicit hydrogens
-            elif ring >= 5 and nb == 2 and use_implicit_Hs_on_Oxygen:
+            elif ring >= 5 and nb == 1 and use_implicit_Hs_on_Oxygen:
                 tally['found'] += 1
                 atom.nta_type = 'O_R1'
                 atom.nta_info = 'Correctly found'
                 
             # O_2         15.999000   0         2            Sp2 non-aromatic Oxygen with 0-implicit hydrogens
-            elif nb == 3:
+            elif nb == 2:
                 tally['found'] += 1
                 atom.nta_type = 'O_2'
                 atom.nta_info = 'Correctly found'
