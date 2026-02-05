@@ -16,10 +16,12 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 3February2026)
+LUNAR (version 5February2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+5February2026      JDK         - log_analysis.py: Changed prominence method in RFR yield point predictions.
+
 3February2026      JDK         - all2lmp.py:  Adjusted atom ordering for DREIDING impropers.
 
 3February2026      JDK         - atom_typing.py:  Adjusted hsi typing behavior in PCFF and PCFF-IFF.

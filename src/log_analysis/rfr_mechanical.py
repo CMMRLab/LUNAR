@@ -465,25 +465,33 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
         # Find peaks and valleys (slowly decreasing prominence - std_dev/3 works for MD models, but for expeirmental
         # stress-strain curves it does not. The slow decreasing of promence is meant for expeirmental stress-strain
         # cases as a "Catch-all" to allow for the rest of the "yp" method to function properly)
-        std_dev =  misc_funcs.compute_standard_deviation(dslopes2)
-        incremented_search = True
-        if incremented_search:
-            for i in range(1, 11):
-                std_div = i*3
-                prominence = std_dev/std_div
-                xpeaks, ypeaks, xvalleys, yvalleys, valley_depths = signal_processing.find_peaks_and_valleys(dfringe, dslopes2, prominence)
-                if len(xvalleys) >= 4: break
+        # std_dev =  misc_funcs.compute_standard_deviation(dslopes2)
+        # incremented_search = True
+        # if incremented_search:
+        #     for i in range(1, 11):
+        #         std_div = i*3
+        #         prominence = std_dev/std_div
+        #         xpeaks, ypeaks, xvalleys, yvalleys, valley_depths = signal_processing.find_peaks_and_valleys(dfringe, dslopes2, prominence)
+        #         if len(xvalleys) >= 4: break
         
-        # Find peaks and valleys based on a fixed std_dev/3
-        else:
-            std_div = 3
-            prominence = std_dev/std_div
-            xpeaks, ypeaks, xvalleys, yvalleys, valley_depths = signal_processing.find_peaks_and_valleys(dfringe, dslopes2, prominence)
+        # # Find peaks and valleys based on a fixed std_dev/3
+        # else:
+        #     std_div = 3
+        #     prominence = std_dev/std_div
+        #     xpeaks, ypeaks, xvalleys, yvalleys, valley_depths = signal_processing.find_peaks_and_valleys(dfringe, dslopes2, prominence)
+            
+        # First attempt setting prominance based on max of diff
+        dslopes2_np   = np.array(dslopes2)
+        dslopes2_diff = np.diff(dslopes2_np)
+        dslopes2_abs  = np.abs(dslopes2_diff)
+        prominence    = float( max(dslopes2_abs) )
+        xpeaks, ypeaks, xvalleys, yvalleys, valley_depths = signal_processing.find_peaks_and_valleys(dfringe, dslopes2, prominence)
             
         # Perform one more check for valleys and if not set prominence as None to maximize the possibilty of finding valleys
         if len(xvalleys) < 1 and len(yvalleys) < 1:
             std_div = None
-            xpeaks, ypeaks, xvalleys, yvalleys, valley_depths = signal_processing.find_peaks_and_valleys(dfringe, dslopes2, None)
+            prominence = None
+            xpeaks, ypeaks, xvalleys, yvalleys, valley_depths = signal_processing.find_peaks_and_valleys(dfringe, dslopes2, prominence)
         
         # Find valleys
         valleys = [(x, y, d[0], d[1], d[2]) for x, y, d in zip(xvalleys, yvalleys, valley_depths)] # [ (x-value, y-value, avg-depth, small-depth, large-depth) ]
@@ -777,16 +785,17 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
         # Plot yield strength method
         if yp in ['min-2d', 'min-v', 'max-d'] or isinstance(yp, int):
             ax3.plot(dfringe_full, dslopes2_full, '-', color='lime', lw=3.0, label='$(d^2slope)/(dfringe^2)$ unbounded')
-            ax3.plot(dfringe, dslopes2, '-', color='tab:blue', lw=3.0, label='$(d^2slope)/(dfringe^2)$ bounded')
+            ax3.plot(dfringe, dslopes2, '.', color='tab:blue', ms=2.0, label='$(d^2slope)/(dfringe^2)$ bounded')
             ax3.axvline(xlo, color='tab:red', ls='--', lw=2, label='Linear-region xlo')
             ax3.axvline(xhi, color='tab:red', ls='--', lw=2, label='Linear-region xhi')
             ax3.axvline(max_strain, color='tab:green', ls='--', lw=2, label='Max stress')
             if xvalleys and yvalleys and yp != 'min-2d':
                 ax3.plot(xhi_yield, yhi_yield, 'o', ms=10.0, markeredgecolor='black', color='tab:green', label='Yield point (x,y):\n ({:.4f}, {:.4f})'.format(xhi_yield, yhi_yield))
-                if std_div is not None:
-                    ax3.plot(xvalleys, yvalleys, 'o', ms=6.0, markeredgecolor='black', color='tab:orange', label='Valleys (w/ prominence=STD-DEV/{})'.format(std_div))
-                else:
-                    ax3.plot(xvalleys, yvalleys, 'o', ms=6.0, markeredgecolor='black', color='tab:orange', label='Valleys (w/ prominence={})'.format(std_div))
+                # if std_div is not None:
+                #     ax3.plot(xvalleys, yvalleys, 'o', ms=6.0, markeredgecolor='black', color='tab:orange', label='Valleys (w/ prominence=STD-DEV/{})'.format(std_div))
+                # else:
+                #     ax3.plot(xvalleys, yvalleys, 'o', ms=6.0, markeredgecolor='black', color='tab:orange', label='Valleys (w/ prominence={})'.format(std_div))
+                ax3.plot(xvalleys, yvalleys, 'o', ms=6.0, markeredgecolor='black', color='tab:orange', label='Valleys (w/ prominence={})'.format(prominence))
                 ax3.axvline(xhi_yield, color='tab:cyan', ls='--', lw=2, label='Yield point ({})'.format(xhi_yield))
             if yp == 'min-2d' or not xvalleys and not yvalleys and  min_2d_fringe is not None and min_2d_slope is not None:
                 ax3.plot(min_2d_fringe, min_2d_slope, 'o', ms=10.0, markeredgecolor='black', color='tab:green', label='Yield point (x,y):\n ({:.4f}, {:.4f})'.format(min_2d_fringe, min_2d_slope))
