@@ -2244,7 +2244,7 @@ def find_impropers(nta, BADI, improper_map, m, sort_remap_atomids, ff_class, log
             number = dict2search[(type2, 'X', 'X', 'X')]
         else:
             log.error('ERROR Finding Improper Type for improper ordering')
-        
+            
         
         # Find improper ordering and set improper_type and atomids
         if sort_remap_atomids:
@@ -2275,10 +2275,10 @@ def find_impropers(nta, BADI, improper_map, m, sort_remap_atomids, ff_class, log
                 improper_type = (type2, 'X', 'X', 'X')
                 atomids = [id2, id1, id3, id4]
                 if nb > 3: continue
-                
-                
             else:
                 log.error('ERROR Finding Improper Type for improper ordering')  
+                
+                
         # if not sort_remap_atomids use orginal ordering
         else:
             improper_type = (type1, type2, type3, type4)

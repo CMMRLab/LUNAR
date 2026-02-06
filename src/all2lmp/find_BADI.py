@@ -24,7 +24,7 @@ class BADI:
     def __init__(self, m, nta, name, ff_class, log):
         
         # Find info of ff_class for class 1 or 2 or 'd' or 's1' or 's2'
-        if ff_class in [0, 1, 2, 'd', 's1', 's2', '0', '1', '2']:            
+        if ff_class in [0, 1, 2, 'd', 'd/X6', 's1', 's2', '0', '1', '2']:            
             # Find BADI            
             self.graph = generate_graph(m)
             self.bonds = get_bonds(m)
@@ -42,7 +42,7 @@ class BADI:
             self.improper_types_lst, self.improper_types_dict, self.angleangle_types_lst, self.angleangle_types_dict, self.flagged_angleangles = improper_types(self.impropers, self.angleangles, nta, m, ff_class, reduce_DREIDING_ADI_types, log)
             
             # if ff_class is 2 of 'd' or 's2' add impropers and angleangles lists together
-            if ff_class in [2, 'd', 's2', '2']:
+            if ff_class in [2, 's2', '2']:
                 self.impropers.extend(self.angleangles)
                 self.improper_types_lst.extend(self.angleangle_types_lst)  
                 
@@ -326,7 +326,7 @@ def angle_types(angles, nta, ff_class, reduce_DREIDING_ADI_types, log):
             angle_type = (nta1, nta2, nta3)
             
         # ff_class == 'd' and reduce_DREIDING_ADI_types swap outer atoms to X
-        if ff_class == 'd' and reduce_DREIDING_ADI_types:
+        if ff_class in ['d', 'd/X6'] and reduce_DREIDING_ADI_types:
             angle_type = ('X', nta2, 'X')
         
         # Add angle type to angle set
@@ -421,7 +421,7 @@ def dihedral_types(dihedrals, nta, ff_class, reduce_DREIDING_ADI_types, log):
             dihedral_type = (nta1, nta2, nta3, nta4)
             
         # ff_class == 'd' and reduce_DREIDING_ADI_types swap outer atoms to X
-        if ff_class == 'd' and reduce_DREIDING_ADI_types:
+        if ff_class in ['d', 'd/X6'] and reduce_DREIDING_ADI_types:
             dihedral_type = ('X', nta2, nta3, 'X')
         
         # Add dihedral type to angle set
@@ -467,7 +467,7 @@ def improper_types(impropers, angleangles, nta, m, ff_class, reduce_DREIDING_ADI
         improper_type = (outer_atoms[0], nta2, outer_atoms[1], outer_atoms[2])
         
         # ff_class == 'd' and reduce_DREIDING_ADI_types swap outer atoms to X
-        if ff_class == 'd' and reduce_DREIDING_ADI_types:
+        if ff_class in ['d', 'd/X6'] and reduce_DREIDING_ADI_types:
             improper_type = (nta2, 'X', 'X', 'X')
         
         # Add improper type to improper set
@@ -503,7 +503,7 @@ def improper_types(impropers, angleangles, nta, m, ff_class, reduce_DREIDING_ADI
         angleangle_type = (outer_atoms[0], nta2, outer_atoms[1], outer_atoms[2])
         
         # ff_class == 'd' and reduce_DREIDING_ADI_types swap outer atoms to X
-        if ff_class == 'd' and reduce_DREIDING_ADI_types:
+        if ff_class in ['d', 'd/X6'] and reduce_DREIDING_ADI_types:
             angleangle_type = (nta2, 'X', 'X', 'X')
         
         # Add improper type to improper set
@@ -518,16 +518,16 @@ def improper_types(impropers, angleangles, nta, m, ff_class, reduce_DREIDING_ADI
     angleangle_types_lst = sorted(angleangle_types_lst, key=lambda x: x[0])
     
     # Loop through improper_types_lst and warn if improper type and angleangle type are the same
-    if ff_class in [2, 'd', 's2', '2']:
+    if ff_class in [2, 's2', '2']:
         for i in improper_types_lst:
             if i in angleangle_types_lst:
                 log.out('OOP Improper Coeff {} {} {} {} has same angleangle coeff - Duplicates of improper Improper coeffs will exists (one for OOP and one for angleangle)'.format(i[0], i[1], i[2], i[3]))
     
     
     # combine impropers and angleangles together based on ff_class and assign numbers
-    if ff_class in [2, 'd', 's2', '2']:
+    if ff_class in [2, 's2', '2']:
         total_impropers = improper_types_lst + angleangle_types_lst 
-    elif ff_class in [1, '1']:
+    elif ff_class in [1, '1', 'd', 'd/X6']:
         total_impropers = improper_types_lst
     else:
         total_impropers = improper_types_lst
