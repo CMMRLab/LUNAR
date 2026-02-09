@@ -1,0 +1,132 @@
+
+
+Running bond_react_merge v1.16 / 2 November 2024
+Using Python version 3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]
+
+
+The following files and their corresponding filetags have been read in from EXAMPLES/bond_react_merge_tests/test12/merge_files.txt:
+ data1   EXAMPLES/bond_react_merge_tests/test12/PBZ_old.data
+  pre3   EXAMPLES/bond_react_merge_tests/test12/used_new_3_pre.data
+ post3   EXAMPLES/bond_react_merge_tests/test12/used_new_3_post.data
+parent_directory was set from EXAMPLES/bond_react_merge_tests/test12/merge_files.txt as topofile/run/
+
+
+---------------------------------------------------------------------------------------------
+|                read in files key to value dictionary map to organize files                |
+---------------------------------------------------------------------------------------------
+|      key to      |                          value to dictionary                           |
+|    dictionary    |                                filename                                |
+---------------------------------------------------------------------------------------------
+|      data1       |                              PBZ_old.data                              |
+|       pre3       |                          used_new_3_pre.data                           |
+|      post3       |                          used_new_3_post.data                          |
+---------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                                filename                                |   natom    |   nbond    |   nangle   | ndihedral  |  improper  |
+|                      (Truncated to 70 characters)                      |   types    |   types    |   types    |   types    |   types    |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                              PBZ_old.data                              |     11     |     13     |     22     |     32     |     16     |
+|                          used_new_3_pre.data                           |     11     |     12     |     20     |     30     |     14     |
+|                          used_new_3_post.data                          |     9      |     10     |     16     |     22     |     11     |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                          Total possible sum:                           |     31     |     35     |     58     |     84     |     41     |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                           Total unique sum:                            |     11     |     13     |     22     |     32     |     16     |
+-------------------------------------------------------------------------------------------------------------------------------------------
+Internally determined force field is class2
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+************************************************************************************************************
+************************************************************************************************************
+************************************************************************************************************
+***  Using generate_map_file, which auto-generates the map file based on tag-ID for preN/postN pairings. ***
+***  PLEASE CONFIRM preN tagged file is consistent with postN tagged file. Each section is set by the    ***
+***  following methods:                                                                                  ***
+***      InitiatorIDs                                                                                    ***
+***          Will be initialized as "ID1" and "ID2", then if two molecues are found in the preN tagged   ***
+***          file and edgeIDs were found, a 1st attempt at setting the InitiatorIDs is to search 4-6     ***
+***          neighbors away from all edgeIDs and select to most unique atom-type in each molecule. If    ***
+***          the code can find all equivalences (which are assumed to be correct), a 2nd attempt is then ***
+***          tried where the code applies a backwards map of all atomIDs in the postN tagged file to the ***
+***          preN tagged file. After the backwards mapping the code tries to find the bond responsible   ***
+***          that links the preN tagged-file two molecules together in the postN tagged-file. If this    ***
+***          "linking" bond can be found, the InitiatorIDs are updated with to the new "linking" atomIDs.***
+***      EdgeIDs                                                                                         ***
+***          Set by searching for the number of bonded atoms to each atom type in the dataN tagged files ***
+***          and comparing them to the preN/postN tagged files, if the number of bonded atoms for each   ***
+***          atom type is found to be different IT MUST BE AN EDGE ATOM (assumes correct atom-typing,    ***
+***          thus if no edge atoms are found it is an indication that atom types are not consistent      ***
+***          between the dataN tagged files and the preN tagged files).                                  ***
+***      DeleteIDs                                                                                       ***
+***           Will automatically be found by the code if the code can find all equivalences (which are   ***
+***           assumed to be correct). The code will warn the user that deleteIDs were detected which are ***
+***           determined by if the postN tagged files has more then one molecular fragment, the largest  ***
+***           frament is kept and the smaller ones are are assumed to be deleteIDs. Once the smaller     ***
+***           fragments are found the atomIDs are mapped backwards onto the preN tagged atomIDs. Thus if ***
+***           the Equivalences are found to be wrong its possible that the DeleteIDs are wrong, however  ***
+***           in the *_commented.txt map file there will be a comment on the atomID it is in the postN   ***
+***           tagged file which can be used to help reset the DeleteIDs if needed during checking of the ***
+***           generated map file.                                                                        ***
+***      Equivalences                                                                                    ***
+***           Set by a pseudo-graph-theory/cost-based algorithm were each preN/postN tagged pair are     ***
+***           converted to graphs. The atom-types, number of bonded neighbors (nb), elements, atomIDs,   ***
+***           molID (reset by code), molecule formula, and relative location of atom in the template is  ***
+***           used to assign a map cost. Then an incremented approach of slowly increase an acceptable   ***
+***           cost is then used where the lower cost mappings are assigned first (best matches) and the  ***
+***           atomIDs that have the worst map are set last (due to creation of new topologies).          ***
+***  In general, it is up to the user to check all information in the generated map files is correct.    ***
+***  NOTE: terminating atoms like H do NOT require perfect mapping since nothing is bonded "through"     ***
+***  them. The code is designed to try getting everything correct, but there are scenerios where the     ***
+***  code may not be able to due to the complexity present in the generation of the map files.           ***
+************************************************************************************************************
+************************************************************************************************************
+************************************************************************************************************
+
+
+Writing in.fix_bond_react.script
+
+
+
+****************************************************
+* Finding rxn map/super-impose file for rxnid:  3  *
+****************************************************
+
+  ----------------------Pre  rxn Cluster Analysis-----------------------
+    molID     Molecule Size   %Size of Molecule         formula       
+  ----------------------------------------------------------------------
+      1              28             59.57             C17-H9-N1-O1    
+      2              19             40.43             C11-H6-N1-O1    
+
+
+  ----------------------Post rxn Cluster Analysis-----------------------
+    molID     Molecule Size   %Size of Molecule         formula       
+  ----------------------------------------------------------------------
+      1              47             100.00           C28-H15-N2-O2    
+
+  pre3 -> post3 rxn map equivalences converged in 407 iterations with a max cost of 164
+
+
+
+Writing in.create_atoms.script
+
+
+************************************************************************************************  
+*** Only modification to molecule template is to update charges on edge atoms if not updated *** 
+************************************************************************************************ 
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\bond_react_merge_tests\test12\run/ directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 2.859849214553833
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

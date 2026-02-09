@@ -1,0 +1,92 @@
+
+
+Running bond_react_merge: v1.17 / 14 April 2025
+Using Python version: 3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 16:37:03) [MSC v.1929 64 bit (AMD64)]
+Using Python executable: C:\Users\jdkem\anaconda3\python.exe
+
+
+The following files and their corresponding filetags have been read in from EXAMPLES/bond_react_merge_tests/test14/merge_files.txt:
+ data1   EXAMPLES/bond_react_merge_tests/test14/PEEK_typed_PCFF.data
+  pre1   EXAMPLES/bond_react_merge_tests/test14/pre_typed_PCFF.data
+ post1   EXAMPLES/bond_react_merge_tests/test14/post_typed_PCFF.data
+parent_directory was set from EXAMPLES/bond_react_merge_tests/test14/merge_files.txt as topofile/run/
+
+
+---------------------------------------------------------------------------------------------
+|                read in files key to value dictionary map to organize files                |
+---------------------------------------------------------------------------------------------
+|      key to      |                          value to dictionary                           |
+|    dictionary    |                                filename                                |
+---------------------------------------------------------------------------------------------
+|      data1       |                          PEEK_typed_PCFF.data                          |
+|       pre1       |                          pre_typed_PCFF.data                           |
+|      post1       |                          post_typed_PCFF.data                          |
+---------------------------------------------------------------------------------------------
+
+
+pre_typed_PCFF.data had the following BondingIDs specified in the header: [14, 57, 35, 44]
+pre_typed_PCFF.data had the following Reduce specified in the header: [5, 5]
+
+  ----------------------Pre  rxn Cluster Analysis-----------------------
+    molID     Molecule Size   %Size of Molecule         formula       
+  ----------------------------------------------------------------------
+      1              36             50.00              C19-H14-O3     
+      2              36             50.00              C19-H14-O3     
+
+
+  ----------------------Post rxn Cluster Analysis-----------------------
+    molID     Molecule Size   %Size of Molecule         formula       
+  ----------------------------------------------------------------------
+      1              70             97.22              C38-H26-O6     
+      2               2              2.78                  H2         
+
+  pre-rxn atom removal:
+    Identifying atoms based on atomIDs
+    Original number of atoms: 72    new number of atoms: 27
+    Original number of bonds: 76    new number of bonds: 27
+    Original number of angles: 118    new number of angles: 40
+    Original number of dihedrals: 172    new number of dihedrals: 54
+    Original number of impropers: 38    new number of impropers: 13
+  post-rxn atom removal:
+    Identifying atoms based on atomIDs
+    Original number of atoms: 72    new number of atoms: 27
+    Original number of bonds: 76    new number of bonds: 27
+    Original number of angles: 118    new number of angles: 40
+    Original number of dihedrals: 174    new number of dihedrals: 56
+    Original number of impropers: 38    new number of impropers: 13
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                                filename                                |   natom    |   nbond    |   nangle   | ndihedral  |  improper  |
+|                      (Truncated to 70 characters)                      |   types    |   types    |   types    |   types    |   types    |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                          PEEK_typed_PCFF.data                          |     7      |     7      |     9      |     13     |     5      |
+|                          pre_typed_PCFF.data                           |     7      |     7      |     9      |     13     |     5      |
+|                          post_typed_PCFF.data                          |     8      |     8      |     9      |     13     |     5      |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                          Total possible sum:                           |     22     |     22     |     27     |     39     |     15     |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                           Total unique sum:                            |     8      |     8      |     9      |     13     |     5      |
+-------------------------------------------------------------------------------------------------------------------------------------------
+Internally determined force field is class2
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+Writing in.create_atoms.script
+
+
+************************************************************************************************  
+*** Only modification to molecule template is to update charges on edge atoms if not updated *** 
+************************************************************************************************ 
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\bond_react_merge_tests\test14\run/ directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.021946430206298828
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

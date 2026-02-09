@@ -1,0 +1,49 @@
+Map file: bond_react_merge: v1.17 / 14 April 2025 auto-generated mapfile for r1_pre_typed_IFF.data  ->  r1_post_typed_IFF.data    rxnid: 1
+
+8 edgeIDs
+21 equivalences
+1 deleteIDs
+
+InitiatorIDs
+
+11   #   links pre-rxn molecule molid 1 -> 2
+16   #   links pre-rxn molecule molid 1 -> 2
+
+EdgeIDs
+
+ 1   #   cp (   nb==1 and nb does not match most common nb for the atom-type from the dataN tagged files     ) 
+ 5   #   cp (   nb==1 and nb does not match most common nb for the atom-type from the dataN tagged files     ) 
+ 6   #   cp (   nb==1 and nb does not match most common nb for the atom-type from the dataN tagged files     ) 
+ 7   #   cp (   nb==1 and nb does not match most common nb for the atom-type from the dataN tagged files     ) 
+ 9   #   cp (   nb==1 and nb does not match most common nb for the atom-type from the dataN tagged files     ) 
+10   #   cp (   nb==1 and nb does not match most common nb for the atom-type from the dataN tagged files     ) 
+12   #   cp (   nb==1 and nb does not match most common nb for the atom-type from the dataN tagged files     ) 
+14   #   cp (   nb==1 and nb does not match most common nb for the atom-type from the dataN tagged files     ) 
+
+DeleteIDs
+
+18   #   Pre-rxn-atomID:  18   has a Post-rxn-atomID:  21   that belongs to a Post-molID:   2   and has been tagged for deletion
+
+Equivalences # ( pre -> post )
+
+ 1        1        # types:   cp   ->  cp   molids:    1   ->   1    Total cost:  62.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   0        cumulative_neigh_types:  32        cumulative_neigh_elements:  30        ID:   0      )
+ 2        2        # types:   cp   ->  cp   molids:    1   ->   1    Total cost:  62.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   0        cumulative_neigh_types:  32        cumulative_neigh_elements:  30        ID:   0      )
+ 3        3        # types:    c   ->   c   molids:    1   ->   1    Total cost:  63.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   1        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   0        cumulative_neigh_types:  32        cumulative_neigh_elements:  30      )
+ 4        4        # types:   cp   ->  cp   molids:    1   ->   1    Total cost:  62.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   0        cumulative_neigh_types:  32        cumulative_neigh_elements:  30        ID:   0      )
+ 5        5        # types:   cp   ->  cp   molids:    1   ->   1    Total cost:  62.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   0        cumulative_neigh_types:  32        cumulative_neigh_elements:  30        ID:   0      )
+ 6        6        # types:   cp   ->  cp   molids:    1   ->   1    Total cost:  62.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   0        cumulative_neigh_types:  32        cumulative_neigh_elements:  30        ID:   0      )
+ 7        7        # types:   cp   ->  cp   molids:    1   ->   1    Total cost:  62.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   0        cumulative_neigh_types:  32        cumulative_neigh_elements:  30        ID:   0      )
+ 8        8        # types:   cp   ->  cp   molids:    1   ->   1    Total cost:  62.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   0        cumulative_neigh_types:  32        cumulative_neigh_elements:  30        ID:   0      )
+ 9        9        # types:   cp   ->  cp   molids:    1   ->   1    Total cost:  62.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   0        cumulative_neigh_types:  32        cumulative_neigh_elements:  30        ID:   0      )
+10       10        # types:   cp   ->  cp   molids:    1   ->   1    Total cost:  62.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   0        cumulative_neigh_types:  32        cumulative_neigh_elements:  30        ID:   0      )
+11       20        # types:   o_1  ->  oc   molids:    1   ->   1    Total cost:  34.000 (    atom-type:  10        nb:   1        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   0        cumulative_neigh_types:  13        cumulative_neigh_elements:  10      )
+12       11        # types:   cp   ->  cp   molids:    2   ->   1    Total cost:  62.500 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   1        cumulative_neigh_types:  31        cumulative_neigh_elements:  30        ID:  0.5     )
+13       12        # types:   cp   ->  cp   molids:    2   ->   1    Total cost:  62.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   1        cumulative_neigh_types:  31        cumulative_neigh_elements:  30      )
+14       13        # types:   cp   ->  cp   molids:    2   ->   1    Total cost:  62.500 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   1        cumulative_neigh_types:  31        cumulative_neigh_elements:  30        ID:  0.5     )
+15       14        # types:   c2   ->  c2   molids:    2   ->   1    Total cost:  63.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   1        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   1        cumulative_neigh_types:  31        cumulative_neigh_elements:  30      )
+16       15        # types:   c3   ->  c2   molids:    2   ->   1    Total cost:  39.000 (    atom-type:  10        nb:   0        neigh_1st_atom-types:   1        neigh_1st_elements:   1        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   1        cumulative_neigh_types:  14        cumulative_neigh_elements:  12      )
+17       16        # types:   hc   ->  hc   molids:    2   ->   1    Total cost:  62.500 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   0        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   1        cumulative_neigh_types:  31        cumulative_neigh_elements:  30        ID:  0.5     )
+18       21        # types:   hc   ->   h   molids:    2   ->   2    Total cost:  98.000 (    atom-type:  10        nb:   1        neigh_1st_atom-types:   1        neigh_1st_elements:   1        edge:   0        depth_from_edge:   4        deleteID:  20        molID:   1        cumulative_neigh_types:  30        cumulative_neigh_elements:  30      )
+19       19        # types:   hc   ->  hc   molids:    2   ->   1    Total cost:  29.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   1        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   1        cumulative_neigh_types:  15        cumulative_neigh_elements:  12        ID:   0      )
+20       18        # types:   hc   ->  hc   molids:    2   ->   1    Total cost:  30.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   1        neigh_1st_elements:   0        edge:   0        depth_from_edge:   0        deleteID:   0        molID:   1        cumulative_neigh_types:  15        cumulative_neigh_elements:  12        ID:  1.0     )
+21       17        # types:   hc   ->  hc   molids:    2   ->   1    Total cost:  55.000 (    atom-type:   0        nb:   0        neigh_1st_atom-types:   1        neigh_1st_elements:   0        edge:   0        depth_from_edge:   4        deleteID:   0        molID:   1        cumulative_neigh_types:  25        cumulative_neigh_elements:  22        ID:  2.0     )

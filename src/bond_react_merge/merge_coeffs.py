@@ -59,17 +59,32 @@ def move_NA2bottom(lst, NA_tuple, rm_flag=False):
         if not rm_flag: lst.append(NA_tuple)
     return lst
 
+        
+# Function to generate coeffs string
+def coeffs_as_types(coeff, n=1):
+    string = '|'.join(['{:.8f}'.format(i) for i in coeff])
+    if n <= 1:
+        types = string
+        return types
+    else:
+        types = [str(i) for i in range(n-1)]
+        types.append(string)
+        return tuple(types)
+        
+
 
 ###########################################################################
 # Function to update m class TypeIDs for atoms, bonds, angles, dihedrals, #
 # and impropers and update all energy coeffs based on new merged class    #
 ###########################################################################
-def update_TypeIDs(m, new, log):
+def update_TypeIDs(m, new, log, merge_with_coeffs=False):
     # Update atoms
     for i in m.atoms:
         new_type = 0   
         atom = m.atoms[i]
         str_type = m.masses[atom.type].type
+        if merge_with_coeffs:
+            str_type = coeffs_as_types(m.pair_coeffs[atom.type].coeffs, n=1)
         new_type = int(new.atom_types_map[str_type])
         if new_type == 0: log.error(f'ERROR atomID {i} from file {m.filename} failed to update TypeID')
         atom.type = new_type
@@ -80,6 +95,8 @@ def update_TypeIDs(m, new, log):
         bond = m.bonds[i]
         str_type = m.bond_coeffs[bond.type].type
         str_type_tuple = split_coeff(str_type)
+        if merge_with_coeffs:
+            str_type_tuple = coeffs_as_types(m.bond_coeffs[bond.type].coeffs, n=2)
         new_type = int(new.bond_types_map[str_type_tuple])
         if new_type == 0: log.error(f'ERROR bondID {i} from file {m.filename} failed to update TypeID')
         bond.type = new_type
@@ -90,6 +107,8 @@ def update_TypeIDs(m, new, log):
         angle = m.angles[i]
         str_type = m.angle_coeffs[angle.type].type
         str_type_tuple = split_coeff(str_type)
+        if merge_with_coeffs:
+            str_type_tuple = coeffs_as_types(m.angle_coeffs[angle.type].coeffs, n=3)
         new_type = int(new.angle_types_map[str_type_tuple])
         if new_type == 0: log.error(f'ERROR angleID {i} from file {m.filename} failed to update TypeID')
         angle.type = new_type
@@ -100,6 +119,8 @@ def update_TypeIDs(m, new, log):
         dihedral = m.dihedrals[i]
         str_type = m.dihedral_coeffs[dihedral.type].type
         str_type_tuple = split_coeff(str_type)
+        if merge_with_coeffs:
+            str_type_tuple = coeffs_as_types(m.dihedral_coeffs[dihedral.type].coeffs, n=4)
         new_type = int(new.dihedral_types_map[str_type_tuple])
         if new_type == 0: log.error(f'ERROR dihedralID {i} from file {m.filename} failed to update TypeID')
         dihedral.type = new_type
@@ -110,6 +131,8 @@ def update_TypeIDs(m, new, log):
         improper = m.impropers[i]
         str_type = m.improper_coeffs[improper.type].type
         str_type_tuple = split_coeff(str_type)
+        if merge_with_coeffs:
+            str_type_tuple = coeffs_as_types(m.improper_coeffs[improper.type].coeffs, n=5)
         new_type = int(new.improper_types_map[str_type_tuple])
         if new_type == 0: log.error(f'ERROR improperID {i} from file {m.filename} failed to update TypeID')
         improper.type = new_type
@@ -191,6 +214,11 @@ class merged:
         unique_pair_coeffs = set([]); unique_masses = set([]); unique_bond_coeffs = set([]); unique_angle_coeffs = set([])
         unique_dihedral_coeffs = set([]); unique_improper_coeffs = set([])
         
+        # This is an internal flag to merge with coeffs rather then merging with atom
+        # type strings. This is not a recommended merging strategy unless you know what
+        # you are doing and thus this will remain as a hidden boolean.
+        self.merge_with_coeffs = False
+        
         # Unique style hints logger
         self.unique_style_hints = {'Masses': [], 'Pair_Coeffs': [], 'Bond_Coeffs': [],
                                   'Angle_Coeffs': [], 'Dihedral_Coeffs': [],
@@ -219,7 +247,7 @@ class merged:
             types = types.split()
             types = tuple(types)
             return types
-        
+
         # Function to check comments are in all2lmp style
         def check_comments(types, ntypes, filename, section, log):
             if len(split_coeff(types)) != ntypes or types == 'N/A':
@@ -251,15 +279,21 @@ class merged:
             for i in pair_coeffs:
                 coeff = pair_coeffs[i]
                 types = coeff.type
+                if self.merge_with_coeffs:
+                    types = coeffs_as_types(coeff.coeffs, n=1)
                 unique_pair_coeffs.add(types)
                 nparms_in_coeff['pair'].append(len(coeff.coeffs))
                 check_comments(coeff.type, 1, file.filename, 'Pair Coeffs', log)
+            if self.merge_with_coeffs:
+                unique_masses = set([i for i in unique_pair_coeffs])
                 
             # Find unique bond coeffs
             bond_coeffs = file.bond_coeffs
             for i in bond_coeffs:
                 coeff = bond_coeffs[i]
                 types = split_coeff(coeff.type)
+                if self.merge_with_coeffs:
+                    types = coeffs_as_types(coeff.coeffs, n=2)
                 unique_bond_coeffs.add(types)
                 nparms_in_coeff['bond'].append(len(coeff.coeffs))
                 check_comments(coeff.type, 2, file.filename, 'Bond Coeffs', log)
@@ -269,6 +303,8 @@ class merged:
             for i in angle_coeffs:
                 coeff = angle_coeffs[i]
                 types = split_coeff(coeff.type)
+                if self.merge_with_coeffs:
+                    types = coeffs_as_types(coeff.coeffs, n=3)
                 unique_angle_coeffs.add(types)
                 nparms_in_coeff['angle'].append(len(coeff.coeffs))
                 check_comments(coeff.type, 3, file.filename, 'Angle Coeffs', log)
@@ -286,6 +322,8 @@ class merged:
             for i in dihedral_coeffs:
                 coeff = dihedral_coeffs[i]
                 types = split_coeff(coeff.type)
+                if self.merge_with_coeffs:
+                    types = coeffs_as_types(coeff.coeffs, n=4)
                 unique_dihedral_coeffs.add(types)
                 nparms_in_coeff['dihedral'].append(len(coeff.coeffs))
                 check_comments(coeff.type, 4, file.filename, 'Dihedral Coeffs', log)
@@ -309,6 +347,8 @@ class merged:
             for i in improper_coeffs:
                 coeff = improper_coeffs[i]
                 types = split_coeff(coeff.type)
+                if self.merge_with_coeffs:
+                    types = coeffs_as_types(coeff.coeffs, n=5)
                 unique_improper_coeffs.add(types)
                 nparms_in_coeff['improper'].append(len(coeff.coeffs))
                 check_comments(coeff.type, 5, file.filename, 'Improper Coeffs', log)
@@ -622,6 +662,8 @@ class merged:
                 coeff = file.masses[j]
                 mass = coeff.coeffs
                 types = coeff.type
+                if self.merge_with_coeffs:
+                    types = coeffs_as_types(file.pair_coeffs[j].coeffs, n=1)
                 new_type = atom_types_dict[types]
                 self.masses[new_type].coeffs = mass
                 
@@ -638,6 +680,8 @@ class merged:
                 coeff = file.pair_coeffs[j]
                 coeffs = coeff.coeffs
                 types = coeff.type
+                if self.merge_with_coeffs:
+                    types = coeffs_as_types(coeffs, n=1)
                 new_type = atom_types_dict[types]
                 self.pair_coeffs[new_type].coeffs = coeffs
                 
@@ -654,6 +698,8 @@ class merged:
                 coeff = file.bond_coeffs[j]
                 coeffs = coeff.coeffs
                 types = split_coeff(coeff.type)
+                if self.merge_with_coeffs:
+                    types = coeffs_as_types(coeffs, n=2)
                 new_type = bond_types_dict[types]
                 self.bond_coeffs[new_type].coeffs = coeffs
                 
@@ -670,6 +716,8 @@ class merged:
                 coeff = file.angle_coeffs[j]
                 coeffs = coeff.coeffs
                 types = split_coeff(coeff.type)
+                if self.merge_with_coeffs:
+                    types = coeffs_as_types(coeffs, n=3)
                 new_type = angle_types_dict[types]
                 self.angle_coeffs[new_type].coeffs = coeffs
 
@@ -686,6 +734,8 @@ class merged:
                 coeff = file.dihedral_coeffs[j]
                 coeffs = coeff.coeffs
                 types = split_coeff(coeff.type)
+                if self.merge_with_coeffs:
+                    types = coeffs_as_types(coeffs, n=4)
                 new_type = dihedral_types_dict[types]
                 self.dihedral_coeffs[new_type].coeffs = coeffs
 
@@ -702,6 +752,8 @@ class merged:
                 coeff = file.improper_coeffs[j]
                 coeffs = coeff.coeffs
                 types = split_coeff(coeff.type)
+                if self.merge_with_coeffs:
+                    types = coeffs_as_types(coeffs, n=5)
                 new_type = improper_types_dict[types]
                 self.improper_coeffs[new_type].coeffs = coeffs
 
@@ -722,6 +774,8 @@ class merged:
                         coeff = file.bondbond_coeffs[j]
                         coeffs = coeff.coeffs
                         types = split_coeff(coeff.type)
+                        if self.merge_with_coeffs:
+                            types = coeffs_as_types(file.angle_coeffs[j].coeffs, n=3)
                         new_type = angle_types_dict[types]
                         self.bondbond_coeffs[new_type].coeffs = coeffs
                             
@@ -739,6 +793,8 @@ class merged:
                         coeff = file.bondangle_coeffs[j]
                         coeffs = coeff.coeffs
                         types = split_coeff(coeff.type)
+                        if self.merge_with_coeffs:
+                            types = coeffs_as_types(file.angle_coeffs[j].coeffs, n=3)
                         new_type = angle_types_dict[types]
                         self.bondangle_coeffs[new_type].coeffs = coeffs
                         
@@ -756,6 +812,8 @@ class merged:
                         coeff = file.angleangletorsion_coeffs[j]
                         coeffs = coeff.coeffs
                         types = split_coeff(coeff.type)
+                        if self.merge_with_coeffs:
+                            types = coeffs_as_types(file.dihedral_coeffs[j].coeffs, n=4)
                         new_type = dihedral_types_dict[types]
                         self.angleangletorsion_coeffs[new_type].coeffs = coeffs
                         
@@ -773,6 +831,8 @@ class merged:
                         coeff = file.endbondtorsion_coeffs[j]
                         coeffs = coeff.coeffs
                         types = split_coeff(coeff.type)
+                        if self.merge_with_coeffs:
+                            types = coeffs_as_types(file.dihedral_coeffs[j].coeffs, n=4)
                         new_type = dihedral_types_dict[types]
                         self.endbondtorsion_coeffs[new_type].coeffs = coeffs
         
@@ -790,6 +850,8 @@ class merged:
                         coeff = file.middlebondtorsion_coeffs[j]
                         coeffs = coeff.coeffs
                         types = split_coeff(coeff.type)
+                        if self.merge_with_coeffs:
+                            types = coeffs_as_types(file.dihedral_coeffs[j].coeffs, n=4)
                         new_type = dihedral_types_dict[types]
                         self.middlebondtorsion_coeffs[new_type].coeffs = coeffs
                         
@@ -807,6 +869,8 @@ class merged:
                         coeff = file.bondbond13_coeffs[j]
                         coeffs = coeff.coeffs
                         types = split_coeff(coeff.type)
+                        if self.merge_with_coeffs:
+                            types = coeffs_as_types(file.dihedral_coeffs[j].coeffs, n=4)
                         new_type = dihedral_types_dict[types]
                         self.bondbond13_coeffs[new_type].coeffs = coeffs
                                             
@@ -824,6 +888,8 @@ class merged:
                         coeff = file.angletorsion_coeffs[j]
                         coeffs = coeff.coeffs
                         types = split_coeff(coeff.type)
+                        if self.merge_with_coeffs:
+                            types = coeffs_as_types(file.dihedral_coeffs[j].coeffs, n=4)
                         new_type = dihedral_types_dict[types]
                         self.angletorsion_coeffs[new_type].coeffs = coeffs
                         
@@ -841,6 +907,8 @@ class merged:
                         coeff = file.angleangle_coeffs[j]
                         coeffs = coeff.coeffs
                         types = split_coeff(coeff.type)
+                        if self.merge_with_coeffs:
+                            types = coeffs_as_types(file.improper_coeffs[j].coeffs, n=5)
                         new_type = improper_types_dict[types]
                         self.angleangle_coeffs[new_type].coeffs = coeffs
                         

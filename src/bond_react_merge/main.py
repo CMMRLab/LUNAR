@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.17
-April 14, 2025
+Revision 1.18
+February 9, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -45,7 +45,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
     #log.configure(level='debug')
     
     # set version and print starting information to screen
-    version = 'v1.17 / 14 April 2025'
+    version = 'v1.18 / 9 February 2026'
     log.out(f'\n\nRunning bond_react_merge: {version}')
     log.out(f'Using Python version: {sys.version}')
     log.out(f'Using Python executable: {sys.executable}')
@@ -146,7 +146,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
             BondingIDs, CreateIDs, Reduce, Remove, Keep = auto_gen_map_file.get_lmp_header_info(pre, log)
             if len(Reduce) in [2, 5] or Remove or Keep:
                 pre_reduced, post_reduced = reduce_topology.template(pre, post, BondingIDs, CreateIDs, Reduce, Remove, Keep, log)
-                if pre_reduced != '' and post_reduced != '' and pre_reduced.natoms == post_reduced.natoms:
+                if pre_reduced != '' and post_reduced != '':# and pre_reduced.natoms == post_reduced.natoms:
                     merge[pair[0]] = pre_reduced; merge[pair[1]] = post_reduced; print();
                 if pre_reduced == '' or post_reduced == '': log.error('ERROR template reduce failed due to unknown cause')
             if len(Reduce) not in [0, 2, 5]: log.error('ERROR reduce option used, but length of list was not 2 or 5')
@@ -400,7 +400,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
     filenames = []
     for file in merge:
         m = merge[file]
-        m = merge_coeffs.update_TypeIDs(m, new, log) # Update coeffs before writing
+        m = merge_coeffs.update_TypeIDs(m, new, log, merge_with_coeffs=new.merge_with_coeffs) # Update coeffs before writing
         header = '{} > bond_react_merge: {} datafile (filetag: {})'.format(m.header, version, file)
         
         # Find old name and make new name

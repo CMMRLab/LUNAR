@@ -1,0 +1,206 @@
+
+
+Running bond_react_merge: v1.17 / 14 April 2025
+Using Python version: 3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 16:37:03) [MSC v.1929 64 bit (AMD64)]
+Using Python executable: C:\Users\jdkem\anaconda3\python.exe
+
+
+The following files and their corresponding filetags have been read in from EXAMPLES/bond_react_merge_tests/test13/merge_files.txt:
+ data1   EXAMPLES/bond_react_merge_tests/test13/ps_typed_IFF.data
+  pre1   EXAMPLES/bond_react_merge_tests/test13/r1_pre_typed_IFF.data
+ post1   EXAMPLES/bond_react_merge_tests/test13/r1_post_typed_IFF.data
+  pre2   EXAMPLES/bond_react_merge_tests/test13/r2_pre_typed_IFF.data
+ post2   EXAMPLES/bond_react_merge_tests/test13/r2_post_typed_IFF.data
+  pre3   EXAMPLES/bond_react_merge_tests/test13/r3_pre_typed_IFF.data
+ post3   EXAMPLES/bond_react_merge_tests/test13/r3_post_typed_IFF.data
+parent_directory was set from EXAMPLES/bond_react_merge_tests/test13/merge_files.txt as topofile/run/
+
+
+---------------------------------------------------------------------------------------------
+|                read in files key to value dictionary map to organize files                |
+---------------------------------------------------------------------------------------------
+|      key to      |                          value to dictionary                           |
+|    dictionary    |                                filename                                |
+---------------------------------------------------------------------------------------------
+|      data1       |                           ps_typed_IFF.data                            |
+|       pre1       |                         r1_pre_typed_IFF.data                          |
+|      post1       |                         r1_post_typed_IFF.data                         |
+|       pre2       |                         r2_pre_typed_IFF.data                          |
+|      post2       |                         r2_post_typed_IFF.data                         |
+|       pre3       |                         r3_pre_typed_IFF.data                          |
+|      post3       |                         r3_post_typed_IFF.data                         |
+---------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                                filename                                |   natom    |   nbond    |   nangle   | ndihedral  |  improper  |
+|                      (Truncated to 70 characters)                      |   types    |   types    |   types    |   types    |   types    |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                           ps_typed_IFF.data                            |     4      |     6      |     9      |     9      |     7      |
+|                         r1_pre_typed_IFF.data                          |     6      |     7      |     11     |     6      |     9      |
+|                         r1_post_typed_IFF.data                         |     6      |     7      |     12     |     11     |     9      |
+|                         r2_pre_typed_IFF.data                          |     6      |     9      |     14     |     15     |     11     |
+|                         r2_post_typed_IFF.data                         |     7      |     11     |     17     |     23     |     13     |
+|                         r3_pre_typed_IFF.data                          |     5      |     10     |     17     |     19     |     14     |
+|                         r3_post_typed_IFF.data                         |     5      |     9      |     15     |     21     |     12     |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                          Total possible sum:                           |     39     |     59     |     95     |    104     |     75     |
+-------------------------------------------------------------------------------------------------------------------------------------------
+|                           Total unique sum:                            |     9      |     15     |     27     |     39     |     23     |
+-------------------------------------------------------------------------------------------------------------------------------------------
+Internally determined force field is class2
+Using path from 1st file in files dictionary to set parent_directory ...
+
+
+************************************************************************************************************
+************************************************************************************************************
+************************************************************************************************************
+***  Using generate_map_file, which auto-generates the map file based on tag-ID for preN/postN pairings. ***
+***  PLEASE CONFIRM preN tagged file is consistent with postN tagged file. Each section is set by the    ***
+***  following methods:                                                                                  ***
+***      InitiatorIDs                                                                                    ***
+***          Will be initialized as "ID1" and "ID2", then if two molecues are found in the preN tagged   ***
+***          file and edgeIDs were found, a 1st attempt at setting the InitiatorIDs is to search 4-6     ***
+***          neighbors away from all edgeIDs and select to most unique atom-type in each molecule. If    ***
+***          the code can find all equivalences (which are assumed to be correct), a 2nd attempt is then ***
+***          tried where the code applies a backwards map of all atomIDs in the postN tagged file to the ***
+***          preN tagged file. After the backwards mapping the code tries to find the bond responsible   ***
+***          that links the preN tagged-file two molecules together in the postN tagged-file. If this    ***
+***          "linking" bond can be found, the InitiatorIDs are updated with to the new "linking" atomIDs.***
+***      EdgeIDs                                                                                         ***
+***          Set by searching for the number of bonded atoms to each atom type in the dataN tagged files ***
+***          and comparing them to the preN/postN tagged files, if the number of bonded atoms for each   ***
+***          atom type is found to be different IT MUST BE AN EDGE ATOM (assumes correct atom-typing,    ***
+***          thus if no edge atoms are found it is an indication that atom types are not consistent      ***
+***          between the dataN tagged files and the preN tagged files).                                  ***
+***      DeleteIDs                                                                                       ***
+***           Will automatically be found by the code if the code can find all equivalences (which are   ***
+***           assumed to be correct). The code will warn the user that deleteIDs were detected which are ***
+***           determined by if the postN tagged files has more then one molecular fragment, the largest  ***
+***           frament is kept and the smaller ones are are assumed to be deleteIDs. Once the smaller     ***
+***           fragments are found the atomIDs are mapped backwards onto the preN tagged atomIDs. Thus if ***
+***           the Equivalences are found to be wrong its possible that the DeleteIDs are wrong, however  ***
+***           in the *_commented.txt map file there will be a comment on the atomID it is in the postN   ***
+***           tagged file which can be used to help reset the DeleteIDs if needed during checking of the ***
+***           generated map file.                                                                        ***
+***      Equivalences                                                                                    ***
+***           Set by a pseudo-graph-theory/cost-based algorithm were each preN/postN tagged pair are     ***
+***           converted to graphs. The atom-types, number of bonded neighbors (nb), elements, atomIDs,   ***
+***           molID (reset by code), molecule formula, and relative location of atom in the template is  ***
+***           used to assign a map cost. Then an incremented approach of slowly increase an acceptable   ***
+***           cost is then used where the lower cost mappings are assigned first (best matches) and the  ***
+***           atomIDs that have the worst map are set last (due to creation of new topologies).          ***
+***  In general, it is up to the user to check all information in the generated map files is correct.    ***
+***  NOTE: terminating atoms like H do NOT require perfect mapping since nothing is bonded "through"     ***
+***  them. The code is designed to try getting everything correct, but there are scenerios where the     ***
+***  code may not be able to due to the complexity present in the generation of the map files.           ***
+************************************************************************************************************
+************************************************************************************************************
+************************************************************************************************************
+WARNING atom type c1 in a preN tagged file does not exist in any dataN tagged file, but exists in a postN tagged file.
+WARNING atom type c in a preN tagged file does not exist in any dataN tagged file, but exists in a postN tagged file.
+WARNING atom type oc in a preN tagged file does not exist in any dataN tagged file, but exists in a postN tagged file.
+WARNING atom type o_1 in a preN tagged file does not exist in any dataN or postN tagged file.
+  offending filetag pre1 -> EXAMPLES/bond_react_merge_tests/test13/r1_pre_typed_IFF.data
+
+
+Writing in.fix_bond_react.script
+
+
+
+****************************************************
+* Finding rxn map/super-impose file for rxnid:  1  *
+****************************************************
+
+  ----------------------Pre  rxn Cluster Analysis-----------------------
+    molID     Molecule Size   %Size of Molecule         formula       
+  ----------------------------------------------------------------------
+      1              11             52.38                C10-O1       
+      2              10             47.62                C5-H5        
+
+
+  ----------------------Post rxn Cluster Analysis-----------------------
+    molID     Molecule Size   %Size of Molecule         formula       
+  ----------------------------------------------------------------------
+      1              20             95.24              C15-H4-O1      
+      2               1              4.76                  H1         
+
+    WARNING It was detected that r1_post_typed_IFF.data post-rxn has more then one molecule. This engaged the
+    auto-deleteIDs detection and the written pre1-post1_rxn-map contains deleteIDs for the following pre-rxn-ids:
+    Pre-rxn-atomID:  18   has a Post-rxn-atomID:  21   that belongs to a Post-molID:   2   and has been tagged for deletion
+  pre1 -> post1 rxn map equivalences converged in 195 iterations with a max cost of 98
+
+
+
+
+****************************************************
+* Finding rxn map/super-impose file for rxnid:  2  *
+****************************************************
+
+  ----------------------Pre  rxn Cluster Analysis-----------------------
+    molID     Molecule Size   %Size of Molecule         formula       
+  ----------------------------------------------------------------------
+      1              15             60.00               C8-H6-O1      
+      2              10             40.00                C5-H5        
+
+
+  ----------------------Post rxn Cluster Analysis-----------------------
+    molID     Molecule Size   %Size of Molecule         formula       
+  ----------------------------------------------------------------------
+      1              23             92.00              C13-H9-O1      
+      2               2              8.00                  H2         
+
+    WARNING It was detected that r2_post_typed_IFF.data post-rxn has more then one molecule. This engaged the
+    auto-deleteIDs detection and the written pre2-post2_rxn-map contains deleteIDs for the following pre-rxn-ids:
+    Pre-rxn-atomID:   6   has a Post-rxn-atomID:  24   that belongs to a Post-molID:   2   and has been tagged for deletion
+    Pre-rxn-atomID:   7   has a Post-rxn-atomID:  25   that belongs to a Post-molID:   2   and has been tagged for deletion
+  pre2 -> post2 rxn map equivalences converged in 209 iterations with a max cost of 105
+
+
+
+
+****************************************************
+* Finding rxn map/super-impose file for rxnid:  3  *
+****************************************************
+
+  ----------------------Pre  rxn Cluster Analysis-----------------------
+    molID     Molecule Size   %Size of Molecule         formula       
+  ----------------------------------------------------------------------
+      1              17             62.96                C10-H7       
+      2              10             37.04                C5-H5        
+
+
+  ----------------------Post rxn Cluster Analysis-----------------------
+    molID     Molecule Size   %Size of Molecule         formula       
+  ----------------------------------------------------------------------
+      1              25             92.59               C15-H10       
+      2               2              7.41                  H2         
+
+    WARNING It was detected that r3_post_typed_IFF.data post-rxn has more then one molecule. This engaged the
+    auto-deleteIDs detection and the written pre3-post3_rxn-map contains deleteIDs for the following pre-rxn-ids:
+    Pre-rxn-atomID:   6   has a Post-rxn-atomID:  26   that belongs to a Post-molID:   2   and has been tagged for deletion
+    Pre-rxn-atomID:   7   has a Post-rxn-atomID:  27   that belongs to a Post-molID:   2   and has been tagged for deletion
+  pre3 -> post3 rxn map equivalences converged in 173 iterations with a max cost of 87
+
+
+
+Writing in.create_atoms.script
+
+
+************************************************************************************************  
+*** Only modification to molecule template is to update charges on edge atoms if not updated *** 
+************************************************************************************************ 
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\bond_react_merge_tests\test13\run/ directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 1.5035107135772705
+
+
+Number of WARNING(s) and ERROR(s)
+  8 WARNING(s)
+  0 ERROR(s)

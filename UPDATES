@@ -20,6 +20,17 @@ LUNAR (version 9February2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+9February2026      JDK         - bond_react_merge.py: Added a boolean in LUNAR/src/bond_react_merge/merge_coeffs.py
+                                 merged class to set a different way for merging. The boolean is self.merge_with_coeffs  
+                                 where when set to False the merging happens using comments or type labels, but when
+                                 True the force field coeffs are used. This is an advanced method for merging and thus
+                                 should only be used if you KNOW WHAT YOU ARE DOING. This will live as a "hidden 
+                                 boolean" where if you want this type of merging, you must manually turn it on.								 
+
+9February2026      JDK         - bond_react_merge.py: Fixed issue using "Reduce = [depth1, depth2]" pre-rxn
+                                                      header keyword when the post-rxn has more then one 
+                                                      molecule/fragment in the file.
+
 9February2026      JDK         - Any code that had "include_type_labels" boolean now has a default of True, 
                                  such that the default is "opting-in" for type labels as opposed to "opting-out"
                                  of type labels. This will help many use LUNAR with defaults and help with debug

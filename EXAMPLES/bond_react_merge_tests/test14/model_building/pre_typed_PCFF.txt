@@ -1,0 +1,691 @@
+HEADER,  pre.mol2  read w/ mol2SYBYL2lmp > atom_typing v1.11 / 14 April 2025 w/PCFF-IFF atom-types > all2lmp: v1.22 / 14 April 2025  Class: 2
+
+# -------------------------------------
+# Parameterization percentage breakdown
+# -------------------------------------
+# Masses:                      100.00 %
+# Pair Coeffs:                 100.00 %
+# Bond Coeffs:                 100.00 %
+# Angle Coeffs:                100.00 %
+# Dihedral Coeffs:             100.00 %
+# Improper Coeffs:             100.00 %
+# Average MPBADI Coeffs:       100.00 %
+# BondBond Coeffs:             55.56  %
+# BondAngle Coeffs:            55.56  %
+# AngleAngleTorsion Coeffs:    61.54  %
+# EndBondTorsion Coeffs:       61.54  %
+# MiddleBondTorsion Coeffs:    61.54  %
+# BondBond13 Coeffs:           61.54  %
+# AngleTorsion Coeffs:         61.54  %
+# AngleAngle Coeffs:           100.00 %
+# Average (without Bond-incs): 81.25  %
+# Bond-incs:                   100.00 %
+
+Masses # class2
+
+ 1  12.01115000  #  c_0   equivalent: c_0   standard type used       
+ 2  12.01115000  #  cp    equivalent: cp    standard type used       
+ 3   1.00797000  #  hc    equivalent: hc    standard type used       
+ 4   1.00797000  #  ho    equivalent: ho    standard type used       
+ 5  15.99940000  #  o_1   equivalent: o_1   standard type used       
+ 6  15.99940000  #  oc    equivalent: oc    standard type used       
+ 7  15.99940000  #  oh    equivalent: oh    standard type used       
+
+Pair Coeffs  # lj/class2/coul/long
+
+ 1        0.12000000      3.30800000 #  c_0     equivalent:   c_0   standard type used       
+ 2        0.06400000      4.01000000 #  cp      equivalent:   cp    standard type used       
+ 3        0.02000000      2.30000000 #  hc      equivalent:   h     equivalent type used     
+ 4        0.01300000      1.09800000 #  ho      equivalent:   h*    equivalent type used     
+ 5        0.26700000      3.30000000 #  o_1     equivalent:   o_1   standard type used       
+ 6        0.24000000      3.53500000 #  oc      equivalent:   o     equivalent type used     
+ 7        0.24000000      3.53500000 #  oh      equivalent:   o     equivalent type used     
+
+Bond Coeffs  # class2
+
+ 1        1.48900000    339.35740000   -655.72360000    670.23620000 #  c_0         cp    equivalent:     c_0         cp          match:       c_0         cp        equivalent type used
+ 2        1.21600000    823.79480000  -1878.79400000   2303.53110000 #  c_0        o_1    equivalent:     c_0        o_1          match:       c_0        o_1        equivalent type used
+ 3        1.41700000    470.83610000   -627.61790000   1327.63450000 #  cp          cp    equivalent:     cp          cp          match:       cp          cp        equivalent type used
+ 4        1.09820000    372.82510000   -803.45260000    894.31730000 #  cp          hc    equivalent:     cp           h          match:       cp           h        equivalent type used
+ 5        1.37680000    428.87980000   -738.23510000   1114.96550000 #  cp          oc    equivalent:     cp           o          match:       cp           o        equivalent type used
+ 6        1.37680000    428.87980000   -738.23510000   1114.96550000 #  cp          oh    equivalent:     cp           o          match:       cp           o        equivalent type used
+ 7        0.96500000    532.50620000  -1282.90500000   2004.76580000 #  ho          oh    equivalent:     h*           o          match:       h*           o        equivalent type used
+
+Angle Coeffs  # class2
+
+ 1      108.40000000     43.95940000     -8.39240000     -9.33790000 #  c_0        cp         cp    equivalent:  c_0        cp         cp        match:    c_0        cp         cp      equivalent type used
+ 2      110.58840000     34.62140000     -7.09390000     -7.40320000 #  cp        c_0         cp    equivalent:  cp        c_0         cp        match:    cp        c_0         cp      equivalent type used
+ 3      119.30000000     65.10160000    -17.97660000      0.00000000 #  cp        c_0        o_1    equivalent:  cp        c_0        o_1        match:    cp        c_0        o_1      equivalent type used
+ 4      118.90000000     61.02260000    -34.99310000      0.00000000 #  cp         cp         cp    equivalent:  cp         cp         cp        match:    cp         cp         cp      equivalent type used
+ 5      117.94000000     35.15580000    -12.46820000      0.00000000 #  cp         cp         hc    equivalent:  cp         cp          h        match:    cp         cp          h      equivalent type used
+ 6      123.42000000     73.67810000    -21.67870000      0.00000000 #  cp         cp         oc    equivalent:  cp         cp          o        match:    cp         cp          o      equivalent type used
+ 7      123.42000000     73.67810000    -21.67870000      0.00000000 #  cp         cp         oh    equivalent:  cp         cp          o        match:    cp         cp          o      equivalent type used
+ 8      109.50000000     60.00000000      0.00000000      0.00000000 #  cp         oc         cp    equivalent:  c_         o_         c_        match:    *7         o_         c_      auto equivalent type used
+ 9      108.19000000     53.12500000     -8.50160000      0.00000000 #  cp         oh         ho    equivalent:  cp         o          h*        match:    cp         o          h*      equivalent type used
+
+Dihedral Coeffs  # class2
+
+ 1        0.00000000      0.00000000      2.50000000      0.00000000      0.00000000      0.00000000 #  cp        c_0        cp         cp      equivalent:   c_        c'_       cp_         c_        match:      *         c'_       cp_          *    auto equivalent type used
+ 2        0.00000000      0.00000000      0.90630000      0.00000000      0.00000000      0.00000000 #  o_1       c_0        cp         cp      equivalent:   o_1       c_0        cp         cp        match:      o_1       c_0        cp         cp    equivalent type used
+ 3        0.00000000      0.00000000      4.62820000      0.00000000      0.00000000      0.00000000 #  c_0        cp        cp         cp      equivalent:   c_0        cp        cp         cp        match:      c_0        cp        cp         cp    equivalent type used
+ 4        8.36670000      0.00000000      1.19320000      0.00000000      0.00000000      0.00000000 #  cp         cp        cp         cp      equivalent:   cp         cp        cp         cp        match:      cp         cp        cp         cp    equivalent type used
+ 5        0.00000000      0.00000000      2.16700000      0.00000000      0.00000000      0.00000000 #  c_0        cp        cp         hc      equivalent:   c_0        cp        cp          h        match:      c_0        cp        cp          h    equivalent type used
+ 6        0.00000000      0.00000000      1.87690000      0.00000000      0.00000000      0.00000000 #  hc         cp        cp         hc      equivalent:   h          cp        cp          h        match:      h          cp        cp          h    equivalent type used
+ 7        0.00000000      0.00000000      3.96610000      0.00000000      0.00000000      0.00000000 #  cp         cp        cp         hc      equivalent:   cp         cp        cp          h        match:      cp         cp        cp          h    equivalent type used
+ 8        0.00000000      0.00000000      1.72340000      0.00000000      0.00000000      0.00000000 #  hc         cp        cp         oc      equivalent:   h          cp        cp          o        match:      h          cp        cp          o    equivalent type used
+ 9        0.00000000      0.00000000      4.84980000      0.00000000      0.00000000      0.00000000 #  cp         cp        cp         oc      equivalent:   cp         cp        cp          o        match:      cp         cp        cp          o    equivalent type used
+10        0.00000000      0.00000000      4.84980000      0.00000000      0.00000000      0.00000000 #  cp         cp        cp         oh      equivalent:   cp         cp        cp          o        match:      cp         cp        cp          o    equivalent type used
+11        0.00000000      0.00000000      1.72340000      0.00000000      0.00000000      0.00000000 #  hc         cp        cp         oh      equivalent:   h          cp        cp          o        match:      h          cp        cp          o    equivalent type used
+12        0.00000000      0.00000000      1.80000000      0.00000000      0.00000000      0.00000000 #  cp         cp        oc         cp      equivalent:   c_        cp_        o_         c_        match:      *         cp_        o_          *    auto equivalent type used
+13       -0.69000000      0.00000000      0.50970000      0.00000000      0.00950000      0.00000000 #  cp         cp        oh         ho      equivalent:   cp         cp        o          h*        match:      cp         cp        o          h*    equivalent type used
+
+Improper Coeffs  # class2
+
+ 1       10.00000000      0.00000000 #  c_0        cp        cp        cp      nb==3      equivalent:   c_        cp_        c_         c_        match:      *         cp_        *           *    auto equivalent type used
+ 2       38.79490000      0.00000000 #  cp        c_0        cp       o_1      nb==3      equivalent:   cp        c_0        cp        o_1        match:      cp        c_0        cp        o_1    equivalent type used
+ 3        4.89120000      0.00000000 #  cp         cp        cp        hc      nb==3      equivalent:   cp         cp        cp          h        match:      cp         cp        cp          h    equivalent type used
+ 4       13.04210000      0.00000000 #  cp         cp        cp        oc      nb==3      equivalent:   cp         cp        cp          o        match:      cp         cp        cp          o    equivalent type used
+ 5       13.04210000      0.00000000 #  cp         cp        cp        oh      nb==3      equivalent:   cp         cp        cp          o        match:      cp         cp        cp          o    equivalent type used
+
+BondBond Coeffs  # class2
+
+ 1        0.00000000      1.48900000      1.41700000 #  c_0        cp         cp    equivalent:  N/A       N/A        N/A      UNABLE to find coeff parameters          bond 12:   c_0   cp  equivs:   c_0   cp   match:   c_0   cp                 bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 2        0.00000000      1.48900000      1.48900000 #  cp        c_0         cp    equivalent:  N/A       N/A        N/A      UNABLE to find coeff parameters          bond 12:    cp  c_0  equivs:   c_0   cp   match:   c_0   cp                 bond 23:   c_0   cp  equivs:   c_0   cp   match:   c_0   cp                
+ 3        0.00000000      1.48900000      1.21600000 #  cp        c_0        o_1    equivalent:  N/A       N/A        N/A      UNABLE to find coeff parameters          bond 12:    cp  c_0  equivs:   c_0   cp   match:   c_0   cp                 bond 23:   c_0  o_1  equivs:   c_0   o_1  match:   c_0   o_1               
+ 4       68.28560000      1.41700000      1.41700000 #  cp         cp         cp    equivalent:  cp         cp         cp      Bondbond type used                       bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 5        1.07950000      1.41700000      1.09820000 #  cp         cp         hc    equivalent:  cp         cp          h      Bondbond type used                       bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 23:    cp   hc  equivs:   cp     h   match:   cp     h                
+ 6       48.47540000      1.41700000      1.37680000 #  cp         cp         oc    equivalent:  cp         cp          o      Bondbond type used                       bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 23:    cp   oc  equivs:   cp     o   match:   cp     o                
+ 7       48.47540000      1.41700000      1.37680000 #  cp         cp         oh    equivalent:  cp         cp          o      Bondbond type used                       bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 23:    cp   oh  equivs:   cp     o   match:   cp     o                
+ 8        0.00000000      1.37680000      1.37680000 #  cp         oc         cp    equivalent:  N/A       N/A        N/A      UNABLE to find coeff parameters          bond 12:    cp   oc  equivs:   cp     o   match:   cp     o                 bond 23:    oc   cp  equivs:   cp     o   match:   cp     o                
+ 9       20.65770000      1.37680000      0.96500000 #  cp         oh         ho    equivalent:  cp         o          h*      Bondbond type used                       bond 12:    cp   oh  equivs:   cp     o   match:   cp     o                 bond 23:    oh   ho  equivs:   h*     o   match:   h*     o                
+
+BondAngle Coeffs  # class2
+
+ 1        0.00000000      0.00000000      1.48900000      1.41700000 #  c_0        cp         cp      equivalent:    N/A       N/A        N/A      UNABLE to find coeff parameters          bond 12:   c_0   cp  equivs:   c_0   cp   match:   c_0   cp                 bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 2        0.00000000      0.00000000      1.48900000      1.48900000 #  cp        c_0         cp      equivalent:    N/A       N/A        N/A      UNABLE to find coeff parameters          bond 12:    cp  c_0  equivs:   c_0   cp   match:   c_0   cp                 bond 23:   c_0   cp  equivs:   c_0   cp   match:   c_0   cp                
+ 3        0.00000000      0.00000000      1.48900000      1.21600000 #  cp        c_0        o_1      equivalent:    N/A       N/A        N/A      UNABLE to find coeff parameters          bond 12:    cp  c_0  equivs:   c_0   cp   match:   c_0   cp                 bond 23:   c_0  o_1  equivs:   c_0   o_1  match:   c_0   o_1               
+ 4       28.87080000     28.87080000      1.41700000      1.41700000 #  cp         cp         cp      equivalent:    cp         cp         cp      Bondangle type used                      bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 5       20.00330000     24.21830000      1.41700000      1.09820000 #  cp         cp         hc      equivalent:    cp         cp          h      Bondangle type used                      bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 23:    cp   hc  equivs:   cp     h   match:   cp     h                
+ 6       58.47900000    107.68060000      1.41700000      1.37680000 #  cp         cp         oc      equivalent:    cp         cp          o      Bondangle type used                      bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 23:    cp   oc  equivs:   cp     o   match:   cp     o                
+ 7       58.47900000    107.68060000      1.41700000      1.37680000 #  cp         cp         oh      equivalent:    cp         cp          o      Bondangle type used                      bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 23:    cp   oh  equivs:   cp     o   match:   cp     o                
+ 8        0.00000000      0.00000000      1.37680000      1.37680000 #  cp         oc         cp      equivalent:    N/A       N/A        N/A      UNABLE to find coeff parameters          bond 12:    cp   oc  equivs:   cp     o   match:   cp     o                 bond 23:    oc   cp  equivs:   cp     o   match:   cp     o                
+ 9       53.86140000     23.92240000      1.37680000      0.96500000 #  cp         oh         ho      equivalent:    cp         o          h*      Bondangle type used                      bond 12:    cp   oh  equivs:   cp     o   match:   cp     o                 bond 23:    oh   ho  equivs:   h*     o   match:   h*     o                
+
+AngleAngleTorsion Coeffs  # class2
+
+ 1        0.00000000    110.58840000    108.40000000 #  cp        c_0        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    angle 123:     cp    c_0     cp   equivs:    cp    c_0     cp   match:    cp    c_0     cp           angle 234:    c_0     cp     cp   equivs:   c_0     cp     cp   match:   c_0     cp     cp          
+ 2        0.00000000    119.30000000    108.40000000 #  o_1       c_0        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    angle 123:    o_1    c_0     cp   equivs:    cp    c_0    o_1   match:    cp    c_0    o_1           angle 234:    c_0     cp     cp   equivs:   c_0     cp     cp   match:   c_0     cp     cp          
+ 3        0.00000000    108.40000000    118.90000000 #  c_0        cp        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    angle 123:    c_0     cp     cp   equivs:   c_0     cp     cp   match:   c_0     cp     cp           angle 234:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp          
+ 4        0.00000000    118.90000000    118.90000000 #  cp         cp        cp         cp      equivalent:   cp         cp        cp         cp    Angleangletorsion type used                        angle 123:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp           angle 234:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp          
+ 5        0.00000000    108.40000000    117.94000000 #  c_0        cp        cp         hc      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    angle 123:    c_0     cp     cp   equivs:   c_0     cp     cp   match:   c_0     cp     cp           angle 234:     cp     cp     hc   equivs:    cp     cp     h    match:    cp     cp     h           
+ 6        0.35980000    117.94000000    117.94000000 #  hc         cp        cp         hc      equivalent:   h          cp        cp          h    Angleangletorsion type used                        angle 123:     hc     cp     cp   equivs:    cp     cp     h    match:    cp     cp     h            angle 234:     cp     cp     hc   equivs:    cp     cp     h    match:    cp     cp     h           
+ 7       -4.81410000    118.90000000    117.94000000 #  cp         cp        cp         hc      equivalent:   cp         cp        cp          h    Angleangletorsion type used                        angle 123:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp           angle 234:     cp     cp     hc   equivs:    cp     cp     h    match:    cp     cp     h           
+ 8        4.22960000    117.94000000    123.42000000 #  hc         cp        cp         oc      equivalent:   h          cp        cp          o    Angleangletorsion type used                        angle 123:     hc     cp     cp   equivs:    cp     cp     h    match:    cp     cp     h            angle 234:     cp     cp     oc   equivs:    cp     cp     o    match:    cp     cp     o           
+ 9      -21.02470000    118.90000000    123.42000000 #  cp         cp        cp         oc      equivalent:   cp         cp        cp          o    Angleangletorsion type used                        angle 123:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp           angle 234:     cp     cp     oc   equivs:    cp     cp     o    match:    cp     cp     o           
+10      -21.02470000    118.90000000    123.42000000 #  cp         cp        cp         oh      equivalent:   cp         cp        cp          o    Angleangletorsion type used                        angle 123:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp           angle 234:     cp     cp     oh   equivs:    cp     cp     o    match:    cp     cp     o           
+11        4.22960000    117.94000000    123.42000000 #  hc         cp        cp         oh      equivalent:   h          cp        cp          o    Angleangletorsion type used                        angle 123:     hc     cp     cp   equivs:    cp     cp     h    match:    cp     cp     h            angle 234:     cp     cp     oh   equivs:    cp     cp     o    match:    cp     cp     o           
+12        0.00000000    123.42000000    109.50000000 #  cp         cp        oc         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    angle 123:     cp     cp     oc   equivs:    cp     cp     o    match:    cp     cp     o            angle 234:     cp     oc     cp   equivs:    c_     o_     c_   match:    *7     o_     c_          
+13       -4.60720000    123.42000000    108.19000000 #  cp         cp        oh         ho      equivalent:   cp         cp        o          h*    Angleangletorsion type used                        angle 123:     cp     cp     oh   equivs:    cp     cp     o    match:    cp     cp     o            angle 234:     cp     oh     ho   equivs:    cp     o      h*   match:    cp     o      h*          
+
+EndBondTorsion Coeffs  # class2
+
+ 1        0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      1.48900000      1.41700000 #  cp        c_0        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 12:    cp  c_0  equivs:   c_0   cp   match:   c_0   cp                 bond 34:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 2        0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      1.21600000      1.41700000 #  o_1       c_0        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 12:   o_1  c_0  equivs:   c_0   o_1  match:   c_0   o_1                bond 34:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 3        0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      1.48900000      1.41700000 #  c_0        cp        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 12:   c_0   cp  equivs:   c_0   cp   match:   c_0   cp                 bond 34:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 4       -0.11850000      6.32040000      0.00000000     -0.11850000      6.32040000      0.00000000      1.41700000      1.41700000 #  cp         cp        cp         cp      equivalent:   cp         cp        cp         cp    Endbondtorsion type used                           bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 34:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 5        0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      1.48900000      1.09820000 #  c_0        cp        cp         hc      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 12:   c_0   cp  equivs:   c_0   cp   match:   c_0   cp                 bond 34:    cp   hc  equivs:   cp     h   match:   cp     h                
+ 6        0.00000000     -0.68900000      0.00000000      0.00000000     -0.68900000      0.00000000      1.09820000      1.09820000 #  hc         cp        cp         hc      equivalent:   h          cp        cp          h    Endbondtorsion type used                           bond 12:    hc   cp  equivs:   cp     h   match:   cp     h                 bond 34:    cp   hc  equivs:   cp     h   match:   cp     h                
+ 7        0.00000000     -6.89580000      0.00000000      0.00000000     -0.46690000      0.00000000      1.41700000      1.09820000 #  cp         cp        cp         hc      equivalent:   cp         cp        cp          h    Endbondtorsion type used                           bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 34:    cp   hc  equivs:   cp     h   match:   cp     h                
+ 8        0.00000000     -1.58670000      0.00000000      0.00000000      4.26410000      0.00000000      1.09820000      1.37680000 #  hc         cp        cp         oc      equivalent:   h          cp        cp          o    Endbondtorsion type used                           bond 12:    hc   cp  equivs:   cp     h   match:   cp     h                 bond 34:    cp   oc  equivs:   cp     o   match:   cp     o                
+ 9        0.00000000      0.26550000      0.00000000      0.00000000      4.89050000      0.00000000      1.41700000      1.37680000 #  cp         cp        cp         oc      equivalent:   cp         cp        cp          o    Endbondtorsion type used                           bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 34:    cp   oc  equivs:   cp     o   match:   cp     o                
+10        0.00000000      0.26550000      0.00000000      0.00000000      4.89050000      0.00000000      1.41700000      1.37680000 #  cp         cp        cp         oh      equivalent:   cp         cp        cp          o    Endbondtorsion type used                           bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 34:    cp   oh  equivs:   cp     o   match:   cp     o                
+11        0.00000000     -1.58670000      0.00000000      0.00000000      4.26410000      0.00000000      1.09820000      1.37680000 #  hc         cp        cp         oh      equivalent:   h          cp        cp          o    Endbondtorsion type used                           bond 12:    hc   cp  equivs:   cp     h   match:   cp     h                 bond 34:    cp   oh  equivs:   cp     o   match:   cp     o                
+12        0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      1.41700000      1.37680000 #  cp         cp        oc         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 34:    oc   cp  equivs:   cp     o   match:   cp     o                
+13        0.90000000     -1.34560000      1.19000000      3.41320000      0.58730000     -0.13230000      1.41700000      0.96500000 #  cp         cp        oh         ho      equivalent:   cp         cp        o          h*    Endbondtorsion type used                           bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 34:    oh   ho  equivs:   h*     o   match:   h*     o                
+
+MiddleBondTorsion Coeffs  # class2
+
+ 1        0.00000000      0.00000000      0.00000000      1.48900000 #  cp        c_0        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 23:   c_0   cp  equivs:   c_0   cp   match:   c_0   cp                
+ 2        0.00000000      0.00000000      0.00000000      1.48900000 #  o_1       c_0        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 23:   c_0   cp  equivs:   c_0   cp   match:   c_0   cp                
+ 3        0.00000000      0.00000000      0.00000000      1.41700000 #  c_0        cp        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 4       27.59890000     -2.31200000      0.00000000      1.41700000 #  cp         cp        cp         cp      equivalent:   cp         cp        cp         cp    Middlebondtorsion type used                        bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 5        0.00000000      0.00000000      0.00000000      1.41700000 #  c_0        cp        cp         hc      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 6        0.00000000      4.82280000      0.00000000      1.41700000 #  hc         cp        cp         hc      equivalent:   h          cp        cp          h    Middlebondtorsion type used                        bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 7        0.00000000     -1.15210000      0.00000000      1.41700000 #  cp         cp        cp         hc      equivalent:   cp         cp        cp          h    Middlebondtorsion type used                        bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 8        0.00000000      5.54320000      0.00000000      1.41700000 #  hc         cp        cp         oc      equivalent:   h          cp        cp          o    Middlebondtorsion type used                        bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 9        0.00000000      4.82550000      0.00000000      1.41700000 #  cp         cp        cp         oc      equivalent:   cp         cp        cp          o    Middlebondtorsion type used                        bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+10        0.00000000      4.82550000      0.00000000      1.41700000 #  cp         cp        cp         oh      equivalent:   cp         cp        cp          o    Middlebondtorsion type used                        bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+11        0.00000000      5.54320000      0.00000000      1.41700000 #  hc         cp        cp         oh      equivalent:   h          cp        cp          o    Middlebondtorsion type used                        bond 23:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+12        0.00000000      0.00000000      0.00000000      1.37680000 #  cp         cp        oc         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 23:    cp   oc  equivs:   cp     o   match:   cp     o                
+13        1.15800000      3.26970000      3.51320000      1.37680000 #  cp         cp        oh         ho      equivalent:   cp         cp        o          h*    Middlebondtorsion type used                        bond 23:    cp   oh  equivs:   cp     o   match:   cp     o                
+
+BondBond13 Coeffs  # class2
+
+ 1        0.00000000      1.48900000      1.41700000 #  cp        c_0        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 12:    cp  c_0  equivs:   c_0   cp   match:   c_0   cp                 bond 34:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 2        0.00000000      1.21600000      1.41700000 #  o_1       c_0        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 12:   o_1  c_0  equivs:   c_0   o_1  match:   c_0   o_1                bond 34:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 3        0.00000000      1.48900000      1.41700000 #  c_0        cp        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 12:   c_0   cp  equivs:   c_0   cp   match:   c_0   cp                 bond 34:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 4       53.00000000      1.41700000      1.41700000 #  cp         cp        cp         cp      equivalent:   cp         cp        cp         cp    Bondbond13 type used                               bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 34:    cp   cp  equivs:   cp    cp   match:   cp    cp                
+ 5        0.00000000      1.48900000      1.09820000 #  c_0        cp        cp         hc      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 12:   c_0   cp  equivs:   c_0   cp   match:   c_0   cp                 bond 34:    cp   hc  equivs:   cp     h   match:   cp     h                
+ 6       -1.70770000      1.09820000      1.09820000 #  hc         cp        cp         hc      equivalent:   h          cp        cp          h    Bondbond13 type used                               bond 12:    hc   cp  equivs:   cp     h   match:   cp     h                 bond 34:    cp   hc  equivs:   cp     h   match:   cp     h                
+ 7       -6.27410000      1.41700000      1.09820000 #  cp         cp        cp         hc      equivalent:   cp         cp        cp          h    Bondbond13 type used                               bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 34:    cp   hc  equivs:   cp     h   match:   cp     h                
+ 8        2.05170000      1.09820000      1.37680000 #  hc         cp        cp         oc      equivalent:   h          cp        cp          o    Bondbond13 type used                               bond 12:    hc   cp  equivs:   cp     h   match:   cp     h                 bond 34:    cp   oc  equivs:   cp     o   match:   cp     o                
+ 9       -2.24360000      1.41700000      1.37680000 #  cp         cp        cp         oc      equivalent:   cp         cp        cp          o    Bondbond13 type used                               bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 34:    cp   oc  equivs:   cp     o   match:   cp     o                
+10       -2.24360000      1.41700000      1.37680000 #  cp         cp        cp         oh      equivalent:   cp         cp        cp          o    Bondbond13 type used                               bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 34:    cp   oh  equivs:   cp     o   match:   cp     o                
+11        2.05170000      1.09820000      1.37680000 #  hc         cp        cp         oh      equivalent:   h          cp        cp          o    Bondbond13 type used                               bond 12:    hc   cp  equivs:   cp     h   match:   cp     h                 bond 34:    cp   oh  equivs:   cp     o   match:   cp     o                
+12        0.00000000      1.41700000      1.37680000 #  cp         cp        oc         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 34:    oc   cp  equivs:   cp     o   match:   cp     o                
+13        1.15900000      1.41700000      0.96500000 #  cp         cp        oh         ho      equivalent:   cp         cp        o          h*    Bondbond13 type used                               bond 12:    cp   cp  equivs:   cp    cp   match:   cp    cp                 bond 34:    oh   ho  equivs:   h*     o   match:   h*     o                
+
+AngleTorsion Coeffs  # class2
+
+ 1        0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      0.00000000    110.58840000    108.40000000 #  cp        c_0        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    angle 123:     cp    c_0     cp   equivs:    cp    c_0     cp   match:    cp    c_0     cp           angle 234:    c_0     cp     cp   equivs:   c_0     cp     cp   match:   c_0     cp     cp          
+ 2        0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      0.00000000    119.30000000    108.40000000 #  o_1       c_0        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    angle 123:    o_1    c_0     cp   equivs:    cp    c_0    o_1   match:    cp    c_0    o_1           angle 234:    c_0     cp     cp   equivs:   c_0     cp     cp   match:   c_0     cp     cp          
+ 3        0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      0.00000000    108.40000000    118.90000000 #  c_0        cp        cp         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    angle 123:    c_0     cp     cp   equivs:   c_0     cp     cp   match:   c_0     cp     cp           angle 234:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp          
+ 4        1.97670000      1.02390000      0.00000000      1.97670000      1.02390000      0.00000000    118.90000000    118.90000000 #  cp         cp        cp         cp      equivalent:   cp         cp        cp         cp    Angletorsion type used                             angle 123:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp           angle 234:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp          
+ 5        0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      0.00000000    108.40000000    117.94000000 #  c_0        cp        cp         hc      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    angle 123:    c_0     cp     cp   equivs:   c_0     cp     cp   match:   c_0     cp     cp           angle 234:     cp     cp     hc   equivs:    cp     cp     h    match:    cp     cp     h           
+ 6        0.00000000      2.45010000      0.00000000      0.00000000      2.45010000      0.00000000    117.94000000    117.94000000 #  hc         cp        cp         hc      equivalent:   h          cp        cp          h    Angletorsion type used                             angle 123:     hc     cp     cp   equivs:    cp     cp     h    match:    cp     cp     h            angle 234:     cp     cp     hc   equivs:    cp     cp     h    match:    cp     cp     h           
+ 7        0.00000000      2.50140000      0.00000000      0.00000000      2.71470000      0.00000000    118.90000000    117.94000000 #  cp         cp        cp         hc      equivalent:   cp         cp        cp          h    Angletorsion type used                             angle 123:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp           angle 234:     cp     cp     hc   equivs:    cp     cp     h    match:    cp     cp     h           
+ 8        0.00000000      1.87290000      0.00000000      0.00000000      2.57060000      0.00000000    117.94000000    123.42000000 #  hc         cp        cp         oc      equivalent:   h          cp        cp          o    Angletorsion type used                             angle 123:     hc     cp     cp   equivs:    cp     cp     h    match:    cp     cp     h            angle 234:     cp     cp     oc   equivs:    cp     cp     o    match:    cp     cp     o           
+ 9        0.00000000     10.01550000      0.00000000      0.00000000      1.74040000      0.00000000    118.90000000    123.42000000 #  cp         cp        cp         oc      equivalent:   cp         cp        cp          o    Angletorsion type used                             angle 123:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp           angle 234:     cp     cp     oc   equivs:    cp     cp     o    match:    cp     cp     o           
+10        0.00000000     10.01550000      0.00000000      0.00000000      1.74040000      0.00000000    118.90000000    123.42000000 #  cp         cp        cp         oh      equivalent:   cp         cp        cp          o    Angletorsion type used                             angle 123:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp           angle 234:     cp     cp     oh   equivs:    cp     cp     o    match:    cp     cp     o           
+11        0.00000000      1.87290000      0.00000000      0.00000000      2.57060000      0.00000000    117.94000000    123.42000000 #  hc         cp        cp         oh      equivalent:   h          cp        cp          o    Angletorsion type used                             angle 123:     hc     cp     cp   equivs:    cp     cp     h    match:    cp     cp     h            angle 234:     cp     cp     oh   equivs:    cp     cp     o    match:    cp     cp     o           
+12        0.00000000      0.00000000      0.00000000      0.00000000      0.00000000      0.00000000    123.42000000    109.50000000 #  cp         cp        oc         cp      equivalent:   N/A       N/A       N/A        N/A    UNABLE to find coeff parameters                    angle 123:     cp     cp     oc   equivs:    cp     cp     o    match:    cp     cp     o            angle 234:     cp     oc     cp   equivs:    c_     o_     c_   match:    *7     o_     c_          
+13       -5.13600000     -1.01220000      0.00000000      4.68520000      0.02300000     -0.59800000    123.42000000    108.19000000 #  cp         cp        oh         ho      equivalent:   cp         cp        o          h*    Angletorsion type used                             angle 123:     cp     cp     oh   equivs:    cp     cp     o    match:    cp     cp     o            angle 234:     cp     oh     ho   equivs:    cp     o      h*   match:    cp     o      h*          
+
+AngleAngle Coeffs  # class2
+
+ 1        0.00000000      0.00000000      0.00000000    108.40000000    118.90000000    108.40000000 #  c_0        cp        cp        cp      nb==3      equivalent:   N/A       N/A       N/A        N/A    skipped over b/c number of bonded atoms to central atom == 3 (improper set) angle 123:    c_0     cp     cp   equivs:   c_0     cp     cp   match:   c_0     cp     cp           angle 124:    c_0     cp     cp   equivs:   c_0     cp     cp   match:   c_0     cp     cp           angle 324:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp          
+ 2        0.00000000      0.00000000      0.00000000    110.58840000    119.30000000    119.30000000 #  cp        c_0        cp       o_1      nb==3      equivalent:   N/A       N/A       N/A        N/A    skipped over b/c number of bonded atoms to central atom == 3 (improper set) angle 123:     cp    c_0     cp   equivs:    cp    c_0     cp   match:    cp    c_0     cp           angle 124:     cp    c_0    o_1   equivs:    cp    c_0    o_1   match:    cp    c_0    o_1           angle 324:     cp    c_0    o_1   equivs:    cp    c_0    o_1   match:    cp    c_0    o_1          
+ 3        0.00000000      0.00000000      0.00000000    118.90000000    117.94000000    117.94000000 #  cp         cp        cp        hc      nb==3      equivalent:   N/A       N/A       N/A        N/A    skipped over b/c number of bonded atoms to central atom == 3 (improper set) angle 123:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp           angle 124:     cp     cp     hc   equivs:    cp     cp     h    match:    cp     cp     h            angle 324:     cp     cp     hc   equivs:    cp     cp     h    match:    cp     cp     h           
+ 4        0.00000000      0.00000000      0.00000000    118.90000000    123.42000000    123.42000000 #  cp         cp        cp        oc      nb==3      equivalent:   N/A       N/A       N/A        N/A    skipped over b/c number of bonded atoms to central atom == 3 (improper set) angle 123:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp           angle 124:     cp     cp     oc   equivs:    cp     cp     o    match:    cp     cp     o            angle 324:     cp     cp     oc   equivs:    cp     cp     o    match:    cp     cp     o           
+ 5        0.00000000      0.00000000      0.00000000    118.90000000    123.42000000    123.42000000 #  cp         cp        cp        oh      nb==3      equivalent:   N/A       N/A       N/A        N/A    skipped over b/c number of bonded atoms to central atom == 3 (improper set) angle 123:     cp     cp     cp   equivs:    cp     cp     cp   match:    cp     cp     cp           angle 124:     cp     cp     oh   equivs:    cp     cp     o    match:    cp     cp     o            angle 324:     cp     cp     oh   equivs:    cp     cp     o    match:    cp     cp     o           
+
+Atoms # full
+
+ 1  1  2   0.026500   -13.146997222   -0.286200000     0.720402778      0    0    0 #    cp                                                                            [    atom-ids:    1    -   2    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    1    -   5    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    1    -   21   equivs:    cp   -   o    bond-inc:      0.02650],   
+ 2  1  2  -0.126800   -13.147097222   -1.681000000     0.720302778      0    0    0 #    cp                                                                            [    atom-ids:    2    -   1    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    2    -   3    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    2    -   23   equivs:    cp   -   h    bond-inc:     -0.12680],   
+ 3  1  2  -0.126800   -11.938997222   -2.378400000     0.720402778      0    0    0 #    cp                                                                            [    atom-ids:    3    -   2    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    3    -   20   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    3    -   24   equivs:    cp   -   h    bond-inc:     -0.12680],   
+ 4  1  2  -0.126800   -10.731097222   -0.286200000     0.720402778      0    0    0 #    cp                                                                            [    atom-ids:    4    -   5    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    4    -   20   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    4    -   25   equivs:    cp   -   h    bond-inc:     -0.12680],   
+ 5  1  2  -0.126800   -11.939097222    0.411300000     0.720402778      0    0    0 #    cp                                                                            [    atom-ids:    5    -   1    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    5    -   4    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    5    -   26   equivs:    cp   -   h    bond-inc:     -0.12680],   
+ 6  1  2   0.026500   -8.489897222    -1.524300000     0.720502778      0    0    0 #    cp                                                                            [    atom-ids:    6    -   7    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    6    -   11   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    6    -   19   equivs:    cp   -   o    bond-inc:      0.02650],   
+ 7  1  2  -0.126800   -7.710597222    -1.389100000    -0.428397222      0    0    0 #    cp                                                                            [    atom-ids:    7    -   6    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    7    -   8    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    7    -   27   equivs:    cp   -   h    bond-inc:     -0.12680],   
+ 8  1  2  -0.126800   -6.611297222    -0.530400000    -0.428297222      0    0    0 #    cp                                                                            [    atom-ids:    8    -   7    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    8    -   9    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    8    -   28   equivs:    cp   -   h    bond-inc:     -0.12680],   
+ 9  1  2   0.000000   -6.291597222     0.193100000     0.720502778      0    0    0 #    cp                                                                            [    atom-ids:    9    -   8    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    9    -   10   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    9    -   17   equivs:    c_0  -  cp    bond-inc:      0.00000],   
+10  1  2  -0.126800   -7.070897222     0.057900000     1.869302778      0    0    0 #    cp                                                                            [    atom-ids:    10   -   9    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    10   -   11   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    10   -   29   equivs:    cp   -   h    bond-inc:     -0.12680],   
+11  1  2  -0.126800   -8.170097222    -0.800800000     1.869302778      0    0    0 #    cp                                                                            [    atom-ids:    11   -   6    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    11   -   10   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    11   -   30   equivs:    cp   -   h    bond-inc:     -0.12680],   
+12  1  2  -0.126800   -5.071397222     1.490700000    -1.606197222      0    0    0 #    cp                                                                            [    atom-ids:    12   -   13   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    12   -   18   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    12   -   31   equivs:    cp   -   h    bond-inc:     -0.12680],   
+13  1  2  -0.126800   -4.292097222     1.625900000    -2.755097222      0    0    0 #    cp                                                                            [    atom-ids:    13   -   12   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    13   -   14   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    13   -   32   equivs:    cp   -   h    bond-inc:     -0.12680],   
+14  1  2  -0.126800   -2.913197222     1.425900000    -2.689797222      0    0    0 #    cp                                                                            [    atom-ids:    14   -   13   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    14   -   15   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    14   -   33   equivs:    cp   -   h    bond-inc:     -0.12680],   
+15  1  2  -0.126800   -2.313697222     1.090900000    -1.475797222      0    0    0 #    cp                                                                            [    atom-ids:    15   -   14   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    15   -   16   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    15   -   34   equivs:    cp   -   h    bond-inc:     -0.12680],   
+16  1  2  -0.126800   -3.092997222     0.955800000    -0.326997222      0    0    0 #    cp                                                                            [    atom-ids:    16   -   15   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    16   -   18   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    16   -   35   equivs:    cp   -   h    bond-inc:     -0.12680],   
+17  1  1   0.396400   -5.226897222     1.024700000     0.720502778      0    0    0 #   c_0                                                                            [    atom-ids:    17   -   9    equivs:    c_0  -  cp    bond-inc:      0.00000],   [    atom-ids:    17   -   18   equivs:    c_0  -  cp    bond-inc:      0.00000],   [    atom-ids:    17   -   22   equivs:    c_0  -  o_1   bond-inc:      0.39640],   
+18  1  2   0.000000   -4.471997222     1.155700000    -0.392197222      0    0    0 #    cp                                                                            [    atom-ids:    18   -   12   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    18   -   16   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    18   -   17   equivs:    c_0  -  cp    bond-inc:      0.00000],   
+19  1  6  -0.053000   -9.557697222    -2.358500000     0.720502778      0    0    0 #    oc                                                                            [    atom-ids:    19   -   6    equivs:    cp   -   o    bond-inc:     -0.02650],   [    atom-ids:    19   -   20   equivs:    cp   -   o    bond-inc:     -0.02650],   
+20  1  2   0.026500   -10.731097222   -1.681000000     0.720402778      0    0    0 #    cp                                                                            [    atom-ids:    20   -   3    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    20   -   4    equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    20   -   19   equivs:    cp   -   o    bond-inc:      0.02650],   
+21  1  7  -0.450600   -14.320497222    0.391400000     0.720402778      0    0    0 #    oh                                                                            [    atom-ids:    21   -   1    equivs:    cp   -   o    bond-inc:     -0.02650],   [    atom-ids:    21   -   36   equivs:    h*   -   o    bond-inc:     -0.42410],   
+22  1  5  -0.396400   -4.949897222     1.651300000     1.715502778      0    0    0 #   o_1                                                                            [    atom-ids:    22   -   17   equivs:    c_0  -  o_1   bond-inc:     -0.39640],   
+23  1  3   0.126800   -14.099697222   -2.231000000     0.720202778      0    0    0 #    hc                                                                            [    atom-ids:    23   -   2    equivs:    cp   -   h    bond-inc:      0.12680],   
+24  1  3   0.126800   -11.938997222   -3.478400000     0.720502778      0    0    0 #    hc                                                                            [    atom-ids:    24   -   3    equivs:    cp   -   h    bond-inc:      0.12680],   
+25  1  3   0.126800   -9.778397222     0.263800000     0.720302778      0    0    0 #    hc                                                                            [    atom-ids:    25   -   4    equivs:    cp   -   h    bond-inc:      0.12680],   
+26  1  3   0.126800   -11.939097222    1.511300000     0.720402778      0    0    0 #    hc                                                                            [    atom-ids:    26   -   5    equivs:    cp   -   h    bond-inc:      0.12680],   
+27  1  3   0.126800   -7.962797222    -1.959600000    -1.334397222      0    0    0 #    hc                                                                            [    atom-ids:    27   -   7    equivs:    cp   -   h    bond-inc:      0.12680],   
+28  1  3   0.126800   -5.996597222    -0.423800000    -1.334297222      0    0    0 #    hc                                                                            [    atom-ids:    28   -   8    equivs:    cp   -   h    bond-inc:      0.12680],   
+29  1  3   0.126800   -6.818697222     0.628600000     2.775302778      0    0    0 #    hc                                                                            [    atom-ids:    29   -   10   equivs:    cp   -   h    bond-inc:      0.12680],   
+30  1  3   0.126800   -8.784797222    -0.907400000     2.775302778      0    0    0 #    hc                                                                            [    atom-ids:    30   -   11   equivs:    cp   -   h    bond-inc:      0.12680],   
+31  1  3   0.126800   -6.158897222     1.648300000    -1.657597222      0    0    0 #    hc                                                                            [    atom-ids:    31   -   12   equivs:    cp   -   h    bond-inc:      0.12680],   
+32  1  3   0.126800   -4.764897222     1.890200000    -3.712497222      0    0    0 #    hc                                                                            [    atom-ids:    32   -   13   equivs:    cp   -   h    bond-inc:      0.12680],   
+33  1  3   0.126800   -2.298497222     1.532400000    -3.595797222      0    0    0 #    hc                                                                            [    atom-ids:    33   -   14   equivs:    cp   -   h    bond-inc:      0.12680],   
+34  1  3   0.126800   -1.226297222     0.933200000    -1.424397222      0    0    0 #    hc                                                                            [    atom-ids:    34   -   15   equivs:    cp   -   h    bond-inc:      0.12680],   
+35  1  3   0.126800   -2.620197222     0.691600000     0.630502778      0    0    0 #    hc                                                                            [    atom-ids:    35   -   16   equivs:    cp   -   h    bond-inc:      0.12680],   
+36  1  4   0.424100   -14.118397222    1.342100000     0.720402778      0    0    0 #    ho                                                                            [    atom-ids:    36   -   21   equivs:    h*   -   o    bond-inc:      0.42410],   
+37  2  2   0.026500    2.447202778    -0.286200000     0.720402778      0    0    0 #    cp                                                                            [    atom-ids:    37   -   38   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    37   -   41   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    37   -   57   equivs:    cp   -   o    bond-inc:      0.02650],   
+38  2  2  -0.126800    2.447102778    -1.681000000     0.720302778      0    0    0 #    cp                                                                            [    atom-ids:    38   -   37   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    38   -   39   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    38   -   59   equivs:    cp   -   h    bond-inc:     -0.12680],   
+39  2  2  -0.126800    3.655102778    -2.378400000     0.720402778      0    0    0 #    cp                                                                            [    atom-ids:    39   -   38   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    39   -   56   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    39   -   60   equivs:    cp   -   h    bond-inc:     -0.12680],   
+40  2  2  -0.126800    4.863102778    -0.286200000     0.720402778      0    0    0 #    cp                                                                            [    atom-ids:    40   -   41   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    40   -   56   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    40   -   61   equivs:    cp   -   h    bond-inc:     -0.12680],   
+41  2  2  -0.126800    3.655102778     0.411300000     0.720402778      0    0    0 #    cp                                                                            [    atom-ids:    41   -   37   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    41   -   40   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    41   -   62   equivs:    cp   -   h    bond-inc:     -0.12680],   
+42  2  2   0.026500    7.104302778    -1.524300000     0.720502778      0    0    0 #    cp                                                                            [    atom-ids:    42   -   43   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    42   -   47   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    42   -   55   equivs:    cp   -   o    bond-inc:      0.02650],   
+43  2  2  -0.126800    7.883602778    -1.389100000    -0.428397222      0    0    0 #    cp                                                                            [    atom-ids:    43   -   42   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    43   -   44   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    43   -   63   equivs:    cp   -   h    bond-inc:     -0.12680],   
+44  2  2  -0.126800    8.982902778    -0.530400000    -0.428297222      0    0    0 #    cp                                                                            [    atom-ids:    44   -   43   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    44   -   45   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    44   -   64   equivs:    cp   -   h    bond-inc:     -0.12680],   
+45  2  2   0.000000    9.302602778     0.193100000     0.720502778      0    0    0 #    cp                                                                            [    atom-ids:    45   -   44   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    45   -   46   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    45   -   53   equivs:    c_0  -  cp    bond-inc:      0.00000],   
+46  2  2  -0.126800    8.523302778     0.057900000     1.869302778      0    0    0 #    cp                                                                            [    atom-ids:    46   -   45   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    46   -   47   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    46   -   65   equivs:    cp   -   h    bond-inc:     -0.12680],   
+47  2  2  -0.126800    7.424102778    -0.800800000     1.869302778      0    0    0 #    cp                                                                            [    atom-ids:    47   -   42   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    47   -   46   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    47   -   66   equivs:    cp   -   h    bond-inc:     -0.12680],   
+48  2  2  -0.126800   10.522702778     1.490700000    -1.606197222      0    0    0 #    cp                                                                            [    atom-ids:    48   -   49   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    48   -   54   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    48   -   67   equivs:    cp   -   h    bond-inc:     -0.12680],   
+49  2  2  -0.126800   11.302102778     1.625900000    -2.755097222      0    0    0 #    cp                                                                            [    atom-ids:    49   -   48   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    49   -   50   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    49   -   68   equivs:    cp   -   h    bond-inc:     -0.12680],   
+50  2  2  -0.126800   12.681002778     1.425900000    -2.689797222      0    0    0 #    cp                                                                            [    atom-ids:    50   -   49   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    50   -   51   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    50   -   69   equivs:    cp   -   h    bond-inc:     -0.12680],   
+51  2  2  -0.126800   13.280502778     1.090900000    -1.475797222      0    0    0 #    cp                                                                            [    atom-ids:    51   -   50   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    51   -   52   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    51   -   70   equivs:    cp   -   h    bond-inc:     -0.12680],   
+52  2  2  -0.126800   12.501202778     0.955800000    -0.326997222      0    0    0 #    cp                                                                            [    atom-ids:    52   -   51   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    52   -   54   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    52   -   71   equivs:    cp   -   h    bond-inc:     -0.12680],   
+53  2  1   0.396400   10.367302778     1.024700000     0.720502778      0    0    0 #   c_0                                                                            [    atom-ids:    53   -   45   equivs:    c_0  -  cp    bond-inc:      0.00000],   [    atom-ids:    53   -   54   equivs:    c_0  -  cp    bond-inc:      0.00000],   [    atom-ids:    53   -   58   equivs:    c_0  -  o_1   bond-inc:      0.39640],   
+54  2  2   0.000000   11.122202778     1.155700000    -0.392197222      0    0    0 #    cp                                                                            [    atom-ids:    54   -   48   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    54   -   52   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    54   -   53   equivs:    c_0  -  cp    bond-inc:      0.00000],   
+55  2  6  -0.053000    6.036502778    -2.358500000     0.720502778      0    0    0 #    oc                                                                            [    atom-ids:    55   -   42   equivs:    cp   -   o    bond-inc:     -0.02650],   [    atom-ids:    55   -   56   equivs:    cp   -   o    bond-inc:     -0.02650],   
+56  2  2   0.026500    4.863102778    -1.681000000     0.720402778      0    0    0 #    cp                                                                            [    atom-ids:    56   -   39   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    56   -   40   equivs:    cp   -  cp    bond-inc:      0.00000],   [    atom-ids:    56   -   55   equivs:    cp   -   o    bond-inc:      0.02650],   
+57  2  7  -0.450600    1.273702778     0.391400000     0.720402778      0    0    0 #    oh                                                                            [    atom-ids:    57   -   37   equivs:    cp   -   o    bond-inc:     -0.02650],   [    atom-ids:    57   -   72   equivs:    h*   -   o    bond-inc:     -0.42410],   
+58  2  5  -0.396400   10.644302778     1.651300000     1.715502778      0    0    0 #   o_1                                                                            [    atom-ids:    58   -   53   equivs:    c_0  -  o_1   bond-inc:     -0.39640],   
+59  2  3   0.126800    1.494502778    -2.231000000     0.720202778      0    0    0 #    hc                                                                            [    atom-ids:    59   -   38   equivs:    cp   -   h    bond-inc:      0.12680],   
+60  2  3   0.126800    3.655102778    -3.478400000     0.720502778      0    0    0 #    hc                                                                            [    atom-ids:    60   -   39   equivs:    cp   -   h    bond-inc:      0.12680],   
+61  2  3   0.126800    5.815802778     0.263800000     0.720302778      0    0    0 #    hc                                                                            [    atom-ids:    61   -   40   equivs:    cp   -   h    bond-inc:      0.12680],   
+62  2  3   0.126800    3.655102778     1.511300000     0.720402778      0    0    0 #    hc                                                                            [    atom-ids:    62   -   41   equivs:    cp   -   h    bond-inc:      0.12680],   
+63  2  3   0.126800    7.631402778    -1.959600000    -1.334397222      0    0    0 #    hc                                                                            [    atom-ids:    63   -   43   equivs:    cp   -   h    bond-inc:      0.12680],   
+64  2  3   0.126800    9.597602778    -0.423800000    -1.334297222      0    0    0 #    hc                                                                            [    atom-ids:    64   -   44   equivs:    cp   -   h    bond-inc:      0.12680],   
+65  2  3   0.126800    8.775402778     0.628600000     2.775302778      0    0    0 #    hc                                                                            [    atom-ids:    65   -   46   equivs:    cp   -   h    bond-inc:      0.12680],   
+66  2  3   0.126800    6.809402778    -0.907400000     2.775302778      0    0    0 #    hc                                                                            [    atom-ids:    66   -   47   equivs:    cp   -   h    bond-inc:      0.12680],   
+67  2  3   0.126800    9.435302778     1.648300000    -1.657597222      0    0    0 #    hc                                                                            [    atom-ids:    67   -   48   equivs:    cp   -   h    bond-inc:      0.12680],   
+68  2  3   0.126800   10.829302778     1.890200000    -3.712497222      0    0    0 #    hc                                                                            [    atom-ids:    68   -   49   equivs:    cp   -   h    bond-inc:      0.12680],   
+69  2  3   0.126800   13.295702778     1.532400000    -3.595797222      0    0    0 #    hc                                                                            [    atom-ids:    69   -   50   equivs:    cp   -   h    bond-inc:      0.12680],   
+70  2  3   0.126800   14.367902778     0.933200000    -1.424397222      0    0    0 #    hc                                                                            [    atom-ids:    70   -   51   equivs:    cp   -   h    bond-inc:      0.12680],   
+71  2  3   0.126800   12.974002778     0.691600000     0.630502778      0    0    0 #    hc                                                                            [    atom-ids:    71   -   52   equivs:    cp   -   h    bond-inc:      0.12680],   
+72  2  4   0.424100    1.475802778     1.342100000     0.720402778      0    0    0 #    ho                                                                            [    atom-ids:    72   -   57   equivs:    h*   -   o    bond-inc:      0.42410],   
+
+Bonds
+
+  1     3     1     2     #    cp          cp   
+  2     3     1     5     #    cp          cp   
+  3     6     1    21     #    cp          oh   
+  4     3     2     3     #    cp          cp   
+  5     4     2    23     #    cp          hc   
+  6     3     3    20     #    cp          cp   
+  7     4     3    24     #    cp          hc   
+  8     3     4     5     #    cp          cp   
+  9     3     4    20     #    cp          cp   
+ 10     4     4    25     #    cp          hc   
+ 11     4     5    26     #    cp          hc   
+ 12     3     6     7     #    cp          cp   
+ 13     3     6    11     #    cp          cp   
+ 14     5     6    19     #    cp          oc   
+ 15     3     7     8     #    cp          cp   
+ 16     4     7    27     #    cp          hc   
+ 17     3     8     9     #    cp          cp   
+ 18     4     8    28     #    cp          hc   
+ 19     3     9    10     #    cp          cp   
+ 20     1    17     9     #    c_0         cp   
+ 21     3    10    11     #    cp          cp   
+ 22     4    10    29     #    cp          hc   
+ 23     4    11    30     #    cp          hc   
+ 24     3    12    13     #    cp          cp   
+ 25     3    12    18     #    cp          cp   
+ 26     4    12    31     #    cp          hc   
+ 27     3    13    14     #    cp          cp   
+ 28     4    13    32     #    cp          hc   
+ 29     3    14    15     #    cp          cp   
+ 30     4    14    33     #    cp          hc   
+ 31     3    15    16     #    cp          cp   
+ 32     4    15    34     #    cp          hc   
+ 33     3    16    18     #    cp          cp   
+ 34     4    16    35     #    cp          hc   
+ 35     1    17    18     #    c_0         cp   
+ 36     2    17    22     #    c_0        o_1   
+ 37     5    20    19     #    cp          oc   
+ 38     7    36    21     #    ho          oh   
+ 39     3    37    38     #    cp          cp   
+ 40     3    37    41     #    cp          cp   
+ 41     6    37    57     #    cp          oh   
+ 42     3    38    39     #    cp          cp   
+ 43     4    38    59     #    cp          hc   
+ 44     3    39    56     #    cp          cp   
+ 45     4    39    60     #    cp          hc   
+ 46     3    40    41     #    cp          cp   
+ 47     3    40    56     #    cp          cp   
+ 48     4    40    61     #    cp          hc   
+ 49     4    41    62     #    cp          hc   
+ 50     3    42    43     #    cp          cp   
+ 51     3    42    47     #    cp          cp   
+ 52     5    42    55     #    cp          oc   
+ 53     3    43    44     #    cp          cp   
+ 54     4    43    63     #    cp          hc   
+ 55     3    44    45     #    cp          cp   
+ 56     4    44    64     #    cp          hc   
+ 57     3    45    46     #    cp          cp   
+ 58     1    53    45     #    c_0         cp   
+ 59     3    46    47     #    cp          cp   
+ 60     4    46    65     #    cp          hc   
+ 61     4    47    66     #    cp          hc   
+ 62     3    48    49     #    cp          cp   
+ 63     3    48    54     #    cp          cp   
+ 64     4    48    67     #    cp          hc   
+ 65     3    49    50     #    cp          cp   
+ 66     4    49    68     #    cp          hc   
+ 67     3    50    51     #    cp          cp   
+ 68     4    50    69     #    cp          hc   
+ 69     3    51    52     #    cp          cp   
+ 70     4    51    70     #    cp          hc   
+ 71     3    52    54     #    cp          cp   
+ 72     4    52    71     #    cp          hc   
+ 73     1    53    54     #    c_0         cp   
+ 74     2    53    58     #    c_0        o_1   
+ 75     5    56    55     #    cp          oc   
+ 76     7    72    57     #    ho          oh   
+
+Angles
+
+  1     7     5     1    21     #    cp         cp         oh   
+  2     7     2     1    21     #    cp         cp         oh   
+  3     4     2     1     5     #    cp         cp         cp   
+  4     4     1     2     3     #    cp         cp         cp   
+  5     5     3     2    23     #    cp         cp         hc   
+  6     5     1     2    23     #    cp         cp         hc   
+  7     5    20     3    24     #    cp         cp         hc   
+  8     4     2     3    20     #    cp         cp         cp   
+  9     5     2     3    24     #    cp         cp         hc   
+ 10     4     5     4    20     #    cp         cp         cp   
+ 11     5    20     4    25     #    cp         cp         hc   
+ 12     5     5     4    25     #    cp         cp         hc   
+ 13     4     1     5     4     #    cp         cp         cp   
+ 14     5     4     5    26     #    cp         cp         hc   
+ 15     5     1     5    26     #    cp         cp         hc   
+ 16     4     7     6    11     #    cp         cp         cp   
+ 17     6     7     6    19     #    cp         cp         oc   
+ 18     6    11     6    19     #    cp         cp         oc   
+ 19     4     6     7     8     #    cp         cp         cp   
+ 20     5     8     7    27     #    cp         cp         hc   
+ 21     5     6     7    27     #    cp         cp         hc   
+ 22     5     9     8    28     #    cp         cp         hc   
+ 23     5     7     8    28     #    cp         cp         hc   
+ 24     4     7     8     9     #    cp         cp         cp   
+ 25     1    17     9    10     #    c_0        cp         cp   
+ 26     1    17     9     8     #    c_0        cp         cp   
+ 27     4     8     9    10     #    cp         cp         cp   
+ 28     5    11    10    29     #    cp         cp         hc   
+ 29     4     9    10    11     #    cp         cp         cp   
+ 30     5     9    10    29     #    cp         cp         hc   
+ 31     5     6    11    30     #    cp         cp         hc   
+ 32     5    10    11    30     #    cp         cp         hc   
+ 33     4     6    11    10     #    cp         cp         cp   
+ 34     4    13    12    18     #    cp         cp         cp   
+ 35     5    13    12    31     #    cp         cp         hc   
+ 36     5    18    12    31     #    cp         cp         hc   
+ 37     4    12    13    14     #    cp         cp         cp   
+ 38     5    12    13    32     #    cp         cp         hc   
+ 39     5    14    13    32     #    cp         cp         hc   
+ 40     5    15    14    33     #    cp         cp         hc   
+ 41     4    13    14    15     #    cp         cp         cp   
+ 42     5    13    14    33     #    cp         cp         hc   
+ 43     5    14    15    34     #    cp         cp         hc   
+ 44     5    16    15    34     #    cp         cp         hc   
+ 45     4    14    15    16     #    cp         cp         cp   
+ 46     5    15    16    35     #    cp         cp         hc   
+ 47     5    18    16    35     #    cp         cp         hc   
+ 48     4    15    16    18     #    cp         cp         cp   
+ 49     3     9    17    22     #    cp        c_0        o_1   
+ 50     3    18    17    22     #    cp        c_0        o_1   
+ 51     2     9    17    18     #    cp        c_0         cp   
+ 52     1    17    18    12     #    c_0        cp         cp   
+ 53     4    12    18    16     #    cp         cp         cp   
+ 54     1    17    18    16     #    c_0        cp         cp   
+ 55     8     6    19    20     #    cp         oc         cp   
+ 56     4     3    20     4     #    cp         cp         cp   
+ 57     6     3    20    19     #    cp         cp         oc   
+ 58     6     4    20    19     #    cp         cp         oc   
+ 59     9     1    21    36     #    cp         oh         ho   
+ 60     4    38    37    41     #    cp         cp         cp   
+ 61     7    38    37    57     #    cp         cp         oh   
+ 62     7    41    37    57     #    cp         cp         oh   
+ 63     5    39    38    59     #    cp         cp         hc   
+ 64     4    37    38    39     #    cp         cp         cp   
+ 65     5    37    38    59     #    cp         cp         hc   
+ 66     5    56    39    60     #    cp         cp         hc   
+ 67     4    38    39    56     #    cp         cp         cp   
+ 68     5    38    39    60     #    cp         cp         hc   
+ 69     5    56    40    61     #    cp         cp         hc   
+ 70     5    41    40    61     #    cp         cp         hc   
+ 71     4    41    40    56     #    cp         cp         cp   
+ 72     5    40    41    62     #    cp         cp         hc   
+ 73     4    37    41    40     #    cp         cp         cp   
+ 74     5    37    41    62     #    cp         cp         hc   
+ 75     6    43    42    55     #    cp         cp         oc   
+ 76     6    47    42    55     #    cp         cp         oc   
+ 77     4    43    42    47     #    cp         cp         cp   
+ 78     5    42    43    63     #    cp         cp         hc   
+ 79     5    44    43    63     #    cp         cp         hc   
+ 80     4    42    43    44     #    cp         cp         cp   
+ 81     5    45    44    64     #    cp         cp         hc   
+ 82     5    43    44    64     #    cp         cp         hc   
+ 83     4    43    44    45     #    cp         cp         cp   
+ 84     4    44    45    46     #    cp         cp         cp   
+ 85     1    53    45    44     #    c_0        cp         cp   
+ 86     1    53    45    46     #    c_0        cp         cp   
+ 87     5    47    46    65     #    cp         cp         hc   
+ 88     4    45    46    47     #    cp         cp         cp   
+ 89     5    45    46    65     #    cp         cp         hc   
+ 90     4    42    47    46     #    cp         cp         cp   
+ 91     5    42    47    66     #    cp         cp         hc   
+ 92     5    46    47    66     #    cp         cp         hc   
+ 93     4    49    48    54     #    cp         cp         cp   
+ 94     5    49    48    67     #    cp         cp         hc   
+ 95     5    54    48    67     #    cp         cp         hc   
+ 96     5    50    49    68     #    cp         cp         hc   
+ 97     4    48    49    50     #    cp         cp         cp   
+ 98     5    48    49    68     #    cp         cp         hc   
+ 99     4    49    50    51     #    cp         cp         cp   
+ 100    5    51    50    69     #    cp         cp         hc   
+ 101    5    49    50    69     #    cp         cp         hc   
+ 102    4    50    51    52     #    cp         cp         cp   
+ 103    5    50    51    70     #    cp         cp         hc   
+ 104    5    52    51    70     #    cp         cp         hc   
+ 105    5    51    52    71     #    cp         cp         hc   
+ 106    4    51    52    54     #    cp         cp         cp   
+ 107    5    54    52    71     #    cp         cp         hc   
+ 108    3    54    53    58     #    cp        c_0        o_1   
+ 109    2    45    53    54     #    cp        c_0         cp   
+ 110    3    45    53    58     #    cp        c_0        o_1   
+ 111    4    48    54    52     #    cp         cp         cp   
+ 112    1    53    54    48     #    c_0        cp         cp   
+ 113    1    53    54    52     #    c_0        cp         cp   
+ 114    8    42    55    56     #    cp         oc         cp   
+ 115    4    39    56    40     #    cp         cp         cp   
+ 116    6    40    56    55     #    cp         cp         oc   
+ 117    6    39    56    55     #    cp         cp         oc   
+ 118    9    37    57    72     #    cp         oh         ho   
+
+Dihedrals
+
+  1     7     2     1     5    26     #    cp         cp        cp         hc   
+  2    13     2     1    21    36     #    cp         cp        oh         ho   
+  3     7     5     1     2    23     #    cp         cp        cp         hc   
+  4    11    26     5     1    21     #    hc         cp        cp         oh   
+  5    11    23     2     1    21     #    hc         cp        cp         oh   
+  6    13     5     1    21    36     #    cp         cp        oh         ho   
+  7     4     2     1     5     4     #    cp         cp        cp         cp   
+  8     4     3     2     1     5     #    cp         cp        cp         cp   
+  9     4     1     2     3    20     #    cp         cp        cp         cp   
+ 10    10     3     2     1    21     #    cp         cp        cp         oh   
+ 11     6    23     2     3    24     #    hc         cp        cp         hc   
+ 12     7     1     2     3    24     #    cp         cp        cp         hc   
+ 13     9     2     3    20    19     #    cp         cp        cp         oc   
+ 14     4     2     3    20     4     #    cp         cp        cp         cp   
+ 15     7    20     3     2    23     #    cp         cp        cp         hc   
+ 16     9     5     4    20    19     #    cp         cp        cp         oc   
+ 17     7    20     4     5    26     #    cp         cp        cp         hc   
+ 18     6    25     4     5    26     #    hc         cp        cp         hc   
+ 19     7     1     5     4    25     #    cp         cp        cp         hc   
+ 20     4     1     5     4    20     #    cp         cp        cp         cp   
+ 21    10     4     5     1    21     #    cp         cp        cp         oh   
+ 22     8    27     7     6    19     #    hc         cp        cp         oc   
+ 23    12    11     6    19    20     #    cp         cp        oc         cp   
+ 24     4     7     6    11    10     #    cp         cp        cp         cp   
+ 25     7    11     6     7    27     #    cp         cp        cp         hc   
+ 26    12     7     6    19    20     #    cp         cp        oc         cp   
+ 27     7     7     6    11    30     #    cp         cp        cp         hc   
+ 28     8    30    11     6    19     #    hc         cp        cp         oc   
+ 29     6    27     7     8    28     #    hc         cp        cp         hc   
+ 30     9     8     7     6    19     #    cp         cp        cp         oc   
+ 31     7     6     7     8    28     #    cp         cp        cp         hc   
+ 32     4     8     7     6    11     #    cp         cp        cp         cp   
+ 33     4     6     7     8     9     #    cp         cp        cp         cp   
+ 34     3    17     9     8     7     #    c_0        cp        cp         cp   
+ 35     7     9     8     7    27     #    cp         cp        cp         hc   
+ 36     4     7     8     9    10     #    cp         cp        cp         cp   
+ 37     4     8     9    10    11     #    cp         cp        cp         cp   
+ 38     7     8     9    10    29     #    cp         cp        cp         hc   
+ 39     5    17     9     8    28     #    c_0        cp        cp         hc   
+ 40     1    18    17     9    10     #    cp        c_0        cp         cp   
+ 41     2    22    17     9    10     #    o_1       c_0        cp         cp   
+ 42     1    18    17     9     8     #    cp        c_0        cp         cp   
+ 43     5    17     9    10    29     #    c_0        cp        cp         hc   
+ 44     2    22    17     9     8     #    o_1       c_0        cp         cp   
+ 45     7    10     9     8    28     #    cp         cp        cp         hc   
+ 46     3    17     9    10    11     #    c_0        cp        cp         cp   
+ 47     6    29    10    11    30     #    hc         cp        cp         hc   
+ 48     7     9    10    11    30     #    cp         cp        cp         hc   
+ 49     4     6    11    10     9     #    cp         cp        cp         cp   
+ 50     9    10    11     6    19     #    cp         cp        cp         oc   
+ 51     7     6    11    10    29     #    cp         cp        cp         hc   
+ 52     6    31    12    13    32     #    hc         cp        cp         hc   
+ 53     3    17    18    12    13     #    c_0        cp        cp         cp   
+ 54     4    13    12    18    16     #    cp         cp        cp         cp   
+ 55     7    18    12    13    32     #    cp         cp        cp         hc   
+ 56     4    14    13    12    18     #    cp         cp        cp         cp   
+ 57     4    12    13    14    15     #    cp         cp        cp         cp   
+ 58     6    32    13    14    33     #    hc         cp        cp         hc   
+ 59     7    12    13    14    33     #    cp         cp        cp         hc   
+ 60     7    14    13    12    31     #    cp         cp        cp         hc   
+ 61     7    15    14    13    32     #    cp         cp        cp         hc   
+ 62     4    13    14    15    16     #    cp         cp        cp         cp   
+ 63     7    13    14    15    34     #    cp         cp        cp         hc   
+ 64     6    33    14    15    34     #    hc         cp        cp         hc   
+ 65     7    14    15    16    35     #    cp         cp        cp         hc   
+ 66     6    34    15    16    35     #    hc         cp        cp         hc   
+ 67     7    16    15    14    33     #    cp         cp        cp         hc   
+ 68     4    14    15    16    18     #    cp         cp        cp         cp   
+ 69     7    18    16    15    34     #    cp         cp        cp         hc   
+ 70     3    17    18    16    15     #    c_0        cp        cp         cp   
+ 71     1     9    17    18    16     #    cp        c_0        cp         cp   
+ 72     1     9    17    18    12     #    cp        c_0        cp         cp   
+ 73     5    17    18    12    31     #    c_0        cp        cp         hc   
+ 74     7    16    18    12    31     #    cp         cp        cp         hc   
+ 75     2    22    17    18    12     #    o_1       c_0        cp         cp   
+ 76     2    22    17    18    16     #    o_1       c_0        cp         cp   
+ 77     4    12    18    16    15     #    cp         cp        cp         cp   
+ 78     7    12    18    16    35     #    cp         cp        cp         hc   
+ 79     5    17    18    16    35     #    c_0        cp        cp         hc   
+ 80     8    24     3    20    19     #    hc         cp        cp         oc   
+ 81     4     3    20     4     5     #    cp         cp        cp         cp   
+ 82     7     3    20     4    25     #    cp         cp        cp         hc   
+ 83    12     4    20    19     6     #    cp         cp        oc         cp   
+ 84     8    25     4    20    19     #    hc         cp        cp         oc   
+ 85    12     3    20    19     6     #    cp         cp        oc         cp   
+ 86     7     4    20     3    24     #    cp         cp        cp         hc   
+ 87    13    41    37    57    72     #    cp         cp        oh         ho   
+ 88     4    38    37    41    40     #    cp         cp        cp         cp   
+ 89     7    38    37    41    62     #    cp         cp        cp         hc   
+ 90    11    59    38    37    57     #    hc         cp        cp         oh   
+ 91     7    41    37    38    59     #    cp         cp        cp         hc   
+ 92    11    62    41    37    57     #    hc         cp        cp         oh   
+ 93    13    38    37    57    72     #    cp         cp        oh         ho   
+ 94    10    39    38    37    57     #    cp         cp        cp         oh   
+ 95     4    39    38    37    41     #    cp         cp        cp         cp   
+ 96     6    59    38    39    60     #    hc         cp        cp         hc   
+ 97     4    37    38    39    56     #    cp         cp        cp         cp   
+ 98     7    37    38    39    60     #    cp         cp        cp         hc   
+ 99     7    56    39    38    59     #    cp         cp        cp         hc   
+ 100    4    38    39    56    40     #    cp         cp        cp         cp   
+ 101    9    38    39    56    55     #    cp         cp        cp         oc   
+ 102    9    41    40    56    55     #    cp         cp        cp         oc   
+ 103    7    56    40    41    62     #    cp         cp        cp         hc   
+ 104    6    61    40    41    62     #    hc         cp        cp         hc   
+ 105    7    37    41    40    61     #    cp         cp        cp         hc   
+ 106   10    40    41    37    57     #    cp         cp        cp         oh   
+ 107    4    37    41    40    56     #    cp         cp        cp         cp   
+ 108    8    66    47    42    55     #    hc         cp        cp         oc   
+ 109   12    43    42    55    56     #    cp         cp        oc         cp   
+ 110    7    43    42    47    66     #    cp         cp        cp         hc   
+ 111    8    63    43    42    55     #    hc         cp        cp         oc   
+ 112   12    47    42    55    56     #    cp         cp        oc         cp   
+ 113    7    47    42    43    63     #    cp         cp        cp         hc   
+ 114    4    43    42    47    46     #    cp         cp        cp         cp   
+ 115    9    44    43    42    55     #    cp         cp        cp         oc   
+ 116    7    42    43    44    64     #    cp         cp        cp         hc   
+ 117    4    42    43    44    45     #    cp         cp        cp         cp   
+ 118    4    44    43    42    47     #    cp         cp        cp         cp   
+ 119    6    63    43    44    64     #    hc         cp        cp         hc   
+ 120    3    53    45    44    43     #    c_0        cp        cp         cp   
+ 121    7    45    44    43    63     #    cp         cp        cp         hc   
+ 122    4    43    44    45    46     #    cp         cp        cp         cp   
+ 123    4    44    45    46    47     #    cp         cp        cp         cp   
+ 124    7    44    45    46    65     #    cp         cp        cp         hc   
+ 125    1    54    53    45    44     #    cp        c_0        cp         cp   
+ 126    1    54    53    45    46     #    cp        c_0        cp         cp   
+ 127    2    58    53    45    46     #    o_1       c_0        cp         cp   
+ 128    7    46    45    44    64     #    cp         cp        cp         hc   
+ 129    5    53    45    46    65     #    c_0        cp        cp         hc   
+ 130    2    58    53    45    44     #    o_1       c_0        cp         cp   
+ 131    5    53    45    44    64     #    c_0        cp        cp         hc   
+ 132    3    53    45    46    47     #    c_0        cp        cp         cp   
+ 133    6    65    46    47    66     #    hc         cp        cp         hc   
+ 134    7    45    46    47    66     #    cp         cp        cp         hc   
+ 135    9    46    47    42    55     #    cp         cp        cp         oc   
+ 136    4    42    47    46    45     #    cp         cp        cp         cp   
+ 137    7    42    47    46    65     #    cp         cp        cp         hc   
+ 138    3    53    54    48    49     #    c_0        cp        cp         cp   
+ 139    6    67    48    49    68     #    hc         cp        cp         hc   
+ 140    4    49    48    54    52     #    cp         cp        cp         cp   
+ 141    7    54    48    49    68     #    cp         cp        cp         hc   
+ 142    6    68    49    50    69     #    hc         cp        cp         hc   
+ 143    4    50    49    48    54     #    cp         cp        cp         cp   
+ 144    4    48    49    50    51     #    cp         cp        cp         cp   
+ 145    7    48    49    50    69     #    cp         cp        cp         hc   
+ 146    7    50    49    48    67     #    cp         cp        cp         hc   
+ 147    7    51    50    49    68     #    cp         cp        cp         hc   
+ 148    6    69    50    51    70     #    hc         cp        cp         hc   
+ 149    4    49    50    51    52     #    cp         cp        cp         cp   
+ 150    7    49    50    51    70     #    cp         cp        cp         hc   
+ 151    6    70    51    52    71     #    hc         cp        cp         hc   
+ 152    7    50    51    52    71     #    cp         cp        cp         hc   
+ 153    7    52    51    50    69     #    cp         cp        cp         hc   
+ 154    4    50    51    52    54     #    cp         cp        cp         cp   
+ 155    7    54    52    51    70     #    cp         cp        cp         hc   
+ 156    3    53    54    52    51     #    c_0        cp        cp         cp   
+ 157    1    45    53    54    52     #    cp        c_0        cp         cp   
+ 158    1    45    53    54    48     #    cp        c_0        cp         cp   
+ 159    5    53    54    48    67     #    c_0        cp        cp         hc   
+ 160    2    58    53    54    48     #    o_1       c_0        cp         cp   
+ 161    5    53    54    52    71     #    c_0        cp        cp         hc   
+ 162    7    52    54    48    67     #    cp         cp        cp         hc   
+ 163    2    58    53    54    52     #    o_1       c_0        cp         cp   
+ 164    4    48    54    52    51     #    cp         cp        cp         cp   
+ 165    7    48    54    52    71     #    cp         cp        cp         hc   
+ 166    4    39    56    40    41     #    cp         cp        cp         cp   
+ 167    7    40    56    39    60     #    cp         cp        cp         hc   
+ 168    8    60    39    56    55     #    hc         cp        cp         oc   
+ 169    7    39    56    40    61     #    cp         cp        cp         hc   
+ 170   12    40    56    55    42     #    cp         cp        oc         cp   
+ 171    8    61    40    56    55     #    hc         cp        cp         oc   
+ 172   12    39    56    55    42     #    cp         cp        oc         cp   
+
+Impropers
+
+  1     5     2     1     5    21     #    cp         cp        cp        oh      nb==3   
+  2     3     1     2     3    23     #    cp         cp        cp        hc      nb==3   
+  3     3     2     3    20    24     #    cp         cp        cp        hc      nb==3   
+  4     3     5     4    20    25     #    cp         cp        cp        hc      nb==3   
+  5     3     1     5     4    26     #    cp         cp        cp        hc      nb==3   
+  6     4     7     6    11    19     #    cp         cp        cp        oc      nb==3   
+  7     3     6     7     8    27     #    cp         cp        cp        hc      nb==3   
+  8     3     7     8     9    28     #    cp         cp        cp        hc      nb==3   
+  9     1    17     9     8    10     #    c_0        cp        cp        cp      nb==3   
+ 10     3     9    10    11    29     #    cp         cp        cp        hc      nb==3   
+ 11     3     6    11    10    30     #    cp         cp        cp        hc      nb==3   
+ 12     3    13    12    18    31     #    cp         cp        cp        hc      nb==3   
+ 13     3    12    13    14    32     #    cp         cp        cp        hc      nb==3   
+ 14     3    13    14    15    33     #    cp         cp        cp        hc      nb==3   
+ 15     3    14    15    16    34     #    cp         cp        cp        hc      nb==3   
+ 16     3    15    16    18    35     #    cp         cp        cp        hc      nb==3   
+ 17     2     9    17    18    22     #    cp        c_0        cp       o_1      nb==3   
+ 18     1    17    18    12    16     #    c_0        cp        cp        cp      nb==3   
+ 19     4     3    20     4    19     #    cp         cp        cp        oc      nb==3   
+ 20     5    38    37    41    57     #    cp         cp        cp        oh      nb==3   
+ 21     3    37    38    39    59     #    cp         cp        cp        hc      nb==3   
+ 22     3    38    39    56    60     #    cp         cp        cp        hc      nb==3   
+ 23     3    41    40    56    61     #    cp         cp        cp        hc      nb==3   
+ 24     3    37    41    40    62     #    cp         cp        cp        hc      nb==3   
+ 25     4    43    42    47    55     #    cp         cp        cp        oc      nb==3   
+ 26     3    42    43    44    63     #    cp         cp        cp        hc      nb==3   
+ 27     3    43    44    45    64     #    cp         cp        cp        hc      nb==3   
+ 28     1    53    45    44    46     #    c_0        cp        cp        cp      nb==3   
+ 29     3    45    46    47    65     #    cp         cp        cp        hc      nb==3   
+ 30     3    42    47    46    66     #    cp         cp        cp        hc      nb==3   
+ 31     3    49    48    54    67     #    cp         cp        cp        hc      nb==3   
+ 32     3    48    49    50    68     #    cp         cp        cp        hc      nb==3   
+ 33     3    49    50    51    69     #    cp         cp        cp        hc      nb==3   
+ 34     3    50    51    52    70     #    cp         cp        cp        hc      nb==3   
+ 35     3    51    52    54    71     #    cp         cp        cp        hc      nb==3   
+ 36     2    45    53    54    58     #    cp        c_0        cp       o_1      nb==3   
+ 37     1    53    54    48    52     #    c_0        cp        cp        cp      nb==3   
+ 38     4    39    56    40    55     #    cp         cp        cp        oc      nb==3   

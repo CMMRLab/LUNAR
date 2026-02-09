@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-July 31st, 2023
+Revision 1.1
+February 9, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -21,6 +21,10 @@ def template(pre, post, BondingIDs, CreateIDs, Reduce, Remove, Keep, log):
     # Generate graphs and find IDs to search outward from
     pre_atoms, pre_types, pre_elements, pre_graph, pre_neigh_types, pre_neigh_elements = agmf.connections(pre)
     post_atoms, post_types, post_elements, post_graph, post_neigh_types, post_neigh_elements = agmf.connections(post)
+    
+    # Find clusters
+    pre_molecules, pre_molids, pre_formulas, pre_cluster_info = agmf.clusters(pre, log, pflag=True, rxntype='Pre', advancedformula=False)
+    post_molecules, post_molids, post_formulas, post_cluster_info = agmf.clusters(post, log, pflag=True, rxntype='Post', advancedformula=False)
     
     # Find reduce method based on length of lists
     if len(Reduce) == 5:
@@ -68,10 +72,17 @@ def template(pre, post, BondingIDs, CreateIDs, Reduce, Remove, Keep, log):
                 post_graph[postID2].remove(postID1)
             except:
                 log.error(f'ERROR BondingIDs or ReduceIDs post-bond {postID1}-{postID2} does not exist. Update BondingIDs or ReduceIDs')
+        
         postIDs2keep1 = find_Nneighs_away(postID1, post_graph, depth1)
         postIDs2keep2 = find_Nneighs_away(postID2, post_graph, depth2)
         postIDs2keep = sorted(set(postIDs2keep1 + postIDs2keep2 + [postID1] + [postID2] + post_keep + CreateIDs))
-        postIDs2remove = [i for i in pre.atoms if i not in postIDs2keep] + post_remove
+        
+        # We need to check for any molecules that may be in a different molecule for deletion
+        for molecule in post_molecules:
+            diff = set(postIDs2keep) - set(molecule)
+            if diff: postIDs2keep.extend(list(molecule)) 
+        
+        postIDs2remove = [i for i in post.atoms if i not in postIDs2keep] + post_remove
         log.out('  post-rxn atom removal:')
         post_reduced = rm_atoms.constructor(post, postIDs2remove, log, pflag=True)
         
