@@ -16,10 +16,15 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 6February2026)
+LUNAR (version 9February2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+9February2026      JDK         - Any code that had "include_type_labels" boolean now has a default of True, 
+                                 such that the default is "opting-in" for type labels as opposed to "opting-out"
+                                 of type labels. This will help many use LUNAR with defaults and help with debug
+                                 time of "fix bond/react" templates when users reach out to Josh for help.
+
 6February2026      JDK         - all2lmp.py:  Adjusted atom ordering for DREIDING impropers.
 
 5February2026      JDK         - log_analysis.py: Changed prominence method in RFR yield point predictions.

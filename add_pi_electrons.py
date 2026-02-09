@@ -275,7 +275,7 @@ reset_simulation_cell = False
 #                                                                                                            #
 # Update include_type_labels as desired (Default should be False).                                           #
 ##############################################################################################################
-include_type_labels = False
+include_type_labels = True
 
 
 
