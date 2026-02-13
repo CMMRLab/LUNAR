@@ -87,8 +87,9 @@ def depth_from_edge(option, fragmentID, depth, rxn, pre2post, newfile, log, rxnt
         for i in mol_atoms:
             # Check if all paths are greater then the cut-off depth
             path_lengths = mol_atoms[i]
-            if min(path_lengths) > depth+1:
-                fragment_atoms.append(i)
+            if path_lengths:
+                if min(path_lengths) > depth+1:
+                    fragment_atoms.append(i)
                 
     # Check if rxn has dict fragments and add new info to rxn accordingly
     class Fragments:

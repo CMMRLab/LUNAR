@@ -16,10 +16,15 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 9February2026)
+LUNAR (version 13February2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+13February2026     JDK         - bond_react_merge.py: fixed bug in "molecule_file_options"
+                                                      "fragment/qedge/custom_charges/depth_from_edge_0", that was
+                                                      causing a crash if a post-rxn template hade more then one
+                                                      molecule.
+
 9February2026      JDK         - bond_react_merge.py: Added a boolean in LUNAR/src/bond_react_merge/merge_coeffs.py
                                  merged class to set a different way for merging. The boolean is self.merge_with_coeffs  
                                  where when set to False the merging happens using comments or type labels, but when
