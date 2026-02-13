@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-February 2nd, 2023
+Revision 1.1
+February 13, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -63,7 +63,7 @@ def depth_from_edge(option, fragmentID, depth, rxn, pre2post, newfile, log, rxnt
     #############################################################################
     # Find pre molecule graphs from pre_molecules and start matching topologies #
     #############################################################################
-    for molid, mol in enumerate(rxn_molecules):            
+    for molid, mol in enumerate(rxn_molecules):      
         # Find molecule bonds and graph
         mol_bonds = [rxn.bonds[i].atomids for i in rxn.bonds if agmf.check_bonds(rxn.bonds[i].atomids, list(mol))]
         mol_graph = agmf.gen_graph(list(mol), mol_bonds)
@@ -74,22 +74,31 @@ def depth_from_edge(option, fragmentID, depth, rxn, pre2post, newfile, log, rxnt
         edgeIDs = [i for i in edge if i in list(mol)]
         mol_atoms = {i:[] for i in mol}
         
-        # Loop through mol_atoms and edgeIDs to find shortest distances of atom from edgeIDs and add to valued-lst
-        for i in mol_atoms:
-            for j in edgeIDs:
-                if i != j:
-                    shortest_path = gt.find_shortest_path(mol_graph, i, j, path=[])
-                    mol_atoms[i].append(len(shortest_path))
-                else:
-                    mol_atoms[i].append(0)
-                
-        # Loop through mol_atoms and see if any path is to short to be append atom to fragment_atoms
-        for i in mol_atoms:
-            # Check if all paths are greater then the cut-off depth
-            path_lengths = mol_atoms[i]
-            if path_lengths:
-                if min(path_lengths) > depth+1:
-                    fragment_atoms.append(i)
+        # Some molecules in template may not have edgeIDs
+        if edgeIDs:
+        
+            # Loop through mol_atoms and edgeIDs to find shortest distances of atom from edgeIDs and add to valued-lst
+            for i in mol_atoms:
+                for j in edgeIDs:
+                    if i != j:
+                        shortest_path = gt.find_shortest_path(mol_graph, i, j, path=[])
+                        mol_atoms[i].append(len(shortest_path))
+                    else:
+                        mol_atoms[i].append(0)
+                    
+            # Loop through mol_atoms and see if any path is to short to be append atom to fragment_atoms
+            for i in mol_atoms:
+                # Check if all paths are greater then the cut-off depth
+                path_lengths = mol_atoms[i]
+                if path_lengths:
+                    if min(path_lengths) > depth+1:
+                        fragment_atoms.append(i)
+        
+        # If there are no edgeIDs add that entire molecular
+        # fragment to the fragment atoms list.
+        else:
+            for i in mol_atoms:
+                fragment_atoms.append(i)
                 
     # Check if rxn has dict fragments and add new info to rxn accordingly
     class Fragments:
