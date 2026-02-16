@@ -21,7 +21,8 @@ LUNAR (version 16February2026)
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
 16February2026     JDK         - atom_typing.py: Fixed carbonyl atom typing bug, when carbonyl group is
-                                                 attacthed to an aromatic structure.
+                                                 attacthed to an aromatic structure for the PCFF and PCFF-IFF
+                                                 typing routines.
 
 13February2026     JDK         - bond_react_merge.py: fixed bug in "molecule_file_options"
                                                       "fragment/qedge/custom_charges/depth_from_edge_0", that was
