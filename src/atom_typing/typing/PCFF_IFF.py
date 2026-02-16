@@ -284,21 +284,21 @@ def nta(mm, basename, ff_name):
                 
             # c_1     12.01115      C          3        carbonyl carbon of acid, ester, amide 
             # Amide (C-index=0, N-index=1, O-index=2 in elements1)
-            elif ring == 0 and elements1[0] == 'C' and elements1[1] == 'N' and elements1[2] == 'O' and rings1.count(0) == 3:
+            elif ring == 0 and elements1[0] == 'C' and elements1[1] == 'N' and elements1[2] == 'O':# and rings1.count(0) == 3:
                 atom.nta_type = 'c_1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             # Ester, Carboxylic acid (C-index=0, O-index=1, O-index=2 in elements1)
-            elif ring == 0 and elements1[0] == 'C' and elements1[1] == 'O' and elements1[2] == 'O' and rings1.count(0) == 3:
+            elif ring == 0 and elements1[0] == 'C' and elements1[1] == 'O' and elements1[2] == 'O':# and rings1.count(0) == 3:
                 atom.nta_type = 'c_1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # c_2     12.01100      C          3        carbonyl carbon of carbamate, urea
             # Carbamate (N-index=0, O-index=1, O-index=2 in elements1)
-            elif ring == 0 and elements1[0] == 'N' and elements1[1] == 'O' and elements1[2] == 'O' and rings1.count(0) == 3:
+            elif ring == 0 and elements1[0] == 'N' and elements1[1] == 'O' and elements1[2] == 'O':# and rings1.count(0) == 3:
                 atom.nta_type = 'c_2'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             # Urea (N-index=0, N-index=1, O-index=2 in elements1)
-            elif ring == 0 and elements1[0] == 'N' and elements1[1] == 'N' and elements1[2] == 'O' and rings1.count(0) == 3:
+            elif ring == 0 and elements1[0] == 'N' and elements1[1] == 'N' and elements1[2] == 'O':# and rings1.count(0) == 3:
                 atom.nta_type = 'c_2'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
