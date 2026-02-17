@@ -1,0 +1,74 @@
+PPPM initialization ...
+  using 12-bit tables for long-range coulomb (src/kspace.cpp:345)
+  G vector (1/distance) = 0.20748667
+  grid = 18 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.029599328
+  estimated relative force accuracy = 8.9137497e-05
+  using double precision FFTW3
+  3d grid and FFT values/proc = 9200 4050
+Generated 0 of 1 mixed pair_coeff terms from arithmetic mixing rule
+Neighbor list info ...
+  update: every = 1 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 5000, page size: 100000
+  master list distance cutoff = 13
+  ghost atom cutoff = 13
+  binsize = 6.5, bins = 10 9 8
+  3 neighbor lists, perpetual/occasional/extra = 3 0 0
+  (1) pair lj/cut/coul/long, perpetual, half/full from (3)
+      attributes: half, newton on
+      pair build: halffull/newton
+      stencil: none
+      bin: none
+  (2) pair hbond/dreiding/lj, perpetual, skip from (3)
+      attributes: full, newton on
+      pair build: skip
+      stencil: none
+      bin: none
+  (3) neighbor class addition, perpetual
+      attributes: full, newton on
+      pair build: full/bin
+      stencil: full/bin/3d
+      bin: standard
+Per MPI rank memory allocation (min/avg/max) = 35.46 | 35.46 | 35.46 Mbytes
+   Step          Temp          Press          TotEng         KinEng         PotEng        Density           Lx             Ly             Lz           Volume    
+         0   300            6992.9063      3553.4049      2681.8348      871.57014      0.16536707     64.816         55.819         50             180898.22    
+       100   299.66863      5866.1643      3546.8437      2678.8725      867.9712       0.16488403     64.882277      55.829744      50.085616      181428.18    
+       200   324.77544      3303.2031      3580.0765      2903.3136      676.76291      0.16359571     65.127599      55.922346      50.206618      182856.93    
+       300   345.12789      479.0902       3436.5498      3085.2533      351.29649      0.16136483     65.501713      56.096036      50.453304      185384.94    
+       400   343.21735     -1940.1907      3217.6833      3068.1741      149.50918      0.15856834     65.92384       56.36295       50.772744      188654.36    
+       500   311.84336     -3553.6175      2982.8522      2787.7079      195.14433      0.15605493     66.297542      56.624054      51.063133      191692.82    
+       600   286.50597     -4122.2851      2749.9106      2561.2056      188.70498      0.15401191     66.589402      56.847471      51.31127       194235.69    
+       700   293.93173     -3741.3205      2547.9211      2627.5878     -79.666687      0.15224156     66.837813      57.042838      51.537903      196494.36    
+       800   306.79948     -2608.326       2342.6365      2742.6184     -399.9819       0.15066113     67.057358      57.230905      51.737452      198555.58    
+       900   308.80649     -1510.8874      2166.9755      2760.56       -593.58443      0.14911158     67.269399      57.432086      51.927786      200618.95    
+      1000   306.78872     -283.96389      2013.5474      2742.5223     -728.97487      0.14779772     67.43866       57.620746      52.086812      202402.36    
+Loop time of 14.862 on 16 procs for 1000 steps with 3000 atoms
+
+Performance: 5.813 ns/day, 4.128 hours/ns, 67.286 timesteps/s, 201.857 katom-step/s
+107.7% CPU use with 1 MPI tasks x 16 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 11.128     | 11.128     | 11.128     |   0.0 | 74.87
+Bond    | 0.084456   | 0.084456   | 0.084456   |   0.0 |  0.57
+Kspace  | 0.96154    | 0.96154    | 0.96154    |   0.0 |  6.47
+Neigh   | 0.63869    | 0.63869    | 0.63869    |   0.0 |  4.30
+Comm    | 0.033648   | 0.033648   | 0.033648   |   0.0 |  0.23
+Output  | 0.009304   | 0.009304   | 0.009304   |   0.0 |  0.06
+Modify  | 1.9691     | 1.9691     | 1.9691     |   0.0 | 13.25
+Other   |            | 0.03752    |            |       |  0.25
+
+Nlocal:           3000 ave        3000 max        3000 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           6133 ave        6133 max        6133 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         165338 ave      165338 max      165338 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 165338
+Ave neighs/atom = 55.112667
+Ave special neighs/atom = 2
+Neighbor list builds = 59
+Dangerous builds = 0

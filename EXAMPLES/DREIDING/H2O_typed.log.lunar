@@ -9,6 +9,32 @@ Finding molecules ...
 Finding rings ...
 Finding fused-ring clusters ...
 Finding atoms hybridization ...
+
+
+
+
+Starting Gasteiger algorithm to find charges. WARNING the algortihm itself is independent of atomic
+positions and/or geometries, but the look up tables where Gasteirger parameters are intialized
+from requires knowledge of hybridization of certain elements (C, N, O, ...). The method employeed
+in this code is a hybrid approach by using bonding-topology (indepenent of atomic positions) and
+a minimization of VSEPR ideal angles (dependent on atomic positions) onto local angles of each
+atom in the system to find the hybridized state. This means for the best results of computed charge
+that the geometries (set by bonding and atomic positions) of your file should be consistant with the
+hybridized state of each atom: (IE Sp1 avg-angle ~180, Sp2 avg-angle ~120, Sp3 avg-angle ~109.5).
+When bonding-topology could not determine the hybridized state the VSEPR ideal angle difference
+from the avg-angle of bonded neighbors in the system will be minimized, such that there will always
+be a predicted hybridized state.
+
+Read in Gasteiger parameters from frc_files/Gasteiger_parameters.txt
+
+Finding Gasteiger Charge ....
+
+Gasteiger method converged
+Total charge of the system: 0.000000
+
+Cite charge method:
+    Ref : J.Gasteiger, M. Marseli, Iterative Equalization of Oribital Electronegatiity A Rapid
+          Access to Atomic Charges, Tetrahedron Vol 36 p3219 1980
 Using path from topofile to set parent_directory ...
 
 
@@ -140,7 +166,7 @@ All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\EXAMPLES\DREIDING direc
 Normal program termination
 
 
-Execution time in seconds: 0.016567230224609375
+Execution time in seconds: 0.009563922882080078
 
 
 Number of WARNING(s) and ERROR(s)

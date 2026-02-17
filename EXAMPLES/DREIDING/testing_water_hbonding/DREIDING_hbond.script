@@ -1,0 +1,60 @@
+# LAMMPS script to test DREIDING H-bonding
+#
+#
+#
+#------------Input parameters------------
+variable  r_in  equal  9.0000 # inner distance cutoff (distance units)
+variable  r_out equal 11.0000 # outer distance cutoff (distance units)
+variable  angle equal 90.0000 # angle cutoff (degrees)
+
+variable  myid string DREIDING_hbonds_water
+
+
+#------------Initialization------------
+units           real
+dimension       3
+boundary        p p p
+newton          on
+
+#------------Force Field------------
+atom_style      full
+bond_style      harmonic
+angle_style     harmonic
+dihedral_style  harmonic
+improper_style  umbrella
+special_bonds   lj/coul 0 0 1
+
+kspace_style    pppm 1.0e-4
+pair_style      hybrid/overlay lj/cut/coul/long 10.0 hbond/dreiding/lj 4 ${r_in} ${r_out} ${angle}
+pair_modify     mix arithmetic
+
+neighbor        2.0 bin
+neigh_modify    delay 0 every 1 check yes one 5000 page 100000
+
+#------------Read datafile------------
+read_data       H2O_typed_DREIDING.data
+replicate       10 10 10
+
+# Setup H-bonding
+pair_coeff O_3    O_3    hbond/dreiding/lj H___HB j    7.00000000       2.75000000       4      ${r_in} ${r_out} ${angle}
+pair_coeff H___HB H___HB lj/cut/coul/long 0.00010000       2.84642140      
+pair_coeff O_3    H___HB lj/cut/coul/long 0.00309354       2.93978759      
+pair_coeff O_3    O_3    lj/cut/coul/long 0.09570000       3.03315378    
+
+
+#------------Thermo-settings------------
+timestep 	1.0
+
+thermo          100
+thermo_style    custom step temp press etotal ke pe density lx ly lz vol
+restart         100 rst1.a.${myid} rst2.a.${myid}
+log             ${myid}.log.lammps
+
+
+#-----------Run some dynamics------------ 
+velocity 	all create 300 41476145 rot yes mom yes
+fix             1 all npt temp 300 300 $(100*dt) aniso 1.0 1.0 $(1000*dt)
+run             1000
+
+write_restart   ${myid}.restart
+write_data      ${myid}.data

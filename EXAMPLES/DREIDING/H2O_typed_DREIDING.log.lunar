@@ -22,6 +22,7 @@ Checking for atom-type assignment consistency with atom-types in .frc file
 
 Using class d for DREIDING force field, resetting use_auto_equivalence and reset_charges to False
 since DREIDING does not currently offer this level of support.
+Adjusting box on all 6-faces by 2.0
 
 
 Finding molecules to reset molids....
@@ -108,7 +109,8 @@ h-bonding in LAMMPS your pair_style must be:
 
 Then each H-bonding pair coeff must be specified. DREIDING has different parameters
 depending on how the system was charged. Thus you must select the pair coeffs based
-on your charging method of "no-charge" or "Gasteiger".
+on your charging method of "no-charge" or "Gasteiger". To make this work you MUST
+delete the 12-6 LJ parameters in the "Pair Coeffs" section of the datafile.
 
 #------------------------------------------------
 # Example1: H-bonding no-charge using atomTypeIDs
@@ -117,6 +119,9 @@ variable  r_in  equal 9.0000 # inner distance cutoff (distance units)
 variable  r_out equal 11.0000 # outer distance cutoff (distance units)
 variable  angle equal 90.0000 # angle cutoff (degrees)
 pair_coeff 2      2      hbond/dreiding/lj 1      j    9.00000000       2.75000000       4      ${r_in} ${r_out} ${angle}
+pair_coeff 1      1      lj/cut/coul/long 0.00010000       2.84642140      
+pair_coeff 2      1      lj/cut/coul/long 0.00309354       2.93978759      
+pair_coeff 2      2      lj/cut/coul/long 0.09570000       3.03315378      
 
 #------------------------------------------------
 # Example2: H-bonding no-charge using type labels
@@ -125,6 +130,9 @@ variable  r_in  equal 9.0000 # inner distance cutoff (distance units)
 variable  r_out equal 11.0000 # outer distance cutoff (distance units)
 variable  angle equal 90.0000 # angle cutoff (degrees)
 pair_coeff O_3    O_3    hbond/dreiding/lj H___HB j    9.00000000       2.75000000       4      ${r_in} ${r_out} ${angle}
+pair_coeff H___HB H___HB lj/cut/coul/long 0.00010000       2.84642140      
+pair_coeff O_3    H___HB lj/cut/coul/long 0.00309354       2.93978759      
+pair_coeff O_3    O_3    lj/cut/coul/long 0.09570000       3.03315378      
 
 #------------------------------------------------
 # Example3: H-bonding Gasteiger using atomTypeIDs
@@ -133,6 +141,9 @@ variable  r_in  equal 9.0000 # inner distance cutoff (distance units)
 variable  r_out equal 11.0000 # outer distance cutoff (distance units)
 variable  angle equal 90.0000 # angle cutoff (degrees)
 pair_coeff 2      2      hbond/dreiding/lj 1      j    7.00000000       2.75000000       4      ${r_in} ${r_out} ${angle}
+pair_coeff 1      1      lj/cut/coul/long 0.00010000       2.84642140      
+pair_coeff 2      1      lj/cut/coul/long 0.00309354       2.93978759      
+pair_coeff 2      2      lj/cut/coul/long 0.09570000       3.03315378      
 
 #------------------------------------------------
 # Example4: H-bonding Gasteiger using type labels
@@ -141,6 +152,9 @@ variable  r_in  equal 9.0000 # inner distance cutoff (distance units)
 variable  r_out equal 11.0000 # outer distance cutoff (distance units)
 variable  angle equal 90.0000 # angle cutoff (degrees)
 pair_coeff O_3    O_3    hbond/dreiding/lj H___HB j    7.00000000       2.75000000       4      ${r_in} ${r_out} ${angle}
+pair_coeff H___HB H___HB lj/cut/coul/long 0.00010000       2.84642140      
+pair_coeff O_3    H___HB lj/cut/coul/long 0.00309354       2.93978759      
+pair_coeff O_3    O_3    lj/cut/coul/long 0.09570000       3.03315378      
 
 
 DREIDING end of alternative options
@@ -207,7 +221,7 @@ and ordering of the energy parameters.
 Normal program termination
 
 
-Execution time in seconds: 0.010360240936279297
+Execution time in seconds: 0.012528657913208008
 
 
 Number of WARNING(s) and ERROR(s)

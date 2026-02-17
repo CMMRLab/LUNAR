@@ -30,11 +30,6 @@ Masses
 1    1.00800000  #  H___HB
 2   15.99900000  #  O_3  
 
-Pair Coeffs  # lj/cut/coul/long
-
-1         0.00010000      2.84642140 #  H___HB
-2         0.09570000      3.03315378 #  O_3  
-
 Bond Coeffs  # harmonic
 
 1       350.00000000      0.98000000 #  H___HB     O_3   

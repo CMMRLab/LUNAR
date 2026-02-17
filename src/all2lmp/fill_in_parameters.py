@@ -213,7 +213,7 @@ class get:
             # To handle this, we will write these possible FF-options to the log
             # If DREIDING is called, put the X6 pair_coeffs in the log
             if ff_class == 'd':
-                find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, ff_class, skip_printouts, log)
+                find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, self.pair_coeffs, skip_printouts, log)
 
 ################################################
 # Function to perform atom-types check to warn #
@@ -442,7 +442,7 @@ def find_interatomic_atom_parameters(frc, BADI, m, ff_class, log):
 ################################################
 # Function to find DREIDNG specific parameters #
 ################################################
-def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, ff_class, skip_printouts, log):
+def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, LJ_pair_coeffs, skip_printouts, log):
     # Add printing buffer
     if not skip_printouts: log.out('')
 
@@ -707,7 +707,27 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, ff_class, skip_pr
         log.out('')
         log.out('Then each H-bonding pair coeff must be specified. DREIDING has different parameters')
         log.out('depending on how the system was charged. Thus you must select the pair coeffs based')
-        log.out('on your charging method of "no-charge" or "Gasteiger".')
+        log.out('on your charging method of "no-charge" or "Gasteiger". To make this work you MUST')
+        log.out('delete the 12-6 LJ parameters in the "Pair Coeffs" section of the datafile.')
+        
+        # Generate mixed LJ pair coeffs
+        type_line = {} # {(i, j, type_i, type_j):(sigma, epsilon)}
+        keys = sorted(LJ_pair_coeffs)  # assumes sortable (ints preferred)
+        for index, i in enumerate(keys):
+            data_i = LJ_pair_coeffs[i]
+            type_i = data_i.type
+            epsilon_i, sigma_i = data_i.coeffs
+            for j in keys[:index+1]:   # j <= i by construction
+                data_j = LJ_pair_coeffs[j]
+                type_j = data_j.type
+                epsilon_j, sigma_j = data_j.coeffs
+                
+                # Mix the coeffs and log
+                epsilon_ij = (epsilon_i*epsilon_j)**(1/2)
+                sigma_ij   = 0.5*(sigma_i + sigma_j)
+                type_line[(i, j, type_i, type_j)] = (epsilon_ij, sigma_ij)
+        
+        # Start showing examples
         log.out('')
         log.out('#------------------------------------------------')
         log.out('# Example1: H-bonding no-charge using atomTypeIDs')
@@ -722,6 +742,10 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, ff_class, skip_pr
             k = type_to_number[type_k]
             dhb, rhb, theta = hbonding[triplet]['no-charge']
             log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(i, j, k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))
+        for key in type_line:
+            i, j, type_i, type_j = key 
+            epsilon_ij, sigma_ij = type_line[key]
+            log.out('pair_coeff {:<6} {:<6} lj/cut/coul/long {:<16.8f} {:<16.8f}'.format(i, j, epsilon_ij, sigma_ij))
         
         log.out('')
         log.out('#------------------------------------------------')
@@ -737,6 +761,10 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, ff_class, skip_pr
             k = type_to_number[type_k]
             dhb, rhb, theta = hbonding[triplet]['no-charge']
             log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(type_i, type_j, type_k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))
+        for key in type_line:
+            i, j, type_i, type_j = key 
+            epsilon_ij, sigma_ij = type_line[key]
+            log.out('pair_coeff {:<6} {:<6} lj/cut/coul/long {:<16.8f} {:<16.8f}'.format(type_i, type_j, epsilon_ij, sigma_ij))
         
         log.out('')
         log.out('#------------------------------------------------')
@@ -752,6 +780,10 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, ff_class, skip_pr
             k = type_to_number[type_k]
             dhb, rhb, theta = hbonding[triplet]['Gasteiger']
             log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(i, j, k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))
+        for key in type_line:
+            i, j, type_i, type_j = key 
+            epsilon_ij, sigma_ij = type_line[key]
+            log.out('pair_coeff {:<6} {:<6} lj/cut/coul/long {:<16.8f} {:<16.8f}'.format(i, j, epsilon_ij, sigma_ij))
         
         log.out('')
         log.out('#------------------------------------------------')
@@ -767,6 +799,10 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, ff_class, skip_pr
             k = type_to_number[type_k]
             dhb, rhb, theta = hbonding[triplet]['Gasteiger']
             log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(type_i, type_j, type_k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))       
+        for key in type_line:
+            i, j, type_i, type_j = key 
+            epsilon_ij, sigma_ij = type_line[key]
+            log.out('pair_coeff {:<6} {:<6} lj/cut/coul/long {:<16.8f} {:<16.8f}'.format(type_i, type_j, epsilon_ij, sigma_ij))
     
     log.out('\n\nDREIDING end of alternative options\n\n')
     return
