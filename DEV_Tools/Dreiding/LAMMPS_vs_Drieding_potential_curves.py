@@ -3,6 +3,7 @@
 Created on Thu Feb  9 18:08:24 2023
 
 @author: jdkem
+%matplotlib qt  
 """
 
 ##############################
@@ -12,6 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from math import e
 import math
+plt.close('all')
 
 
 ######################
@@ -74,24 +76,18 @@ fig.tight_layout()
 ### TOSRION TEST ###
 ####################
 # bond radius to search      start,   end,  inc      decimal place round (Angstrom)
-phi = list(np.around(np.arange(0.0,   360,  0.01), 2))
+phi = list(np.around(np.arange(-180,   180,  0.01), 2))
 
 # Set some arbitary Dreiding torsion parms
-Vjk = 45.0 # Kcal/mol
-Njk = 2    # int
-phi0 = 180 # degrees
+Vjk = 5.6250 # Kcal/mol
+Njk = 2      # int
+phi0 = 180   # degrees
 
-Vjk = 2    # Kcal/mol
-Njk = 3    # int
-phi0 = 180 # degrees
+# Vjk = 0.1111 # Kcal/mol
+# Njk = 3      # int
+# phi0 = 0     # degrees
 
-Vjk = 25   # Kcal/mol
-Njk = 2    # int
-phi0 = 0   # degrees
 
-Vjk = 1    # Kcal/mol
-Njk = 6    # int
-phi0 = 0   # degrees
 
 
 # Create potentials
@@ -100,6 +96,7 @@ Drieding_torsion = [] # from paper
 for angle in phi:
     
     # Set LAMMPS d-var for harmonic (Dreiding is opposite then LAMMPS, thus 180=direction:1 and 0=directions:-1)
+    d = 0.5
     if phi0 == 180: 
         d = 1 # set d as 1
     elif phi0 == 0:
@@ -133,3 +130,106 @@ fig.set_size_inches(6, 4, forward=True)
 # otherwise the legend gets clipped off of saved image
 fig.tight_layout()
     
+
+
+######################
+### VDW - LJ vs X6 ###
+######################
+def buck_mixing(iparms, jparms):
+    r0_ii, d0_ii, x_ii = iparms
+    r0_jj, d0_jj, x_jj = jparms
+    
+    A_ii = (6*d0_ii/(x_ii - 6))*np.exp(x_ii)
+    B_ii = x_ii*d0_ii/(x_ii - 6)*r0_ii**6
+    C_ii = x_ii/r0_ii
+    print('A_ii   = ', A_ii)
+    print('B_ii   = ', B_ii)
+    print('C_ii   = ', C_ii)
+    
+    A_jj = (6*d0_jj/(x_jj - 6))*np.exp(x_jj)
+    B_jj = x_jj*d0_jj/(x_jj - 6)*r0_jj**6
+    C_jj = x_jj/r0_jj
+    print('A_jj   = ', A_jj)
+    print('B_jj   = ', B_jj)
+    print('C_jj   = ', C_jj)
+    
+    A_ij   =  (A_ii*A_jj)**(1/2)
+    B_ij   =  (B_ii*B_jj)**(1/2)
+    C_ij   = 0.5*C_ii + 0.5*C_jj
+    rho_ij = 1/C_ij
+    return float(A_ij), float(B_ij), float(C_ij), float(rho_ij)
+
+
+# VDW for H_
+d0 = 0.01520  # kcal/mol
+r0 = 3.1950   # Angstroms
+xi = 12.382   # unitless
+
+# # VDW for C_R
+# d0 = 0.09510  # kcal/mol
+# r0 = 3.8983   # Angstroms
+# xi = 14.034   # unitless
+
+
+
+# Compute LJ stuff
+r       = np.linspace(1.0, 10.0, 1000)
+c       = 2**(1.0/6.0)
+epsilon = d0 
+sigma   = r0/c
+A       = 4*epsilon*sigma**12
+B       = 4*epsilon*sigma**6
+LJ      = 4*epsilon*((sigma/r)**12 - (sigma/r)**6)
+print('epsilon = ', epsilon)
+print('sigma   = ', sigma)
+
+# Compute DREIDNG x6
+rho = r/r0
+x6_dreiding = d0*( (6/(xi - 6))*np.exp(xi*(1 - rho)) - (xi/(xi - 6))*rho**-6 )
+
+
+A   = (6*d0/(xi - 6))*np.exp(xi)
+B   = xi*d0/(xi - 6)*r0**6
+C   = xi/r0
+#rho = r0/xi
+print('\n\nDREIDING parameters')
+print('A   = ', A)
+print('B   = ', B)
+print('C   = ', C)
+iparms = [r0, d0, xi]
+print(buck_mixing(iparms, iparms))
+x6_dreiding = A*np.exp(-C*r) - B*r**-6
+x6_dreiding = A*np.exp(-C*r) - B/r**6
+
+# Convert to LAMMPS parameters
+rho = 1/C # Convert using DREIDING C first
+C = B     # Swap DREIDNG C for LAMMPS C
+
+# Manual over-ride for testing params, these
+# params will always be commented out unless
+# testing with them (H_ from Jacob)
+# A = 2473.87282957 
+# rho = 0.26625000
+# C = 32.33692762
+x6_lammps   = A*np.exp(-r/rho) - C/r**6
+print('\n\nLAMMPS parameters')
+print('A_LAMMPS   =', A)
+print('rho_LAMMPS =', rho)
+print('C_LAMMPS   =', C)
+
+
+
+
+fig, ax = plt.subplots(1, 1, figsize=(1*6, 1*4))
+
+ax.plot(r, LJ,          lw=4, ls='-', label='LJ - 12/6')
+ax.plot(r, x6_dreiding, lw=4, ls='-', label='x6 - DREIDING')
+ax.plot(r, x6_lammps,   lw=4, ls='--', label='buck - LAMMPS')
+
+
+ax.axhline(0, color='gray', linestyle='--', linewidth=0.5)
+ax.set_xlabel('Radius (Å)')
+ax.set_ylabel('Potential Energy')
+ax.legend()
+ax.set_ylim( (-2*epsilon, 12*epsilon) )
+fig.tight_layout()

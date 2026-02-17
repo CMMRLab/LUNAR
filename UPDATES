@@ -16,10 +16,16 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 16February2026)
+LUNAR (version 17February2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+17February2026     JDK         - all2lmp.py: Added support for automatic parameterization of DREIDING Buckingham
+                                             vdw parameters. The default is to still use 12-6 LJ vdw potential,
+                                             but the Buckingham parameters are written to the logfile for the
+                                             ability to copy and paste into a LAMMPS script. Also fixed a 
+                                             multiplicity bug in the torsional parameters for the DREIDING FF.
+
 16February2026     JDK         - atom_typing.py: Fixed carbonyl atom typing bug, when carbonyl group is
                                                  attacthed to an aromatic structure for the PCFF and PCFF-IFF
                                                  typing routines.

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-December 8th, 2021
+Revision 1.2
+February 17, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -35,16 +35,16 @@ Will write file as if it was meant for class 1 FF's:
         
         #out_of_plane          DREIDING
 """
-
 import read_dreiding_dff
 from datetime import date
+import numpy as np
 
 
 # frc FF file to read to generate .frc
 file = 'all2lmp_dreiding.dff'    
 
 # Set version of frc file
-version = '1.0'
+version = '1.1'
 
 # Option to use DREIDING/A van der Waals parameters for Implicit Hydrogen atom-types. The written .frc file will contain
 # the LJ-parameters for both DREIDNG and DREIDING/A, where the DREIDING will have paramters from Table II for only the 
@@ -360,6 +360,28 @@ with open(dreiding_frc, 'w') as f:
         n = tor.n
         phi0 = tor.phi0 
         kphi = round((0.5*tor.v), 4)
+        
+        # Scale kphi by the multiplicity (Iakovos Delasoudas DREIDING multiplicity scaling issue 2/3/2026.)
+        nj, nk = 1, 1
+        if j[-1].isdigit():
+            nj = int(j[-1])
+        if j.endswith('R'):
+            nj = 2
+        if j.endswith('Mid'):
+            tmp = j.replace('Mid', '')
+            if tmp[-1].isdigit():
+                nj = int(tmp[-1])
+                
+        if k[-1].isdigit():
+            nk = int(k[-1])
+        if k.endswith('R'):
+            nk = 2
+        if k.endswith('Mid'):
+            tmp = k.replace('Mid', '')
+            if tmp[-1].isdigit():
+                nk = int(tmp[-1])
+        
+        kphi = kphi/(nj*nk)
 
         
         # LAMMPS uses a different equation then drieding so we need to manipulate 0, 90, and 180 accordingly
@@ -413,12 +435,12 @@ with open(dreiding_frc, 'w') as f:
     
     f.write('> Computed with LAMMPS: pair_Style lj/cut/coul/long\n')
     f.write('> E = Aij/r^12 - Bij/r^6\n')
-    f.write('> where  Aij = sqrt( Ai * Aj )\n')
-    f.write('>        Bij = sqrt( Bi * Bj )\n\n')
+    f.write('> where  Aij = sqrt( Aii * Ajj )\n')
+    f.write('>        Bij = sqrt( Bii * Bjj )\n\n')
     
     
-    f.write('!Ver  Ref    I               A                B \n')       
-    f.write('!---- ---   ----        -----------      -----------\n')
+    f.write('!Ver  Ref    I               A                           B \n')       
+    f.write('!---- ---   ----        -----------                 -----------\n')
     for i in ff.nonbonds:
         nb = ff.nonbonds[i]
         
@@ -444,12 +466,85 @@ with open(dreiding_frc, 'w') as f:
         
         # Write nonbond A and B
         if use_DREIDING_A_impHs: # If True write all info to file
-            f.write('{:^3} {:>4}    {:<8}    {:<16.6f}    {:<16.6f}\n'.format(ver, ref, i, A, B))
+            f.write('{:^3} {:>4}    {:<8}    {:<24.8f}    {:<24.8f}\n'.format(ver, ref, i, A, B))
         else:
             if not impH_type:
-                f.write('{:^3} {:>4}    {:<8}    {:<16.6f}    {:<16.6f}\n'.format(ver, ref, i, A, B))
-
+                f.write('{:^3} {:>4}    {:<8}    {:<24.8f}    {:<24.8f}\n'.format(ver, ref, i, A, B))
                 
+    ############################################
+    # Write nonbond parms in Buckingham format #
+    ############################################
+    f.write('\n\n\n')
+    f.write('#nonbond(Buckingham) DREIDING/LAMMPS \n\n') 
+
+    f.write('>@type A-B-C\n')
+    f.write('>@combination rules:\n')
+    f.write('> Aij = [Aii*Ajj]^(0.5) \n')
+    f.write('> Bij = [Bii*Bjj]^(0.5) \n')
+    f.write('> Cij = 0.5*Cii + 0.5*Cjj \n')
+    f.write('\n')
+    
+    f.write('>DREIDING EQN. 32\n')
+    f.write('> E = Ae^(-C*r) - B*r^-6\n')
+    f.write('> where  Aij = sqrt( Aii * Ajj )\n')
+    f.write('>        Bij = sqrt( Bii * Bjj )\n\n')
+    
+    f.write('>Will be converted to LAMMPS: pair_Style buck/coul/long\n')
+    f.write('> E = Ae^(-r/rho) - C/r^6\n')
+    f.write('> where  A_LAMMPS   = A_DREDING\n')
+    f.write('>        rho_LAMMPS = 1/C_DREIDING\n')
+    f.write('>        C_LAMMPS   = B_DREIDING\n\n')
+    
+    
+    f.write('!Ver  Ref    I               A                           B                           C \n')       
+    f.write('!---- ---   ----        -----------                 -----------                 -----------\n')
+    for i in ff.nonbonds:
+        nb = ff.nonbonds[i]
+        
+        # set ref and ver from nb
+        ver = nb.ver; ref = int(nb.ref);
+        
+        # Find Dreiding r0, d0, and xi
+        r0 = nb.r0; d0 = nb.d0; xi = nb.xi
+        
+        # Convert to A, B, C form for X6 eqn. 32
+        A = float( (6*d0/(xi - 6))*np.exp(xi) )
+        B = float( xi*d0/(xi - 6)*r0**6 )
+        C = float( xi/r0 )
+        
+        f.write('{:^3} {:>4}    {:<8}    {:<24.8f}    {:<24.8f}    {:<24.8f}\n'.format(ver, ref, i, A, B, C))
+
+
+    ###########################################
+    # Write Hbonding parameters for Gasteiger #
+    ###########################################
+    f.write('\n\n\n')
+    f.write('#nonbond hbonding-Gasteiger \n\n') 
+    
+    f.write('> E = D_hb*( 5*(R_hb/r)^12 - 6*(R_hb/r)^10 )*cos^4(theta_DHA) \n\n')  
+    
+    f.write('!Ver  Ref     I          J         D_hb       R_hb      theta_DHA\n')  
+    f.write('!---- ---   -----      -----     --------   --------    ---------\n') 
+    for i, j in ff.hbond_gasteiger:
+        hb = ff.hbond_gasteiger[(i, j)]
+        ver = hb.ver; ref = int(hb.ref)       
+        f.write('{:^3} {:>4}    {:<8}   {:<8} {:^10.4f} {:^10.4f}  {:^10.4f}\n'.format(ver, ref, i, j, hb.dhb, hb.rhb, hb.theta))
+        
+    ###########################################
+    # Write Hbonding parameters for no-charge #
+    ###########################################
+    f.write('\n\n\n')
+    f.write('#nonbond hbonding-no-charge \n\n') 
+    
+    f.write('> E = D_hb*( 5*(R_hb/r)^12 - 6*(R_hb/r)^10 )*cos^4(theta_DHA) \n\n')  
+    
+    f.write('!Ver  Ref     I          J         D_hb       R_hb      theta_DHA\n')  
+    f.write('!---- ---   -----      -----     --------   --------    ---------\n') 
+    for i, j in ff.hbond_nocharge:
+        hb = ff.hbond_nocharge[(i, j)]
+        ver = hb.ver; ref = int(hb.ref)       
+        f.write('{:^3} {:>4}    {:<8}   {:<8} {:^10.4f} {:^10.4f}  {:^10.4f}\n'.format(ver, ref, i, j, hb.dhb, hb.rhb, hb.theta))
+
         
         
     ##################################################################

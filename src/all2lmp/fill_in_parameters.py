@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.10
-December 16th, 2024
+Revision 1.11
+February 17, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -81,9 +81,7 @@ class get:
         if ff_class == 'd':
             use_auto_equivalence = False; reset_charges = False; # No bond-incs or not auto-equivalences
             log.out('\nUsing class d for DREIDING force field, resetting use_auto_equivalence and reset_charges to False')
-            log.out('since DREIDING does not currently offer this level of support. Also the all2lmp_dreiding.frc almost fully')
-            log.out('supports all attributes of the DREIDING force field. However the H-bond parameters are not in the file and')
-            log.out('consequently any H-bond LJ parameters will have to be dealt with manually if your systems has H-bonds.')
+            log.out('since DREIDING does not currently offer this level of support.')
         
         # Access info through init method        
         self.header = m.header
@@ -210,6 +208,12 @@ class get:
                 self.angletorsion_coeffs = find_angletorsion_parameters(frc, BADI, self.dihedral_map, self.theta0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
                 self.angleangle_coeffs = find_angleangle_parameters(frc, BADI, self.improper_map, self.theta0s, use_auto_equivalence, sort_remap_atomids, ff_class, skip_printouts, log)
         
+                    
+            # DREIDING has additional options for the FF beyound the defaults.
+            # To handle this, we will write these possible FF-options to the log
+            # If DREIDING is called, put the X6 pair_coeffs in the log
+            if ff_class == 'd':
+                find_DREIDING_non_bond(frc, BADI, use_auto_equivalence, ff_class, skip_printouts, log)
 
 ################################################
 # Function to perform atom-types check to warn #
@@ -433,6 +437,271 @@ def find_interatomic_atom_parameters(frc, BADI, m, ff_class, log):
         t1.comments = mass_coeff_comment
         masses[number] = t1
     return masses, mass_comment
+
+
+################################################
+# Function to find DREIDNG specific parameters #
+################################################
+def find_DREIDING_non_bond(frc, BADI, use_auto_equivalence, ff_class, skip_printouts, log):
+    # Add printing buffer
+    if not skip_printouts: log.out('')
+
+    #-----------------------------#
+    # Find Buckingham pair coeffs #
+    #-----------------------------#
+    # Dictionaries to add info to    
+    pair_coeffs = {}  # {atom type : list of coeffs }
+    equivalents = frc.equivalences # class1 equivalents dict
+    auto_equivs = {} # class1 auto-equivalents dict
+    pair_equivalent_coeffs = frc.pair_buckingham # class1 equivalent coeffs
+    pair_auto_equiv_coeffs = {} # class1 auto-equivalent coeffs
+    for i in BADI.atom_types_lst:
+        atom_type = i # set as "fullname" 
+        if ':' in atom_type:
+            i = atom_type[:atom_type.rfind(':')] # strip any ':NAME ending'
+        
+        # atom number
+        number = BADI.atom_types_dict[atom_type]
+        pair_equiv = ''
+        pair_coeff_comment = ''
+            
+        # try for standard type
+        if i in pair_equivalent_coeffs:
+            pair_equiv = i
+            pair_coeff = pair_equivalent_coeffs[i]
+            pair_coeff_comment = 'standard type used'
+                 
+            A = pair_coeff.A
+            B = pair_coeff.B
+            C = pair_coeff.C
+                
+        # next try for equivalence
+        elif i in equivalents:
+            # Find equivalence
+            pair_equiv = equivalents[i].nonb
+            if pair_equiv in pair_equivalent_coeffs:
+                pair_coeff = pair_equivalent_coeffs[pair_equiv]
+                pair_coeff_comment = 'equivalent type used'
+                A = pair_coeff.A
+                B = pair_coeff.B
+                C = pair_coeff.C
+            else:
+                A = 0
+                B = 0
+                C = 0
+                pair_equiv = 'N/A'
+                pair_coeff_comment = 'UNABLE to find coeff parameters'
+                if not skip_printouts: log.warn('WARNING unable to find atom info for Pair Coeff {} {}'.format(number, i))
+                
+        # next try for auto_equivalence
+        elif i in auto_equivs and use_auto_equivalence:
+            # Find auto equivalence
+            pair_equiv = auto_equivs[i].nonb
+            if pair_equiv in pair_auto_equiv_coeffs:
+                pair_coeff = pair_auto_equiv_coeffs[pair_equiv]
+                pair_coeff_comment = 'auto equivalent type used'
+                A = pair_coeff.A
+                B = pair_coeff.B
+                C = pair_coeff.C
+            else:
+                A = 0
+                B = 0
+                C = 0
+                pair_equiv = 'N/A'
+                pair_coeff_comment = 'UNABLE to find coeff parameters'
+                if not skip_printouts: log.warn('WARNING unable to find atom info for Pair Coeff {} {}'.format(number, i))
+                
+        # else log failure
+        else:
+            A = 0
+            B = 0
+            C = 0
+            pair_equiv = 'N/A'
+            pair_coeff_comment = 'UNABLE to find coeff parameters'
+            if not skip_printouts: log.warn('WARNING unable to find atom info for Pair Coeff {} {}'.format(number, i))
+            
+        # Save pair_coeff info into class
+        t = Type()
+        t.type = atom_type
+        t.equivalent = pair_equiv
+        t.coeffs = [A, B, C]
+        t.comments = pair_coeff_comment
+        pair_coeffs[number] = t  
+        
+    # Mix the Buckingham parameters
+    type_line = {} # {(i, j, type_i, type_j):(A, rho, C)}
+    keys = sorted(pair_coeffs)  # assumes sortable (ints preferred)
+    for index, i in enumerate(keys):
+        data_i = pair_coeffs[i]
+        type_i = data_i.type
+        A_ii, B_ii, C_ii = data_i.coeffs
+        for j in keys[:index+1]:   # j <= i by construction
+            data_j = pair_coeffs[j]
+            type_j = data_j.type
+            A_jj, B_jj, C_jj = data_j.coeffs
+            
+            # Mix the parameters
+            if i != j:
+                A_ij = (A_ii*A_jj)**(1/2)
+                B_ij = (B_ii*B_jj)**(1/2)
+                C_ij = 0.5*C_ii + 0.5*C_jj
+            else:
+                A_ij = A_ii
+                B_ij = B_ii
+                C_ij = C_ii
+                
+            # Convert using DREIDING C first
+            if C_ij > 0:
+                rho_ij = 1/C_ij 
+            else: rho_ij = 1
+            
+            # Swap DREIDNG C for LAMMPS C
+            C_ij = B_ij
+            
+            # Log the mixing rules
+            type_line[(i, j, type_i, type_j)] = [A_ij, rho_ij, C_ij]
+
+    # Log the results
+    log.out('\n\n')
+    log.out('DREIDING can be used with a Buckingham vdw potential. The following parameters can be')
+    log.out('placed in a LAMMPS script following reading the LAMMPS datafile. To make this work you')
+    log.out('MUST delete the 12-6 LJ parameters in the "Pair Coeffs" section of the datafile. The')
+    log.out('LAMMPS "pair_style    buck/coul/long 10.0" command will be used with these parameters.')
+    
+    # Write in atomTypeIDs format
+    log.out('')
+    log.out('#-----------------------------------------------------------------------')
+    log.out('# Example1: DREIDING-Buckingham LAMMPS script template using atomTypeIDs')
+    log.out('#')
+    log.out('#------------Force Field------------')
+    log.out('bond_style      harmonic')
+    log.out('angle_style     harmonic')
+    log.out('dihedral_style  harmonic')
+    log.out('improper_style  umbrella')
+    log.out('special_bonds   lj/coul 0 0 1')
+    log.out('')
+    log.out('kspace_style    pppm 1.0e-4')
+    log.out('pair_style      buck/coul/long 10.0')
+    log.out('')
+    log.out('#------------Read datafile------------')
+    log.out('read_data  MyDataFile.data # with "Pair Coeffs" section removed\n')
+    for key in type_line:
+        i, j, type_i, type_j = key
+        A_ij, rho_ij, C_ij = type_line[key]
+        log.out('pair_coeff {:<4} {:<4} {:<16.8f} {:<16.8f} {:<16.8f}'.format(i, j, A_ij, rho_ij, C_ij))
+        
+    # Write in atomTypeIDs format
+    log.out('')
+    log.out('#-----------------------------------------------------------------------')
+    log.out('# Example2: DREIDING-Buckingham LAMMPS script template using type labels')
+    log.out('#')
+    log.out('#------------Force Field------------')
+    log.out('bond_style      harmonic')
+    log.out('angle_style     harmonic')
+    log.out('dihedral_style  harmonic')
+    log.out('improper_style  umbrella')
+    log.out('special_bonds   lj/coul 0 0 1')
+    log.out('')
+    log.out('kspace_style    pppm 1.0e-4')
+    log.out('pair_style      buck/coul/long 10.0')
+    log.out('')
+    log.out('#------------Read datafile------------')
+    log.out('read_data  MyDataFile.data # with "Pair Coeffs" section removed\n')    
+    for key in type_line:
+        i, j, type_i, type_j = key
+        A_ij, rho_ij, C_ij = type_line[key]
+        log.out('pair_coeff {:<6} {:<6} {:<16.8f} {:<16.8f} {:<16.8f}'.format(type_i, type_j, A_ij, rho_ij, C_ij))
+        
+    #-------------------------------#
+    # Find DREIDING Hbonding params #
+    #-------------------------------#
+    hbonding = {} # {(i, j, type_i, type_j): {'no-charge':(dhb, rhb, theta), 'Gasteiger':(dhb, rhb, theta)}  }
+    no_charge_dict = frc.hbond_DREIDING_no_charge
+    gasteiger_dict = frc.hbond_DREIDING_Gasteiger
+    for key in type_line:
+        i, j, type_i, type_j = key
+        
+        # TODO: REMOVE
+        type_i = 'H___HB'
+        type_j = 'O_3'
+        
+        equiv_i = None
+        equiv_j = None
+        if type_i in equivalents:
+            equiv_i = equivalents[type_i].nonb
+        if type_j in equivalents:
+            equiv_j = equivalents[type_j].nonb
+        
+        no_charge = None
+        if (type_i, type_j) in no_charge_dict:
+            no_charge = no_charge_dict[(type_i, type_j)]
+        elif (type_j, type_i) in no_charge_dict:
+            no_charge = no_charge_dict[(type_j, type_i)]
+        elif equiv_i is not None and equiv_j is not None:
+            if (equiv_i, equiv_j) in no_charge_dict:
+                no_charge = no_charge_dict[(equiv_i, equiv_j)]
+            elif (equiv_j, equiv_i) in no_charge_dict:
+                no_charge = no_charge_dict[(equiv_j, equiv_i)]
+        
+        gasteiger = None
+        if (type_i, type_j) in gasteiger_dict:
+            gasteiger = gasteiger_dict[(type_i, type_j)]
+        elif (type_j, type_i) in gasteiger_dict:
+            gasteiger = gasteiger_dict[(type_j, type_i)]
+        elif equiv_i is not None and equiv_j is not None:
+            if (equiv_i, equiv_j) in gasteiger_dict:
+                gasteiger = gasteiger_dict[(equiv_i, equiv_j)]
+            elif (equiv_j, equiv_i) in gasteiger_dict:
+                gasteiger = gasteiger_dict[(equiv_j, equiv_i)]
+         
+        tmp_dict = {}
+        if no_charge is not None:
+            dhb   = no_charge.dhb
+            rhb   = no_charge.rhb
+            theta = no_charge.theta
+            tmp_dict['no-charge'] = (dhb, rhb, theta)
+        if gasteiger is not None:
+            dhb   = gasteiger.dhb
+            rhb   = gasteiger.rhb
+            theta = gasteiger.theta
+            tmp_dict['Gasteiger'] = (dhb, rhb, theta)
+        hbonding[key] = tmp_dict
+    
+    # # Log results
+    # if hbonding:
+    #     log.out('\n\n')
+    #     log.out('DREIDING H-bonding requires an addditional potential and some of the atom types')
+    #     log.out('in the system matched with H-bonding parameters from the frc_file. To enable')
+    #     log.out('h-bonding in LAMMPS your pair_style must be:')
+    #     log.out('  pair_style hybrid/overlay <VDW> <HBOND>')
+    #     log.out('   <VDW> = vdw  potential, for example:')
+    #     log.out('     lj/cut/coul/long 10.0')
+    #     log.out('     buck/coul/long 10.0')
+    #     log.out('   <HBOND> = hbonding potential, for example:')
+    #     log.out('     hbond/dreiding/lj 4 9.0 11.0 90.0')
+    #     log.out('  Full examples')
+    #     log.out('   pair_style hybrid/overlay lj/cut/coul/long 10.0 hbond/dreiding/lj 4 9.0 11.0 90.0')
+    #     log.out('   pair_style hybrid/overlay buck/coul/long   10.0 hbond/dreiding/lj 4 9.0 11.0 90.0')
+    #     log.out('')
+    #     log.out('Then each H-bonding pair coeff must be specified. DREIDING has different parameters')
+    #     log.out('depending on how the system was charged. Thus you must select the pair coeffs based')
+    #     log.out('on your charging method of "no-charge" or "Gasteiger".')
+    #     log.out('')
+    #     log.out('#------------------------------------------------')
+    #     log.out('# Example1: H-bonding no-charge using atomTypeIDs')
+    #     for key in hbonding:
+    #         i, j, type_i, type_j = key
+    #         tmp_dict = hbonding[key]
+    #         dhb, rhb, theta = tmp_dict['no-charge']
+    #         donor = 'i'
+    #         n = 4
+    #         log.out('pair_coeff {:<4} {:<4} hbond/dreiding/lj {:<16.8f} {:<16.8f} {:<16.8f}'.format(i, j, dhb, rhb, n))
+        
+    #     print('\n\n\n')
+    #     print(hbonding)            
+    
+    log.out('\n\nDREIDING end of alternative options\n\n')
+    return
 
 
 ###################################

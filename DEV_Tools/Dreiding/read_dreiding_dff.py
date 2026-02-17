@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-December 8th, 2021
+Revision 1.2
+February 17, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -32,13 +32,16 @@ class Angle:
     pass # .ver .ref .theta  .ke (set by global Ke from above section)
     
 class Torsion:
-    pass # .ver .ref .v  .v .phi0
+    pass # .ver .ref .k .phi0
     
 class Nonbond:
-    pass # .ver .ref .v  .v .phi0
+    pass # .ver .ref .r0  .d0  .xi
     
 class Inversion:
     pass # .ver .ref .r0  .d0
+    
+class Hbond:
+    pass # .ver .ref .dhb .rhb .theta
     
 # Function to check if variable is a float
 def check_float(variable):
@@ -56,12 +59,14 @@ class read:
         self.type = 'fix-bond'
         
         # atom types info/bondics
-        self.atom_types = {}    # {atom type : atom object}
-        self.bonds = {}         # {atom type : bond object}
-        self.angles = {}        # {atom type : angle object}
-        self.torsions = {}      # {tuple(atom types) : torsion object}
-        self.inversions = {}    # {atom type : inversion object}
-        self.nonbonds = {}    # {atom type : nonbond object}
+        self.atom_types = {}      # {atom type : atom object}
+        self.bonds = {}           # {atom type : bond object}
+        self.angles = {}          # {atom type : angle object}
+        self.torsions = {}        # {tuple(atom types) : torsion object}
+        self.inversions = {}      # {atom type : inversion object}
+        self.nonbonds = {}        # {atom type : nonbond object}
+        self.hbond_gasteiger = {} # {tuple(atom types) : hbond object}
+        self.hbond_nocharge = {}  # {tuple(atom types) : hbond object}
         
         
         # Open and read file
@@ -74,6 +79,7 @@ class read:
             torsion_flag = False
             inversion_flag = False
             nonbond_flag = False
+            hbond_type = ''
             
             # Loop through each line
             for line in f:
@@ -96,6 +102,8 @@ class read:
                     torsion_flag = False
                     inversion_flag = False
                     nonbond_flag = False
+                    hbond_flag = False
+
                     
                 # atom types info
                 if '#atom_types' in line:
@@ -120,6 +128,10 @@ class read:
                 # nonbond info
                 elif '#nonbond' in string and 'DREIDING' in string:
                     nonbond_flag = True
+                    
+                # nonbond info
+                elif '#nonbond' in string and 'hbonding' in string:
+                    hbond_flag = True
                     
                     
                 # Find force field info based on flags
@@ -251,19 +263,48 @@ class read:
                 # Find nonbond info
                 elif nonbond_flag:
                     # Check if len(line) == 5 and if line[3] and line[4] is a float
-                    if len(line) == 5 and check_float(line[3]) and check_float(line[4]):
+                    if len(line) == 6 and check_float(line[3]) and check_float(line[4]):
                         #print(line)
-                        nb =Nonbond()
+                        nb = Nonbond()
                         ver = float(line[0])
                         ref = int(line[1])
                         Type = line[2]
                         r0 = float(line[3])
                         d0 = float(line[4])
+                        xi = float(line[5])
                         nb.r0 = r0
                         nb.d0 = d0
+                        nb.xi = xi
                         nb.ver = ver
                         nb.ref = ref
                         self.nonbonds[Type] = nb
+                        
+                elif hbond_flag:
+                    if 'hbonding-' in string:
+                        if 'Gasteiger' in string:
+                            hbond_type = 'Gasteiger'
+                            hbonds_dict = self.hbond_gasteiger
+                        if 'no-charge' in string:
+                            hbond_type = 'no-charge'
+                            hbonds_dict = self.hbond_nocharge
+                        continue
+                    
+                    if hbond_type in ['Gasteiger', 'no-charge'] and len(line) >= 7 and check_float(line[4]) and check_float(line[5]) and check_float(line[6]):
+                        hb = Hbond()
+                        ver = float(line[0])
+                        ref = int(line[1])
+                        type_i = line[2]
+                        type_j = line[3]
+                        dhb    = float(line[4])
+                        rhb    = float(line[5])
+                        theta  = float(line[6])
+                        hb.dhb = dhb
+                        hb.rhb = rhb
+                        hb.theta = theta
+                        hb.ver = ver
+                        hb.ref = ref
+                        hbonds_dict[(type_i, type_j)] = hb
+                        
                         
                         
                     
@@ -285,6 +326,7 @@ if __name__ == '__main__':
     
     # set pflag
     pflag = True
+    pflag = False
     
     # Print if pflag:
     if pflag:

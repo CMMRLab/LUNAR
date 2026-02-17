@@ -270,8 +270,10 @@
 
 !Ver  Ref     L          Kl        phi0     !                  comments
 !---- ---   -----      -----     --------   ! ---------------------------------------------------
-1.0   1     Planar     40.0      0.0        ! Equation (29) Kl = 40 (Kcal/mol)/rad^2 
-1.0   1     NonPlanar  0.0       0.0        ! DREDING sets Nonplanar as zeros
+1.0   1     Planar     40.0       0.0000    ! Equation (29) Kl = 40 (Kcal/mol)/rad^2 
+1.0   1     NonPlanar   0.0       0.0000    ! DREDING sets Nonplanar as zeros
+1.0   1     C_31       40.0      54.7360    ! From NanoHub's LAMMPS datafile generator and moltemplate
+
 
 
 #nonbond DREIDING
@@ -282,71 +284,87 @@
 > E = D0*(rho^-12 - 2*rho^-6)
 > where rho = r/r0
 
-!Ver  Ref     I          r0            d0       !                                comments
-!---- ---    ----    -----------   -----------  ! -------------------------------------------------------------------------
-1.0   1      H_      3.1950        0.01520      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      H___b   3.1950        0.01520      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      H___HB  3.1950        0.00010      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      B_3     4.02          0.09500      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      B_2     4.02          0.09500      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      C_34    4.2370        0.30160      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      C_33    4.1524        0.25000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      C_32    4.0677        0.19840      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      C_31    3.9830        0.14670      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      C_3     3.8983        0.09510      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      C_R2    4.0800        0.21500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
-1.0   1      C_R1    4.2300        0.13560      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      C_R     3.8983        0.09510      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      C_22    4.0800        0.21500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
-1.0   1      C_21    3.9800        0.14500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
-1.0   1      C_2     3.8983        0.09510      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING      
-1.0   1      C_11    3.9800        0.14500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
-1.0   1      C_1     3.8983        0.09510      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      N_33    3.9950        0.41500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
-1.0   1      N_32    3.8950        0.30500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
-1.0   1      N_31    3.7950        0.21500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
-1.0   1      N_3     3.6621        0.07740      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      N_R2    3.8950        0.30500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
-1.0   1      N_R1    3.7950        0.21500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
-1.0   1      N_R     3.6621        0.07740      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      N_22    3.8650        0.30500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
-1.0   1      N_21    3.7970        0.21500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a  
-1.0   1      N_2     3.6621        0.07740      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
-1.0   1      N_1     3.6621        0.07740      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
-1.0   1      O_32    3.7100        0.41500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
-1.0   1      O_31    3.6100        0.30500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
-1.0   1      O_3     3.4046        0.09570      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
-1.0   1      O_2     3.4046        0.09570      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING   
-1.0   1      O_R1    3.6100        0.21500      ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
-1.0   1      O_R     3.4046        0.09570      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
-1.0   1      O_1     3.4046        0.09570      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
-1.0   1      F_      4.5400        0.05500      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Al3     4.3900        0.31000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Si3     4.2700        0.31000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      P_3     4.1500        0.32000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      S_3     4.0300        0.34400      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Cl      3.9503        0.28330      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Ga3     4.3900        0.40000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Ge3     4.2700        0.40000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      As3     4.1500        0.41000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Se3     4.0300        0.43000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Br      3.9500        0.37000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      In3     4.5900        0.55000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Sn3     4.4700        0.55000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Sb3     4.3500        0.55000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Te3     4.2300        0.57000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      I_      4.1500        0.51000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Na      3.1440        0.50000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Ca      3.4720        0.05000      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
-1.0   1      Fe      4.5400        0.05500      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
-1.0   1      Zn      4.5400        0.05500      ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+!Ver  Ref     I          r0            d0          xi        !                                comments
+!---- ---    ----    -----------   -----------  -----------  ! -------------------------------------------------------------------------
+1.0   1      H_      3.1950        0.01520      12.382       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      H___b   3.1950        0.01520      12.382       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      H___HB  3.1950        0.00010      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      B_3     4.02          0.09500      14.23        ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      B_2     4.02          0.09500      14.23        ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_34    4.2370        0.30160      14.034       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_33    4.1524        0.25000      14.034       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_32    4.0677        0.19840      14.034       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_31    3.9830        0.14670      14.034       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_3     3.8983        0.09510      14.034       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_R2    4.0800        0.21500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      C_R1    4.2300        0.13560      14.034       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_R     3.8983        0.09510      14.034       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      C_22    4.0800        0.21500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      C_21    3.9800        0.14500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
+1.0   1      C_2     3.8983        0.09510      14.034       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING      
+1.0   1      C_11    3.9800        0.14500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
+1.0   1      C_1     3.8983        0.09510      14.034       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      N_33    3.9950        0.41500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      N_32    3.8950        0.30500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      N_31    3.7950        0.21500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      N_3     3.6621        0.07740      13.843       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      N_R2    3.8950        0.30500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      N_R1    3.7950        0.21500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      N_R     3.6621        0.07740      13.843       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      N_22    3.8650        0.30500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a
+1.0   1      N_21    3.7970        0.21500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a  
+1.0   1      N_2     3.6621        0.07740      13.843       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
+1.0   1      N_1     3.6621        0.07740      13.843       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
+1.0   1      O_32    3.7100        0.41500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
+1.0   1      O_31    3.6100        0.30500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
+1.0   1      O_3     3.4046        0.09570      13.483       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
+1.0   1      O_2     3.4046        0.09570      13.483       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING   
+1.0   1      O_R1    3.6100        0.21500      12.000       ! version=DREIDING/A Table VII: van der Waals Parameters for DREIDING/A^a 
+1.0   1      O_R     3.4046        0.09570      13.483       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
+1.0   1      O_1     3.4046        0.09570      13.483       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
+1.0   1      F_      4.5400        0.05500      14.444       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Al3     4.3900        0.31000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Si3     4.2700        0.31000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      P_3     4.1500        0.32000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      S_3     4.0300        0.34400      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Cl      3.9503        0.28330      13.861       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Ga3     4.3900        0.40000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Ge3     4.2700        0.40000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      As3     4.1500        0.41000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Se3     4.0300        0.43000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Br      3.9500        0.37000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      In3     4.5900        0.55000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Sn3     4.4700        0.55000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Sb3     4.3500        0.55000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Te3     4.2300        0.57000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      I_      4.1500        0.51000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Na      3.1440        0.50000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Ca      3.4720        0.05000      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
+1.0   1      Fe      4.5400        0.05500      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING 
+1.0   1      Zn      4.5400        0.05500      12.000       ! version=DREIDING   Table II:  The van der Waals Parameters for DREIDING
 
 
+#nonbond hbonding-Gasteiger
 
+> E = D_hb*( 5*(R_hb/r)^12 - 6*(R_hb/r)^10 )*cos^4(theta_DHA)
 
+!Ver  Ref       I          J           D_hb          R_hb       theta_DHA   !                                comments
+!---- ---    -------    -------     -----------   -----------  -----------  ! -------------------------------------------------------------------------
+1.0   1      H___HB     O_3             7.0          2.75         178.6     ! DREIDING gives example for water, we will just do all H-bonds of OH---O
+1.0   1      H___HB     O_2             7.0          2.75         178.6     ! DREIDING gives example for water, we will just do all H-bonds of OH---O
+1.0   1      H___HB     O_R             7.0          2.75         178.6     ! DREIDING gives example for water, we will just do all H-bonds of OH---O
+1.0   1      H___HB     O_1             7.0          2.75         178.6     ! DREIDING gives example for water, we will just do all H-bonds of OH---O
 
+#nonbond hbonding-no-charge
 
+> E = D_hb*( 5*(R_hb/r)^12 - 6*(R_hb/r)^10 )*cos^4(theta_DHA)
 
+!Ver  Ref       I          J           D_hb          R_hb       theta_DHA   !                                comments
+!---- ---    -------    -------     -----------   -----------  -----------  ! -------------------------------------------------------------------------
+1.0   1      H___HB     O_3             9.0          2.75         179.9     ! DREIDING gives example for water, we will just do all H-bonds of OH---O
+1.0   1      H___HB     O_2             9.0          2.75         179.9     ! DREIDING gives example for water, we will just do all H-bonds of OH---O
+1.0   1      H___HB     O_R             9.0          2.75         179.9     ! DREIDING gives example for water, we will just do all H-bonds of OH---O
+1.0   1      H___HB     O_1             9.0          2.75         179.9     ! DREIDING gives example for water, we will just do all H-bonds of OH---O
  
  
  

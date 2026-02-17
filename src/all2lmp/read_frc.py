@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.5
-May 3rd, 2023
+Revision 1.6
+February 17, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -239,6 +239,9 @@ class Angletorsion:
 class Angleangletorsion:
     pass # .k_ang_ang_tor 
     
+class Hbond:
+    pass # .ver .ref .dhb .rhb .theta
+    
 # Function to check if variable is a float
 def check_float(variable):
     try:
@@ -291,8 +294,11 @@ class forcefield_file:
         self.out_of_plane_DREIDING = {}    # classd equivalent { (type_i, type_j, type_k, type_l) : oop object}
         
         # atom types parameters
-        self.pair_coeffs_9_6 = {}          # class1 equivalent {atom type : pair coeff object}
-        self.pair_coeffs_12_6 = {}         # class2 equivalent {atom type : pair coeff object}
+        self.pair_coeffs_9_6 = {}          # class2 equivalent {atom type : pair coeff object}
+        self.pair_coeffs_12_6 = {}         # class1 equivalent {atom type : pair coeff object}
+        self.pair_buckingham = {}          # Buckingham equivalent {atom type : pair coeff object}
+        self.hbond_DREIDING_Gasteiger = {} # Hbonding equivalent {(type_i, type_j): hbond object}
+        self.hbond_DREIDING_no_charge = {} # Hbonding equivalent {(type_i, type_j): hbond object}
         
         # crossterm types parameters
         self.bondbond = {}                 # class2 equivalent { (type_i, type_j, type_k) : bondbond object}
@@ -320,7 +326,9 @@ class forcefield_file:
                                'bondbond13':               set([]),  'bondangle':                set([]),
                                'angleangle':               set([]),  'endbondtorsion':           set([]),
                                'middlebondtorsion':        set([]),  'angletorsion':             set([]),
-                               'angleangletorsion':        set([]),  'torsiontorsion':           set([])}
+                               'angleangletorsion':        set([]),  'torsiontorsion':           set([]),
+                               'pair_buckingham':          set([]),  'hbond-DREIDING-Gasteiger': set([]),
+                               'hbond-DREIDING-no-charge': set([])}
 
         ####################################
         # Opening and reading the frc file #
@@ -361,6 +369,10 @@ class forcefield_file:
             paircoeff_flag = False
             pair_coeff_type_9_6 = False
             pair_coeff_type_12_6 = False
+            pair_coeff_type_buckingham = False
+            dreiding_hbonding_flag = False
+            hbond_type = ''
+            hbond_version = ''
             
             # crossterm types parameters
             bondbond_flag = False
@@ -419,6 +431,8 @@ class forcefield_file:
                     paircoeff_flag = False
                     pair_coeff_type_9_6 = False
                     pair_coeff_type_12_6 = False
+                    pair_coeff_type_buckingham = False
+                    dreiding_hbonding_flag = False
                     
                     # crossterm types parameters
                     bondbond_flag = False
@@ -509,12 +523,17 @@ class forcefield_file:
                     DREINDING_OOP_flag = True
                 
                 # pair coeffs parameters
-                elif '#nonbond(9-6)' in line or '#nonbond(12-6)' in line:
+                elif '#nonbond(9-6)' in line or '#nonbond(12-6)' in line or '#nonbond(Buckingham)' in line:
                     paircoeff_flag = True
                     if '#nonbond(9-6)' in line:
                         pair_coeff_type_9_6 = True
                     if '#nonbond(12-6)' in line:
-                        pair_coeff_type_12_6 = True
+                        pair_coeff_type_12_6 = True    
+                    if '#nonbond(Buckingham)' in line:
+                        pair_coeff_type_buckingham = True
+                        
+                elif '#nonbond' in line and 'hbonding-Gasteiger' in line or 'hbonding-no-charge' in line:
+                    dreiding_hbonding_flag = True
                 
                 # crossterm coeffs parameters
                 elif '#bond-bond' in line and '#bond-bond_1_3' not in line:
@@ -951,6 +970,23 @@ class forcefield_file:
                             logged_version = self.pair_coeffs_12_6[i].ver
                             higher_versions_log['pair_coeffs_12_6'].add(i)
                             if ver >= logged_version: self.pair_coeffs_12_6[i] = p
+                            
+                    # Find Buckingham
+                    if pair_coeff_type_buckingham:
+                        p = Pair_coeff()
+                        ver = float(line[0]); ref = float(line[1]); i = line[2];
+                        p.A = float(line[3])
+                        p.B = float(line[4])
+                        p.C = float(line[5])
+                        p.ver = ver
+                        p.ref = ref
+                        
+                        # If parameter not in dictionary add parameter to dictionary; elif log highest version
+                        if i not in self.pair_buckingham: self.pair_buckingham[i] = p
+                        elif i in self.pair_buckingham:
+                            logged_version = self.pair_buckingham[i].ver
+                            higher_versions_log['pair_buckingham'].add(i)
+                            if ver >= logged_version: self.pair_buckingham[i] = p
                     
                 # Find bondbond parameters    
                 elif bondbond_flag and len(line) >= 6 and check_float(line[0]):
@@ -1103,6 +1139,42 @@ class forcefield_file:
                         logged_version = self.angleangletorsion[(i,j,k,l)].ver
                         higher_versions_log['angleangletorsion'].add(tuple([i,j,k,l]))
                         if ver >= logged_version: self.angleangletorsion[(i,j,k,l)] = aat
+                
+                # DREIDNG h-bonding
+                elif dreiding_hbonding_flag:
+                    if 'hbonding-' in string:
+                        if 'Gasteiger' in string:
+                            hbond_type = 'Gasteiger'
+                            hbond_version = 'hbond-DREIDING-Gasteiger'
+                            hbonds_dict = self.hbond_DREIDING_Gasteiger
+                        if 'no-charge' in string:
+                            hbond_type = 'no-charge'
+                            hbond_version = 'hbond-DREIDING-no-charge'
+                            hbonds_dict = self.hbond_DREIDING_no_charge
+                        continue
+                    
+                    if hbond_type in ['Gasteiger', 'no-charge'] and len(line) >= 7 and check_float(line[4]) and check_float(line[5]) and check_float(line[6]):
+                        hb = Hbond()
+                        ver = float(line[0])
+                        ref = int(line[1])
+                        i = line[2]
+                        j = line[3]
+                        dhb    = float(line[4])
+                        rhb    = float(line[5])
+                        theta  = float(line[6])
+                        hb.dhb = dhb
+                        hb.rhb = rhb
+                        hb.theta = theta
+                        hb.ver = ver
+                        hb.ref = ref
+                        
+                        # If parameter not in dictionary add parameter to dictionary; elif log highest version
+                        if (i,j) not in hbonds_dict: hbonds_dict[(i,j)] = hb
+                        elif (i,j) in hbonds_dict:
+                            logged_version = hbonds_dict[(i,j)].ver
+                            higher_versions_log[hbond_version].add(tuple([i,j]))
+                            if ver >= logged_version: hbonds_dict[(i,j)] = hb
+ 
 
         # print out higher logged versions
         if print_higher_versions:
@@ -1116,7 +1188,9 @@ class forcefield_file:
                          'bondbond':self.bondbond, 'bondbond13':self.bondbond13, 'bondangle':self.bondangle, 'angleangle':self.angleangle,
                          'endbondtorsion':self.endbondtorsion, 'middlebondtorsion':self.middlebondtorsion, 'angletorsion':self.angletorsion,
                          'angleangletorsion':self.angleangletorsion, 'torsiontorsion':self.torsiontorsion, 'torsion_1_opls':self.torsion_1_opls,
-                         'out_of_plane': self.out_of_plane, 'out_of_plane auto': self.out_of_plane_auto}
+                         'out_of_plane': self.out_of_plane, 'out_of_plane auto': self.out_of_plane_auto,
+                         'pair_buckingham': self.pair_buckingham, 'hbond-DREIDING-Gasteiger': self.hbond_DREIDING_Gasteiger,
+                         'hbond-DREIDING-no-charge':self.hbond_DREIDING_no_charge}
             
             # Find any higher versions that have been logged and print
             for i in higher_versions_log:
