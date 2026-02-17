@@ -92,6 +92,57 @@ pair_coeff O_3    H___HB 946.36106126     0.25919834       7.55852818
 pair_coeff O_3    O_3    55027.52026940   0.25251057       268.54637596    
 
 
+
+DREIDING H-bonding requires an addditional potential and some of the atom types
+in the system matched with H-bonding parameters from the frc_file. To enable
+h-bonding in LAMMPS your pair_style must be:
+  pair_style hybrid/overlay <VDW> <HBOND>
+   <VDW> = vdw  potential, for example:
+     lj/cut/coul/long 10.0
+     buck/coul/long 10.0
+   <HBOND> = hbonding potential, for example:
+     hbond/dreiding/lj 4 9.0000 11.0000 90.0000
+  Full examples
+   pair_style hybrid/overlay lj/cut/coul/long 10.0 hbond/dreiding/lj 4 9.0000 11.0000 90.0000
+   pair_style hybrid/overlay buck/coul/long   10.0 hbond/dreiding/lj 4 9.0000 11.0000 90.0000
+
+Then each H-bonding pair coeff must be specified. DREIDING has different parameters
+depending on how the system was charged. Thus you must select the pair coeffs based
+on your charging method of "no-charge" or "Gasteiger".
+
+#------------------------------------------------
+# Example1: H-bonding no-charge using atomTypeIDs
+#------------------------------------------------
+variable  r_in  equal 9.0000 # inner distance cutoff (distance units)
+variable  r_out equal 11.0000 # outer distance cutoff (distance units)
+variable  angle equal 90.0000 # angle cutoff (degrees)
+pair_coeff 2      2      hbond/dreiding/lj 1      j    9.00000000       2.75000000       4      ${r_in} ${r_out} ${angle}
+
+#------------------------------------------------
+# Example2: H-bonding no-charge using type labels
+#------------------------------------------------
+variable  r_in  equal 9.0000 # inner distance cutoff (distance units)
+variable  r_out equal 11.0000 # outer distance cutoff (distance units)
+variable  angle equal 90.0000 # angle cutoff (degrees)
+pair_coeff O_3    O_3    hbond/dreiding/lj H___HB j    9.00000000       2.75000000       4      ${r_in} ${r_out} ${angle}
+
+#------------------------------------------------
+# Example3: H-bonding Gasteiger using atomTypeIDs
+#------------------------------------------------
+variable  r_in  equal 9.0000 # inner distance cutoff (distance units)
+variable  r_out equal 11.0000 # outer distance cutoff (distance units)
+variable  angle equal 90.0000 # angle cutoff (degrees)
+pair_coeff 2      2      hbond/dreiding/lj 1      j    7.00000000       2.75000000       4      ${r_in} ${r_out} ${angle}
+
+#------------------------------------------------
+# Example4: H-bonding Gasteiger using type labels
+#------------------------------------------------
+variable  r_in  equal 9.0000 # inner distance cutoff (distance units)
+variable  r_out equal 11.0000 # outer distance cutoff (distance units)
+variable  angle equal 90.0000 # angle cutoff (degrees)
+pair_coeff O_3    O_3    hbond/dreiding/lj H___HB j    7.00000000       2.75000000       4      ${r_in} ${r_out} ${angle}
+
+
 DREIDING end of alternative options
 
 
@@ -156,7 +207,7 @@ and ordering of the energy parameters.
 Normal program termination
 
 
-Execution time in seconds: 0.010619878768920898
+Execution time in seconds: 0.010360240936279297
 
 
 Number of WARNING(s) and ERROR(s)

@@ -456,6 +456,7 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, ff_class, skip_pr
     pair_equivalent_coeffs = frc.pair_buckingham # class1 equivalent coeffs
     pair_auto_equiv_coeffs = {} # class1 auto-equivalent coeffs
     number_to_type = {} # {atomTypeID:'atom_type'}
+    type_to_number = {} # {'atom_type':atomTypeID}
     for i in BADI.atom_types_lst:
         atom_type = i # set as "fullname" 
         if ':' in atom_type:
@@ -466,6 +467,7 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, ff_class, skip_pr
         pair_equiv = ''
         pair_coeff_comment = ''
         number_to_type[number] = atom_type
+        type_to_number[atom_type] = number 
             
         # try for standard type
         if i in pair_equivalent_coeffs:
@@ -617,107 +619,154 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, ff_class, skip_pr
     #-------------------------------#
     # Find DREIDING Hbonding params #
     #-------------------------------#
-    hbonding = {} # {(i, j, type_i, type_j): {'no-charge':(dhb, rhb, theta), 'Gasteiger':(dhb, rhb, theta)}  }
-    no_charge_dict = frc.hbond_DREIDING_no_charge
-    gasteiger_dict = frc.hbond_DREIDING_Gasteiger
-    # for key in type_line:
-    #     i, j, type_i, type_j = key
-        
-    #     # TODO: REMOVE
-    #     type_i = 'H___HB'
-    #     type_j = 'O_3'
-        
-    #     equiv_i = None
-    #     equiv_j = None
-    #     if type_i in equivalents:
-    #         equiv_i = equivalents[type_i].nonb
-    #     if type_j in equivalents:
-    #         equiv_j = equivalents[type_j].nonb
-        
-    #     no_charge = None
-    #     if (type_i, type_j) in no_charge_dict:
-    #         no_charge = no_charge_dict[(type_i, type_j)]
-    #     elif (type_j, type_i) in no_charge_dict:
-    #         no_charge = no_charge_dict[(type_j, type_i)]
-    #     elif equiv_i is not None and equiv_j is not None:
-    #         if (equiv_i, equiv_j) in no_charge_dict:
-    #             no_charge = no_charge_dict[(equiv_i, equiv_j)]
-    #         elif (equiv_j, equiv_i) in no_charge_dict:
-    #             no_charge = no_charge_dict[(equiv_j, equiv_i)]
-        
-    #     gasteiger = None
-    #     if (type_i, type_j) in gasteiger_dict:
-    #         gasteiger = gasteiger_dict[(type_i, type_j)]
-    #     elif (type_j, type_i) in gasteiger_dict:
-    #         gasteiger = gasteiger_dict[(type_j, type_i)]
-    #     elif equiv_i is not None and equiv_j is not None:
-    #         if (equiv_i, equiv_j) in gasteiger_dict:
-    #             gasteiger = gasteiger_dict[(equiv_i, equiv_j)]
-    #         elif (equiv_j, equiv_i) in gasteiger_dict:
-    #             gasteiger = gasteiger_dict[(equiv_j, equiv_i)]
-         
-    #     tmp_dict = {}
-    #     if no_charge is not None:
-    #         dhb   = no_charge.dhb
-    #         rhb   = no_charge.rhb
-    #         theta = no_charge.theta
-    #         tmp_dict['no-charge'] = (dhb, rhb, theta)
-    #     if gasteiger is not None:
-    #         dhb   = gasteiger.dhb
-    #         rhb   = gasteiger.rhb
-    #         theta = gasteiger.theta
-    #         tmp_dict['Gasteiger'] = (dhb, rhb, theta)
-    #     hbonding[key] = tmp_dict
+    # Find any 2- and 3-body H-bonding situation. NOTE: 'DONOR_TYPE' is the atom type bonded to 'H___HB' 
+    two_body   = set([]) # {('H___HB', 'DONOR_TYPE')} 
+    three_body = set([]) # {('H___HB', 'DONOR_TYPE', 'ACCEPTOR_TYPE')}
+    graph = BADI.graph
+    for i in graph:
+        atom_number_i = m.atoms[i].type
+        atom_type_i = number_to_type[atom_number_i]
+        if atom_type_i == 'H___HB':
+            for j in graph[i]:
+                atom_number_j = m.atoms[j].type
+                atom_type_j = number_to_type[atom_number_j]
+                two_body.add( tuple([atom_type_i, atom_type_j]) )
     
-    # print(BADI.graph)
-    # # Find any 2- and 3-body H-bonding situation. NOTE: 'DONOR_TYPE' is the atom type bonded to 'H___HB' 
-    # two_body   = set([]) # {('H___HB', 'DONOR_TYPE')} 
-    # three_body = set([]) # {('H___HB', 'DONOR_TYPE', 'ACCEPTOR_TYPE')}
-    # graph = BADI.graph
-    # for i in graph:
-    #     atom_number_i = m.atoms[i].type
-    #     atom_type_i = number_to_type[atom_number_i]
-    #     if atom_type_i == 'H___HB':
-    #         for j in graph[i]:
-    #             atom_number_j = m.atoms[j].type
-    #             atom_type_j = number_to_type[atom_number_j]
-    #             two_body.add( tuple([atom_type_i, atom_type_j]) )
-    # print(two_body)
+    # Find the 3-body interactions
+    for key in type_line:
+        i, j, type_i, type_j = key
+        if type_i == 'H___HB': continue
+        if type_j == 'H___HB': continue
+        for type_k, type_N in two_body:
+            three_body.add( tuple([atom_type_i, atom_type_j, type_N]) )
+            
+    # Start parameterizing the H-bonds
+    hbonding = {} # {(i, j, k, type_i, type_j, type_k): {'no-charge':(dhb, rhb, theta), 'Gasteiger':(dhb, rhb, theta)}  }
+    if three_body:
+        no_charge_dict = frc.hbond_DREIDING_no_charge
+        gasteiger_dict = frc.hbond_DREIDING_Gasteiger
+        for triplet in three_body:
+            # We built the i, j, k ordering reversed from
+            # how josh setup the frc_file, so flip triplet
+            type_i, type_j, type_k = triplet[::-1]
+
+            
+            equiv_i, equiv_j, equiv_k = None, None, None
+            if type_i in equivalents:
+                equiv_i = equivalents[type_i].nonb
+            if type_j in equivalents:
+                equiv_j = equivalents[type_j].nonb
+            if type_k in equivalents:
+                equiv_k = equivalents[type_k].nonb
                 
+            no_charge = None
+            if (type_i, type_j, type_k) in no_charge_dict:
+                no_charge = no_charge_dict[(type_i, type_j, type_k)]
+            elif (equiv_i, equiv_j, equiv_k) in no_charge_dict:
+                no_charge = no_charge_dict[(equiv_i, equiv_j, equiv_k)]
+                
+            gasteiger = None
+            if (type_i, type_j, type_k) in gasteiger_dict:
+                gasteiger = gasteiger_dict[(type_i, type_j, type_k)]
+            elif (equiv_i, equiv_j, equiv_k) in gasteiger_dict:
+                gasteiger = gasteiger_dict[(equiv_i, equiv_j, equiv_k)]
+            
+            tmp_dict = {}
+            if no_charge is not None:
+                dhb   = no_charge.dhb
+                rhb   = no_charge.rhb
+                theta = no_charge.theta
+                tmp_dict['no-charge'] = (dhb, rhb, theta)
+            if gasteiger is not None:
+                dhb   = gasteiger.dhb
+                rhb   = gasteiger.rhb
+                theta = gasteiger.theta
+                tmp_dict['Gasteiger'] = (dhb, rhb, theta)
+            hbonding[triplet] = tmp_dict
+                
+    # Log results
+    if hbonding:
+        r_in  = 9.0
+        r_out = 11.0
+        angle = 90.0
+        donor = 'j'
+        n     = 4
+        log.out('\n\n')
+        log.out('DREIDING H-bonding requires an addditional potential and some of the atom types')
+        log.out('in the system matched with H-bonding parameters from the frc_file. To enable')
+        log.out('h-bonding in LAMMPS your pair_style must be:')
+        log.out('  pair_style hybrid/overlay <VDW> <HBOND>')
+        log.out('   <VDW> = vdw  potential, for example:')
+        log.out('     lj/cut/coul/long 10.0')
+        log.out('     buck/coul/long 10.0')
+        log.out('   <HBOND> = hbonding potential, for example:')
+        log.out('     hbond/dreiding/lj 4 {:>6.4f} {:>6.4f} {:>6.4f}'.format(r_in, r_out, angle))
+        log.out('  Full examples')
+        log.out('   pair_style hybrid/overlay lj/cut/coul/long 10.0 hbond/dreiding/lj 4 {:>6.4f} {:>6.4f} {:>6.4f}'.format(r_in, r_out, angle))
+        log.out('   pair_style hybrid/overlay buck/coul/long   10.0 hbond/dreiding/lj 4 {:>6.4f} {:>6.4f} {:>6.4f}'.format(r_in, r_out, angle))
+        log.out('')
+        log.out('Then each H-bonding pair coeff must be specified. DREIDING has different parameters')
+        log.out('depending on how the system was charged. Thus you must select the pair coeffs based')
+        log.out('on your charging method of "no-charge" or "Gasteiger".')
+        log.out('')
+        log.out('#------------------------------------------------')
+        log.out('# Example1: H-bonding no-charge using atomTypeIDs')
+        log.out('#------------------------------------------------')
+        log.out('variable  r_in  equal {:>6.4f} # inner distance cutoff (distance units)'.format(r_in))
+        log.out('variable  r_out equal {:>6.4f} # outer distance cutoff (distance units)'.format(r_out))
+        log.out('variable  angle equal {:>6.4f} # angle cutoff (degrees)'.format(angle))
+        for triplet in hbonding:
+            type_i, type_j, type_k = triplet[::-1]
+            i = type_to_number[type_i]
+            j = type_to_number[type_j]
+            k = type_to_number[type_k]
+            dhb, rhb, theta = hbonding[triplet]['no-charge']
+            log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(i, j, k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))
         
-    
-    # # Log results
-    # if hbonding:
-    #     log.out('\n\n')
-    #     log.out('DREIDING H-bonding requires an addditional potential and some of the atom types')
-    #     log.out('in the system matched with H-bonding parameters from the frc_file. To enable')
-    #     log.out('h-bonding in LAMMPS your pair_style must be:')
-    #     log.out('  pair_style hybrid/overlay <VDW> <HBOND>')
-    #     log.out('   <VDW> = vdw  potential, for example:')
-    #     log.out('     lj/cut/coul/long 10.0')
-    #     log.out('     buck/coul/long 10.0')
-    #     log.out('   <HBOND> = hbonding potential, for example:')
-    #     log.out('     hbond/dreiding/lj 4 9.0 11.0 90.0')
-    #     log.out('  Full examples')
-    #     log.out('   pair_style hybrid/overlay lj/cut/coul/long 10.0 hbond/dreiding/lj 4 9.0 11.0 90.0')
-    #     log.out('   pair_style hybrid/overlay buck/coul/long   10.0 hbond/dreiding/lj 4 9.0 11.0 90.0')
-    #     log.out('')
-    #     log.out('Then each H-bonding pair coeff must be specified. DREIDING has different parameters')
-    #     log.out('depending on how the system was charged. Thus you must select the pair coeffs based')
-    #     log.out('on your charging method of "no-charge" or "Gasteiger".')
-    #     log.out('')
-    #     log.out('#------------------------------------------------')
-    #     log.out('# Example1: H-bonding no-charge using atomTypeIDs')
-    #     for key in hbonding:
-    #         i, j, type_i, type_j = key
-    #         tmp_dict = hbonding[key]
-    #         dhb, rhb, theta = tmp_dict['no-charge']
-    #         donor = 'i'
-    #         n = 4
-    #         log.out('pair_coeff {:<4} {:<4} hbond/dreiding/lj {:<16.8f} {:<16.8f} {:<16.8f}'.format(i, j, dhb, rhb, n))
+        log.out('')
+        log.out('#------------------------------------------------')
+        log.out('# Example2: H-bonding no-charge using type labels')
+        log.out('#------------------------------------------------')
+        log.out('variable  r_in  equal {:>6.4f} # inner distance cutoff (distance units)'.format(r_in))
+        log.out('variable  r_out equal {:>6.4f} # outer distance cutoff (distance units)'.format(r_out))
+        log.out('variable  angle equal {:>6.4f} # angle cutoff (degrees)'.format(angle))
+        for triplet in hbonding:
+            type_i, type_j, type_k = triplet[::-1]
+            i = type_to_number[type_i]
+            j = type_to_number[type_j]
+            k = type_to_number[type_k]
+            dhb, rhb, theta = hbonding[triplet]['no-charge']
+            log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(type_i, type_j, type_k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))
         
-    #     print('\n\n\n')
-    #     print(hbonding)            
+        log.out('')
+        log.out('#------------------------------------------------')
+        log.out('# Example3: H-bonding Gasteiger using atomTypeIDs')
+        log.out('#------------------------------------------------')
+        log.out('variable  r_in  equal {:>6.4f} # inner distance cutoff (distance units)'.format(r_in))
+        log.out('variable  r_out equal {:>6.4f} # outer distance cutoff (distance units)'.format(r_out))
+        log.out('variable  angle equal {:>6.4f} # angle cutoff (degrees)'.format(angle))
+        for triplet in hbonding:
+            type_i, type_j, type_k = triplet[::-1]
+            i = type_to_number[type_i]
+            j = type_to_number[type_j]
+            k = type_to_number[type_k]
+            dhb, rhb, theta = hbonding[triplet]['Gasteiger']
+            log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(i, j, k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))
+        
+        log.out('')
+        log.out('#------------------------------------------------')
+        log.out('# Example4: H-bonding Gasteiger using type labels')
+        log.out('#------------------------------------------------')
+        log.out('variable  r_in  equal {:>6.4f} # inner distance cutoff (distance units)'.format(r_in))
+        log.out('variable  r_out equal {:>6.4f} # outer distance cutoff (distance units)'.format(r_out))
+        log.out('variable  angle equal {:>6.4f} # angle cutoff (degrees)'.format(angle))
+        for triplet in hbonding:
+            type_i, type_j, type_k = triplet[::-1]
+            i = type_to_number[type_i]
+            j = type_to_number[type_j]
+            k = type_to_number[type_k]
+            dhb, rhb, theta = hbonding[triplet]['Gasteiger']
+            log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(type_i, type_j, type_k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))       
     
     log.out('\n\nDREIDING end of alternative options\n\n')
     return
