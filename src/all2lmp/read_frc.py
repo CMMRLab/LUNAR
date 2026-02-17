@@ -1153,15 +1153,16 @@ class forcefield_file:
                             hbonds_dict = self.hbond_DREIDING_no_charge
                         continue
                     
-                    if hbond_type in ['Gasteiger', 'no-charge'] and len(line) >= 7 and check_float(line[4]) and check_float(line[5]) and check_float(line[6]):
+                    if hbond_type in ['Gasteiger', 'no-charge'] and len(line) >= 8 and check_float(line[5]) and check_float(line[6]) and check_float(line[7]):
                         hb = Hbond()
                         ver = float(line[0])
                         ref = int(line[1])
                         i = line[2]
                         j = line[3]
-                        dhb    = float(line[4])
-                        rhb    = float(line[5])
-                        theta  = float(line[6])
+                        k = line[4]
+                        dhb    = float(line[5])
+                        rhb    = float(line[6])
+                        theta  = float(line[7])
                         hb.dhb = dhb
                         hb.rhb = rhb
                         hb.theta = theta
@@ -1169,11 +1170,11 @@ class forcefield_file:
                         hb.ref = ref
                         
                         # If parameter not in dictionary add parameter to dictionary; elif log highest version
-                        if (i,j) not in hbonds_dict: hbonds_dict[(i,j)] = hb
-                        elif (i,j) in hbonds_dict:
+                        if (i,j,k) not in hbonds_dict: hbonds_dict[(i,j,k)] = hb
+                        elif (i,j,k) in hbonds_dict:
                             logged_version = hbonds_dict[(i,j)].ver
-                            higher_versions_log[hbond_version].add(tuple([i,j]))
-                            if ver >= logged_version: hbonds_dict[(i,j)] = hb
+                            higher_versions_log[hbond_version].add(tuple([i,j,k]))
+                            if ver >= logged_version: hbonds_dict[(i,j,k)] = hb
  
 
         # print out higher logged versions

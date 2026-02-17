@@ -213,7 +213,7 @@ class get:
             # To handle this, we will write these possible FF-options to the log
             # If DREIDING is called, put the X6 pair_coeffs in the log
             if ff_class == 'd':
-                find_DREIDING_non_bond(frc, BADI, use_auto_equivalence, ff_class, skip_printouts, log)
+                find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, ff_class, skip_printouts, log)
 
 ################################################
 # Function to perform atom-types check to warn #
@@ -442,7 +442,7 @@ def find_interatomic_atom_parameters(frc, BADI, m, ff_class, log):
 ################################################
 # Function to find DREIDNG specific parameters #
 ################################################
-def find_DREIDING_non_bond(frc, BADI, use_auto_equivalence, ff_class, skip_printouts, log):
+def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, ff_class, skip_printouts, log):
     # Add printing buffer
     if not skip_printouts: log.out('')
 
@@ -455,6 +455,7 @@ def find_DREIDING_non_bond(frc, BADI, use_auto_equivalence, ff_class, skip_print
     auto_equivs = {} # class1 auto-equivalents dict
     pair_equivalent_coeffs = frc.pair_buckingham # class1 equivalent coeffs
     pair_auto_equiv_coeffs = {} # class1 auto-equivalent coeffs
+    number_to_type = {} # {atomTypeID:'atom_type'}
     for i in BADI.atom_types_lst:
         atom_type = i # set as "fullname" 
         if ':' in atom_type:
@@ -464,6 +465,7 @@ def find_DREIDING_non_bond(frc, BADI, use_auto_equivalence, ff_class, skip_print
         number = BADI.atom_types_dict[atom_type]
         pair_equiv = ''
         pair_coeff_comment = ''
+        number_to_type[number] = atom_type
             
         # try for standard type
         if i in pair_equivalent_coeffs:
@@ -618,54 +620,71 @@ def find_DREIDING_non_bond(frc, BADI, use_auto_equivalence, ff_class, skip_print
     hbonding = {} # {(i, j, type_i, type_j): {'no-charge':(dhb, rhb, theta), 'Gasteiger':(dhb, rhb, theta)}  }
     no_charge_dict = frc.hbond_DREIDING_no_charge
     gasteiger_dict = frc.hbond_DREIDING_Gasteiger
-    for key in type_line:
-        i, j, type_i, type_j = key
+    # for key in type_line:
+    #     i, j, type_i, type_j = key
         
-        # TODO: REMOVE
-        type_i = 'H___HB'
-        type_j = 'O_3'
+    #     # TODO: REMOVE
+    #     type_i = 'H___HB'
+    #     type_j = 'O_3'
         
-        equiv_i = None
-        equiv_j = None
-        if type_i in equivalents:
-            equiv_i = equivalents[type_i].nonb
-        if type_j in equivalents:
-            equiv_j = equivalents[type_j].nonb
+    #     equiv_i = None
+    #     equiv_j = None
+    #     if type_i in equivalents:
+    #         equiv_i = equivalents[type_i].nonb
+    #     if type_j in equivalents:
+    #         equiv_j = equivalents[type_j].nonb
         
-        no_charge = None
-        if (type_i, type_j) in no_charge_dict:
-            no_charge = no_charge_dict[(type_i, type_j)]
-        elif (type_j, type_i) in no_charge_dict:
-            no_charge = no_charge_dict[(type_j, type_i)]
-        elif equiv_i is not None and equiv_j is not None:
-            if (equiv_i, equiv_j) in no_charge_dict:
-                no_charge = no_charge_dict[(equiv_i, equiv_j)]
-            elif (equiv_j, equiv_i) in no_charge_dict:
-                no_charge = no_charge_dict[(equiv_j, equiv_i)]
+    #     no_charge = None
+    #     if (type_i, type_j) in no_charge_dict:
+    #         no_charge = no_charge_dict[(type_i, type_j)]
+    #     elif (type_j, type_i) in no_charge_dict:
+    #         no_charge = no_charge_dict[(type_j, type_i)]
+    #     elif equiv_i is not None and equiv_j is not None:
+    #         if (equiv_i, equiv_j) in no_charge_dict:
+    #             no_charge = no_charge_dict[(equiv_i, equiv_j)]
+    #         elif (equiv_j, equiv_i) in no_charge_dict:
+    #             no_charge = no_charge_dict[(equiv_j, equiv_i)]
         
-        gasteiger = None
-        if (type_i, type_j) in gasteiger_dict:
-            gasteiger = gasteiger_dict[(type_i, type_j)]
-        elif (type_j, type_i) in gasteiger_dict:
-            gasteiger = gasteiger_dict[(type_j, type_i)]
-        elif equiv_i is not None and equiv_j is not None:
-            if (equiv_i, equiv_j) in gasteiger_dict:
-                gasteiger = gasteiger_dict[(equiv_i, equiv_j)]
-            elif (equiv_j, equiv_i) in gasteiger_dict:
-                gasteiger = gasteiger_dict[(equiv_j, equiv_i)]
+    #     gasteiger = None
+    #     if (type_i, type_j) in gasteiger_dict:
+    #         gasteiger = gasteiger_dict[(type_i, type_j)]
+    #     elif (type_j, type_i) in gasteiger_dict:
+    #         gasteiger = gasteiger_dict[(type_j, type_i)]
+    #     elif equiv_i is not None and equiv_j is not None:
+    #         if (equiv_i, equiv_j) in gasteiger_dict:
+    #             gasteiger = gasteiger_dict[(equiv_i, equiv_j)]
+    #         elif (equiv_j, equiv_i) in gasteiger_dict:
+    #             gasteiger = gasteiger_dict[(equiv_j, equiv_i)]
          
-        tmp_dict = {}
-        if no_charge is not None:
-            dhb   = no_charge.dhb
-            rhb   = no_charge.rhb
-            theta = no_charge.theta
-            tmp_dict['no-charge'] = (dhb, rhb, theta)
-        if gasteiger is not None:
-            dhb   = gasteiger.dhb
-            rhb   = gasteiger.rhb
-            theta = gasteiger.theta
-            tmp_dict['Gasteiger'] = (dhb, rhb, theta)
-        hbonding[key] = tmp_dict
+    #     tmp_dict = {}
+    #     if no_charge is not None:
+    #         dhb   = no_charge.dhb
+    #         rhb   = no_charge.rhb
+    #         theta = no_charge.theta
+    #         tmp_dict['no-charge'] = (dhb, rhb, theta)
+    #     if gasteiger is not None:
+    #         dhb   = gasteiger.dhb
+    #         rhb   = gasteiger.rhb
+    #         theta = gasteiger.theta
+    #         tmp_dict['Gasteiger'] = (dhb, rhb, theta)
+    #     hbonding[key] = tmp_dict
+    
+    # print(BADI.graph)
+    # # Find any 2- and 3-body H-bonding situation. NOTE: 'DONOR_TYPE' is the atom type bonded to 'H___HB' 
+    # two_body   = set([]) # {('H___HB', 'DONOR_TYPE')} 
+    # three_body = set([]) # {('H___HB', 'DONOR_TYPE', 'ACCEPTOR_TYPE')}
+    # graph = BADI.graph
+    # for i in graph:
+    #     atom_number_i = m.atoms[i].type
+    #     atom_type_i = number_to_type[atom_number_i]
+    #     if atom_type_i == 'H___HB':
+    #         for j in graph[i]:
+    #             atom_number_j = m.atoms[j].type
+    #             atom_type_j = number_to_type[atom_number_j]
+    #             two_body.add( tuple([atom_type_i, atom_type_j]) )
+    # print(two_body)
+                
+        
     
     # # Log results
     # if hbonding:
