@@ -1,0 +1,172 @@
+
+
+Running all2lmp: v1.22 / 14 April 2025
+Using Python version: 3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 16:37:03) [MSC v.1929 64 bit (AMD64)]
+Using Python executable: C:\Users\jdkem\anaconda3\python.exe
+Trying Atom Equivalences if needed
+Trying Atom Auto-Equivalences if needed
+Trying to find atom charge based on bond-incs
+Resetting molecule-ids based on cluster analysis
+
+
+
+Read in frc_files/all2lmp_dreiding.frc forcefeild file
+Read in DREIDING/furan_typed.data LAMMPS datafile
+Read in DREIDING/furan_typed.nta new-type-assignment file
+
+
+
+Getting force field parameters for the read in system
+
+Checking for atom-type assignment consistency with atom-types in .frc file
+
+Using class d for DREIDING force field, resetting use_auto_equivalence and reset_charges to False
+since DREIDING does not currently offer this level of support.
+
+
+Finding molecules to reset molids....
+-----------------Cluster Analysis-----------------
+  molID    Size of Fragment     %Size of Fragment    
+--------------------------------------------------
+    1               9               100.00          
+
+
+
+
+Atoms information has been found
+  DREIDING/furan_typed.data has all image flags set to zero
+  There are 9 atoms in 1 molecules in this file
+  The total charge in the system is 0.0000
+
+
+
+
+
+
+
+
+
+DREIDING can be used with a Buckingham vdw potential. The following parameters can be
+placed in a LAMMPS script following reading the LAMMPS datafile. To make this work you
+MUST delete the 12-6 LJ parameters in the "Pair Coeffs" section of the datafile. The
+LAMMPS "pair_style    buck/coul/long 10.0" command will be used with these parameters.
+
+#-----------------------------------------------------------------------
+# Example1: DREIDING-Buckingham LAMMPS script template using atomTypeIDs
+#
+#------------Force Field------------
+bond_style      harmonic
+angle_style     harmonic
+dihedral_style  harmonic
+improper_style  umbrella
+special_bonds   lj/coul 0 0 1
+
+kspace_style    pppm 1.0e-4
+pair_style      buck/coul/long 10.0
+
+#------------Read datafile------------
+read_data  MyDataFile.data # with "Pair Coeffs" section removed
+
+pair_coeff 1    1    88366.71263954   0.27777540       583.01765883    
+pair_coeff 2    1    17353.23732056   0.26754202       135.23597483    
+pair_coeff 2    2    3407.78599213    0.25803586       31.36915085     
+pair_coeff 3    1    69732.35311470   0.26454113       395.68583422    
+pair_coeff 3    2    13693.86770623   0.25524332       91.78274227     
+pair_coeff 3    3    55027.52026940   0.25251057       268.54637596    
+
+#-----------------------------------------------------------------------
+# Example2: DREIDING-Buckingham LAMMPS script template using type labels
+#
+#------------Force Field------------
+bond_style      harmonic
+angle_style     harmonic
+dihedral_style  harmonic
+improper_style  umbrella
+special_bonds   lj/coul 0 0 1
+
+kspace_style    pppm 1.0e-4
+pair_style      buck/coul/long 10.0
+
+#------------Read datafile------------
+read_data  MyDataFile.data # with "Pair Coeffs" section removed
+
+pair_coeff C_R    C_R    88366.71263954   0.27777540       583.01765883    
+pair_coeff H_     C_R    17353.23732056   0.26754202       135.23597483    
+pair_coeff H_     H_     3407.78599213    0.25803586       31.36915085     
+pair_coeff O_R    C_R    69732.35311470   0.26454113       395.68583422    
+pair_coeff O_R    H_     13693.86770623   0.25524332       91.78274227     
+pair_coeff O_R    O_R    55027.52026940   0.25251057       268.54637596    
+
+
+DREIDING end of alternative options
+
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         20.00000  angstrom  
+Ly:         20.00000  angstrom  
+Lz:         20.00000  angstrom  
+volume:    8.0000E-21 cm^3      
+mass:      1.1304E-22 grams     
+density:    0.01413   g/cm^3    
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:              9  
+nbonds:              9  
+nangles:            13  
+ndihedrals:         16  
+nimpropers:          4  
+
+--------------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers Types
+--------------------------------------------
+natomtypes:          3  
+nbondtypes:          3  
+nangletypes:         2  
+ndihedraltypes:      2  
+nimpropertypes:      1  
+
+-------------------------------------
+Parameterization percentage breakdown
+-------------------------------------
+Masses:                      100.00 %
+Pair Coeffs:                 100.00 %
+Bond Coeffs:                 100.00 %
+Angle Coeffs:                100.00 %
+Dihedral Coeffs:             100.00 %
+Improper Coeffs:             100.00 %
+Average MPBADI Coeffs:       100.00 %
+Average (without Bond-incs): 100.00 %
+Bond-incs:                   100.00 %
+
+
+Using path from topofile to set parent_directory ...
+
+
+Writing LAMMPS datafile
+Writing verbose comment file
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\DREIDING directory
+
+
+Each energy coeff Header in the written datafile contains style hint flags for
+applying proper settings in LAMMPS to be consistent with the energy definitions
+and ordering of the energy parameters.
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.011432170867919922
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

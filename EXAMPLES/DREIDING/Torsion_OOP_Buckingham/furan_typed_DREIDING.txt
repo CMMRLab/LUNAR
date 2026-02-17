@@ -1,0 +1,112 @@
+> atom_typing v1.11 / 14 April 2025 w/DREIDING atom-types > all2lmp: v1.22 / 14 April 2025  Class: d
+
+# -------------------------------------
+# Parameterization percentage breakdown
+# -------------------------------------
+# Masses:                      100.00 %
+# Pair Coeffs:                 100.00 %
+# Bond Coeffs:                 100.00 %
+# Angle Coeffs:                100.00 %
+# Dihedral Coeffs:             100.00 %
+# Improper Coeffs:             100.00 %
+# Average MPBADI Coeffs:       100.00 %
+# Average (without Bond-incs): 100.00 %
+# Bond-incs:                   100.00 %
+
+Masses # class1
+
+ 1  12.01100000  #  C_R   equivalent: C_R   standard type used       
+ 2   1.00800000  #  H_    equivalent: H_    standard type used       
+ 3  15.99900000  #  O_R   equivalent: O_R   standard type used       
+
+Pair Coeffs  # lj/cut/coul/long
+
+ 1        0.09510000      3.47299047 #  C_R     equivalent:   C_R   standard type used       
+ 2        0.01520000      2.84642140 #  H_      equivalent:   H_    standard type used       
+ 3        0.09570000      3.03315378 #  O_R     equivalent:   O_R   standard type used       
+
+Bond Coeffs  # harmonic
+
+ 1      525.00000000      1.39000000 #  C_R        C_R    equivalent:     C_R        C_R          match:       C_R        C_R        equivalent type used
+ 2      350.00000000      1.02000000 #  H_         C_R    equivalent:     H_         C_R          match:       H_         C_R        equivalent type used
+ 3      525.00000000      1.35000000 #  C_R        O_R    equivalent:     C_R        O_R          match:       C_R        O_R        equivalent type used
+
+Angle Coeffs  # harmonic
+
+ 1       50.00000000    120.00000000 #  X         C_R          X    equivalent:  X         C_R          X        match:    *         C_R          *      equivalent type used
+ 2       50.00000000    120.00000000 #  X         O_R          X    equivalent:  X         O_R          X        match:    *         O_R          *      equivalent type used
+
+Dihedral Coeffs  # harmonic
+
+ 1        3.12500000              -1               2 #  X         C_R       C_R          X      equivalent:   X         SpR       SpR          X        match:      *         SpR       SpR          *    equivalent type used
+ 2        3.12500000              -1               2 #  X         O_R       C_R          X      equivalent:   X         OSpR      SpR          X        match:      *         OSpR      SpR          *    equivalent type used
+
+Improper Coeffs  # umbrella
+
+ 1       40.00000000      0.00000000 #  C_R        X         X         X       nb==3      equivalent:   Planar     X         X           X        match:      Planar     *         *           *    equivalent type used
+
+Atoms # full
+
+ 1  1  3  -0.473103   -0.790540000     0.744310000     0.000000000      0    0    0 #   O_R                                                                            
+ 2  1  1   0.088783   -1.909550000     0.055400000     0.000000000      0    0    0 #   C_R                                                                            
+ 3  1  1   0.088783    0.227280000    -0.086850000     0.000000000      0    0    0 #   C_R                                                                            
+ 4  1  1  -0.024900   -1.615660000    -1.291470000     0.000000000      0    0    0 #   C_R                                                                            
+ 5  1  1  -0.024900   -0.242560000    -1.382880000     0.000000000      0    0    0 #   C_R                                                                            
+ 6  1  2   0.106015   -2.898760000     0.493210000     0.000000000      0    0    0 #    H_                                                                            
+ 7  1  2   0.066654   -2.321770000    -2.110980000     0.000000000      0    0    0 #    H_                                                                            
+ 8  1  2   0.066654    0.348690000    -2.288750000     0.000000000      0    0    0 #    H_                                                                            
+ 9  1  2   0.106015    1.265790000     0.215970000     0.000000000      0    0    0 #    H_                                                                            
+
+Bonds
+
+  1     3     2     1     #    C_R        O_R   
+  2     3     3     1     #    C_R        O_R   
+  3     1     2     4     #    C_R        C_R   
+  4     2     6     2     #    H_         C_R   
+  5     1     3     5     #    C_R        C_R   
+  6     2     9     3     #    H_         C_R   
+  7     1     4     5     #    C_R        C_R   
+  8     2     7     4     #    H_         C_R   
+  9     2     8     5     #    H_         C_R   
+
+Angles
+
+  1     2     2     1     3     #    X         O_R          X   
+  2     1     1     2     6     #    X         C_R          X   
+  3     1     4     2     6     #    X         C_R          X   
+  4     1     1     2     4     #    X         C_R          X   
+  5     1     5     3     9     #    X         C_R          X   
+  6     1     1     3     5     #    X         C_R          X   
+  7     1     1     3     9     #    X         C_R          X   
+  8     1     2     4     5     #    X         C_R          X   
+  9     1     2     4     7     #    X         C_R          X   
+ 10     1     5     4     7     #    X         C_R          X   
+ 11     1     4     5     8     #    X         C_R          X   
+ 12     1     3     5     4     #    X         C_R          X   
+ 13     1     3     5     8     #    X         C_R          X   
+
+Dihedrals
+
+  1     2     2     1     3     9     #    X         O_R       C_R          X   
+  2     2     3     1     2     6     #    X         O_R       C_R          X   
+  3     2     2     1     3     5     #    X         O_R       C_R          X   
+  4     2     3     1     2     4     #    X         O_R       C_R          X   
+  5     1     6     2     4     7     #    X         C_R       C_R          X   
+  6     1     1     2     4     7     #    X         C_R       C_R          X   
+  7     1     1     2     4     5     #    X         C_R       C_R          X   
+  8     1     1     3     5     8     #    X         C_R       C_R          X   
+  9     1     1     3     5     4     #    X         C_R       C_R          X   
+ 10     1     2     4     5     3     #    X         C_R       C_R          X   
+ 11     1     7     4     5     8     #    X         C_R       C_R          X   
+ 12     1     5     4     2     6     #    X         C_R       C_R          X   
+ 13     1     2     4     5     8     #    X         C_R       C_R          X   
+ 14     1     4     5     3     9     #    X         C_R       C_R          X   
+ 15     1     3     5     4     7     #    X         C_R       C_R          X   
+ 16     1     8     5     3     9     #    X         C_R       C_R          X   
+
+Impropers
+
+  1     1     2     1     4     6     #    C_R        X         X         X       nb==3   
+  2     1     3     1     5     9     #    C_R        X         X         X       nb==3   
+  3     1     4     2     5     7     #    C_R        X         X         X       nb==3   
+  4     1     5     3     4     8     #    C_R        X         X         X       nb==3   

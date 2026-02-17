@@ -1,0 +1,28 @@
+Sp2  Nitrogen FAILED to be found with search criteria of ring size, number of connects, and connected elements.
+Most likely cause is that DREIDING doesnt have an atom type for this application and assumed atom type was put in its place.
+You may go into the ouputted *.nta file and give this atom type a different type if you would like.
+neigh info lst = [[element1, ring1, nb1], [element2, ring2, nb2], ....] sorted by nb -> ring -> element
+1st-neigh info : [['C', 6, 3], ['H', 0, 1], ['H', 0, 1]]
+2nd-neigh info : [['C', 6, 3], ['C', 6, 3]]
+3rd-neigh info : [['C', 0, 4], ['C', 0, 4], ['C', 6, 3], ['C', 6, 3]]
+atom number    : 12 could not be characterized
+element        : N
+ring size      : 0
+# of connects  : 3
+atom type      : N_2 was assumed
+
+
+Sp2  Nitrogen FAILED to be found with search criteria of ring size, number of connects, and connected elements.
+Most likely cause is that DREIDING doesnt have an atom type for this application and assumed atom type was put in its place.
+You may go into the ouputted *.nta file and give this atom type a different type if you would like.
+neigh info lst = [[element1, ring1, nb1], [element2, ring2, nb2], ....] sorted by nb -> ring -> element
+1st-neigh info : [['C', 6, 3], ['H', 0, 1], ['H', 0, 1]]
+2nd-neigh info : [['C', 6, 3], ['C', 6, 3]]
+3rd-neigh info : [['C', 0, 4], ['C', 0, 4], ['C', 6, 3], ['C', 6, 3]]
+atom number    : 13 could not be characterized
+element        : N
+ring size      : 0
+# of connects  : 3
+atom type      : N_2 was assumed
+
+

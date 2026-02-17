@@ -1,0 +1,113 @@
+
+
+Running all2lmp: v1.22 / 14 April 2025
+Using Python version: 3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 16:37:03) [MSC v.1929 64 bit (AMD64)]
+Using Python executable: C:\Users\jdkem\anaconda3\python.exe
+Trying Atom Equivalences if needed
+Trying Atom Auto-Equivalences if needed
+Resetting molecule-ids based on cluster analysis
+
+
+
+Read in frc_files/all2lmp_dreiding.frc forcefeild file
+Read in DREIDING/detda_typed.data LAMMPS datafile
+Read in DREIDING/detda_typed.nta new-type-assignment file
+
+
+
+Getting force field parameters for the read in system
+
+Checking for atom-type assignment consistency with atom-types in .frc file
+
+Using class d for DREIDING force field, resetting use_auto_equivalence and reset_charges to False
+since DREIDING does not currently offer this level of support. Also the all2lmp_dreiding.frc almost fully
+supports all attributes of the DREIDING force field. However the H-bond parameters are not in the file and
+consequently any H-bond LJ parameters will have to be dealt with manually if your systems has H-bonds.
+
+
+Finding molecules to reset molids....
+-----------------Cluster Analysis-----------------
+  molID    Size of Fragment     %Size of Fragment    
+--------------------------------------------------
+    1              31               100.00          
+
+
+
+
+Atoms information has been found
+  DREIDING/detda_typed.data has all image flags set to zero
+  There are 31 atoms in 1 molecules in this file
+  The total charge in the system is 0.0000
+
+
+
+
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+Lx:         8.05140   angstrom  
+Ly:         8.93080   angstrom  
+Lz:         2.83140   angstrom  
+volume:    2.0359E-22 cm^3      
+mass:      2.9604E-22 grams     
+density:    1.45407   g/cm^3    
+
+
+
+--------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers
+--------------------------------------
+natoms:             31  
+nbonds:             31  
+nangles:            54  
+ndihedrals:         68  
+nimpropers:          8  
+
+--------------------------------------------
+Atoms/Bonds/Angles/Dihedrals/Impropers Types
+--------------------------------------------
+natomtypes:          4  
+nbondtypes:          7  
+nangletypes:         3  
+ndihedraltypes:      4  
+nimpropertypes:      2  
+
+-------------------------------------
+Parameterization percentage breakdown
+-------------------------------------
+Masses:                      100.00 %
+Pair Coeffs:                 100.00 %
+Bond Coeffs:                 100.00 %
+Angle Coeffs:                100.00 %
+Dihedral Coeffs:             100.00 %
+Improper Coeffs:             100.00 %
+Average MPBADI Coeffs:       100.00 %
+Average (without Bond-incs): 100.00 %
+
+
+Using path from topofile to set parent_directory ...
+
+
+Writing LAMMPS datafile
+Writing verbose comment file
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\DREIDING directory
+
+
+Each energy coeff Header in the written datafile contains style hint flags for
+applying proper settings in LAMMPS to be consistent with the energy definitions
+and ordering of the energy parameters.
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.011470317840576172
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

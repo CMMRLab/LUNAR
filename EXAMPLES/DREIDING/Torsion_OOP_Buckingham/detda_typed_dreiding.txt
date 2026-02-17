@@ -1,0 +1,262 @@
+HEADER,  detda.mol  read w/ mol2lmp > atom_typing v1.11 / 14 April 2025 w/DREIDING atom-types > all2lmp: v1.22 / 14 April 2025  Class: d
+
+# -------------------------------------
+# Parameterization percentage breakdown
+# -------------------------------------
+# Masses:                      100.00 %
+# Pair Coeffs:                 100.00 %
+# Bond Coeffs:                 100.00 %
+# Angle Coeffs:                100.00 %
+# Dihedral Coeffs:             100.00 %
+# Improper Coeffs:             100.00 %
+# Average MPBADI Coeffs:       100.00 %
+# Average (without Bond-incs): 100.00 %
+
+Masses # class1
+
+ 1  12.01100000  #  C_3   equivalent: C_3   standard type used       
+ 2  12.01100000  #  C_R   equivalent: C_R   standard type used       
+ 3   1.00800000  #  H_    equivalent: H_    standard type used       
+ 4  14.00700000  #  N_2   equivalent: N_2   standard type used       
+
+Pair Coeffs  # lj/cut/coul/long
+
+ 1        0.09510000      3.47299047 #  C_3     equivalent:   C_3   standard type used       
+ 2        0.09510000      3.47299047 #  C_R     equivalent:   C_R   standard type used       
+ 3        0.01520000      2.84642140 #  H_      equivalent:   H_    standard type used       
+ 4        0.07740000      3.26256020 #  N_2     equivalent:   N_2   standard type used       
+
+Bond Coeffs  # harmonic
+
+ 1      350.00000000      1.53000000 #  C_3        C_3    equivalent:     C_3        C_3          match:       C_3        C_3        equivalent type used
+ 2      350.00000000      1.46000000 #  C_3        C_R    equivalent:     C_3        C_R          match:       C_3        C_R        equivalent type used
+ 3      350.00000000      1.09000000 #  H_         C_3    equivalent:     H_         C_3          match:       H_         C_3        equivalent type used
+ 4      525.00000000      1.39000000 #  C_R        C_R    equivalent:     C_R        C_R          match:       C_R        C_R        equivalent type used
+ 5      350.00000000      1.02000000 #  H_         C_R    equivalent:     H_         C_R          match:       H_         C_R        equivalent type used
+ 6      525.00000000      1.30500000 #  C_R        N_2    equivalent:     C_R        N_2          match:       C_R        N_2        equivalent type used
+ 7      350.00000000      0.93500000 #  H_         N_2    equivalent:     H_         N_2          match:       H_         N_2        equivalent type used
+
+Angle Coeffs  # harmonic
+
+ 1       50.00000000    109.47100000 #  X         C_3          X    equivalent:  X         C_3          X        match:    *         C_3          *      equivalent type used
+ 2       50.00000000    120.00000000 #  X         C_R          X    equivalent:  X         C_R          X        match:    *         C_R          *      equivalent type used
+ 3       50.00000000    120.00000000 #  X         N_2          X    equivalent:  X         N_2          X        match:    *         N_2          *      equivalent type used
+
+Dihedral Coeffs  # harmonic
+
+ 1        1.00000000               1               3 #  X         C_3       C_3          X      equivalent:   X         Sp3       Sp3          X        match:      *         Sp3       Sp3          *    equivalent type used
+ 2        0.50000000              -1               6 #  X         C_R       C_3          X      equivalent:   X         SpR       Sp3          X        match:      *         SpR       Sp3          *    equivalent type used
+ 3       12.50000000              -1               2 #  X         C_R       C_R          X      equivalent:   X         SpR       SpR          X        match:      *         SpR       SpR          *    equivalent type used
+ 4        2.50000000               1               2 #  X         N_2       C_R          X      equivalent:   X         Sp2       SpR          X        match:      *         Sp2       SpR          *    equivalent type used
+
+Improper Coeffs  # umbrella
+
+ 1       40.00000000      0.00000000 #  C_R        X         X         X       nb==3      equivalent:   Planar     X         X           X        match:      Planar     *         *           *    equivalent type used
+ 2       40.00000000      0.00000000 #  N_2        X         X         X       nb==3      equivalent:   Planar     X         X           X        match:      Planar     *         *           *    equivalent type used
+
+Atoms # full
+
+ 1  1  2  -0.003987   -1.596190323     0.232051613    -0.000003226      0    0    0 #   C_R                                                                            
+ 2  1  2   0.045155   -0.977190323    -0.971748387    -0.000003226      0    0    0 #   C_R                                                                            
+ 3  1  2  -0.024575    0.371109677    -1.056248387    -0.000003226      0    0    0 #   C_R                                                                            
+ 4  1  2  -0.052381    1.062509677     0.099851613    -0.000103226      0    0    0 #   C_R                                                                            
+ 5  1  2  -0.024575    0.494309677     1.315351613    -0.000103226      0    0    0 #   C_R                                                                            
+ 6  1  2   0.045155   -0.851090323     1.358051613    -0.000003226      0    0    0 #   C_R                                                                            
+ 7  1  1  -0.030308    1.326109677     2.590051613    -0.000103226      0    0    0 #   C_3                                                                            
+ 8  1  1  -0.062612    2.855209677     2.449751613    -0.000003226      0    0    0 #   C_3                                                                            
+ 9  1  1  -0.030308    1.247009677    -2.308948387    -0.000003226      0    0    0 #   C_3                                                                            
+10  1  1  -0.062612    0.690509677    -3.736448387     0.000196774      0    0    0 #   C_3                                                                            
+11  1  1  -0.037205   -3.111990323     0.385051613    -0.000003226      0    0    0 #   C_3                                                                            
+12  1  4  -0.369160   -1.420690323     2.493451613    -0.000103226      0    0    0 #   N_2                                                                            
+13  1  4  -0.369160   -1.693590323    -2.018248387     0.000096774      0    0    0 #   N_2                                                                            
+14  1  3   0.063982    2.160909677     0.031151613    -0.000103226      0    0    0 #    H_                                                                            
+15  1  3   0.032373    1.047309677     3.184751613    -0.904103226      0    0    0 #    H_                                                                            
+16  1  3   0.032373    1.047209677     3.184951613     0.903696774      0    0    0 #    H_                                                                            
+17  1  3   0.023873    3.340909677     3.453251613    -0.000003226      0    0    0 #    H_                                                                            
+18  1  3   0.023873    3.221009677     1.916951613     0.907496774      0    0    0 #    H_                                                                            
+19  1  3   0.023873    3.221109677     1.916851613    -0.907403226      0    0    0 #    H_                                                                            
+20  1  3   0.032373    1.910909677    -2.234748387    -0.897603226      0    0    0 #    H_                                                                            
+21  1  3   0.032373    1.911009677    -2.234648387     0.897496774      0    0    0 #    H_                                                                            
+22  1  3   0.023873    1.523909677    -4.477548387     0.000196774      0    0    0 #    H_                                                                            
+23  1  3   0.023873    0.093509677    -3.950848387     0.915896774      0    0    0 #    H_                                                                            
+24  1  3   0.023873    0.093509677    -3.951048387    -0.915503226      0    0    0 #    H_                                                                            
+25  1  3   0.028834   -3.710490323    -0.546248387    -0.000203226      0    0    0 #    H_                                                                            
+26  1  3   0.028834   -3.442090323     0.941851613     0.906896774      0    0    0 #    H_                                                                            
+27  1  3   0.028834   -3.442090323     0.942151613    -0.906703226      0    0    0 #    H_                                                                            
+28  1  3   0.138340   -2.463690323     2.591451613    -0.000003226      0    0    0 #    H_                                                                            
+29  1  3   0.138340   -0.868790323     3.384151613    -0.000103226      0    0    0 #    H_                                                                            
+30  1  3   0.138340   -1.302090323    -2.982248387     0.000096774      0    0    0 #    H_                                                                            
+31  1  3   0.138340   -2.738090323    -2.002148387     0.000096774      0    0    0 #    H_                                                                            
+
+Bonds
+
+  1     4     1     2     #    C_R        C_R   
+  2     4     1     6     #    C_R        C_R   
+  3     2    11     1     #    C_3        C_R   
+  4     4     2     3     #    C_R        C_R   
+  5     6     2    13     #    C_R        N_2   
+  6     4     3     4     #    C_R        C_R   
+  7     2     9     3     #    C_3        C_R   
+  8     4     4     5     #    C_R        C_R   
+  9     5    14     4     #    H_         C_R   
+ 10     4     5     6     #    C_R        C_R   
+ 11     2     7     5     #    C_3        C_R   
+ 12     6     6    12     #    C_R        N_2   
+ 13     1     7     8     #    C_3        C_3   
+ 14     3    15     7     #    H_         C_3   
+ 15     3    16     7     #    H_         C_3   
+ 16     3    17     8     #    H_         C_3   
+ 17     3    18     8     #    H_         C_3   
+ 18     3    19     8     #    H_         C_3   
+ 19     1     9    10     #    C_3        C_3   
+ 20     3    20     9     #    H_         C_3   
+ 21     3    21     9     #    H_         C_3   
+ 22     3    22    10     #    H_         C_3   
+ 23     3    23    10     #    H_         C_3   
+ 24     3    24    10     #    H_         C_3   
+ 25     3    25    11     #    H_         C_3   
+ 26     3    26    11     #    H_         C_3   
+ 27     3    27    11     #    H_         C_3   
+ 28     7    28    12     #    H_         N_2   
+ 29     7    29    12     #    H_         N_2   
+ 30     7    30    13     #    H_         N_2   
+ 31     7    31    13     #    H_         N_2   
+
+Angles
+
+  1     2     2     1     6     #    X         C_R          X   
+  2     2     6     1    11     #    X         C_R          X   
+  3     2     2     1    11     #    X         C_R          X   
+  4     2     3     2    13     #    X         C_R          X   
+  5     2     1     2    13     #    X         C_R          X   
+  6     2     1     2     3     #    X         C_R          X   
+  7     2     2     3     9     #    X         C_R          X   
+  8     2     2     3     4     #    X         C_R          X   
+  9     2     4     3     9     #    X         C_R          X   
+ 10     2     5     4    14     #    X         C_R          X   
+ 11     2     3     4     5     #    X         C_R          X   
+ 12     2     3     4    14     #    X         C_R          X   
+ 13     2     4     5     6     #    X         C_R          X   
+ 14     2     6     5     7     #    X         C_R          X   
+ 15     2     4     5     7     #    X         C_R          X   
+ 16     2     1     6    12     #    X         C_R          X   
+ 17     2     1     6     5     #    X         C_R          X   
+ 18     2     5     6    12     #    X         C_R          X   
+ 19     1     5     7    15     #    X         C_3          X   
+ 20     1     8     7    16     #    X         C_3          X   
+ 21     1     5     7     8     #    X         C_3          X   
+ 22     1     8     7    15     #    X         C_3          X   
+ 23     1    15     7    16     #    X         C_3          X   
+ 24     1     5     7    16     #    X         C_3          X   
+ 25     1    17     8    19     #    X         C_3          X   
+ 26     1     7     8    19     #    X         C_3          X   
+ 27     1    17     8    18     #    X         C_3          X   
+ 28     1     7     8    18     #    X         C_3          X   
+ 29     1    18     8    19     #    X         C_3          X   
+ 30     1     7     8    17     #    X         C_3          X   
+ 31     1     3     9    10     #    X         C_3          X   
+ 32     1    10     9    20     #    X         C_3          X   
+ 33     1     3     9    21     #    X         C_3          X   
+ 34     1     3     9    20     #    X         C_3          X   
+ 35     1    20     9    21     #    X         C_3          X   
+ 36     1    10     9    21     #    X         C_3          X   
+ 37     1     9    10    22     #    X         C_3          X   
+ 38     1     9    10    24     #    X         C_3          X   
+ 39     1    22    10    24     #    X         C_3          X   
+ 40     1    23    10    24     #    X         C_3          X   
+ 41     1     9    10    23     #    X         C_3          X   
+ 42     1    22    10    23     #    X         C_3          X   
+ 43     1    25    11    26     #    X         C_3          X   
+ 44     1     1    11    26     #    X         C_3          X   
+ 45     1    26    11    27     #    X         C_3          X   
+ 46     1     1    11    25     #    X         C_3          X   
+ 47     1     1    11    27     #    X         C_3          X   
+ 48     1    25    11    27     #    X         C_3          X   
+ 49     3     6    12    29     #    X         N_2          X   
+ 50     3     6    12    28     #    X         N_2          X   
+ 51     3    28    12    29     #    X         N_2          X   
+ 52     3    30    13    31     #    X         N_2          X   
+ 53     3     2    13    31     #    X         N_2          X   
+ 54     3     2    13    30     #    X         N_2          X   
+
+Dihedrals
+
+  1     3    11     1     6    12     #    X         C_R       C_R          X   
+  2     2     6     1    11    26     #    X         C_R       C_3          X   
+  3     2     2     1    11    27     #    X         C_R       C_3          X   
+  4     3     2     1     6    12     #    X         C_R       C_R          X   
+  5     3     6     1     2    13     #    X         C_R       C_R          X   
+  6     2     6     1    11    25     #    X         C_R       C_3          X   
+  7     2     2     1    11    26     #    X         C_R       C_3          X   
+  8     3    11     1     2    13     #    X         C_R       C_R          X   
+  9     3     2     1     6     5     #    X         C_R       C_R          X   
+ 10     2     6     1    11    27     #    X         C_R       C_3          X   
+ 11     2     2     1    11    25     #    X         C_R       C_3          X   
+ 12     3     3     2     1     6     #    X         C_R       C_R          X   
+ 13     4    30    13     2     1     #    X         N_2       C_R          X   
+ 14     3     1     2     3     4     #    X         C_R       C_R          X   
+ 15     4    31    13     2     3     #    X         N_2       C_R          X   
+ 16     3     3     2     1    11     #    X         C_R       C_R          X   
+ 17     3     1     2     3     9     #    X         C_R       C_R          X   
+ 18     4    30    13     2     3     #    X         N_2       C_R          X   
+ 19     4    31    13     2     1     #    X         N_2       C_R          X   
+ 20     2     4     3     9    10     #    X         C_R       C_3          X   
+ 21     3     4     3     2    13     #    X         C_R       C_R          X   
+ 22     2     2     3     9    20     #    X         C_R       C_3          X   
+ 23     3     9     3     4    14     #    X         C_R       C_R          X   
+ 24     3     2     3     4     5     #    X         C_R       C_R          X   
+ 25     2     4     3     9    21     #    X         C_R       C_3          X   
+ 26     3     2     3     4    14     #    X         C_R       C_R          X   
+ 27     2     2     3     9    10     #    X         C_R       C_3          X   
+ 28     3     9     3     2    13     #    X         C_R       C_R          X   
+ 29     2     4     3     9    20     #    X         C_R       C_3          X   
+ 30     2     2     3     9    21     #    X         C_R       C_3          X   
+ 31     3     3     4     5     6     #    X         C_R       C_R          X   
+ 32     3     5     4     3     9     #    X         C_R       C_R          X   
+ 33     3     3     4     5     7     #    X         C_R       C_R          X   
+ 34     2     4     5     7    15     #    X         C_R       C_3          X   
+ 35     2     6     5     7    15     #    X         C_R       C_3          X   
+ 36     3     7     5     6    12     #    X         C_R       C_R          X   
+ 37     2     4     5     7     8     #    X         C_R       C_3          X   
+ 38     3     4     5     6    12     #    X         C_R       C_R          X   
+ 39     2     6     5     7     8     #    X         C_R       C_3          X   
+ 40     3     7     5     4    14     #    X         C_R       C_R          X   
+ 41     2     4     5     7    16     #    X         C_R       C_3          X   
+ 42     3     6     5     4    14     #    X         C_R       C_R          X   
+ 43     2     6     5     7    16     #    X         C_R       C_3          X   
+ 44     4    28    12     6     1     #    X         N_2       C_R          X   
+ 45     3     1     6     5     4     #    X         C_R       C_R          X   
+ 46     3     1     6     5     7     #    X         C_R       C_R          X   
+ 47     4    28    12     6     5     #    X         N_2       C_R          X   
+ 48     4    29    12     6     1     #    X         N_2       C_R          X   
+ 49     3     5     6     1    11     #    X         C_R       C_R          X   
+ 50     4    29    12     6     5     #    X         N_2       C_R          X   
+ 51     1    16     7     8    18     #    X         C_3       C_3          X   
+ 52     1    15     7     8    19     #    X         C_3       C_3          X   
+ 53     1     5     7     8    17     #    X         C_3       C_3          X   
+ 54     1    16     7     8    17     #    X         C_3       C_3          X   
+ 55     1    15     7     8    18     #    X         C_3       C_3          X   
+ 56     1     5     7     8    19     #    X         C_3       C_3          X   
+ 57     1    16     7     8    19     #    X         C_3       C_3          X   
+ 58     1    15     7     8    17     #    X         C_3       C_3          X   
+ 59     1     5     7     8    18     #    X         C_3       C_3          X   
+ 60     1    21     9    10    23     #    X         C_3       C_3          X   
+ 61     1     3     9    10    22     #    X         C_3       C_3          X   
+ 62     1    20     9    10    22     #    X         C_3       C_3          X   
+ 63     1    21     9    10    22     #    X         C_3       C_3          X   
+ 64     1     3     9    10    24     #    X         C_3       C_3          X   
+ 65     1    20     9    10    24     #    X         C_3       C_3          X   
+ 66     1    21     9    10    24     #    X         C_3       C_3          X   
+ 67     1     3     9    10    23     #    X         C_3       C_3          X   
+ 68     1    20     9    10    23     #    X         C_3       C_3          X   
+
+Impropers
+
+  1     1     1     2     6    11     #    C_R        X         X         X       nb==3   
+  2     1     2     1     3    13     #    C_R        X         X         X       nb==3   
+  3     1     3     2     4     9     #    C_R        X         X         X       nb==3   
+  4     1     4     3     5    14     #    C_R        X         X         X       nb==3   
+  5     1     5     4     6     7     #    C_R        X         X         X       nb==3   
+  6     1     6     1     5    12     #    C_R        X         X         X       nb==3   
+  7     2    12     6    28    29     #    N_2        X         X         X       nb==3   
+  8     2    13     2    30    31     #    N_2        X         X         X       nb==3   

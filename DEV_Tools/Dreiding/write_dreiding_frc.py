@@ -521,14 +521,18 @@ with open(dreiding_frc, 'w') as f:
     f.write('\n\n\n')
     f.write('#nonbond hbonding-Gasteiger \n\n') 
     
-    f.write('> E = D_hb*( 5*(R_hb/r)^12 - 6*(R_hb/r)^10 )*cos^4(theta_DHA) \n\n')  
+    f.write('> E = D_hb*( 5*(R_hb/r)^12 - 6*(R_hb/r)^10 )*cos^4(theta_DHA)\n')  
+    f.write('> NOTE: i----j-k, where\n')
+    f.write('>       i = acceptor atom (not-bonded to H-atom)\n')
+    f.write('>       j = donor atom (bonded to H-atom)\n')
+    f.write('>       k = H-atom with the H___HB atom type\n\n')
     
-    f.write('!Ver  Ref     I          J         D_hb       R_hb      theta_DHA\n')  
-    f.write('!---- ---   -----      -----     --------   --------    ---------\n') 
-    for i, j in ff.hbond_gasteiger:
-        hb = ff.hbond_gasteiger[(i, j)]
+    f.write('!Ver  Ref     I          J          K         D_hb       R_hb      theta_DHA\n')  
+    f.write('!---- ---   -----      -----      -----     --------   --------    ---------\n') 
+    for i, j, k in ff.hbond_gasteiger:
+        hb = ff.hbond_gasteiger[(i, j, k)]
         ver = hb.ver; ref = int(hb.ref)       
-        f.write('{:^3} {:>4}    {:<8}   {:<8} {:^10.4f} {:^10.4f}  {:^10.4f}\n'.format(ver, ref, i, j, hb.dhb, hb.rhb, hb.theta))
+        f.write('{:^3} {:>4}    {:<8}   {:<8}   {:<8} {:^10.4f} {:^10.4f}  {:^10.4f}\n'.format(ver, ref, i, j, k, hb.dhb, hb.rhb, hb.theta))
         
     ###########################################
     # Write Hbonding parameters for no-charge #
@@ -536,14 +540,18 @@ with open(dreiding_frc, 'w') as f:
     f.write('\n\n\n')
     f.write('#nonbond hbonding-no-charge \n\n') 
     
-    f.write('> E = D_hb*( 5*(R_hb/r)^12 - 6*(R_hb/r)^10 )*cos^4(theta_DHA) \n\n')  
+    f.write('> E = D_hb*( 5*(R_hb/r)^12 - 6*(R_hb/r)^10 )*cos^4(theta_DHA)\n')  
+    f.write('> NOTE: i----j-k, where\n')
+    f.write('>       i = acceptor atom (not-bonded to H-atom)\n')
+    f.write('>       j = donor atom (bonded to H-atom)\n')
+    f.write('>       k = H-atom with the H___HB atom type\n\n')
     
-    f.write('!Ver  Ref     I          J         D_hb       R_hb      theta_DHA\n')  
-    f.write('!---- ---   -----      -----     --------   --------    ---------\n') 
-    for i, j in ff.hbond_nocharge:
-        hb = ff.hbond_nocharge[(i, j)]
+    f.write('!Ver  Ref     I          J          K         D_hb       R_hb      theta_DHA\n')  
+    f.write('!---- ---   -----      -----      -----     --------   --------    ---------\n') 
+    for i, j, k in ff.hbond_nocharge:
+        hb = ff.hbond_nocharge[(i, j, k)]
         ver = hb.ver; ref = int(hb.ref)       
-        f.write('{:^3} {:>4}    {:<8}   {:<8} {:^10.4f} {:^10.4f}  {:^10.4f}\n'.format(ver, ref, i, j, hb.dhb, hb.rhb, hb.theta))
+        f.write('{:^3} {:>4}    {:<8}   {:<8}   {:<8} {:^10.4f} {:^10.4f}  {:^10.4f}\n'.format(ver, ref, i, j, k, hb.dhb, hb.rhb, hb.theta))
 
         
         

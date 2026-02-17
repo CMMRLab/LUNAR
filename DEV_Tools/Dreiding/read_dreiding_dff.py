@@ -289,21 +289,22 @@ class read:
                             hbonds_dict = self.hbond_nocharge
                         continue
                     
-                    if hbond_type in ['Gasteiger', 'no-charge'] and len(line) >= 7 and check_float(line[4]) and check_float(line[5]) and check_float(line[6]):
+                    if hbond_type in ['Gasteiger', 'no-charge'] and len(line) >= 8 and check_float(line[5]) and check_float(line[6]) and check_float(line[7]):
                         hb = Hbond()
                         ver = float(line[0])
                         ref = int(line[1])
                         type_i = line[2]
                         type_j = line[3]
-                        dhb    = float(line[4])
-                        rhb    = float(line[5])
-                        theta  = float(line[6])
+                        type_k = line[4]
+                        dhb    = float(line[5])
+                        rhb    = float(line[6])
+                        theta  = float(line[7])
                         hb.dhb = dhb
                         hb.rhb = rhb
                         hb.theta = theta
                         hb.ver = ver
                         hb.ref = ref
-                        hbonds_dict[(type_i, type_j)] = hb
+                        hbonds_dict[(type_i, type_j, type_k)] = hb
                         
                         
                         

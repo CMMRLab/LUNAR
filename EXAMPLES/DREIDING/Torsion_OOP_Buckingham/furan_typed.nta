@@ -1,0 +1,16 @@
+New type assignment file for furan_typed.data > atom_typing v1.11 / 14 April 2025 w/DREIDING atom-types
+style id
+1      O_R            
+2      C_R             
+3      C_R             
+4      C_R             
+5      C_R             
+6      H_              
+7      H_              
+8      H_              
+9      H_    
+
+# Testing this (it should do nothing)
+edge id
+
+1  H_  H_          

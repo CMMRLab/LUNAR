@@ -1,0 +1,200 @@
+
+
+Running atom_typing: v1.11 / 14 April 2025
+Using Python version: 3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 16:37:03) [MSC v.1929 64 bit (AMD64)]
+Using Python executable: C:\Users\jdkem\anaconda3\python.exe
+Assigning DREIDING atom-types
+Read in DREIDING\furan.data LAMMPS datafile
+
+
+Using mass_map dictionary to set element symbols ...
+Finding molecules ...
+Finding rings ...
+Finding fused-ring clusters ...
+Finding atoms hybridization ...
+
+
+
+
+Starting Gasteiger algorithm to find charges. WARNING the algortihm itself is independent of atomic
+positions and/or geometries, but the look up tables where Gasteirger parameters are intialized
+from requires knowledge of hybridization of certain elements (C, N, O, ...). The method employeed
+in this code is a hybrid approach by using bonding-topology (indepenent of atomic positions) and
+a minimization of VSEPR ideal angles (dependent on atomic positions) onto local angles of each
+atom in the system to find the hybridized state. This means for the best results of computed charge
+that the geometries (set by bonding and atomic positions) of your file should be consistant with the
+hybridized state of each atom: (IE Sp1 avg-angle ~180, Sp2 avg-angle ~120, Sp3 avg-angle ~109.5).
+When bonding-topology could not determine the hybridized state the VSEPR ideal angle difference
+from the avg-angle of bonded neighbors in the system will be minimized, such that there will always
+be a predicted hybridized state.
+
+Read in Gasteiger parameters from frc_files/Gasteiger_parameters.txt
+
+Finding Gasteiger Charge ....
+
+Gasteiger method converged
+Total charge of the system: 0.000000
+
+Cite charge method:
+    Ref : J.Gasteiger, M. Marseli, Iterative Equalization of Oribital Electronegatiity A Rapid
+          Access to Atomic Charges, Tetrahedron Vol 36 p3219 1980
+Using path from topofile to set parent_directory ...
+
+
+Elements found in system:
+- C
+- H
+- O
+
+
+Total system mass: 68.075
+--------------------------------------------Cluster Analysis-------------------------------------
+  molID     Molecule Size          Mass              %Mass           %Size      Molecule Formula
+-------------------------------------------------------------------------------------------------
+    1               9             68.08             100.00          100.00         C4-H4-O1    
+
+
+By-products criteria: {'method': 'mass', 'criteria': 0.0}
+------By Products Tally------
+Type                    Count
+-----------------------------
+
+
+----Inputs used for find_rings----
+Walked along elements  :  ['C', 'H', 'O']
+Checked for ring sizes :  [3, 4, 5, 6, 7]
+Total rings found      :  1
+0 atoms along a ring seam had to be partitioned amoung the ring
+types (To find accurate %Mass of ring type to entire system).
+Giving preference of partionioning in this order:
+- 6 member ring
+- 5 member ring
+- 7 member ring
+- 4 member ring
+- 3 member ring
+- 8 member ring
+- minimum ring size
+*NOTE: If count of rings exists, but no atoms exist for that ring, this means the
+atoms for that ring were partionted to other rings that the atoms belong to.*
+
+---------------------------------------------------------------------------------------------
+|          Ring            |           Count           |             %Ring count            |
+|          Type            |         of Rings          |            per all rings           |
+---------------------------------------------------------------------------------------------
+|            5             |             1             |               100.00               |
+---------------------------------------------------------------------------------------------
+|    Element      |     natoms      |       Mass       |      %Mass       |     %natoms     |
+---------------------------------------------------------------------------------------------
+|       C         |        4        |      48.04       |      70.58       |      44.44      |
+|       H         |        0        |       0.00       |       0.00       |       0.00      |
+|       O         |        1        |      16.00       |      23.50       |      11.11      |
+|      all        |        5        |      64.04       |      94.08       |      55.56      |
+---------------------------------------------------------------------------------------------
+
+
+----------------------------------Ringed Clusters------------------------------------
+Ring-Formula    Ring-Size     Ring-count    Ring-Mass-tally     natoms-tally
+-------------------------------------------------------------------------------------
+C4-O1                 5              1              64.04                5
+
+
+--------------------------------------------------Fused Ring Clusters-----------------------------------------------------
+FusedID         Size         Mass        %Mass        %Size       Nrings       %Rings                   FusedRing Formula
+--------------------------------------------------------------------------------------------------------------------------
+Sum percent mass: 0
+
+
+
+-----------------------------Hybridization Information-------------------------------
+     Atom-Type            natoms            Mass            %Mass           %natoms     
+-------------------------------------------------------------------------------------
+       Sp2-C                4              48.04            70.58            44.44      
+       all-C                4              48.04            70.58            44.44      
+       all-H                4               4.03             5.92            44.44      
+       Sp2-O                1              16.00            23.50            11.11      
+       all-O                1              16.00            23.50            11.11      
+
+
+---------------------------------------
+System Unit cell, volume, mass, density
+---------------------------------------
+lx:        20.000000  angstrom  
+ly:        20.000000  angstrom  
+lz:        20.000000  angstrom  
+volume:    8000.000000 angstrom^3
+mass:      68.075000  amu       
+density:    0.014130  g/cm^3    
+
+
+
+
+-----------------------------------------------------------------------------------------
+| Currently supported atom types (If you know your system has an atom type that is not  |
+| listed the force field specifc typing module needs to be added onto for that type).   |
+| If the atom type has a trailing (T) or (F) it means that atom type has flag settings  |
+| in the force field specifc typing module and lets you know the status of those flags. |
+| If the atom type has a trailing (Q) it means that the written datafile has the charge |
+| set for that atom type already (Mainly for PCFF-IFF or Metal/Mineral based FFs). For  |
+| most atom types with the trailing (Q) there will a flag in the specific atom typing   |
+| module to turn on or off this functionality (to give a more control of the code).     |
+|-------------------------------------   Carbon   --------------------------------------|
+|         C_11 (T)       C_1            C_R            C_RB           C_21Mid (T)       |
+|         C_2Mid         C_21 (T)       C_2            C_33 (T)       C_32 (T)          |
+|         C_31 (T)       C_3                                                            |
+|-------------------------------------  Hydrogen  --------------------------------------|
+|         H_                                                                            |
+|-------------------------------------   Oxygen   --------------------------------------|
+|         O_1            O_R            O_R1 (T)       O_2            O_31 (T)          |
+|         O_3                                                                           |
+|-------------------------------------  Nitrogen  --------------------------------------|
+|         N_1            N_R            N_R1 (T)       N_21Mid (T)    N_2Mid            |
+|         N_21 (T)       N_2            N_33 (T)       N_32 (T)       N_31 (T)          |
+|         N_3                                                                           |
+|-------------------------------------   Sulfer   --------------------------------------|
+|         S_3                                                                           |
+|-------------------------------------  Silicone  --------------------------------------|
+|         Si3                                                                           |
+|-------------------------------------  Fluorine  --------------------------------------|
+|         F_                                                                            |
+|-------------------------------------  Chlorine  --------------------------------------|
+|         Cl                                                                            |
+|-------------------------------------  Calcium   --------------------------------------|
+|         Ca                                                                            |
+|-------------------------------------  Bromine   --------------------------------------|
+|         Br                                                                            |
+|-------------------------------------Phosphorous --------------------------------------|
+|         P_3                                                                           |
+-----------------------------------------------------------------------------------------
+|                        Total count of supported atom types: 37                        |
+-----------------------------------------------------------------------------------------
+
+
+
+Final outcome of found atom types:
+Total atom count                   : 9
+Total Parameterized atom count     : 9
+Assumed Parameterized atom count   : 0
+Failed Parameterized atom count    : 0
+Total Parameterized atom perentage : 100.00
+
+------Atom types Tally------
+Type                   Count
+----------------------------
+C_R                        4
+H_                         4
+O_R1                       1
+pdb_file = skip, so skipping writing of optional .pdb file
+
+
+All outputs can be found in C:\Users\jdkem\Desktop\LUNAR\DREIDING directory
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.027469635009765625
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

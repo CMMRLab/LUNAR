@@ -1,0 +1,59 @@
+HEADER,  H2O.mol2  read w/ mol2SYBYL2lmp > atom_typing v1.11 / 14 April 2025 w/DREIDING atom-types > all2lmp: v1.22 / 14 April 2025  Class: d
+
+3 atoms
+2 bonds
+1 angles
+
+2 atom types
+1 bond types
+1 angle types
+
+-1.240800000 1.240800000 xlo xhi
+-0.693966667 0.887933333 ylo yhi
+-0.500000000 0.500000000 zlo zhi
+
+Atom Type Labels
+
+ 1  H___HB
+ 2  O_3
+
+Bond Type Labels
+
+ 1  H___HB-O_3
+
+Angle Type Labels
+
+ 1  X-O_3-X
+
+Masses
+
+1    1.00800000  #  H___HB
+2   15.99900000  #  O_3  
+
+Pair Coeffs  # lj/cut/coul/long
+
+1         0.00010000      2.84642140 #  H___HB
+2         0.09570000      3.03315378 #  O_3  
+
+Bond Coeffs  # harmonic
+
+1       350.00000000      0.98000000 #  H___HB     O_3   
+
+Angle Coeffs  # harmonic
+
+1        50.00000000    104.51000000 #  X         O_3          X   
+
+Atoms # full
+
+  1     1   2    0.000000    0.000000000     0.387933333     0.000000000      0    0    0 #  O_3/O
+  2     1   1    0.000000   -0.740800000    -0.193966667     0.000000000      0    0    0 #  H___HB/H
+  3     1   1    0.000000    0.740800000    -0.193966667     0.000000000      0    0    0 #  H___HB/H
+
+Bonds
+
+  1   1     2     1  
+  2   1     3     1  
+
+Angles
+
+  1   1     2     1     3  
