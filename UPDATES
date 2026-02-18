@@ -16,11 +16,11 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 17February2026)
+LUNAR (version 18February2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-17February2026     JDK         - all2lmp.py: Similar to how the Buckingham parameters are handled, all2lmp can
+18February2026     JDK         - all2lmp.py: Similar to how the Buckingham parameters are handled, all2lmp can
                                              now parameterize the hbonding parameters for a material as well.
 
 17February2026     JDK         - all2lmp.py: Added support for automatic parameterization of DREIDING Buckingham

@@ -686,8 +686,8 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, LJ_pair_coeffs, s
                 
     # Log results
     if hbonding:
-        r_in  = 9.0
-        r_out = 11.0
+        r_in  = 2.0
+        r_out = 10.0
         angle = 90.0
         donor = 'j'
         n     = 4
