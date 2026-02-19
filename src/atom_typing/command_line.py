@@ -298,7 +298,8 @@ class inputs:
         default_variables ={'-topo': self.topofile, '-bond': self.bondfile, '-dir': self.parent_directory, '-ext': self.newfile, '-ff': self.ff_name,
                             '-reset-charges': self.reset_charges, '-vdw-scale': self.vdw_radius_scale, '-pdb':self.pdb_file,
                             '-charge-file':self.chargefile, '-newfile':self.newfile, '-nta-comments':self.include_comments_nta,
-                            '-boundary':self.boundary, '-bond-reset':self.bonds_via_distance_override}
+                            '-boundary':self.boundary, '-bond-reset':self.bonds_via_distance_override, '-del-method': self.delete_atoms['method'],
+                            '-del-crit':self.delete_atoms['criteria']}
         
         # set tag/tag-input pair as empty string and update
         tags = {i:'' for i in supported_tags}
