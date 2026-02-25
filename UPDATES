@@ -16,10 +16,13 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 19February2026)
+LUNAR (version 25February2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+26February2026     JDK         - log_analysis.py: Added an option to break the serial correlation of data
+                                                  for cross-validation calculations.
+
 19February2026     JDK         - atom_typing.py: Fixed command line bug for deleting atoms. 
 
 18February2026     JDK         - all2lmp.py: Similar to how the Buckingham parameters are handled, all2lmp can

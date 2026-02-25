@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 12/19/2025
+# Last edited 2/26/2026
 #
 ************
 * Overview *
@@ -295,8 +295,11 @@
           lambda=<float or string>, where <float> sets the lambda parameter and <string> enables the automatic determination of lambda. For string
                                     inputs a few options exist. The full option is summarized as 'op<MinLambda,MaxLambda,NumLambda>-p', where
                                     'op' tells the code to optimize lambda using the minimum cross-validation error (CVE) determined by leave-
-                                    one-out cross validation.
-										   
+                                    one-out cross validation. The full option is summarized as:
+
+                                    'op<MinLambda, MaxLambda, NumLambda>-p'         -> Use cross-validation error minimum
+                                    'op<MinLambda, MaxLambda, NumLambda, Nevery>-p' -> Use cross-validation error minimum (serial correlated)
+								     
                                     '<MinLambda,MaxLambda,NumLambda>' allows users to set the bounds of lambdas to check (minimum bound is set
                                                                       by 'MinLambda' and maximum bound is set by 'MaxLambda'). The number of
                                                                       lambdas to check is set by 'NumLambda', where the lambdas are generated on
@@ -312,6 +315,15 @@
                                                                         MinLambda: 1e-2
                                                                         MaxLambda: 1e12
                                                                         NumLambda: 50
+																		
+                                    '<..., Nevery>'                   allows users to set an Nevery parameter to assign a one weight to those
+                                                                      locations and a zero weight everywhere else during the cross-validation
+                                                                      calculation. The purpose of this is to break serial correlation in data series.
+                                                                      Nevery can be any positive integer. If Nevery is set to zero, the code will
+                                                                      attempt to automatically determine the optimal Nevery parameter, by finding the
+                                                                      Nevery parameter that moves the optimized lambda parameter off of the MinLambda
+                                                                      bound. This is because serially correlated data often results in the smallest
+                                                                      amount of smoothing possible.
 																		  
                                     '-p' will plot the final CVE "spectra" so users can see how well the mimima appears. If '-p' is not present,
                                          the CVE "spectra" will not be plotted.
@@ -324,6 +336,7 @@
                                       lambda=op-p
                                       lambda=op<1e-4, 1e10, 25>
                                       lambda=op<1e-1, 1e12, 10>-p
+                                      lambda=op<1e-1, 1e12, 10, 3>-p
 									  
     - "LOWESS" 
         The method will smooth data with Locally Weighted Scatterplot Smoothing (LOWESS), sometimes called (locally weighted smoothing) LOESS. LOWESS
