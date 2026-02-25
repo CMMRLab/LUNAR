@@ -186,7 +186,7 @@ def parse_lambda_settings(lmbda):
 #################################################################
 # Function to increment lambda's, compute cve, and minimize cve #
 #################################################################
-def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel='', basename='', colors=None, cve_out='fine'):
+def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel='', basename='', colors=None, lambda_out='fine'):
     
     #--------------------------------------------------------------------------------------#
     # Check for user values based on lmbda_method = 'op<MinLambda,MaxLambda,NumLambda>' or #
@@ -263,13 +263,12 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
         nover       = 2 # Number of times we went over the break out conditions
         for i, n in enumerate(range(n_min, n_max+1, n_inc)):
             lmbda_method_loop = 'op<{}, {}, {}, {}>'.format(min_lambda, max_lambda, num_lambda, n)
-            lambda_loop, fig_loop = Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method_loop, cve_out='course')
-            x_loop, z_loop, cve_loop = Whittaker_Eilers_without_interpolation(x, y, d, lambda_loop, compute_cve=True, cve_mode=cve_mode, nevery=n)
+            course_optimized_lambda, fine_optimized_lambda, fig_loop = Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method_loop, lambda_out='both')
+            lambda_loop = min(course_optimized_lambda, fine_optimized_lambda)
             min_diff = lambda_loop - min_lambda
-            serial['x'].append( x_loop )
-            serial['z'].append( z_loop )
+            plt.close(fig_loop)
+            
             serial['n'].append( n )
-            serial['cve'].append( cve_loop )
             serial['lambda'].append( lambda_loop )
             serial['min_diff'].append( lambda_loop - min_lambda )
             
@@ -283,7 +282,7 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
         # Find the nevery, that bumps the computed lambda
         # off of the lower bound for the first time.
         min_diff = np.array(serial['min_diff'])
-        possible_indexes = np.where(min_diff > 0)[0]
+        possible_indexes = np.where(min_diff > min_lambda)[0]
         if len(possible_indexes) == 0:
             index = 0
         else: index = min(possible_indexes)
@@ -483,10 +482,13 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
                 print(f'Rendering {figname}')
                 fig.savefig(figname, dpi=300)
                 
-        if cve_out == 'fine':
+        if lambda_out == 'fine':
             return fine_optimized_lambda, fig
-        else:
+        elif lambda_out == 'course':
             return course_optimized_lambda, fig
+        elif lambda_out == 'both':
+            return course_optimized_lambda, fine_optimized_lambda, fig
+            
 
 
 ############################################################################################
