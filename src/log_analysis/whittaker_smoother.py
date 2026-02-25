@@ -186,7 +186,7 @@ def parse_lambda_settings(lmbda):
 #################################################################
 # Function to increment lambda's, compute cve, and minimize cve #
 #################################################################
-def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel='', basename='', colors=None):
+def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel='', basename='', colors=None, cve_out='fine'):
     
     #--------------------------------------------------------------------------------------#
     # Check for user values based on lmbda_method = 'op<MinLambda,MaxLambda,NumLambda>' or #
@@ -263,7 +263,7 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
         nover       = 2 # Number of times we went over the break out conditions
         for i, n in enumerate(range(n_min, n_max+1, n_inc)):
             lmbda_method_loop = 'op<{}, {}, {}, {}>'.format(min_lambda, max_lambda, num_lambda, n)
-            lambda_loop, fig_loop = Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method_loop)
+            lambda_loop, fig_loop = Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method_loop, cve_out='course')
             x_loop, z_loop, cve_loop = Whittaker_Eilers_without_interpolation(x, y, d, lambda_loop, compute_cve=True, cve_mode=cve_mode, nevery=n)
             min_diff = lambda_loop - min_lambda
             serial['x'].append( x_loop )
@@ -319,7 +319,7 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
         
         ax5.plot(serial['n'], serial['min_diff'], '-o', lw=5, ms=10, color='tab:blue', label='')
         ax5.axhline(y=0, ls='--', lw=3, zorder=1, color='black', alpha=1.0, label='Zero-line')
-        ax5.plot(opt_nevery, opt_mindiff, '*', ms=15, color='tab:orange', label='Selected nevery={}'.format(opt_nevery))
+        ax5.plot(opt_nevery, opt_mindiff, '*', ms=15, color='tab:orange', label='Selected nevery (x={}; y={})'.format(opt_nevery, opt_mindiff))
 
         
         ax5.set_xlabel('nevery', fontsize=fs)
@@ -482,7 +482,11 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
                 figname = basename+'_WE_LOO-CVE.jpeg'
                 print(f'Rendering {figname}')
                 fig.savefig(figname, dpi=300)
-        return fine_optimized_lambda, fig
+                
+        if cve_out == 'fine':
+            return fine_optimized_lambda, fig
+        else:
+            return course_optimized_lambda, fig
 
 
 ############################################################################################
