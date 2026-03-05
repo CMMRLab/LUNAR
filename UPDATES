@@ -14,6 +14,14 @@ Notes for formatting this file
 - Two empty lines should be placed between sections
 
 
+-------------------------------------------------------------------------------------------------------------
+LUNAR (version 5March2026)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+5March2026         JDK         - all array processing option of wildcards has better error handling during 
+                                 looping opertations.
+
 
 -------------------------------------------------------------------------------------------------------------
 LUNAR (version 25February2026)

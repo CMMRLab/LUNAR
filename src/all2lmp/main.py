@@ -30,6 +30,7 @@ import src.read_lmp as read_lmp
 import src.mol2lmp as mol2lmp
 import src.pdb2lmp as pdb2lmp
 import src.msi2lmp as msi2lmp
+import traceback
 import glob
 import time
 import sys
@@ -105,7 +106,9 @@ def main(topofile, nta_file, frc_file, assumed, parent_directory, newfile, atom_
                     parameters = main(file, nta_file, frc_file, assumed, parent_directory, newfile, atom_style, ff_class, use_auto_equivalence, use_assumed_auto_fill, reset_molids,
                                       reset_charges, write_txt_comments, write_bond_react, print_options, use_morse_bonds, include_type_labels, add2box, ignore_missing_parameters,
                                       shift, rotate, commandline_inputs, log)
-                except: pass
+                except: 
+                    stack_trace_string = traceback.format_exc()
+                    log.out(f'\nAn error occurred: {stack_trace_string}')
             print('\a') # Alert
         else: log.error(f'ERROR topofile: {topofile} unwrapped zero files or does not exist')
         return parameters

@@ -40,6 +40,7 @@ import src.auto_morse_bond.atom_info as atom_info
 import src.auto_morse_bond.bond_info as bond_info
 import src.io_functions as io_functions
 import src.write_lmp as write_lmp
+import traceback
 import warnings
 import glob
 import time
@@ -120,7 +121,9 @@ def main(topofile, morsefile, parent_directory, newfile, mass_map, min_bond_leng
                 try: # we dont want crashes to exit this loop
                     main(file, morsefile, parent_directory, newfile, mass_map, min_bond_length, coeffs2skip, radius_specs, alpha_specs, alpha_scale, files2write, atom_style,
                          zero_effected_xterms, bondbreak_scale, ff_class, include_type_labels, class2xe_update, include_rcut, commandline_inputs, log)
-                except: pass
+                except: 
+                    stack_trace_string = traceback.format_exc()
+                    log.out(f'\nAn error occurred: {stack_trace_string}')
             print('\a') # Alert
         else: log.error(f'ERROR topofile: {topofile} unwrapped zero files or does not exist')
         return

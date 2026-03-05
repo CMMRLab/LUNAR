@@ -15,6 +15,7 @@ import src.free_volume.out2console as out2console
 import src.free_volume.write_lmp as write_lmp
 import src.io_functions as io_functions
 import src.read_lmp as read_lmp
+import traceback
 import glob
 import time
 import sys
@@ -87,7 +88,9 @@ def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_direct
                     main(file, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory, compute_free_volume_distributions,
                          files2write, run_mode, probe_diameter, vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels,
                          commandline_inputs, log)
-                except: pass
+                except: 
+                    stack_trace_string = traceback.format_exc()
+                    log.out(f'\nAn error occurred: {stack_trace_string}')
             print('\a') # Alert
         else: log.error(f'ERROR topofile: {topofile} unwrapped zero files or does not exist')
         return 

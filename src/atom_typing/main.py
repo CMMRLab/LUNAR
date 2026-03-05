@@ -40,6 +40,7 @@ import src.atom_typing.write_lmp as write_lmp
 import src.atom_typing.write_nta as write_nta
 import src.atom_typing.write_pdb as write_pdb
 import src.io_functions as io_functions
+import traceback
 import glob
 import time
 import sys
@@ -123,7 +124,9 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
                     mm = main(file, bondfile, parent_directory, newfile, ff_name, delete_atoms, mass_map, bondorder, maxbonded, boundary,
                               vdw_radius_scale, reset_charges, print_options, commandline_inputs, bonds_via_distance_override, pdb_file, 
                               chargefile, include_comments_nta, log)
-                except: pass
+                except:
+                    stack_trace_string = traceback.format_exc()
+                    log.out(f'\nAn error occurred: {stack_trace_string}')
             print('\a') # Alert
         else: log.error(f'ERROR topofile: {topofile} unwrapped zero files or does not exist')
         return mm
