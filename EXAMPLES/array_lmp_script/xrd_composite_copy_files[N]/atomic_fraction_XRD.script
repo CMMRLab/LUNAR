@@ -1,0 +1,212 @@
+# Define the mode for LUNAR/array_lmp_script.py
+# by starting the line with "#MODE: python_code_goes_here" 
+#
+#MODE: # LAMMPS script find and replace. Rules:
+#MODE: #    find = string (recommend using $<string>)
+#MODE: #    replace = iterable that eval() understands
+#MODE: lmp_array = {'$<replicate>': [1, 2],
+#MODE:              '$<atomic_frac>': [0.0, 0.5, 1.0],
+#MODE:              '$<amorphous_density>': [0.125, 0.250]}
+#MODE:             
+#MODE: # Batch script find and replace. Rules:
+#MODE: #    find = string (recommend using $<string>)
+#MODE: #    replace = float, int, or string that eval() understands
+#MODE: batch_array = {'$<ncores>': '1',
+#MODE:                '$<inv_ncores>': '1/$<ncores>',
+#MODE:                '$<que>': 'meem3.q',
+#MODE:                '$<email>': 'jdkemppa@mtu.edu',
+#MODE:                '$<input>': '$<build_script>',
+#MODE:                '$<output>': '$<build_script>.out'}
+#MODE: 
+#MODE: # List of files in root diretory to copy into the build directories.
+#MODE: copy_files = ['*-atom.lmpmol',
+#MODE:               'graphite_AB_replicate_$<replicate>.data']
+#MODE:
+#MODE: # The full mode dictionary
+#MODE: mode = {'lmp_script': 'EXAMPLES/array_lmp_script/xrd_composite/atomic_fraction_XRD.script',
+#MODE:         'batch_script': '$<lmp_script>.sh',
+#MODE:         'build_script': '$<lmp_script>_$<replicate>',
+#MODE:         'build_directory': 'Graphite_Argon/Replicate_$<replicate>/AF_$<atomic_frac>_Density_$<amorphous_density>',
+#MODE:         'lmp_script_find': '$<lmp_script>',
+#MODE:         'build_script_find': '$<build_script>',
+#MODE:         'auto_submit': 'qsub',
+#MODE:         'lmp_array': lmp_array, 
+#MODE:         'batch_array': batch_array,
+#MODE:         'copy_files': copy_files}
+#
+#--------InputParameters---------
+
+variable        replicate           string $<replicate>
+variable        system              string Graphite_AB
+variable        pseed               equal  123456
+variable        ptemp               equal  300
+variable        FF                  string PCFF-IFF
+
+variable        crystal_atomic_frac equal $<atomic_frac>
+
+variable        amorphous_ff_mass   equal 39.948 #12.01115 #39.948
+variable        amorphous_ff_vdw_r0 equal 3.8400 #4.01000000 #3.8400
+variable        amorphous_ff_vdw_ep equal 0.24640 #0.06400000 #0.24640
+variable        amorphous_density   equal $<amorphous_density>
+variable        amorphous_typelabel string ar
+
+variable        element1            string "C"
+variable        element2            string "Ar"
+variable        xrd_elements        string "${element1} ${element2}"
+variable        xrd_2theta          string "10 160"
+
+variable        myid                string ${system}_rep_${replicate}_${element1}_${element2}_seed_${pseed}_AtomicFrac_${crystal_atomic_frac}_amorphous_density_${amorphous_density}
+
+
+#------------Initialization------------
+units           real
+dimension       3
+boundary        p p p
+newton          on
+
+
+#------------Force Field------------
+atom_style      full
+bond_style      class2
+angle_style     class2
+dihedral_style  class2
+improper_style  class2
+special_bonds   lj/coul 0 0 1
+
+kspace_style    pppm 1.0e-4
+kspace_modify   gewald 0.1
+pair_style      lj/class2/coul/long 12.0
+pair_modify     mix sixthpower
+
+neighbor        6.0 bin
+neigh_modify    delay 0 every 1 check yes one 100000 page 10000000
+
+# Read LAMMPS datafile and add room for the amorphous atom parameters
+read_data       copy_files[1] &
+                  extra/atom/types 1
+
+# Add Amorphous-atom parameters to model
+variable        ntypes        equal extract_setting(ntypes) # number of atom types
+variable        AmorTypeID    equal ${ntypes}
+mass            ${AmorTypeID} ${amorphous_ff_mass}
+pair_coeff      ${AmorTypeID} * ${amorphous_ff_vdw_ep} ${amorphous_ff_vdw_r0}
+labelmap atom   ${AmorTypeID} ${amorphous_typelabel}
+
+# Read Li-ion defined in molecule file
+molecule        amor_atom Ar-atom.lmpmol
+
+
+#------------Settings------------
+timestep        0.1
+variable        Time equal step*dt/1000
+
+
+#------------Thermosettings------------
+thermo          1
+thermo_style    custom step temp press density vol ke pe etotal evdwl ecoul epair ebond eangle edihed eimp v_Time
+log             ${myid}.log.lammps
+
+
+#------------Get crystalline box dimensions---------------
+variable        tmp             equal lx
+variable        crystral_lx     equal ${tmp}
+variable        tmp             equal ly
+variable        crystral_ly     equal ${tmp}
+variable        tmp             equal lz
+variable        crystral_lz     equal ${tmp}
+variable        tmp             equal density
+variable        crystal_density equal ${tmp}
+variable        tmp             equal vol
+variable        crystal_volume  equal ${tmp}
+variable        crystal_surface equal ${crystral_lx}*${crystral_ly}
+variable        crystal_natoms  equal count(all)
+
+print "Lx = ${crystral_lx}; Ly = ${crystral_ly}; Lz = ${crystral_lz}; Density = ${crystal_density}; crystral_natoms=${crystal_natoms}"
+
+
+#------------Compute number of atoms to insert and new Lz-add------------
+# Unit conversion variables
+variable        grams2amu equal 6.02214076e+23
+variable        amu2grams equal 1/${grams2amu}
+variable        angstromcubed2cmcubed equal 1e-24
+
+# Compute the amorphous atomic fraction
+if "${crystal_atomic_frac} > 0" then &
+  "variable     amorphous_natoms      equal ceil(${crystal_natoms}*((1 - ${crystal_atomic_frac})/${crystal_atomic_frac}))" &
+else &
+  "variable     amorphous_natoms      equal ${crystal_natoms}"
+print "amorphous_natoms = ${amorphous_natoms}"
+
+# Compute the amorphous volume
+variable        amorphous_mass_grams equal ${amorphous_natoms}*${amorphous_ff_mass}*${amu2grams}
+variable        amorphous_volume     equal (${amorphous_mass_grams}/${amorphous_density})/${angstromcubed2cmcubed}
+
+# Compute the addition Z-length needed
+variable        amorphous_lz         equal ${amorphous_volume}/${crystal_surface}
+variable        amorphous_mass_amu   equal ${amorphous_mass_grams}*${grams2amu}
+
+# Recompute density as a check
+variable        volume_cm3           equal ${amorphous_volume}*${angstromcubed2cmcubed}
+variable        mass_grams           equal ${amorphous_mass_grams}
+if "${volume_cm3} > 0" then &
+  "variable    density_compute equal ${mass_grams}/${volume_cm3}" &
+else &
+  "variable    density_compute equal 0"
+
+print "Number of amorphous atoms = ${amorphous_natoms}"
+print "Recomputed_density = ${density_compute}; Original_density = ${amorphous_density}"
+
+
+# Figure out new box dimension in Z-direction, change box, and define amorphous region
+if "${amorphous_natoms} > 0" then &
+  "variable     tmp_zhi equal zhi" &
+  "variable     old_zhi equal ${tmp_zhi}" &
+  "variable     new_zlo equal zlo" &
+  "variable     new_zhi equal ${old_zhi}+${amorphous_lz}" &
+  "change_box   all z final ${new_zlo} ${new_zhi}" &
+else &
+  "variable     tmp_zhi equal zhi" &
+  "variable     old_zhi equal ${tmp_zhi}" &
+  "variable     new_zlo equal zlo" &
+  "variable     new_zhi equal ${old_zhi}"
+
+variable        new_xlo equal xlo
+variable        new_xhi equal xhi
+variable        new_ylo equal ylo
+variable        new_yhi equal yhi
+region          insert  block ${new_xlo} ${new_xhi} ${new_ylo} ${new_yhi} ${old_zhi} ${new_zhi}
+
+
+#------------Use create atoms to generate amorphous gas------------
+if "${amorphous_natoms} > 0" then &
+  "variable     ntries equal 1e9" &
+  "variable     ntries equal floor(${ntries})" &
+  "variable     tmp equal atoms" &
+  "variable     n1 equal ${tmp}" &
+  "create_atoms 0 random ${amorphous_natoms} ${pseed} insert overlap 1.0 maxtry ${ntries} mol amor_atom ${pseed}" &
+  "variable     tmp equal atoms" &
+  "variable     n2 equal ${tmp}" &
+  "variable     ncreated equal v_n2-v_n1" &
+else &
+  "variable     ncreated equal 0"
+
+print "Created Natoms = ${ncreated}"
+
+#------------Delete graphite and reset box if Vf=0.0------------
+if "${crystal_atomic_frac} <= 0" then &
+  "group        graphite type cp" &
+  "delete_atoms group graphite bond yes mol yes" &
+  "variable     new_zlo equal ${new_zlo}+${amorphous_lz}" &
+  "change_box   all z final ${new_zlo} ${new_zhi}"
+
+
+#------------XRD data--------------
+compute         myxrd all xrd 1.541838 ${xrd_elements} 2Theta ${xrd_2theta} c 1 1 1 LP 1 echo
+
+#                                      Nevery  Nrepeat Nfreq  lo  hi         nbins value1     value2
+fix             2 all ave/histo/weight 1       1       1      ${xrd_2theta}  1000  c_myxrd[1] c_myxrd[2] mode vector file ${myid}.xrd start 0
+
+
+#------------Wrap up simulation------------
+run             0
+write_data      ${myid}.data

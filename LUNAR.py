@@ -175,6 +175,10 @@ class LUNAR:
         self.atom_typing_log = tk.Button(self.inputs_frame, text='atom_typing_log_processor', font=font_settings, command=self.atom_typing_log_in)
         self.atom_typing_log.grid(column=0, row=2)
         
+        # array_lmp_script button
+        self.array_lmp_script = tk.Button(self.inputs_frame, text='array_lmp_script', font=font_settings, command=self.array_lmp_script_GUI_in)
+        self.array_lmp_script.grid(column=1, row=2)
+        
         # Add padding to all frames in self.inputs_frame
         for widget in self.inputs_frame.winfo_children():
             widget.grid_configure(padx=xpadding, pady=ypadding)
@@ -361,6 +365,15 @@ class LUNAR:
 
         # Run GUI
         GUI(atl.settings, self.GUI_zoom)
+        return
+    
+    # array_lmp_script GUI Run
+    def array_lmp_script_GUI_in(self):
+        from src.array_lmp_script.GUI import GUI
+        import array_lmp_script as als
+
+        # Run GUI
+        GUI(als.settings, self.GUI_zoom)
         return
     
     # Function to pop-up scrollable text

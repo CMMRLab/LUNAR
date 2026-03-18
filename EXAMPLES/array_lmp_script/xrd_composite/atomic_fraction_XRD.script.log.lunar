@@ -1,0 +1,149 @@
+
+
+Running array_lmp_script: v1.2 / 18 March 2026
+Using Python version: 3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]
+Using Python executable: C:\Users\jdkem\AppData\Local\Programs\Python\Python314\python.exe
+
+
+
+Iterating through products: 
+
+Starting 1 of 12
+ - Build Directory: Graphite_Argon/Replicate_1/AF_0.0_Density_0.125
+ - Moving files from root directory: EXAMPLES/array_lmp_script/xrd_composite
+   * Ar-atom.lmpmol
+   * graphite_AB_25x25x25_PCFF.data
+ - Writing: atomic_fraction_XRD_1
+ - Writing: atomic_fraction_XRD_1.sh
+
+Starting 2 of 12
+ - Build Directory: Graphite_Argon/Replicate_1/AF_0.0_Density_0.25
+ - Moving files from root directory: EXAMPLES/array_lmp_script/xrd_composite
+   * Ar-atom.lmpmol
+   * graphite_AB_25x25x25_PCFF.data
+ - Writing: atomic_fraction_XRD_1
+ - Writing: atomic_fraction_XRD_1.sh
+
+Starting 3 of 12
+ - Build Directory: Graphite_Argon/Replicate_1/AF_0.5_Density_0.125
+ - Moving files from root directory: EXAMPLES/array_lmp_script/xrd_composite
+   * Ar-atom.lmpmol
+   * graphite_AB_25x25x25_PCFF.data
+ - Writing: atomic_fraction_XRD_1
+ - Writing: atomic_fraction_XRD_1.sh
+
+Starting 4 of 12
+ - Build Directory: Graphite_Argon/Replicate_1/AF_0.5_Density_0.25
+ - Moving files from root directory: EXAMPLES/array_lmp_script/xrd_composite
+   * Ar-atom.lmpmol
+   * graphite_AB_25x25x25_PCFF.data
+ - Writing: atomic_fraction_XRD_1
+ - Writing: atomic_fraction_XRD_1.sh
+
+Starting 5 of 12
+ - Build Directory: Graphite_Argon/Replicate_1/AF_1.0_Density_0.125
+ - Moving files from root directory: EXAMPLES/array_lmp_script/xrd_composite
+   * Ar-atom.lmpmol
+   * graphite_AB_25x25x25_PCFF.data
+ - Writing: atomic_fraction_XRD_1
+ - Writing: atomic_fraction_XRD_1.sh
+
+Starting 6 of 12
+ - Build Directory: Graphite_Argon/Replicate_1/AF_1.0_Density_0.25
+ - Moving files from root directory: EXAMPLES/array_lmp_script/xrd_composite
+   * Ar-atom.lmpmol
+   * graphite_AB_25x25x25_PCFF.data
+ - Writing: atomic_fraction_XRD_1
+ - Writing: atomic_fraction_XRD_1.sh
+
+Starting 7 of 12
+ - Build Directory: Graphite_Argon/Replicate_2/AF_0.0_Density_0.125
+ - Moving files from root directory: EXAMPLES/array_lmp_script/xrd_composite
+   * Ar-atom.lmpmol
+   * graphite_AB_25x25x25_PCFF.data
+ - Writing: atomic_fraction_XRD_2
+ - Writing: atomic_fraction_XRD_2.sh
+
+Starting 8 of 12
+ - Build Directory: Graphite_Argon/Replicate_2/AF_0.0_Density_0.25
+ - Moving files from root directory: EXAMPLES/array_lmp_script/xrd_composite
+   * Ar-atom.lmpmol
+   * graphite_AB_25x25x25_PCFF.data
+ - Writing: atomic_fraction_XRD_2
+ - Writing: atomic_fraction_XRD_2.sh
+
+Starting 9 of 12
+ - Build Directory: Graphite_Argon/Replicate_2/AF_0.5_Density_0.125
+ - Moving files from root directory: EXAMPLES/array_lmp_script/xrd_composite
+   * Ar-atom.lmpmol
+   * graphite_AB_25x25x25_PCFF.data
+ - Writing: atomic_fraction_XRD_2
+ - Writing: atomic_fraction_XRD_2.sh
+
+Starting 10 of 12
+ - Build Directory: Graphite_Argon/Replicate_2/AF_0.5_Density_0.25
+ - Moving files from root directory: EXAMPLES/array_lmp_script/xrd_composite
+   * Ar-atom.lmpmol
+   * graphite_AB_25x25x25_PCFF.data
+ - Writing: atomic_fraction_XRD_2
+ - Writing: atomic_fraction_XRD_2.sh
+
+Starting 11 of 12
+ - Build Directory: Graphite_Argon/Replicate_2/AF_1.0_Density_0.125
+ - Moving files from root directory: EXAMPLES/array_lmp_script/xrd_composite
+   * Ar-atom.lmpmol
+   * graphite_AB_25x25x25_PCFF.data
+ - Writing: atomic_fraction_XRD_2
+ - Writing: atomic_fraction_XRD_2.sh
+
+Starting 12 of 12
+ - Build Directory: Graphite_Argon/Replicate_2/AF_1.0_Density_0.25
+ - Moving files from root directory: EXAMPLES/array_lmp_script/xrd_composite
+   * Ar-atom.lmpmol
+   * graphite_AB_25x25x25_PCFF.data
+ - Writing: atomic_fraction_XRD_2
+ - Writing: atomic_fraction_XRD_2.sh
+
+
+Writing auto_script="auto_submit_atomic_fraction_XRD.sh"
+
+
+To recreate these outputs from a mode defined in a LAMMPS script
+copy and paste the following comments into that LAMMPS script:
+#
+#MODE: lmp_array = {'$<replicate>' : '[1, 2]',
+#MODE:              '$<atomic_frac>' : '[0.0, 0.5, 1.0]',
+#MODE:              '$<amorphous_density>' : '[0.125, 0.25]'}
+#MODE: 
+#MODE: batch_array = {'$<ncores>' : '1',
+#MODE:                '$<inv_ncores>' : '1.0',
+#MODE:                '$<que>' : 'meem3.q',
+#MODE:                '$<email>' : 'jdkemppa@mtu.edu',
+#MODE:                '$<input>' : '$<build_script>',
+#MODE:                '$<output>' : '$<build_script>.out'}
+#MODE: 
+#MODE: copy_files = ['*-atom.lmpmol',
+#MODE:               'graphite_AB_25x25x25_PCFF.data']
+#MODE: 
+#MODE: mode = {'lmp_script': 'EXAMPLES/array_lmp_script/xrd_composite/atomic_fraction_XRD.script',
+#MODE:         'batch_script': '$<lmp_script>.sh',
+#MODE:         'auto_script': 'auto_submit_$<lmp_script>',
+#MODE:         'build_script': '$<lmp_script>_$<replicate>',
+#MODE:         'build_directory': 'Graphite_Argon/Replicate_$<replicate>/AF_$<atomic_frac>_Density_$<amorphous_density>',
+#MODE:         'lmp_script_find': '$<lmp_script>',
+#MODE:         'build_script_find': '$<build_script>',
+#MODE:         'auto_submit': 'qsub',
+#MODE:         'lmp_array': lmp_array,
+#MODE:         'batch_array': batch_array,
+#MODE:         'copy_files': copy_files}
+
+
+Normal program termination
+
+
+Execution time in seconds: 0.08458685874938965
+
+
+Number of WARNING(s) and ERROR(s)
+  0 WARNING(s)
+  0 ERROR(s)

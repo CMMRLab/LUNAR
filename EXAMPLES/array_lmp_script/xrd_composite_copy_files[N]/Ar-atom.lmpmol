@@ -1,0 +1,16 @@
+HEADER,  ar.mol2  read w/ mol2SYBYL2lmp > all2lmp: v1.22 / 14 April 2025  Class: 1 > bond_react_merge: v1.17 / 14 April 2025 molecule file (filetag: data3)
+
+1 atoms
+0 bonds
+
+Types
+
+ 1  ar   #  ar
+
+Charges
+
+ 1    0.000000 #  ar
+
+Coords
+
+ 1     0.000000        0.000000        0.000000     #  ar

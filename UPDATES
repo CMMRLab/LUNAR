@@ -15,10 +15,17 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 5March2026)
+LUNAR (version 18March2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+18March2026        JDK         - array_lmp_script.py: Added this GUI, which allows for the generation of many
+                                                      LAMMPS simulaitions (potentially thousands) and batch
+                                                      scripts from a template. The template has simple find
+                                                      and replace operations. Few more details launch the GUI
+                                                      and read the "Quick help" page. There are also a few
+                                                      examples given.
+
 5March2026         JDK         - all array processing option of wildcards has better error handling during 
                                  looping opertations.
 

@@ -1,0 +1,272 @@
+# The "#" character is a comment character, where anything trailing the "#"
+# character will be ignored. A "#" character can be shown by placing the "!"
+# character before the "#" (e.g. "!# LAMMPS" will show "# LAMMPS" in pop-up
+# page. This file is meant to provide the text to display in the popup when
+# pressing the "Quick help" button.
+#
+# Please note that if editing this file all spaces are created using the space
+# bar and not the tab key, since this text is read and directly used with Tkinter
+# scrollable Text widget, it is important to maintain proper spacing.
+# Indentations will use two spaces.
+#
+# The maximum column position should be restricted to 145.
+#
+# Last edited 10/23/2025
+#
+************
+* Overview *
+************
+
+  LUNAR/array_lmp_script.py is meant to provide a general purpose code for the creation of large number of LAMMPS input scripts and the 
+  accompanying job submission files (e.g., SLURM, PBS, or platform-specific batch files) by using a parameterized template system and a
+  short configuration file. Given a set of parameter ranges (temperatures, densities, potentials, random seeds, etc.) and a template 
+  containing placeholders for LAMMPS commands and header metadata, the generator substitutes values, writes uniquely named input files,
+  produces matching batch scripts, and allows for the building of nested directory structures.
+  
+**********
+* Inputs *
+**********
+
+  lmp_script
+    Button to load in a LAMMPS script that has find and replace values in it. You may also directly type the filename in the entry to the right
+    of the button as well. This script serves as the "template" script that has find and replace style strings inside. It is advised to use unique
+    strings as the find string. It is recommended to treat them like "static LAMMPS variables" or "protected bash like variables" but use "arrow
+    keys" instead of "curly braces". For example your find string could be a variable like name as such $<variable>. This syntax is not required
+    as the find operation uses Python's varaible.replace(old, new), however making the old string as unique as possible is good practice to avoid
+    accidently changing other parts of you LAMMPS template script.
+	
+  lmp_script_find
+    An entry to supply a find string that is used in batch_script, auto_script, and build_script that sets the find pattern for that is replaceable
+    with the root filename of lmp_script. This allows for naming your batch_script, auto_script, and build_script to use the root filename of 
+    lmp_script easily and allows the user to control the find string.
+	
+  batch_script
+  
+    Button to load in a Batch script that has find and replace values in it. You may also directly type the filename in the entry to the right
+    of the button as well. This script serves as the "template" script that has find and replace style strings inside. It is advised to use unique
+    strings as the find string. It is recommended to treat them like "protected bash like variables" but use "arrow keys" instead of "curly
+    braces". For example your find string could be a variable like name as such $<variable>. This syntax is not required as the find operation
+    uses Python's varaible.replace(old, new), however making the old string as unique as possible is good practice to avoid accidently changing 
+    other parts of you Batch template script.
+	
+  mode file
+    Button to load in a "mode file" used to setup all settings within the array_lmp_script GUI. You may also directly type the filename in the
+    entry to the right of the button as well. The mode file uses Python data structures to store all values to input as settings. You may write
+    these mode files manually or setup the GUI as you wish and then click "save settings as mode" button, to automatically write the mode file. 
+    All mode files are by default stored in LUNAR/src/array_lmp_script/modes/ directory, which is also the default location to write the mode
+    files, along with the default path that is used to open up the file dialog selection box to load in a mode file. If you plan to manually
+    write a mode file, it is best to take one that is already built and modify as needed.
+	
+  Replacing lmp_script when loading mode
+    During loading of a mode file, it maybe desired to load in the lmp_script that was saved to the mode file or to not load in that file. If this
+    Boolean is set to False, the lmp_script path will not be updated with what is saved in the mode file, where as if the Boolean is True, the 
+    lmp_script path will be updated with what is saved in the mode file.
+	
+  auto_script
+    An entry to supply the name of the auto-batch submission script. The name of the script set in lmp_script can be accessed using the find pattern
+    set in lmp_script_find entry.(e.g. say the lmp_script = "mix_molecules.script" and lmp_script_find = "$<lmp_script>" and say we wanted the auto
+    submission script to be called "auto_sub_mix_molecules.sh", then we can set auto_script manually or set it as "auto_sub_$<lmp_script>"). This 
+    script is useful for the automatic submission of generated LAMMPS scripts and batch files, however careful usage needs to be used to avoid
+    writing over already simulated files if adding to a directory that already has simulations running or careful usage to avoid submitting to
+    many simulations, taking all the resources from your high performance computing system.
+	
+  auto_submit
+    An entry to supply the submission command to write in the auto_submit script (e.g. slurm=sbatch, PBS=qsub, etc ...).
+	
+  build_script
+    An entry to supply the build script name that is generated during the execution of this code. Similarly to auto_script, the lmp_script name can
+    be accessed by using the find pattern set in lmp_script_find entry, so you can generate LAMMPS scripts with the same name or added additional
+    characters to the newly generated LAMMPS scripts.
+	
+  build_script_find
+    An entry to supply a find string that is used in batch_array "replace column" that sets the find pattern to replace with the root filename of
+    the newly generated build_script name. This allows for the easy setting of your build script name to be placed in your batch file.
+	
+  build_directory
+    An entry to supply the relative path for a build directory layout. The relative path is in relation to the root directory of the lmp_script. 
+    This code will build directories if the relative path does not exits. All of the "find" strings set in lmp_array (discussed below) are
+    accessible such that directory names can be built based on the cartesian product results. For example consider the following:
+	
+      lmp_array = {'$<replicate>': [1, 2, 3],
+                   '$<atomic_frac>': [0.0]}
+				   
+      build_directory = 'Outputs/Replicate_$<replicate>/AF_$<atomic_frac>'
+	  
+    then, the following directories relative to lmp_script, will be built:
+      - Outputs/Replicate_1/AF_0.0/BUILD_RESULTS
+      - Outputs/Replicate_2/AF_0.0/BUILD_RESULTS
+      - Outputs/Replicate_3/AF_0.0/BUILD_RESULTS
+
+    where all the built LAMMPS scripts and batch script (set by the build_script name) will be in the BUILD_RESULTS tree of the directory. The '.'
+    dot character can be used to store all the newly generated LAMMPS scripts and batch scripts in the same directory as the lmp_script. However,
+    careful consideration about the build_script name should be made to avoid over writting your template script.
+  
+*************
+* lmp_array *
+*************
+
+  Before going into details about the formalities of the lmp_array find and replace method, we first need to discuss the cartensian product. The
+  cartensian product is a set theory combination of N-number of sets that generates a unique pairing of all possible combinations. For example, 
+  say we have sets:
+    A = {x, y, z}
+    B = {1, 2, 3}
+	
+    Then the cartensian product of set_A and set_B can be visualized as (A, B)
+           1      2      3
+     x   (x,1)  (x,2)  (x,3)
+     y   (y,1)  (y,2)  (y,3)
+     z   (z,1)  (z,2)  (z,3)
+	 
+  This is useful for generating a "matrix" of different simulation parameters which can then be inserted into a LAMMPS script using the find and
+  replace methods. For example say we had the following part of a LAMMPS script and lmp_array dictionary:
+    
+    !# Small LAMMPS script below
+    !#----------------InputParameters----------------
+    variable        replicate          string $<replicate>
+    variable        seed               equal  $<seed>
+    variable        ptemp              equal  300
+    variable        FF                 string PCFF-IFF
+	
+    lmp_array = {'$<replicate>': [1, 2, 3],
+                 '$<seed>': [12345, 23456]}
+
+  Then the $<replicate> and $<seed> find strings would be replaced with the 3x2 cartensian product (e.g [(1, 12345), (1, 23456), (2, 12345),
+  ...]). NOTE: the only thing that must match is the dictionary keys (find strings) and the strings in the LAMMPS script. The dictionary values
+  are then a Python iterable like a list, tuple, range(), np.arange, ... which set the parameters to insert.
+
+***************
+* batch_array *
+***************
+
+  The batch array dictionary is similar to the lmp_array dictionary, but the values are not an iterable, rather they are a single valued string. 
+  The purpose of this array is to allow for finding and replacing strings in a template batch file. For example say we had the following part of
+  a batch script and batch_array dictionary:
+    !# Small Slurm batch script below 
+    !#!/bin/bash
+    !#
+    !#PBS -q $<que>
+    !#PBS -A $<account>
+    !#PBS -l select=1:ncpus=192:mpiprocs=$<ncores>
+    !#PBS -M $<email>
+	
+    batch_array = {'$<ncores>': 32,
+                   '$<que>': 'standard',
+                   '$<email>': 'MyEmail.HPC.com',
+                   '$<account>': '123abc'}
+				   
+    Then the $<que> in the template batch script would be replaced with 'standard', the $<account> in the batch script would be replaced with 
+    '123abc', and so on. Additionally the lmp_script root filename can be accessed by using the find pattern set in lmp_script_find entry.
+	
+	
+**************
+* copy_files *
+**************
+
+  The copy files list allows for files to be copied into the build_directory. This will allow things like LAMMPS datafiles, molecule files, 
+  potential files, etc ... to be able to be automatically placed next to each LAMMPS script in each build directory. In addition, prior to
+  the files being copy and pasted, they are search for the find and replace strings for lmp_array. Thus you may set a find string in a file
+  name and have it be replaced with some value. This is intended for uses like:
+    lmp_array  = {'$<replicate>': [1, 2, 3, 4, 5]}
+    copy_files = ['graphite_AB_replicate_$<replicate>.data', 'some_other_file.ext']
+    mode       = {'build_directory': 'Graphite_Argon/Replicate_$<replicate>'}
+	
+    with the following directory layout:
+      $ tree .
+      ├── Ar-atom.lmpmol
+      ├── atomic_fraction_XRD.script
+      ├── atomic_fraction_XRD.script.sh
+      ├── graphite_AB_replicate_1.data
+      ├── graphite_AB_replicate_2.data
+      ├── graphite_AB_replicate_3.data
+      ├── graphite_AB_replicate_4.data
+      └── graphite_AB_replicate_5.data
+	  
+    where graphite_AB_replicate_1.data, graphite_AB_replicate_2.data, ... all are different starting configurations and should only be 
+    copied into a build directory with the same replicate number in the script and folder.	
+	
+  In addition Unix path expansion rules can be provided to the each of copy file string, to find filenames and paths to process in a for
+  loop. This is accomplished with the Python "glob" library, which means all "glob" options are supported. A basic overview of "glob" is
+  that the "*" character provides general wildcard matching, where the number of characters is arbitrary. The "?" character provides "per
+  index" wild card matching. The "glob" library does not support tilde expansion. If you want to transfer all files in the root directory
+  of lmp_script, set the copy_file name to "*", which will match with all files in the root directory.
+  
+  Lastly, if you want to use a copy_files, filename in a find and replace operation in a LAMMPS template script, the syntax is as follows:
+    copy_files[N]
+	
+    where N is the index in the copy_files list (or files stack) starting at index 0 and going to N-number of files in files list/files stack.
+    For the files stack the indexing goes "top to bottom", where the first entry is index 0 and the last entry is N-entries minus 1. For
+    example, say you had the following:
+      copy_files = ['graphite_AB_replicate_$<replicate>.data', 'some_other_file.ext'] !# where $<replicate> replaced by the lmp_array operations.
+	
+      !# LAMMPS script snippet
+      !# Read LAMMPS datafile but with a copy_files, find and replace operation
+      read_data       copy_files[1]
+	
+    Then the template script would be used to generate the following build scripts:
+
+      !# LAMMPS script snippet for: Replicate 1
+      !# Read LAMMPS datafile but with a copy_files, find and replace operation
+      read_data       graphite_AB_replicate_1.data
+	
+      !# LAMMPS script snippet for: Replicate 2
+      !# Read LAMMPS datafile but with a copy_files, find and replace operation
+      read_data       graphite_AB_replicate_2.data
+	
+      :
+      :
+      :
+	  
+    Please note, this is one method for handling the complexity of copying files and communicating that copied file name into the LAMMPS build
+    script. The above example could also be handled by using LAMMPS variables with the following example:
+  
+      !#--------InputParameters---------
+      variable        replicate           string $<replicate>  !# will be updated with lmp_array find and replace
+    
+      !# LAMMPS script snippet
+      !# Read LAMMPS datafile but with a LAMMPS variable making the communication between find and replace operations
+      read_data       graphite_AB_replicate_${replicate}.data
+	  
+    Finally, this copy_files[N] syntax only applies to files that do not use Unix path expansion rules, as that generates another nesting of indexing
+    that can be hard to control the ordering of the matched files. So if you plan to use Unix path expansion rules, it would be better to handle file
+    name communication using the coupling of LAMMPS variables and find/replace operations to those LAMMPS variables.
+	
+**************************************
+* Defining a mode in a LAMMPS script *
+**************************************
+
+  A mode can also be defined in a LAMMPS script using the following format "#MODE: python_code_goes_here" where "#MODE:" is the comment that 
+  sets the following text as python code. For example by placing the following comments in a LAMMPS script, the mode will be updated during
+  the exexution of LUNAR/array_lmp_script.py.
+  
+    !#MODE: # LAMMPS script find and replace. Rules:
+    !#MODE: #    find = string (recommend using $<string>)
+    !#MODE: #    replace = iterable that eval() understands
+    !#MODE: lmp_array = {'$<replicate>': [1, 2],
+    !#MODE:              '$<atomic_frac>': [0.0, 0.5, 1.0],
+    !#MODE:              '$<amorphous_density>': [0.125, 0.250]}
+    !#MODE:             
+    !#MODE: # Batch script find and replace. Rules:
+    !#MODE: #    find = string (recommend using $<string>)
+    !#MODE: #    replace = float, int, or string that eval() understands
+    !#MODE: batch_array = {'$<ncores>': '1',
+    !#MODE:                '$<inv_ncores>': '1/$<ncores>',
+    !#MODE:                '$<que>': 'meem3.q',
+    !#MODE:                '$<email>': 'jdkemppa@mtu.edu',
+    !#MODE:                '$<input>': '$<lmp_script>',
+    !#MODE:                '$<output>': '$<lmp_script>.out'}
+    !#MODE: 
+    !#MODE: # List of files to copy into the build directories (find
+    !#MODE: # and replace operations work on these file strings).
+    !#MODE: copy_files = ['Ar-atom.lmpmol',
+    !#MODE:               'graphite_AB_replicate_$<replicate>.data']	
+    !#MODE: 
+    !#MODE: # The full mode dictionary
+    !#MODE: mode = {'lmp_script': 'EXAMPLES/array_lmp_script/xrd_composite/atomic_fraction_XRD.script',
+    !#MODE:         'auto_script': 'NEW_auto_submit_$<lmp_script>',
+    !#MODE:         'build_script': '$<lmp_script>_$<replicate>',
+    !#MODE:         'build_directory': 'Out/Replicate_$<replicate>/AF_$<atomic_frac>_Density_$<amorphous_density>',
+    !#MODE:         'auto_submit': 'qsub',
+    !#MODE:         'lmp_array': lmp_array, 
+    !#MODE:         'batch_array': batch_array,
+    !#MODE:         'copy_files': copy_files}
+  
