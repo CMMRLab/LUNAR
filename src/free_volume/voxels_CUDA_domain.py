@@ -792,7 +792,10 @@ class analyze:
                 vdw_radii = vdw_radius[atom.element]
             elif vdw_method in ['class1', 'class2']:
                 sigma = m.pair_coeffs[atom.type].coeffs[1]
-                vdw_radii = sigma/2
+                if vdw_method == 'class1':
+                    vdw_radii = ( (2**(1/6))*sigma )/2
+                if vdw_method == 'class2':
+                    vdw_radii = sigma/2
             else: log.error(f'ERROR vdw_method {vdw_method} not supported')
             
             if v.pflags.count('f') == 3: atom_edgeflag = False

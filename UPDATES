@@ -15,10 +15,16 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 18March2026)
+LUNAR (version 20March2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+20March2026        JDK         - free_volume.py: Fixed sigma scaling issue for 12/6 LJ potential for vdw-radii
+                                                 calculations.
+
+20March2026        JDK         - all2lmp.py: Fixed DREIDING H-bond bug, if parameters could not be found it
+                                             would crash.
+
 18March2026        JDK         - array_lmp_script.py: Added this GUI, which allows for the generation of many
                                                       LAMMPS simulaitions (potentially thousands) and batch
                                                       scripts from a template. The template has simple find

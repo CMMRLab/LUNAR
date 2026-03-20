@@ -740,8 +740,9 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, LJ_pair_coeffs, s
             i = type_to_number[type_i]
             j = type_to_number[type_j]
             k = type_to_number[type_k]
-            dhb, rhb, theta = hbonding[triplet]['no-charge']
-            log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(i, j, k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))
+            if 'no-charge' in hbonding[triplet]:
+                dhb, rhb, theta = hbonding[triplet]['no-charge']
+                log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(i, j, k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))
         for key in type_line:
             i, j, type_i, type_j = key 
             epsilon_ij, sigma_ij = type_line[key]
@@ -759,8 +760,9 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, LJ_pair_coeffs, s
             i = type_to_number[type_i]
             j = type_to_number[type_j]
             k = type_to_number[type_k]
-            dhb, rhb, theta = hbonding[triplet]['no-charge']
-            log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(type_i, type_j, type_k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))
+            if 'no-charge' in hbonding[triplet]:
+                dhb, rhb, theta = hbonding[triplet]['no-charge']
+                log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(type_i, type_j, type_k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))
         for key in type_line:
             i, j, type_i, type_j = key 
             epsilon_ij, sigma_ij = type_line[key]
@@ -778,8 +780,9 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, LJ_pair_coeffs, s
             i = type_to_number[type_i]
             j = type_to_number[type_j]
             k = type_to_number[type_k]
-            dhb, rhb, theta = hbonding[triplet]['Gasteiger']
-            log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(i, j, k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))
+            if 'Gasteiger' in hbonding[triplet]:
+                dhb, rhb, theta = hbonding[triplet]['Gasteiger']
+                log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(i, j, k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))
         for key in type_line:
             i, j, type_i, type_j = key 
             epsilon_ij, sigma_ij = type_line[key]
@@ -797,8 +800,9 @@ def find_DREIDING_non_bond(m, frc, BADI, use_auto_equivalence, LJ_pair_coeffs, s
             i = type_to_number[type_i]
             j = type_to_number[type_j]
             k = type_to_number[type_k]
-            dhb, rhb, theta = hbonding[triplet]['Gasteiger']
-            log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(type_i, type_j, type_k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))       
+            if 'Gasteiger' in hbonding[triplet]:
+                dhb, rhb, theta = hbonding[triplet]['Gasteiger']
+                log.out('pair_coeff {:<6} {:<6} hbond/dreiding/lj {:<6} {:<4} {:<16.8f} {:<16.8f} {:<6} {}'.format(type_i, type_j, type_k, donor, dhb, rhb, n, '${r_in} ${r_out} ${angle}'))       
         for key in type_line:
             i, j, type_i, type_j = key 
             epsilon_ij, sigma_ij = type_line[key]
