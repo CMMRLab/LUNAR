@@ -15,10 +15,15 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 20March2026)
+LUNAR (version 7April2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+7April2026         JDK         - LUNAR/LAMMPS/CLASS2 - removed this folder, because these files where merged
+                                                       into the LAMMPS 30Mar2026 feature release (no longer
+                                                       need to package these with LUNAR because they are no
+                                                       packaged in LAMMPS).
+
 20March2026        JDK         - free_volume.py: Fixed sigma scaling issue for 12/6 LJ potential for vdw-radii
                                                  calculations.
 
