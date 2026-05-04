@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-April 14th, 2025
+Revision 1.1
+May 4, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -48,6 +48,11 @@ def get_box_parameters(m):
     yz = m.yz
     xz = m.xz
     xy = m.xy
+    
+    # Avoid div by zero for h_inv
+    if lx == 0: lx = 1
+    if ly == 0: ly = 1
+    if lz == 0: lz = 1
     
     # Generate transformation matrix to convert to
     # and from fractional or Cartesian coordinates

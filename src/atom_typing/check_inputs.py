@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-September 19th, 2023
+Revision 1.2
+May 4, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -17,7 +17,7 @@ def safety(topofile, bondfile, parent_dir, newfile, ff_name, delete_atoms, mass_
     return_boolean = True
     
     # Check if topofile is valid. If passed is empty switch return_boolean and print error
-    topo_exts = ['.mol', '.data', '.dat', 'sdf', '.mol2', '.smiles', '.pdb'] # valid extensions
+    topo_exts = ['.mol', '.data', '.dat', 'sdf', '.mol2', '.smiles', '.pdb', '.cif'] # valid extensions
     passed = [i for i in topo_exts if i in topofile]
     if not passed:
         return_boolean = False

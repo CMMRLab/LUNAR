@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-December 12th, 2023
+Revision 1.4
+May 4, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -10,6 +10,8 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+import src.periodicity as periodicity
+from itertools import product
 import time
 import math
 
@@ -57,6 +59,7 @@ def get_vdw_radii(element, vdw_radius, log):
     else: 
         log.out(f'\nERROR {element} element not in vdw_radius dictionary')
         log.error(f'inside bonds_via_distance.py PLEASE ADD {element}')
+        return 0
         
         
 ################################################################
@@ -77,214 +80,146 @@ def compute_standard_deviation(data):
   return math.sqrt(variance)
 
 
-###################################################################################
-# Function to compute distance when math.dist is not available. math.dist will be #
-# quicker but for some reason not all python has math.dist .... compute_distance  #
-# will be time optimized but still will be slower then math.dist.                 #
-###################################################################################        
-def compute_distance(x1, y1, z1, x2, y2, z2):
-    dx = x1 - x2; dy = y1 - y2; dz = z1 - z2;
-    return math.sqrt(dx*dx + dy*dy + dz*dz)
-
-        
-##################################################################################
-# Function to check if the atom is near a box edge. Then build near edge dict to #
-# use as a look up table to aviod multiple re-calculations as the loops progress #
-##################################################################################
-def check_near_edge(x, y, z, max_from_edge, xlo, xhi, ylo, yhi, zlo, zhi):
-    if abs(x - xlo) < max_from_edge or abs(x + xlo) < max_from_edge: pbcflag = True
-    elif abs(x - xhi) < max_from_edge or abs(x + xhi) < max_from_edge: pbcflag = True        
-    elif abs(y - ylo) < max_from_edge or abs(y + ylo) < max_from_edge: pbcflag = True
-    elif abs(y - yhi) < max_from_edge or abs(y + yhi) < max_from_edge: pbcflag = True
-    elif abs(z - zlo) < max_from_edge or abs(z + zlo) < max_from_edge: pbcflag = True
-    elif abs(z - zhi) < max_from_edge or abs(z + zhi) < max_from_edge: pbcflag = True
-    else: pbcflag = False
-    return pbcflag
-
-
-###########################################################
-# Function to find N-number of possible periodic postions #
-###########################################################
-def find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=15):
-    postions_distance = {} # {distance from center : (pbc-x, pbc-y, pbc-z) }
-    for ixlx, iyly, izlz in scaled_images:
-        x1i = x1+ixlx; y1i = y1+iyly; z1i = z1+izlz;
-        dist_from_center = compute_distance(x1i, y1i, z1i, cx, cy, cz)
-        postions_distance[dist_from_center] = (x1i, y1i, z1i)
-    postions_distance = dict(sorted(postions_distance.items(), key=lambda x:abs(x[0]) )) # [0=keys;1=values]
-    positions = []
-    for N, dist in enumerate(postions_distance):
-        if N < Npos: positions.append(postions_distance[dist])
-        else: break
-    return positions
-
-
-############################################################################################
-# Function to find N-number of closets neighboring domains to an atomic position (x, y, z) #
-############################################################################################
-def find_closets_domains(domain, domain_graph, domainID, x, y, z, Npos=15):
-    postions_distance = {} # { domainID : distance from x,y,z }
-    for ID in domain_graph[domainID]:
-        xc, yc, zc = domain[ID]
-        postions_distance[ID] = compute_distance(x, y, z, xc, yc, zc)
-    
-    # Find the nearest Npos
-    postions_distance = dict(sorted(postions_distance.items(), key=lambda x:x[1] )) # [0=keys;1=values]
-    domains = set()
-    for N, ID in enumerate(postions_distance):
-        if N < Npos: domains.add(ID)
-        else: break
-    
-    # Add the current domain to domains
-    domains.add(domainID)
-    return domains
-
-
 ################################################
 # cell linked list interatomic distance search #
 ################################################
-def interatomic_cell_linked(m, maxdist_dict, edgeflags, scaled_images, xlo, xhi, ylo, yhi, zlo, zhi, log):
-    # Set domain size based on largest pairwise distances
-    domain_size = 2.1*(maxdist_dict[max(maxdist_dict, key=maxdist_dict.get)])
+def interatomic(m, maxdist_dict, pflags, log):
+    # Get atoms count and exit if needed
+    natoms = len(m.atoms)
+    if natoms == 0:
+        log.error('\nERROR no atoms to find interatomic distances for bond calculations')
     
-    # Find domain decomposition regions
+    # Set domain size based on largest pairwise distances
+    maxcut = max(maxdist_dict.values())
+    domain_size = 1.1*maxcut
+    
+    # Set periodic dimension flags
+    xperiodic, yperiodic, zperiodic = True, True, True
+    if pflags[0] == 'f': xperiodic = False
+    if pflags[1] == 'f': yperiodic = False
+    if pflags[2] == 'f': zperiodic = False
+    
+    # Get box info
+    h, h_inv, boxlo, boxhi, tilts = periodicity.get_box_parameters(m)
+    lx, ly, lz, yz, xz, xy = h
+    nx = max(1, math.ceil(lx / domain_size))
+    ny = max(1, math.ceil(ly / domain_size))
+    nz = max(1, math.ceil(lz / domain_size))
+    
+    # Assign atoms to domain
+    tol = 1e-12
+    domains = {} # {(ix, iy, iz):[id1, id2, id3 ...]}
+    atom_to_domain = {} # {atomID:(ix, iy, iz)}
     start_time = time.time()
-    lx = xhi-xlo; ly = yhi-ylo; lz = zhi-zlo;
-    cx = (xhi + xlo)/2; cy = (yhi + ylo)/2; cz = (zhi + zlo)/2;
-    nxx = math.ceil(lx/domain_size)
-    nyy = math.ceil(ly/domain_size)
-    nzz = math.ceil(lz/domain_size)
-    if nxx == 0: nxx = 1
-    if nyy == 0: nyy = 1
-    if nzz == 0: nzz = 1
-    dx = lx/nxx; dy = ly/nyy; dz = lz/nzz; ID = 0;
-    xadd = dx/2 + xlo; yadd = dy/2 + ylo; zadd = dz/2 + zlo;
-    log.out('\n\nFinding domain to use cell linked list algorithm for interatomic distance calculations ...')
-    domain = {} # { domainID : (xc, yc, zc) }
-    indexes_forward = {} # { domainID : (nx, ny, nz) }
-    indexes_reverse = {} # { (nx, ny, nz) : domainID }
-    for nx in range(nxx):
-        for ny in range(nyy):
-            for nz in range(nzz):
-                ID += 1
-                xc = nx*dx + xadd
-                yc = ny*dy + yadd
-                zc = nz*dz + zadd
-                domain[ID] = (xc, yc, zc)
-                indexes_forward[ID] = (nx+1, ny+1, nz+1)
-                indexes_reverse[(nx+1, ny+1, nz+1)] = ID
-                
-    # Find domain connectivity (graph)
-    def get_neighboring_indexes(ni, nii):
-        neighs = [ni]
-        if ni-1 < 1: # lo-side wraps to hi-side for periodicity
-            neighs.append(nii)
-        else: neighs.append(ni-1)
-        if ni+1 > nii: # hi-side wraps to lo-side for periodicity
-            neighs.append(1)
-        else: neighs.append(ni+1)
-        return neighs
-    domain_graph = {ID:set() for ID in domain} # { ID : set(bonded IDs) }
-    domain_graph[0] = {ID for ID in domain}
-    log.out('Finding cell linked graph for interatomic distance calculations ...')
-    for id1 in domain:    
-        nx, ny, nz = indexes_forward[id1]
-        nxs = get_neighboring_indexes(nx, nxx)
-        nys = get_neighboring_indexes(ny, nyy)
-        nzs = get_neighboring_indexes(nz, nzz)
-        for ix in nxs:
-            for iy in nys:
-                for iz in nzs:
-                    id2 = indexes_reverse[(ix, iy, iz)]
-                    if id1 == id2: continue
-                    domain_graph[id1].add(id2)
-                    domain_graph[id2].add(id1)
-                        
-    # Build linked list
-    linked_lst = {i:set() for i in domain} # { domainID : atoms in domain }
-    linked_lst[0] = set()
-    atom_domain = {} # { atomID : domainID }
-    edgeflags = {} # { atomID : edgeflag }
-    log.out('  Assigning atoms to each sub domain for interatomic distance calculations ...')
-    for i in m.atoms:
-        atom = m.atoms[i]
-        x = atom.x; y = atom.y; z = atom.z
-        edgeflags[i] = check_near_edge(x, y, z, domain_size, xlo, xhi, ylo, yhi, zlo, zhi)
-            
-        # Assign to domain
-        try:
-            nx = math.ceil( (x-xlo)/dx )
-            ny = math.ceil( (y-ylo)/dy )
-            nz = math.ceil( (z-zlo)/dz )
-            domainID = indexes_reverse[(nx, ny, nz)]
-        except: domainID = 0
-        atom_domain[i] = domainID
-        linked_lst[domainID].add(i)
+    log.out('\n\nAssigning atoms to each sub-domain for interatomic distance calculations ...')
+    for id1, atom1 in m.atoms.items():
+        # Convert to fractional coordinates and wrap/clamp into the primary cell
+        fx, fy, fz = periodicity.pos2frac(atom1.x, atom1.y, atom1.z, h_inv, boxlo)
+        if xperiodic:
+            fx %= 1.0
+        else: fx = min(1.0 - tol, max(0.0, fx))
         
-        # check if atom is outside of box and assign to every domain if it is outside of the box
-        outside = False
-        if atom.x <= xlo: outside = True
-        if atom.x >= xhi: outside = True
-        if atom.y <= ylo: outside = True
-        if atom.y >= yhi: outside = True
-        if atom.z <= zlo: outside = True
-        if atom.z >= zhi: outside = True
-        if outside:
-            for j in linked_lst:
-                linked_lst[j].add(i)
-                    
+        if yperiodic:
+            fy %= 1.0
+        else: fy = min(1.0 - tol, max(0.0, fy))
+        
+        if zperiodic:
+            fz %= 1.0
+        else: fz = min(1.0 - tol, max(0.0, fz))
+    
+        # Assigned to domain
+        ix = min(nx - 1, math.floor(fx * nx)) # 0 ≤ ix ≤ nx-1
+        iy = min(ny - 1, math.floor(fy * ny)) # 0 ≤ iy ≤ ny-1
+        iz = min(nz - 1, math.floor(fz * nz)) # 0 ≤ iz ≤ nz-1
+        domains.setdefault((ix, iy, iz), []).append(id1)
+        atom_to_domain[id1] = (ix, iy, iz)
+        
+    execution_time = (time.time() - start_time)
+    log.out(f'    Domain assigmnet execution time: {execution_time} (seconds)')
+        
+    # Neighbor shifting that works for very skewed triclinic cells
+    if yz == 0 and xz == 0 and xy == 0:
+        sx, sy, sz = 1, 1, 1
+    else:
+        ax = lx / nx
+        by = math.sqrt((xy / ny)**2 + (ly / ny)**2)
+        cz = math.sqrt((xz / nz)**2 + (yz / nz)**2 + (lz / nz)**2)
+        sx = math.ceil(maxcut / ax) + 2 # could be "+ 1" but "+ 2" helps for highly skewed cells
+        sy = math.ceil(maxcut / by) + 2 # could be "+ 1" but "+ 2" helps for highly skewed cells
+        sz = math.ceil(maxcut / cz) + 2 # could be "+ 1" but "+ 2" helps for highly skewed cells
+    neighbor_shifts = list(product(range(-sx, sx + 1), range(-sy, sy + 1), range(-sz, sz + 1)))
+    
     # Start finding interatomic distances
-    possible_bonds = {} # { tuple(id1, id2): distance_fff or distance_ppp }
-    bond_status = {'periodic': 0, 'non-periodic': 0} # to tally bond types
+    possible_bonds = {} # { tuple(id1, id2): distance }
+    progress_increment = 10; last_progress = -1; count = 0
+    start_time = time.time()
     log.out('Finding interatomic distances for bond creation (cell linked list) ....')
-    progress_increment = 10; count = 0; natoms = len(m.atoms);
-    for id1 in m.atoms:      
-        atom1 = m.atoms[id1]; count += 1
-        x1 = atom1.x; y1 = atom1.y; z1 = atom1.z
-        if edgeflags[id1]: periodic_postions = find_periodic_postions(scaled_images, x1, y1, z1, cx, cy, cz, Npos=15)
-        if 100*count/natoms % progress_increment == 0:
-            log.out('    progress: {} %'.format(int(100*count/natoms)))
-        atom_domains = find_closets_domains(domain, domain_graph, atom_domain[id1], x1, y1, z1, Npos=27)
-        if not atom_domains: continue
-        for domainID in atom_domains:
-            for id2 in linked_lst[domainID]:
+    for id1 in m.atoms:
+        count += 1
+        percent = int(100 * count / natoms)
+        if percent >= last_progress + progress_increment:
+            log.out(f'    progress: {percent} %')
+            last_progress = percent
+        
+        # Atom 1 info
+        checked_domains = set()
+        ix, iy, iz = atom_to_domain[id1]
+        atom1 = m.atoms[id1]
+        for dix, diy, diz in neighbor_shifts:
+            jx = (ix + dix) % nx if xperiodic else ix + dix
+            if not (0 <= jx < nx): continue
+            
+            jy = (iy + diy) % ny if yperiodic else iy + diy
+            if not (0 <= jy < ny): continue
+            
+            jz = (iz + diz) % nz if zperiodic else iz + diz
+            if not (0 <= jz < nz): continue
+            
+            # If nx=ny=nz=1, or for larger skewed periodic stencils, many
+            # shifts may point to the same domain (check for performance)
+            jdomain = (jx, jy, jz)
+            if jdomain in checked_domains:
+                continue
+            checked_domains.add(jdomain)
+        
+            # Atom 2 info
+            ids2 = domains.get(jdomain, [])
+            for id2 in ids2:
+                if id2 <= id1: continue
                 atom2 = m.atoms[id2]
-                if id1 == id2: continue
-                # Find atom2 and max distance cutoff
-                atom2 = m.atoms[id2];
-                maxdist = maxdist_dict[(atom1.element, atom2.element)];
-                x2 = atom2.x; y2 = atom2.y; z2 = atom2.z
+                
+                # See if distance is within vdw-radii maxdist
+                distance = periodic_distance(atom1, atom2, h, h_inv, boxlo, xperiodic, yperiodic, zperiodic)
+                maxdist = maxdist_dict[(atom1.element, atom2.element)]
+                if distance <= maxdist:
+                    possible_bonds[(id1, id2)] = distance
 
-                # If both atoms are near an edge try finding across the PBC  
-                if edgeflags[id1] and edgeflags[id2]:   
-                    for x1i, y1i, z1i in periodic_postions:
-                        if abs(x1i - x2) > maxdist: continue
-                        elif abs(y1i - y2) > maxdist: continue
-                        elif abs(z1i - z2) > maxdist: continue
-                        distance_ppp = compute_distance(x1i, y1i, z1i, x2, y2, z2)
-                        if distance_ppp <= maxdist: 
-                            if id1 < id2: bond = (id1, id2)
-                            else: bond = (id2, id1)
-                            possible_bonds[bond] = distance_ppp
-                            bond_status['periodic'] += 1
-                            break
-                            
-                else: # else compute none-periodic distance
-                    if abs(x1 - x2) > maxdist: continue
-                    elif abs(y1 - y2) > maxdist: continue
-                    elif abs(z1 - z2) > maxdist: continue
-                    distance_fff = compute_distance(x1, y1, z1, x2, y2, z2)
-                    if distance_fff <= maxdist:
-                        # Generate bonding pairs in ascending order
-                        if id1 < id2: bond = (id1, id2)
-                        else: bond = (id2, id1)
-                        
-                        possible_bonds[bond] = distance_fff
-                        bond_status['non-periodic'] += 1
-                        
     execution_time = (time.time() - start_time)
     log.out(f'    Bond generation execution time: {execution_time} (seconds)')
-    return possible_bonds, bond_status 
+    return h, possible_bonds
+
+
+###########################################
+# Triclinic periodic distance calculation #
+###########################################
+def periodic_distance(atom1, atom2, h, h_inv, boxlo, xperiodic, yperiodic, zperiodic):
+    fx1, fy1, fz1 = periodicity.pos2frac(atom1.x, atom1.y, atom1.z, h_inv, boxlo)
+    fx2, fy2, fz2 = periodicity.pos2frac(atom2.x, atom2.y, atom2.z, h_inv, boxlo)
+    dfx = fx2 - fx1
+    dfy = fy2 - fy1
+    dfz = fz2 - fz1
+
+    # Apply minimum image in fractional space
+    if xperiodic:
+        dfx -= round(dfx)
+    if yperiodic:
+        dfy -= round(dfy)
+    if zperiodic:
+        dfz -= round(dfz)
+
+    dx, dy, dz = periodicity.frac2pos(dfx, dfy, dfz, h, [0.0, 0.0, 0.0])
+
+    return math.sqrt(dx*dx + dy*dy + dz*dz)
     
     
 ##############################################################
@@ -301,64 +236,14 @@ class generate:
         self.nb_count = {} # { element : nb_dict }
     
     
-        ################################################
-        # Generate images via minimum image convention #
-        ################################################
         # Boundary conditions
         pflags = boundary.split() # split boundary
         count = pflags.count('f') + pflags.count('p')
-        if len(pflags) != 3 and count != 3:
+        if len(pflags) != 3 or count != 3:
             log.error('ERROR boundary does not contain 3-dimensions or boundary flags are not f or p')
-        if 'p' in pflags and m.xy != 0 or m.xz != 0 or m.yz != 0:
-            log.out('ERROR simulaiton cell is NOT orthogonal and a periodic boundary is trying')
-            log.error('to be applied. Currently PBCs are limited to orthogonal boxes only ...')
-        
-        # Image information
-        nimages = 1 # only use minimum image convention
-        images = set([]) # set to hold unique images
-        # Loop through nimages to generate image flags
-        for ix in range(-nimages, nimages+1):
-            for iy in range(-nimages, nimages+1):
-                for iz in range(-nimages, nimages+1):
-                    
-                    # Update image based on boundary conditions
-                    if ix != 0 and pflags[0] == 'f': ix = 0
-                    if iy != 0 and pflags[1] == 'f': iy = 0
-                    if iz != 0 and pflags[2] == 'f': iz = 0
-                
-                    # Log image
-                    images.add( (ix, iy, iz) )
-                    
-        # Sort images in ascending order of magnitude to reduce run time when 
-        # finding bond distances, since most bonds will be found at (0, 0, 0)
-        self.images = sorted(images, key=lambda x: sum([abs(i) for i in x]) )
-    
-    
-        ####################################
-        # Find set simulataion cell bounds #
-        ####################################
-        xline = m.xbox_line.split(); yline = m.ybox_line.split(); zline = m.zbox_line.split();
-        xlo = float(xline[0]); xhi = float(xline[1]);
-        ylo = float(yline[0]); yhi = float(yline[1]);
-        zlo = float(zline[0]); zhi = float(zline[1]);
-        lx = xhi-xlo; ly = yhi-ylo; lz = zhi-zlo;
-        
-        # Build scaled images for quicker calculations later on (Li directions already multiplied)
-        scaled_images = [(ix*lx, iy*ly, iz*lz) for (ix, iy, iz) in self.images]            
-        
-        # Determine "nearness" to edge. Only search periodic bonds if atom is this close to an edge.
-        # Only search largest possible bond found in the system and nothing more to manage run time
+
+        # Generate lookup tables for distance cutoffs based on bondtypes for quicker runtime later on
         elements = sorted({m.atoms[i].element for i in m.atoms})
-        max_from_edge = vdw_radius_scale*max([get_vdw_radii(element, vdw_radius, log) for element in elements]) 
-        edgeflags = {} # { atomID : edge flag }
-        for i in m.atoms:
-            x = m.atoms[i].x; y = m.atoms[i].y; z = m.atoms[i].z;
-            edgeflags[i] = check_near_edge(x, y, z, max_from_edge, xlo, xhi, ylo, yhi, zlo, zhi)
-
-
-        ###############################################################################################
-        # Generate lookup tables for distance cutoffs based on bondtypes for quicker runtime later on #
-        ###############################################################################################
         maxdist_dict = {} # { tuple(element1, element2) : cutoff distance }
         for element1 in elements:
             radius1 = vdw_radius_scale*get_vdw_radii(element1, vdw_radius, log)
@@ -369,11 +254,14 @@ class generate:
                 maxdistance = (radius1 + radius2)/2
                 maxdist_dict[(element1, element2)] = maxdistance
                 maxdist_dict[(element2, element1)] = maxdistance
-                
-                
-        ##########################
-        # Compute system density #
-        ##########################
+        
+        
+        # Find possible bonds via interatomic distances
+        h, possible_bonds = interatomic(m, maxdist_dict, pflags, log)
+        
+        
+        # Compute system density
+        lx, ly, lz, yz, xz, xy = h
         system_mass_sum = 0; amu2grams = 1/6.02214076e+23; density = 0;
         for i in m.atoms:
             mass = m.masses[m.atoms[i].type]
@@ -391,12 +279,6 @@ class generate:
         log.out('{:<10} {:^10.4E} {:<10}'.format('volume:', volume, 'cm^3'))
         log.out('{:<10} {:^10.4E} {:<10}'.format('mass:', mass, 'grams'))
         log.out('{:<10} {:^10.5f} {:<10}' .format('density:', density, 'g/cm^3'))
-        
-        
-        #################################################
-        # Find possible bonds via interatomic distances #
-        #################################################
-        possible_bonds, self.bond_status = interatomic_cell_linked(m, maxdist_dict, edgeflags, scaled_images, xlo, xhi, ylo, yhi, zlo, zhi, log)
                     
         
         ####################################
@@ -416,7 +298,7 @@ class generate:
         ########################################
         bonds = set([]); flagged_bonds = set([]);
         for id1 in graph:           
-            # Creating dictionary to sort in decending order
+            # Creating dictionary to sort in ascending order
             dist_dict = {}
             for id2 in graph[id1]:
                 bond = tuple( sorted([id1, id2]) ) 
@@ -484,7 +366,7 @@ class generate:
         nb_dict = {i:[] for i in m.atoms}
         for id1, id2 in bonds:
             nb_dict[id1].append(id2)
-            nb_dict[id2].append(id2)
+            nb_dict[id2].append(id1)
             
         # Find unique elements and generate nb_count dict to add to
         elements = sorted({m.atoms[i].element for i in m.atoms})

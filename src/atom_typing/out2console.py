@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-January 16th, 2022
+Revision 1.1
+May 4, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -56,9 +56,7 @@ def out(mm, bp, log, version, ff_name):
     if mm.bonddist_flag:
         # Write bond status and boundary used to create bonds
         log.out('\n{} {}'.format('vdw radius scale', mm.bonds_via_dist.vdw_radius_scale))
-        log.out('{} {} {} {}'.format('boundary used:', mm.bonds_via_dist.boundary, '  nimages searched:', len(mm.bonds_via_dist.images)))
-        log.out('{} {} {} {}'.format('non-periodic bonds found:', mm.bonds_via_dist.bond_status['non-periodic'], '    periodic bonds found:', mm.bonds_via_dist.bond_status['periodic']))
-
+        log.out('{} {}'.format('boundary used:', mm.bonds_via_dist.boundary))
         
         # Write bond type stats table
         log.out('------------------------------------Bond type bond length statistics and info------------------------------------')

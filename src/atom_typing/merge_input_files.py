@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.3
-October 16th, 2024
+Revision 1.4
+May 4, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -13,9 +13,12 @@ Houghton, MI 49931
 import src.bonds_via_distance as bonds_via_distance
 import src.mol2SYBYL2lmp as mol2SYBYL2lmp
 import src.read_reaxff as read_reaxff
+import src.periodicity as periodicity
 import src.read_lmp as read_lmp
 import src.mol2lmp as mol2lmp
 import src.pdb2lmp as pdb2lmp
+import src.cif2lmp as cif2lmp
+
 import os
 
 # Try importing rdkit addins
@@ -108,6 +111,27 @@ def merge(topofile, bondfile, mass_map, bondorder, maxbonded, boundary, vdw_radi
             m = mol2lmp.Molecule_File(topofile)
             log.out(f'Read in {m.filename} chemdraw .mol or .sdf file')
         else: log.error(f'ERROR .mol or .sdf file: {topofile} does not exist')
+        
+    # Read .cif file
+    elif topofile.endswith('cif'):
+        if os.path.isfile(topofile):
+            m = cif2lmp.Molecule_File(topofile)
+            log.out(f'Read in {m.filename} .cif file')
+            log.out(' * a                = {:.4f} '.format(m.a))
+            log.out(' * b                = {:.4f} '.format(m.b))
+            log.out(' * c                = {:.4f} '.format(m.c))
+            log.out(' * alpha            = {:.4f} '.format(m.alpha))
+            log.out(' * beta             = {:.4f} '.format(m.beta))
+            log.out(' * gamma            = {:.4f} '.format(m.gamma))
+            log.out(' * symmetry ops     = {}'.format( len(m.symmetry_ops) ))
+            log.out(' * asymmetric atoms = {}'.format( m.asym_natoms ))
+            log.out(' * expanded atoms   = {}'.format( m.natoms ))
+            log.out(' * elements         = {}'.format( ' '.join(m.elements) ))
+            log.out(' * disorder         = dominant group retained')
+            if m.temp is not None:
+                log.out(' * temp             = {:.4f} K'.format(m.temp))
+            log.out('\n')
+        else: log.error(f'ERROR .cif file: {topofile} does not exist')
             
     # Read .mol2 file (VMD MDL MOL2 file)
     elif topofile.endswith('mol2'):
@@ -138,7 +162,8 @@ def merge(topofile, bondfile, mass_map, bondorder, maxbonded, boundary, vdw_radi
             
             
     # If topofile was a .mol or .sdf or .mol2 file it will not have m.masses nor correct atom types so find elements and set types
-    if topofile.endswith('mol') or topofile.endswith('sdf') or topofile.endswith('mol2') or topofile.endswith('pdb') or topofile.endswith('smiles'):
+    if topofile.endswith('mol') or topofile.endswith('sdf') or topofile.endswith('mol2') or topofile.endswith('pdb') \
+       or topofile.endswith('smiles') or topofile.endswith('cif'):
         # Find all elements in system to set atomtypes
         elements = sorted({m.atoms[i].element for i in m.atoms})
         atomtypes = {i:n+1 for n, i in enumerate(elements)}
@@ -195,9 +220,14 @@ def merge(topofile, bondfile, mass_map, bondorder, maxbonded, boundary, vdw_radi
         b.images = bond_creation.images
         b.nb_count = bond_creation.nb_count
         b.maxbond = bond_creation.maxbond
-        b.bond_status = bond_creation.bond_status
         b.vdw_radius_scale = vdw_radius_scale
         m.bonds_via_dist = b
+        
+        # Reset image flags
+        if topofile.endswith('cif'):
+            m = periodicity.wrap_atoms(m) # ensure atoms are wrapped
+            m = periodicity.reset_image_flags(m)
+            
             
     # create a new instance in m called reaff_flag to keep track of typing inputs
     m.reaxff_flag = reaxff_flag

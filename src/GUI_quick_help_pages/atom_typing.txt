@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 2/17/2025
+# Last edited 5/4/2025
 #
 ************
 * Overview *
@@ -25,9 +25,31 @@
   topofile   
     Button to load in a file defining atomic positions and bonding connectivity. You may also directly type the filename in the entry to the
     right of the button as well. The supported file extensions are:
-      .data  or  .mol  or  .mol2  or  .sdf  or  .pdb  or  .smiles
-    Using the .smiles extension requires rdkit to be installed where you may supply a SMILES string as CCC1=CC(=C(C(=C1N)C)N)CC.smiles, which
-    will generate the atomic positions using rdkit and assign atom types.
+      .data  or  .mol  or  .mol2  or  .sdf  or  .pdb  or  or .cif or .smiles
+	  
+    .smiles 
+      Requires rdkit to be installed where you may supply a SMILES string as CCC1=CC(=C(C(=C1N)C)N)CC.smiles, which will generate the atomic
+      positions using rdkit and assign atom types.
+	  
+    .cif
+      Reads crystallographic information files and converts them into a LAMMPS-style system using symmetry expansion. The following
+      assumptions and processing steps are used:
+        - Atomic positions are read from fractional coordinates (_atom_site_fract_x/y/z).
+        - Symmetry operations are applied using _symmetry_equiv_pos_as_xyz or _space_group_symop_operation_xyz.
+        - The asymmetric unit is expanded to the full unit cell using the provided symmetry operations.
+        - Fractional coordinates are wrapped into the [0,1) interval and duplicate atoms are removed using a small tolerance.
+        - A tolerance (~1e-6) is used when comparing positions to account for floating point noise.
+        
+		- Partial occupancies / disorder handling:
+            For disordered sites, only the dominant disorder group (highest occupancy) is retained and alternate positions are discarded.
+            Non-disordered atoms are kept as-is.
+
+        - Molecules generated from symmetry are treated as independent molIDs; overlapping molecules may be removed if duplicate atoms are detected.
+        - Unit cell parameters (_cell_length_* and _cell_angle_*) are converted to a triclinic LAMMPS box.
+
+      Notes:
+        - CIF files without explicit symmetry operations are not supported.
+        - Bonding information is not read from CIF and must be inferred by using bonds_via_distance_override.
 	  
   bondfile
     Button to load in a file created using the LAMMPS command "fix reaxff/bonds". When pairing this with a LAMMPS datafile from a ReaxFF
@@ -183,7 +205,7 @@
 ***********
 
   ff_name
-    A drop-down menu to select the type of force field atom types to apply to the molecular system.
+    A drop-down menu to select the type of force field atom types to apply to the molecular system. 
 	
   reset_charges
     A drop-down menu to select the Boolean to reset partial atomic charges or not. If the Boolean is True all atomic partial charges will be

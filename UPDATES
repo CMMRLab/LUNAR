@@ -15,10 +15,15 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 7April2026)
+LUNAR (version 5May2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+5May2026           JDK         - atom_typing.py: Added .cif file support to allow LUNAR to connect with databases
+                                                 like Crystallography Open Database. Supports orthogonal and 
+                                                 triclinic cells and handles partial occupancies for disordered 
+                                                 systems by using the by using highest occupancy numbers.
+
 7April2026         JDK         - LUNAR/LAMMPS/CLASS2 - removed this folder, because these files where merged
                                                        into the LAMMPS 30Mar2026 feature release (no longer
                                                        need to package these with LUNAR because they are no
