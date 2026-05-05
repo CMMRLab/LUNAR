@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-May 4, 2026
+Revision 1.1
+May 5, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -41,6 +41,10 @@ class read_cif:
         
         # Thermo info
         self.temp = None
+        
+        # LUNAR specific replicate keywords
+        self.replicate = [1, 1, 1] # nx, ny, nz
+        self.duplicate = [None, None, None] # minimum: lx, ly, lz
     
         #########################################
         ### Opening and reading the .cif file ###
@@ -75,7 +79,38 @@ class read_cif:
                     
                 elif key == '_cell_measurement_temperature':
                     self.temp = self.string_to_number(val)
+                    
+                elif key == '_lunar_replicate' and len(data) >= 4:
+                    vals = [self.string_to_number(data[1]),
+                            self.string_to_number(data[2]),
+                            self.string_to_number(data[3])]
+
+                    if any(v is None for v in vals):
+                        raise ValueError("_lunar_replicate values must be numbers")
                 
+                    if any(v != int(v) for v in vals):
+                        raise ValueError("_lunar_replicate values must be integers")
+                
+                    if any(v <= 0 for v in vals):
+                        raise ValueError("_lunar_replicate values must be > 0")
+                
+                    self.replicate = [int(v) for v in vals]
+                        
+                elif key == '_lunar_duplicate' and len(data) >= 4:
+                    lx = self.string_to_number(data[1])
+                    ly = self.string_to_number(data[2])
+                    lz = self.string_to_number(data[3])
+                    if any(v is None for v in [lx, ly, lz]):
+                        raise ValueError("_lunar_duplicate values must be numbers")
+                    if lx <= 0:
+                        raise ValueError("_lunar_duplicate lx must be > 0")
+                    if ly <= 0:
+                        raise ValueError("_lunar_duplicate ly must be > 0")
+                    if lz <= 0:
+                        raise ValueError("_lunar_duplicate lz must be > 0")
+                        
+                    self.duplicate = [lx, ly, lz]
+                    
             # Loop block
             if line == "loop_":
                 headers, rows, i = self.read_loop(lines, i)
@@ -315,12 +350,20 @@ class Molecule_File:
         self.beta  = cif.beta
         self.gamma = cif.gamma
         self.h, self.h_inv = self.cell_to_lammps_h()
+        lx, ly, lz, yz, xz, xy = self.h
         
         self.symmetry_ops = cif.symmetry_ops
         self.asym_natoms = len(cif.atoms)
         self.temp = cif.temp
         self.elements = set()
         
+        self.replicate = cif.replicate
+        self.duplicate = cif.duplicate
+        if self.duplicate != [None, None, None]:
+            nx = math.ceil( self.duplicate[0] / lx )
+            ny = math.ceil( self.duplicate[1] / ly )
+            nz = math.ceil( self.duplicate[2] / lz )
+            self.replicate = [int(nx), int(ny), int(nz)]
 
         # Apply symmetry operations            
         coords = [] # [(x, y, z, element)]
@@ -353,10 +396,39 @@ class Molecule_File:
         # Remove duplicate symmetry-generated atoms
         self.coords = self.deduplicate_frac_coords(coords, tol=1e-6)
         self.coords = sorted(self.coords, key=lambda x: (x[3], x[0], x[1], x[2])) # sort by element
+
+        # Replicate the coords
+        replicated = []
+        nx, ny, nz = self.replicate
+        for ix in range(nx):
+            for iy in range(ny):
+                for iz in range(nz):
+                    for (wx, wy, wz, element) in self.coords:
+                        rx = (wx + ix) / nx
+                        ry = (wy + iy) / ny
+                        rz = (wz + iz) / nz
+                        replicated.append((rx, ry, rz, element))
+                        
+        # Reset box info
+        lx *= nx
+        ly *= ny
+        lz *= nz
+        xy *= ny
+        xz *= nz
+        yz *= nz
+        self.h = [lx, ly, lz, yz, xz, xy]
+        self.h_inv = 6 * [0.0]
+        self.h_inv[0] = 1.0 / self.h[0]
+        self.h_inv[1] = 1.0 / self.h[1]
+        self.h_inv[2] = 1.0 / self.h[2]
+        self.h_inv[3] = -self.h[3] / (self.h[1] * self.h[2])
+        self.h_inv[4] = (self.h[3] * self.h[5] - self.h[1] * self.h[4]) / (self.h[0] * self.h[1] * self.h[2])
+        self.h_inv[5] = -self.h[5] / (self.h[0] * self.h[1])
+                        
                              
         # Set system information
         self.filename = cif_file
-        self.natoms = len(self.coords) # total atoms in .mol file
+        self.natoms = len(replicated) # total atoms in .mol file
         self.nbonds = 0 # total bonds in .mol file
         self.natomtypes = 0
         self.nbondtypes = 0
@@ -373,8 +445,7 @@ class Molecule_File:
         self.bond_coeffs = {}
         
         # Fill in atoms
-        lx, ly, lz, yz, xz, xy = self.h
-        for i, (wx, wy, wz, element) in enumerate(self.coords, start=1):
+        for i, (wx, wy, wz, element) in enumerate(replicated, start=1):
             x, y, z = self.frac_to_cart(wx, wy, wz)
             
             a = Atom()

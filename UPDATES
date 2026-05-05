@@ -19,7 +19,14 @@ LUNAR (version 5May2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-5May2026           JDK         - atom_typing.py: Added .cif file support to allow LUNAR to connect with databases
+5May2026           JDK         - atom_typing.py: Added ability to replicate .cif file atomic positions via:
+                                                 "_lunar_replicate nx ny nz" and "_lunar_duplicate lx ly lz"
+                                                 keywords with the documentation written in LUNAR/atom_typing.py
+                                                 "Quick help" menu. This allows for a small modification to
+                                                 existing .cif files for building larger cells or manually
+                                                 building entire systems via the .cif file format.
+
+4May2026           JDK         - atom_typing.py: Added .cif file support to allow LUNAR to connect with databases
                                                  like Crystallography Open Database. Supports orthogonal and 
                                                  triclinic cells and handles partial occupancies for disordered 
                                                  systems by using the by using highest occupancy numbers.

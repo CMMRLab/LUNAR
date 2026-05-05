@@ -125,7 +125,8 @@ def merge(topofile, bondfile, mass_map, bondorder, maxbonded, boundary, vdw_radi
             log.out(' * gamma            = {:.4f} '.format(m.gamma))
             log.out(' * symmetry ops     = {}'.format( len(m.symmetry_ops) ))
             log.out(' * asymmetric atoms = {}'.format( m.asym_natoms ))
-            log.out(' * expanded atoms   = {}'.format( m.natoms ))
+            log.out(' * expanded atoms   = {}'.format( len(m.coords) ))
+            log.out(' * replicate atoms  = {} (nx={}, ny={}, nz={})'.format( m.natoms, *m.replicate ))
             log.out(' * elements         = {}'.format( ' '.join(m.elements) ))
             log.out(' * disorder         = dominant group retained')
             if m.temp is not None:

@@ -47,7 +47,27 @@
 			
       Notes:
         - CIF files without explicit symmetry operations are not supported.
-        - Bonding information is not read from CIF and must be inferred by using bonds_via_distance_override.
+        - Bonding information is not read from CIF and must be inferred by using bonds_via_distance_override (should automatically turn on).
+        - LUNAR keywords (optional):
+            The following optional keywords may be placed in the .cif file to control system size:
+
+            _lunar_replicate nx ny nz
+                Replicates the unit cell nx, ny, nz times along the lattice vectors.
+                Values must be positive integers.
+                Replication is applied after symmetry expansion and duplicate removal.
+
+            _lunar_duplicate lx ly lz
+                Specifies minimum desired box extents in the LAMMPS lx, ly, lz directions.
+                The code will automatically determine the number of replications required
+                such that the final box lengths are at least lx, ly, lz.
+
+                This is useful for ensuring the simulation cell is large enough for
+                nonbonded cutoffs (e.g., pairwise interactions in LAMMPS).
+
+                If both _lunar_replicate and _lunar_duplicate are present, the duplicate
+                keyword takes precedence.
+		
+      
 	  
   bondfile
     Button to load in a file created using the LAMMPS command "fix reaxff/bonds". When pairing this with a LAMMPS datafile from a ReaxFF
