@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-October 15, 2025
+Revision 1.1
+May 6, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -79,8 +80,8 @@ def bondbond(m, plotting_coeffs, basename, coeff_name):
         d, a, r1, r2 = potentials['class2xe']
         class2xe = d*(( 1 - np.exp(-a*(radius - r1) ) )**1)*(( 1 - np.exp(-a*(radius - r2) ) )**1)
         
-        morse1 = morse_bond(*potentials['morse1'], radius)
-        morse2 = morse_bond(*potentials['morse2'], radius)
+        morse1 = morse_bond(*[potentials['morse1'][i] for i in range(3)], radius)
+        morse2 = morse_bond(*[potentials['morse2'][i] for i in range(3)], radius)
         harmonic1 = class2_bond(*potentials['harmonic1'], radius)
         harmonic2 = class2_bond(*potentials['harmonic2'], radius)
         d = max([potentials['morse1'][0], potentials['morse2'][0]])
@@ -174,8 +175,8 @@ def bondangle(m, plotting_coeffs, basename):
         
         # Compute the bonding potentials
         d_max = max([potentials['morse1'][0], potentials['morse2'][0]])
-        morse1 = ( morse_bond(*potentials['morse1'], radius)*np.ones(len(theta)) ).reshape(X.shape)
-        morse2 = ( morse_bond(*potentials['morse2'], radius)*np.ones(len(theta)) ).reshape(X.shape)
+        morse1 = ( morse_bond(*[potentials['morse1'][i] for i in range(3)], radius)*np.ones(len(theta)) ).reshape(X.shape)
+        morse2 = ( morse_bond(*[potentials['morse2'][i] for i in range(3)], radius)*np.ones(len(theta)) ).reshape(X.shape)
         harmonic1 = ( class2_bond(*potentials['harmonic1'], radius)*np.ones(len(theta)) ).reshape(X.shape)
         harmonic2 = ( class2_bond(*potentials['harmonic2'], radius)*np.ones(len(theta)) ).reshape(X.shape)
         harmonic1[harmonic1 > 5*d_max] = 5*d_max # Will set anything > 5*d_max to 5*d_max
@@ -265,8 +266,8 @@ def middlebondtorsion(m, plotting_coeffs, basename):
     
         # Compute the bonding potentials
         d_max = potentials['morse'][0]
-        morse = ( morse_bond(*potentials['morse'], radius)*np.ones(len(phi)) ).reshape(X.shape)
-        harmonic = ( class2_bond(*potentials['harmonic'], radius)*np.ones(len(phi)) ).reshape(X.shape)
+        morse = ( morse_bond(*[potentials['morse'][i] for i in range(3)], radius)*np.ones(len(phi)) ).reshape(X.shape)
+        harmonic = ( class2_bond(*[potentials['harmonic'][i] for i in range(4)], radius)*np.ones(len(phi)) ).reshape(X.shape)
         harmonic[harmonic > 5*d_max] = 5*d_max # Will set anything > 5*d_max to 5*d_max
         
         # Compute the potentials
@@ -349,8 +350,8 @@ def endbondtorsion(m, plotting_coeffs, basename):
     
         # Compute the bonding potentials
         d_max = max([potentials['morse1'][0], potentials['morse2'][0]])
-        morse1 = ( morse_bond(*potentials['morse1'], radius)*np.ones(len(phi)) ).reshape(X.shape)
-        morse2 = ( morse_bond(*potentials['morse2'], radius)*np.ones(len(phi)) ).reshape(X.shape)
+        morse1 = ( morse_bond(*[potentials['morse1'][i] for i in range(3)], radius)*np.ones(len(phi)) ).reshape(X.shape)
+        morse2 = ( morse_bond(*[potentials['morse2'][i] for i in range(3)], radius)*np.ones(len(phi)) ).reshape(X.shape)
         harmonic1 = ( class2_bond(*potentials['harmonic1'], radius)*np.ones(len(phi)) ).reshape(X.shape)
         harmonic2 = ( class2_bond(*potentials['harmonic2'], radius)*np.ones(len(phi)) ).reshape(X.shape)
         harmonic1[harmonic1 > 5*d_max] = 5*d_max # Will set anything > 5*d_max to 5*d_max
