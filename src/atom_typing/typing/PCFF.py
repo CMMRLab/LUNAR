@@ -228,7 +228,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # c_0     12.01115      C          3        carbonyl carbon of aldehydes, ketones  
-            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 1:
+            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 1 and nbs1[2] == 0:
                 atom.nta_type = 'c_0'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             # Ketone (O-index=2 in nbs1)
@@ -239,6 +239,11 @@ def nta(mm, basename, ff_name):
             elif ring == 0 and elements1.count('C') == 1 and elements1.count('O') == 1 and elements1.count('H') == 1 and nbs1[2] == 0:
                 atom.nta_type = 'c_0'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
+            # Aldehyde (O-index=2 in nbs1)
+            elif ring == 0 and elements1.count('C') == 1 and elements1.count('O') == 1 and elements1.count('H') == 1 and nbs1[2] == 1:
+                atom.nta_type = 'c_0'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+                
                 
             # c_1     12.01115      C          3        carbonyl carbon of acid, ester, amide 
             # Amide (C-index=0, N-index=1, O-index=2 in elements1)
@@ -247,6 +252,10 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
             # Ester, Carboxylic acid (C-index=0, O-index=1, O-index=2 in elements1)
             elif ring == 0 and elements1[0] == 'C' and elements1[1] == 'O' and elements1[2] == 'O':# and rings1.count(0) == 3:
+                atom.nta_type = 'c_1'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+            # Ester (H-index=0, O-index=1, O-index=2 in elements1)
+            elif ring == 0 and elements1[0] == 'H' and elements1[1] == 'O' and elements1[2] == 'O':# and rings1.count(0) == 3:
                 atom.nta_type = 'c_1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
