@@ -160,10 +160,10 @@ def nta(mm, basename, ff_name):
         # #print(atom.neighbor_info)
         # print(tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=1))
         
-        print()
-        print(i, element)
-        print(elements1)
-        print(nbs1)
+        # print()
+        # print(i, element)
+        # print(elements1)
+        # print(nbs1)
 
         
         
@@ -275,15 +275,15 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # c_0     12.01115      C          3        carbonyl carbon of aldehydes, ketones 
-            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 1 and nbs1[2] == 0:
+            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 1 and nbs1[2] == 1:
                 atom.nta_type = 'c_0'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             # Ketone (O-index=2 in nbs1)
-            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 1 and nbs1[2] == 0:
+            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 1 and nbs1[2] == 1:
                 atom.nta_type = 'c_0'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             # Aldehyde (O-index=2 in nbs1)
-            elif ring == 0 and elements1.count('C') == 1 and elements1.count('O') == 1 and elements1.count('H') == 1 and nbs1[2] == 0:
+            elif ring == 0 and elements1.count('C') == 1 and elements1.count('O') == 1 and elements1.count('H') == 1 and nbs1[2] == 1:
                 atom.nta_type = 'c_0'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             # Aldehyde (O-index=2 in nbs1)
