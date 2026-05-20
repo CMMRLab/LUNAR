@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-December 15, 2025
+Revision 1.2
+May 20, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -325,22 +325,22 @@ def nta(mm, basename, ff_name):
             # Strict PCFF atom-typing that occurs after User defined atom-typing attempts #
             #-----------------------------------------------------------------------------#
             # c3h      12.01115      C          4        sp3 carbon in 3-membered ring with hydrogens
-            if ring == 3 and 'H' in elements1:              
+            if 3 in atom.rings  and 'H' in elements1:              
                 atom.nta_type = 'c3h'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # c3m     12.01115      C          4        sp3 carbon in 3-membered ring
-            elif ring == 3:              
+            elif 3 in atom.rings:              
                 atom.nta_type = 'c3m'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # c4h      12.01115      C          4        sp3 carbon in 4-membered ring with hydrogens
-            elif ring == 4 and 'H' in elements1:              
+            elif 4 in atom.rings and 'H' in elements1:              
                 atom.nta_type = 'c4h'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
 
             # c4m     12.01115      C          4        sp3 carbon in 4-membered ring
-            elif ring == 4:              
+            elif 4 in atom.rings:              
                 atom.nta_type = 'c4m'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -568,12 +568,12 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # o3e     15.99940      O          2        sp3 oxygen  in three membered ring
-            elif ring == 3:              
+            elif ring == 3 or 3 in atom.rings:              
                 atom.nta_type = 'o3e'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # o4e     15.99940      O          2        sp3 oxygen  in  four  membered ring
-            elif ring == 4:              
+            elif ring == 4 or 4 in atom.rings:             
                 atom.nta_type = 'o4e'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
