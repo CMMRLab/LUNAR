@@ -286,7 +286,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                                 
             # c=1     12.01115      C          3        nonaromatic, next to end doubly bonded carbon 
-            elif ring == 0 and nbs2.count(1) >= 2:
+            elif ring == 0 and nbs2.count(1) >= 2 and nbs1.count(4) <= 1:
                 atom.nta_type = 'c=1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 

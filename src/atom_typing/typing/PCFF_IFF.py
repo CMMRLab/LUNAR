@@ -160,11 +160,11 @@ def nta(mm, basename, ff_name):
         # #print(atom.neighbor_info)
         # print(tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=1))
         
-        # print()
-        # print(i, element)
-        # print('elements1 = ', elements1)
-        # print('nbs1 = ', nbs1)
-        # print('nbs2 = ', nbs2)
+        print()
+        print(i, element)
+        print('elements1 = ', elements1)
+        print('nbs1 = ', nbs1)
+        print('nbs2 = ', nbs2)
         #print(ring, atom.rings)
 
         
@@ -334,7 +334,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                                 
             # c=1     12.01115      C          3        nonaromatic, next to end doubly bonded carbon 
-            elif ring == 0 and nbs2.count(1) >= 2:
+            elif ring == 0 and nbs2.count(1) >= 2 and nbs1.count(4) <= 1:
                 atom.nta_type = 'c=1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
