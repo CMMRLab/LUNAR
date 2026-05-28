@@ -889,7 +889,7 @@ def nta(mm, basename, ff_name):
                 
             # nn       14.00670       N          3        sp2 nitrogen in aromatic amines
             # nb       14.00670       N          3        sp2 nitrogen in aromatic amines
-            elif len([i for i in rings1 if i > 0]) > 0 and 3 in nbs1:
+            elif len([i for i in rings1 if i > 0]) > 0 and 3 in nbs1 and ring == 0:
                 atom.nta_type = 'nn'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -915,7 +915,10 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # npc     14.00670       N          3        sp2 nitrogen in 5- or 6- membered ring and with a heavy atom
-            elif ring >= 5 and tf.count_heavies(elements1, heavies) > 0 or ring >= 5 and tf.count_heavies(elements2, heavies) > 0:  
+            elif ring >= 5 and tf.count_heavies(elements1, heavies) > 0 and 'H' not in elements1:
+                atom.nta_type = 'npc'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+            elif ring >= 5 and tf.count_heavies(elements2, heavies) > 0 and 'H' not in elements1:
                 atom.nta_type = 'npc'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
