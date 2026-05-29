@@ -458,13 +458,14 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
         standard = sum([1 for i in dict2search if 'standard' in dict2search[i].comments])
         equivalent = sum([1 for i in dict2search if 'equivalent' in dict2search[i].comments and 'auto' not in dict2search[i].comments])
         auto_equiv = sum([1 for i in dict2search if 'auto equivalent' in dict2search[i].comments])
+        skipped = sum([1 for i in dict2search if 'skipped over b/c number' in dict2search[i].comments])
         
         # Re-compute percents
         if total > 0 and failed > 0:
             found = total - failed
             percent = 100*found/total
         if total > 0: # equivalent
-            equivalent_percent = 100*(standard + equivalent)/total
+            equivalent_percent = 100*(standard + equivalent + skipped)/total
         if total > 0: # auto_equiv
             auto_equiv_percent = 100*auto_equiv/total
         return [percent, equivalent_percent, auto_equiv_percent]
