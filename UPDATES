@@ -15,12 +15,12 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 28May2026)
+LUNAR (version 29May2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-28May2026          JDK         - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing of Carbons
-                                                 and Oxygens.
+29May2026          JDK         - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing of doubly Carbons
+                                                 in the molecule and near the edge.
 
 28May2026          JDK         - atom_typing.py: Fixed GitHub Issue #9 with PCFF atom typing of polybenzimidazole
                                                  nitrogen vs aromatic amine nitrogen.

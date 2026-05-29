@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-May 20, 2026
+Revision 1.3
+May 29, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -153,20 +153,36 @@ def nta(mm, basename, ff_name):
         atom.nta_type = '{}-type-yourself'.format(element)
         atom.nta_info = 'FAILED TO BE TYPED:  element: {}, ring: {}, nb: {}'.format(element, ring, nb)
         
+
+        # Below is to help type c=1 (nonaromatic, next to end doubly bonded carbon). If there is
+        # a grouped 2nd neigh that has two terminating atoms, then c=1 is correct.
+        # First neighbors of this atom
+        neighs1 = atom.neighbor_ids[1] # First neighbors of this atom
+        neighs11 = [mm.atoms[j].neighbor_ids[1] for j in neighs1] # First neighbors of the first neighbors (grouped 2nd-neighs)
+        neighs11_nb = [] # [count(terminating_atoms_on_neigh_atom1), count(terminating_atoms_on_neigh_atom2)]
+        for n1 in neighs11:
+            tmp = [mm.atoms[j].nb for j in n1] # [nb_atom1, nb_atom2, ...]
+            if len(tmp) == 3: # this neigh needs to have 3-bonds to be doubly bonded
+                neighs11_nb.append( tmp.count(1) )
+        
+        # Debugging
+        # print()
+        # print(i, element)
+        # print('elements1 = ', elements1)
+        # print('elements2 = ', elements2)
+        # print('nbs1 = ', nbs1)
+        # print('nbs2 = ', nbs2)
+        # print('neighs1 = ', neighs1)
+        # print('neighs11 = ', neighs11)
+        # print('neighs11_nb = ', neighs11_nb)
+        # print(ring, atom.rings)
+        
         # Debugging
         # print()
         # print(i, element)
         # print(atom.neighbor_info[2])
         # #print(atom.neighbor_info)
         # print(tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=1))
-        
-        print()
-        print(i, element)
-        print('elements1 = ', elements1)
-        print('nbs1 = ', nbs1)
-        print('nbs2 = ', nbs2)
-        #print(ring, atom.rings)
-
         
         
         ######################################################################################
@@ -334,7 +350,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                                 
             # c=1     12.01115      C          3        nonaromatic, next to end doubly bonded carbon 
-            elif ring == 0 and nbs2.count(1) >= 2 and nbs1.count(4) <= 1:
+            elif ring == 0 and 2 in neighs11_nb:
                 atom.nta_type = 'c=1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
