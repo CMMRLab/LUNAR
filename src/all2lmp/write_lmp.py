@@ -393,9 +393,13 @@ def comments(doc_title, atom_style, parameters, ff_class, version, log):
         f.write('# -----------------------------------------------------------------------------------------\n')
         f.write('# Parameterization percentage breakdown (Equivalent=breadown and Auto-Equivalent=breakdown)\n')
         f.write('# -----------------------------------------------------------------------------------------\n')
+        equiv_auto = ['Masses', 'Pair Coeffs', 'Bond Coeffs', 'Angle Coeffs', 'Dihedral Coeffs', 'Improper Coeffs']
         for i in parameters.percents:
             percent, equivalent_percent, auto_equiv_percent = parameters.percents[i]
-            f.write('# {:<28} {:^6.2f} %  (Equivalent={:^6.2f} % and Auto-Equivalent={:^6.2f} %)\n'.format(i+str(':'), percent, equivalent_percent, auto_equiv_percent))
+            if i in equiv_auto:
+                f.write('# {:<28} {:^6.2f} %  (Equivalent={:^6.2f} % and Auto-Equivalent={:^6.2f} %)\n'.format(i+str(':'), percent, equivalent_percent, auto_equiv_percent))
+            else:
+                f.write('# {:<28} {:^6.2f} %\n'.format(i+str(':'), percent))
     
         # Write massses
         f.write(f'\nMasses # {parameters.mass_comment}\n\n')

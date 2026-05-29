@@ -500,9 +500,13 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
                 found = total - failed
                 percent = 100*found/total
             percents['Bond-incs'] = [percent, 0, 0]
+        equiv_auto = ['Masses', 'Pair Coeffs', 'Bond Coeffs', 'Angle Coeffs', 'Dihedral Coeffs', 'Improper Coeffs']
         for i in percents:
             percent, equivalent_percent, auto_equiv_percent = percents[i]
-            log.out('{:<28} {:^6.2f} %  (Equivalent={:^6.2f} % and Auto-Equivalent={:^6.2f} %)'.format(i+str(':'), percent, equivalent_percent, auto_equiv_percent))
+            if i in equiv_auto:
+                log.out('{:<28} {:^6.2f} %  (Equivalent={:^6.2f} % and Auto-Equivalent={:^6.2f} %)'.format(i+str(':'), percent, equivalent_percent, auto_equiv_percent))
+            else:
+                log.out('{:<28} {:^6.2f} %'.format(i+str(':'), percent))
     parameters.percents = percents
      
     ########################################################################################
