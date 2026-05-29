@@ -448,24 +448,38 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
     # Print out parameterization percentages #
     ##########################################
     def calculate_percent_found(dict2search):
-        percent = 100; total = len(dict2search);
+        equivalent_percent = 100
+        auto_equiv_percent = 0
+        percent = 100
+        total = len(dict2search)
+        
+        # Count parameterization types
         failed = sum([1 for i in dict2search if 'UNABLE' in dict2search[i].comments])
+        standard = sum([1 for i in dict2search if 'standard' in dict2search[i].comments])
+        equivalent = sum([1 for i in dict2search if 'equivalent' in dict2search[i].comments and 'auto' not in dict2search[i].comments])
+        auto_equiv = sum([1 for i in dict2search if 'auto equivalent' in dict2search[i].comments])
+        
+        # Re-compute percents
         if total > 0 and failed > 0:
             found = total - failed
             percent = 100*found/total
-        return percent
-    log.out('\n-------------------------------------')
-    log.out('Parameterization percentage breakdown')
-    log.out('-------------------------------------')
+        if total > 0: # equivalent
+            equivalent_percent = 100*(standard + equivalent)/total
+        if total > 0: # auto_equiv
+            auto_equiv_percent = 100*auto_equiv/total
+        return [percent, equivalent_percent, auto_equiv_percent]
+    log.out('\n-----------------------------------------------------------------------------------------')
+    log.out('Parameterization percentage breakdown (Equivalent=breadown and Auto-Equivalent=breakdown)')
+    log.out('-----------------------------------------------------------------------------------------')
     percents = {} # { 'Coeff name' : float value of percent parameterized }
     if ff_class in [0, 1, 2, 'd', '0', '1', '2']:
         if parameters.masses: percents['Masses'] = calculate_percent_found(parameters.masses)
-        if parameters.pair_coeffs: percents['Pair Coeffs'] =calculate_percent_found(parameters.pair_coeffs)
+        if parameters.pair_coeffs: percents['Pair Coeffs'] = calculate_percent_found(parameters.pair_coeffs)
         if parameters.bond_coeffs: percents['Bond Coeffs'] = calculate_percent_found(parameters.bond_coeffs)
         if parameters.angle_coeffs: percents['Angle Coeffs'] = calculate_percent_found(parameters.angle_coeffs)
         if parameters.dihedral_coeffs: percents['Dihedral Coeffs'] = calculate_percent_found(parameters.dihedral_coeffs)
         if parameters.improper_coeffs: percents['Improper Coeffs'] = calculate_percent_found(parameters.improper_coeffs)
-        percents['Average MPBADI Coeffs'] = sum(list(percents.values()))/len(percents)
+        percents['Average MPBADI Coeffs'] = [sum([i[0] for i in percents.values()])/len(percents), 0, 0]
         if ff_class in [2, '2']:
             if parameters.bondbond_coeffs: percents['BondBond Coeffs'] = calculate_percent_found(parameters.bondbond_coeffs)
             if parameters.bondangle_coeffs: percents['BondAngle Coeffs'] = calculate_percent_found(parameters.bondangle_coeffs)
@@ -475,7 +489,7 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
             if parameters.bondbond13_coeffs: percents['BondBond13 Coeffs'] = calculate_percent_found(parameters.bondbond13_coeffs)
             if parameters.angletorsion_coeffs: percents['AngleTorsion Coeffs'] = calculate_percent_found(parameters.angletorsion_coeffs)
             if parameters.angleangle_coeffs: percents['AngleAngle Coeffs'] = calculate_percent_found(parameters.angleangle_coeffs)
-        percents['Average (without Bond-incs)'] = sum(list(percents.values()))/len(percents)
+        percents['Average (without Bond-incs)'] = [sum([i[0] for i in percents.values()])/len(percents), 0, 0]
         if reset_charges:
             total = 0; failed = 0; percent = 100;
             for i in parameters.atoms:
@@ -485,9 +499,10 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
             if total > 0 and failed > 0:
                 found = total - failed
                 percent = 100*found/total
-            percents['Bond-incs'] = percent
+            percents['Bond-incs'] = [percent, 0, 0]
         for i in percents:
-            log.out('{:<28} {:^6.2f} %'.format(i+str(':'), percents[i]))
+            percent, equivalent_percent, auto_equiv_percent = percents[i]
+            log.out('{:<28} {:^6.2f} %  (Equivalent={:^6.2f} % and Auto-Equivalent={:^6.2f} %)'.format(i+str(':'), percent, equivalent_percent, auto_equiv_percent))
     parameters.percents = percents
      
     ########################################################################################
@@ -509,7 +524,7 @@ def compute_mass_volume_density(parameters, BADI, ff_class, remove_booleans, res
                 dict2zero[i].match = 'N/A'
                 dict2zero[i].comments = 'ZEROED'
         return None
-    if ff_class in [0, 1, 2, 'd', '0', '1', '2'] and percents['Average (without Bond-incs)'] < 100:
+    if ff_class in [0, 1, 2, 'd', '0', '1', '2'] and percents['Average (without Bond-incs)'][0] < 100:
         ignore_printout = True
         if not ignore_missing_parameters:
             ignore_printout = False

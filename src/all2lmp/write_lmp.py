@@ -390,11 +390,12 @@ def comments(doc_title, atom_style, parameters, ff_class, version, log):
         f.write(f'{parameters.header} > all2lmp: {version}  Class: {ff_class}\n\n') 
         
         # Write percetage breakdown
-        f.write('# -------------------------------------\n')
-        f.write('# Parameterization percentage breakdown\n')
-        f.write('# -------------------------------------\n')
+        f.write('# -----------------------------------------------------------------------------------------\n')
+        f.write('# Parameterization percentage breakdown (Equivalent=breadown and Auto-Equivalent=breakdown)\n')
+        f.write('# -----------------------------------------------------------------------------------------\n')
         for i in parameters.percents:
-            f.write('# {:<28} {:^6.2f} %\n'.format(i+str(':'), parameters.percents[i]))
+            percent, equivalent_percent, auto_equiv_percent = parameters.percents[i]
+            f.write('# {:<28} {:^6.2f} %  (Equivalent={:^6.2f} % and Auto-Equivalent={:^6.2f} %)\n'.format(i+str(':'), percent, equivalent_percent, auto_equiv_percent))
     
         # Write massses
         f.write(f'\nMasses # {parameters.mass_comment}\n\n')
