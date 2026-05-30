@@ -15,10 +15,14 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 29May2026)
+LUNAR (version 30May2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+30May2026          JDK         - bond_react_merge.py: Added ability for map file generator to find edge atoms
+                                                      when those edge atoms are generated in a sequential
+                                                      template and are not present in a dataN tagged file.
+
 29May2026          JDK         - all2lmp.py: Added an equivalent and auto-equivalent breakdown to the
                                              Parameterization percentage table.
 

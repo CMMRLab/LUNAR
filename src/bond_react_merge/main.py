@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.18
-February 9, 2026
+Revision 1.19
+May 30, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -42,10 +42,10 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
     if log is None:
         log = io_functions.LUNAR_logger()
     log.configure(level='production')
-    #log.configure(level='debug')
+    #log.configure(level='debug', print2console=False)
     
     # set version and print starting information to screen
-    version = 'v1.18 / 9 February 2026'
+    version = 'v1.19 / 30 May 2026'
     log.out(f'\n\nRunning bond_react_merge: {version}')
     log.out(f'Using Python version: {sys.version}')
     log.out(f'Using Python executable: {sys.executable}')
@@ -246,10 +246,11 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
 
         
         # Find pre/post pairing to auto the generate map file
-        template_pairs = {} # {1:[pre1, post1], 2:[pre2, post2], ... N:[] }
         dataN_tagged = {} # { file-tag : molecule class }
         postN_tagged = {} # { file-tag : molecule class }
-        preN_tagged = {} # { file-tag : molecule class }
+        preN_tagged  = {} # { file-tag : molecule class }
+        template_pairs = {} # {1:[pre1, post1], 2:[pre2, post2], ... N:[] }
+        allN_types2nb_lst  = {} # { atom-type: [lst of nb atoms to type]}
         dataN_types2nb_lst = {} # { atom-type: [lst of nb atoms to type]}
         dataN_types = set(); postN_types = set(); preN_types = set(); # 2 check if any preN tagged files has new types compared to dataN tagged file
         for file in merge:    
@@ -273,6 +274,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
                 
             # Find dataN_types2nb_lst from datafiles
             if tmpname == 'data':
+                allN_types2nb_lst  = auto_gen_map_file.dataN_type2nb_map(merge[file], allN_types2nb_lst)
                 dataN_types2nb_lst = auto_gen_map_file.dataN_type2nb_map(merge[file], dataN_types2nb_lst)
                 dataN_tagged[file] = merge[file]
                 
@@ -282,6 +284,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
                 
             # Find postN file and add to postN_tagged
             if tmpname == 'post':
+                allN_types2nb_lst = auto_gen_map_file.dataN_type2nb_map(merge[file], allN_types2nb_lst)
                 postN_tagged[file] = merge[file]
                 
                 # Get postN tagged types
@@ -290,6 +293,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
                 
             # Find preN file and get atom types
             if tmpname == 'pre':
+                allN_types2nb_lst = auto_gen_map_file.dataN_type2nb_map(merge[file], allN_types2nb_lst)
                 preN_tagged[file] = merge[file]
                 
                 # Get preN tagged types
@@ -297,6 +301,10 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
                     preN_types.add(merge[file].masses[i].type)
         
         # No preN file should have newer types then dataN or postN tagged file
+        # print('\n\n')
+        # print('dataN_types2nb_lst = ', {i:set(j) for i, j in dataN_types2nb_lst.items()})
+        # print('allN_types2nb_lst  = ', {i:set(j) for i, j in allN_types2nb_lst.items()})
+        # print('\n\n')
         if preN_types:
             for i in preN_types:
                 if i not in dataN_types and i not in postN_types:
@@ -340,7 +348,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
                     log.out('****************************************************')
                     
                     # Find pre2post class
-                    pre2post = auto_gen_map_file.find(pre, post, filename, pair, dataN_types2nb_map, log)
+                    pre2post = auto_gen_map_file.find(pre, post, filename, pair, dataN_types2nb_map, allN_types2nb_lst, log)
                     log.out('  {} -> {} rxn map equivalences converged in {} iterations with a max cost of {}\n'.format(pair[0], pair[1], pre2post.iterations, pre2post.max_cost))
                     
                     # Find new title and write file

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.3
-April 14, 2025
+Revision 1.4
+May 30, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -20,7 +20,7 @@ import os
 # Class to find all info needed to write a bond/react map-file #
 ################################################################
 class find:
-    def __init__(self, pre, post, filename, pairname, dataN_types2nb_map, log):
+    def __init__(self, pre, post, filename, pairname, dataN_types2nb_map, allN_types2nb_lst, log):
         self.map = {} # { pre-atomid : postatomid }
         self.pre_edge = {} # { pre-atomid's determined as edge atoms : comment }
         self.post_edge = {} # { post-atomid's determined as edge atoms : comment }
@@ -76,9 +76,11 @@ class find:
         # info is in dataN_types2nb_map it will be based on if the element is not in elements2skip and if it only has 1 bonded neighbor) #
         ##################################################################################################################################
         elements2skip = ['Br', 'Ca', 'Cl', 'F', 'H'] # elements known to have one bonded atom that are usualy terminal
+        
         # Find pre-rxn edge atoms
         for i in pre_atoms:
             nb = len(pre_graph[i]); element = self.pre_elements[i]; atom_type = self.pre_types[i];
+            nbs_per_type = set(allN_types2nb_lst[atom_type])
             if atom_type in dataN_types2nb_map:
                 
                 # If nb not in nb_dataN it must be an edge atom or the user messed something up either way, look it as an edge atom.
@@ -94,10 +96,18 @@ class find:
             elif element not in elements2skip and nb == 1 and len(dataN_types2nb_map) == 0:
                 comment = '{} (   nb==1 and not a known terminating element of: {}   ) '.format(atom_type, ', '.join(elements2skip))
                 self.pre_edge[i] = comment
+                
+            # elif try guessing if number of bonded atoms differ between all dataN, preN, and postN tagged files
+            elif len(nbs_per_type) > 1 and nb == 1:
+                nbs = ', '.join([str(i) for i in nbs_per_type])
+                comment = '{} (   nb==1 and number of bonded atoms differ between differ uses of {}_nbs=[{}] ) '.format(atom_type, atom_type, nbs)
+                self.pre_edge[i] = comment
+            
         
         # Find post-rxn edge atoms
         for i in post_atoms:
             nb = len(post_graph[i]); element = self.post_elements[i]; atom_type = self.post_types[i]
+            nbs_per_type = set(allN_types2nb_lst[atom_type])
             if atom_type in dataN_types2nb_map:
                 
                 # If nb not in nb_dataN it must be an edge atom or the user messed something up either way, look it as an edge atom.
@@ -109,8 +119,13 @@ class find:
             elif element not in elements2skip and nb == 1 and len(dataN_types2nb_map) == 0:
                 comment = '{} (   nb==1 and not a known terminating element of: {}   ) '.format(atom_type, ', '.join(elements2skip))
                 self.post_edge[i] = comment
+                
+            # elif try guessing if number of bonded atoms differ between all dataN, preN, and postN tagged files
+            elif len(nbs_per_type) > 1 and nb == 1:
+                nbs = ', '.join([str(i) for i in nbs_per_type])
+                comment = '{} (   nb==1 and number of bonded atoms differ between differ uses of {}_nbs=[{}] ) '.format(atom_type, atom_type, nbs)
+                self.post_edge[i] = comment   
 
-        
         ############################################################################
         # Loop through pre_atoms and check against post_atoms and assign costs ... #
         ############################################################################
