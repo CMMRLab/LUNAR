@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.19
-May 30, 2026
+June 2, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -45,7 +45,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
     #log.configure(level='debug', print2console=False)
     
     # set version and print starting information to screen
-    version = 'v1.19 / 30 May 2026'
+    version = 'v1.19 / 2 June 2026'
     log.out(f'\n\nRunning bond_react_merge: {version}')
     log.out(f'Using Python version: {sys.version}')
     log.out(f'Using Python executable: {sys.executable}')
@@ -143,7 +143,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
         pair = sorted(template_pairs[i], reverse=True) # sort such that list will be order as ['preN', 'postN']
         if len(pair) == 2:
             pre = merge[pair[0]]; post = merge[pair[1]];
-            BondingIDs, CreateIDs, Reduce, Remove, Keep = auto_gen_map_file.get_lmp_header_info(pre, log)
+            BondingIDs, CreateIDs, Reduce, Remove, Keep, MapFile = auto_gen_map_file.get_lmp_header_info(pre, log)
             if len(Reduce) in [2, 5] or Remove or Keep:
                 pre_reduced, post_reduced = reduce_topology.template(pre, post, BondingIDs, CreateIDs, Reduce, Remove, Keep, log)
                 if pre_reduced != '' and post_reduced != '':# and pre_reduced.natoms == post_reduced.natoms:
@@ -197,7 +197,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
             return_boolean = True
         except: pass
         return return_boolean
-    if generate_map_file:       
+    if generate_map_file or check_var_for_int(map_near_edge_rxn_charges) or  molecule_file_options:
         log.out('\n\n************************************************************************************************************')
         log.out('************************************************************************************************************')
         log.out('************************************************************************************************************')
@@ -301,10 +301,6 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
                     preN_types.add(merge[file].masses[i].type)
         
         # No preN file should have newer types then dataN or postN tagged file
-        # print('\n\n')
-        # print('dataN_types2nb_lst = ', {i:set(j) for i, j in dataN_types2nb_lst.items()})
-        # print('allN_types2nb_lst  = ', {i:set(j) for i, j in allN_types2nb_lst.items()})
-        # print('\n\n')
         if preN_types:
             for i in preN_types:
                 if i not in dataN_types and i not in postN_types:
@@ -322,13 +318,10 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
         for atomtype in dataN_types2nb_lst:
             nb_lst = dataN_types2nb_lst[atomtype]
             dataN_types2nb_map[atomtype] = set(nb_lst)
-            
-        # Write generalized LAMMPS input file for fix bond/react
-        if template_pairs:
-            lmp_inscript.bond_react('in.fix_bond_react.script', newfile, version, merge, atom_style, new, pairids, template_pairs, log)
                     
         # Loop through template_pairs and try finding map
         pairids = sorted(list(template_pairs.keys())) # sort such that pairID 1 is found before pairID 2 ...
+        map_names = {} # {(preN, postN):'filename'}
         for i in pairids:
             # sort such that list will be order as ['preN', 'postN']
             pair = sorted(template_pairs[i], reverse=True)
@@ -340,6 +333,7 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
                 post_rxnid = ''.join([i for i in pair[1] if i.isdigit()])
                 if pre_rxnid == post_rxnid:
                     filename = '{}-{}_rxn-map'.format(pair[0], pair[1])
+                    map_names[(pair[0], pair[1])] = filename
                     
                     # Print header for rxn-map
                     log.out('\n\n')
@@ -349,12 +343,16 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
                     
                     # Find pre2post class
                     pre2post = auto_gen_map_file.find(pre, post, filename, pair, dataN_types2nb_map, allN_types2nb_lst, log)
-                    log.out('  {} -> {} rxn map equivalences converged in {} iterations with a max cost of {}\n'.format(pair[0], pair[1], pre2post.iterations, pre2post.max_cost))
+                    if pre2post.MapFile:
+                        filename = pre2post.MapFile
+                        map_names[(pair[0], pair[1])] = filename
                     
                     # Find new title and write file
-                    title = 'Map file: bond_react_merge: {} auto-generated mapfile for {}  ->  {}    rxnid: {}'.format(version, os.path.basename(pre.filename), os.path.basename(post.filename), pre_rxnid)
-                    auto_gen_map_file.write_map(filename+'_commented.txt', pre2post, title, version, comment_flag=True)
-                    auto_gen_map_file.write_map(filename+'_uncommented.txt', pre2post, title, version, comment_flag=False)
+                    if generate_map_file:
+                        title = 'Map file: bond_react_merge: {} auto-generated mapfile for {}  ->  {}    rxnid: {}'.format(version, os.path.basename(pre.filename), os.path.basename(post.filename), pre_rxnid)
+                        auto_gen_map_file.write_map(filename+'_commented.txt', pre2post, title, version, comment_flag=True)
+                        auto_gen_map_file.write_map(filename+'.txt', pre2post, title, version, comment_flag=False)
+                        auto_gen_map_file.generate_figure(pre2post, filename+'.jpeg')
                     
                     # Apply any molecule_file_options if lst is not empty
                     if molecule_file_options:
@@ -395,6 +393,11 @@ def main(files, parent_dir, newfile, atom_style, generate_map_file, write_rxn_mo
                     
                 else: log.warn('    WARNING generate_map_file was used but pre and post reactions have different Ntag. Tags (pre,post) = ({},{})'.format(pair[0], pair[1]))
             else: log.warn(f'WARNING generate_map_file was used but N-tag: {i} does NOT have exactly two pairs: {str(pair)}')
+            
+                        
+        # Write generalized LAMMPS input file for fix bond/react
+        if template_pairs and generate_map_file:
+            lmp_inscript.bond_react('in.fix_bond_react.script', newfile, version, merge, atom_style, new, pairids, template_pairs, map_names, log)
     
     
     ###################################################################################################################

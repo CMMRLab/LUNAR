@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.1
-March 27th, 2024
+June 2, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -34,7 +34,7 @@ def divide_chunks(lst, n):
         yield lst[i:i + n]
 
 # Function to write the generalized LAMMPS input script
-def bond_react(filename, newfile, version, merge, atom_style, new, pairids, template_pairs, log):
+def bond_react(filename, newfile, version, merge, atom_style, new, pairids, template_pairs, map_names, log):
     log.out(f'\n\nWriting {filename}')
     with open(filename, 'w') as f:
         # Write header
@@ -50,8 +50,8 @@ def bond_react(filename, newfile, version, merge, atom_style, new, pairids, temp
         f.write('# is written to the LAMMPS datafile, however LAMMPS can not re-read this information, so\n')
         f.write('# it must be removed. You may run the following command in Linux:\n')
         f.write("#     sed -i.bak '/bond_react_props_internal/,$d' FILENAME.data\n")
-        f.write('# Which will create a .bak file of the original FILENAME.data and then remove the section\n')
-        f.write('# in the orginal file that LAMMPS cannot read.\n')
+        f.write('#                               or\n')
+        f.write("#     write_data  MySystem.data  nofix  # Using 'nofix' keyword when writting the LAMMPS datafile\n")
         
         # Write Initialization info
         f.write('\n\n#------------Initialization------------\n')
@@ -130,10 +130,16 @@ def bond_react(filename, newfile, version, merge, atom_style, new, pairids, temp
         # Write rxn templates
         f.write('\n\n#------------bond/react execution------------\n')
         f.write('{:<8} {}\n'.format('fix', 'myrxn all bond/react stabilization yes statted_grp .03 &'))
-        lmp_variables = [];
+        lmp_variables = []
         for n, i in enumerate(pairids, 1):
-            nsteps = str('${nevery}'); pseed = str('${pseed}')
-            f.write('{:<15} react rxn{:<2} all {} 0.5 6.0 mol{:<2} mol{:<2} pre{}-post{}_rxn-map_uncommented.txt prob 0.10 {} stabilize_steps 500'.format('', i, nsteps, min(molmap[i]), max(molmap[i]), i, i, pseed ))
+            nsteps = str('${nevery}')
+            pseed = str('${pseed}')
+            
+            # sort such that list will be order as ['preN', 'postN']
+            pair = sorted(template_pairs[i], reverse=True)
+            map_name = '{}.txt'.format(map_names[tuple(pair)])
+            
+            f.write('{:<15} react rxn{:<2} all {} 0.5 6.0 mol{:<2} mol{:<2} {} prob 0.10 {} stabilize_steps 500'.format('', i, nsteps, min(molmap[i]), max(molmap[i]), map_name, pseed ))
             lmp_variables.append('v_rxn{}'.format(i))
             if n < len(pairids): 
                 f.write(' &\n')

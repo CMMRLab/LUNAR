@@ -1,4 +1,4 @@
-HEADER,  pre_rxn2.mol2  read w/ mol2SYBYL2lmp > atom_typing v1.5 / 4 July 2023 w/PCFF-IFF atom-types > all2lmp: v1.9 / 31 July 2023  Class: 2 Reduce = [12, 96, 12, 59, 3]
+HEADER,  pre_rxn2.mol2  read w/ mol2SYBYL2lmp > atom_typing v1.5 / 4 July 2023 w/PCFF-IFF atom-types > all2lmp: v1.9 / 31 July 2023  Class: 2;  Reduce = [12, 96, 12, 59, 3]
 
 117 atoms
 123 bonds

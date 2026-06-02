@@ -1,0 +1,51 @@
+Map file: bond_react_merge: v1.19 / 1 June 2026 auto-generated mapfile for DPEI_pre_rxn_IFF_typed_FF_assigned.data  ->  DPEI_post_rxn_IFF_typed_FF_assigned.data    rxnid: 2
+
+2 edgeIDs
+27 equivalences
+3 deleteIDs
+
+InitiatorIDs
+
+ 8
+18
+
+EdgeIDs
+
+ 1
+22
+
+DeleteIDs
+
+ 9
+24
+26
+
+Equivalences
+
+ 1        7       
+ 2        8       
+ 3        9       
+ 4       10       
+ 5       11       
+ 6       12       
+ 7       13       
+ 8       14       
+ 9       25       
+10       15       
+11       16       
+12       17       
+13       18       
+14       24       
+15       21       
+16        1       
+17        2       
+18       20       
+19        3       
+20        4       
+21        5       
+22        6       
+23       22       
+24       26       
+25       19       
+26       27       
+27       23       

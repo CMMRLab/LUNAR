@@ -7,13 +7,18 @@ Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
 """
-
 ##############################
 # Import Necessary Libraries #
 ##############################
 import src.bond_react_merge.graph_theory as gt
+from scipy.optimize import linear_sum_assignment
+import matplotlib.pyplot as plt
 from collections import Counter
+import numpy as np
+import math
 import os
+
+
 
 
 ################################################################
@@ -27,8 +32,8 @@ class find:
         self.cost = {} # { tuple(pre-atomid, postatomid): COST DICT}
         self.InitiatorIDs = {'ID1':'FAILED', 'ID2':'FAILED'} # Initialize and update later if two molecules exist in pre rxn-template
         self.deleteIDs = {} # { pre-rxn atom-id : comment }
-        self.iterations = 0 # convergence for equivalences
         self.max_cost = 0 # max accetable cost iterated to
+        self.MapFile = ''
         pre_filename = os.path.basename(pre.filename)
         post_filename = os.path.basename(post.filename)
         
@@ -36,7 +41,7 @@ class find:
         ##################################################
         # Get pre headers info: BondingIDs and CreateIDs #
         ##################################################
-        BondingIDs, CreateIDs, Reduce, Remove, Keep = get_lmp_header_info(pre, log)
+        BondingIDs, CreateIDs, Reduce, Remove, Keep, self.MapFile = get_lmp_header_info(pre, log)
         # Updating BondingIDs from Reduce
         if len(Reduce) == 5 and len(BondingIDs) == 0:
             log.out('Updating BondingIDs from Reduce for Equivalence matching')
@@ -69,7 +74,7 @@ class find:
         ######################################
         pre_molecules, self.pre_molids, pre_formulas, pre_cluster_info = clusters(pre, log, pflag=True, rxntype='Pre', advancedformula=False)
         post_molecules, self.post_molids, post_formulas, post_cluster_info = clusters(post, log, pflag=True, rxntype='Post', advancedformula=False)
-        
+
         
         ##################################################################################################################################
         # Find edge atoms for pre/post (This will be based on nb for atom-types in read dataN tags vs preN/postN tagged files. If no     #
@@ -80,13 +85,13 @@ class find:
         # Find pre-rxn edge atoms
         for i in pre_atoms:
             nb = len(pre_graph[i]); element = self.pre_elements[i]; atom_type = self.pre_types[i];
-            nbs_per_type = set(allN_types2nb_lst[atom_type])
+            nbs_per_type = set(allN_types2nb_lst.get(atom_type, []))
             if atom_type in dataN_types2nb_map:
                 
                 # If nb not in nb_dataN it must be an edge atom or the user messed something up either way, look it as an edge atom.
                 if nb not in dataN_types2nb_map[atom_type] and nb >= 1:
                     if nb == 1:
-                        comment = '{} (   nb==1 and nb does not match most common nb for the atom-type from the dataN tagged files     ) '.format(atom_type)
+                        comment = '{:^4} (   nb==1 and nb does not match most common nb for the atom-type from the dataN tagged files     ) '.format(atom_type)
                         self.pre_edge[i] = comment
                     if nb > 1: # Warn user if possible edgeID has more then 1 bonded neighbor, since its likely an issue on their end
                         log.warn(f'    WARNING atomID {i} was found to be a possible edge atom since the number of bonded neighbors differ from')
@@ -94,59 +99,58 @@ class find:
                 
             # elif only try guessing based on known terminating elements if len(dataN_types2nb_map) == 0
             elif element not in elements2skip and nb == 1 and len(dataN_types2nb_map) == 0:
-                comment = '{} (   nb==1 and not a known terminating element of: {}   ) '.format(atom_type, ', '.join(elements2skip))
+                comment = '{:^4} (   nb==1 and not a known terminating element of: {}   ) '.format(atom_type, ', '.join(elements2skip))
                 self.pre_edge[i] = comment
                 
             # elif try guessing if number of bonded atoms differ between all dataN, preN, and postN tagged files
             elif len(nbs_per_type) > 1 and nb == 1:
                 nbs = ', '.join([str(i) for i in nbs_per_type])
-                comment = '{} (   nb==1 and number of bonded atoms differ between differ uses of {}_nbs=[{}] ) '.format(atom_type, atom_type, nbs)
+                comment = '{:^4} (   nb==1 and number of bonded atoms differ between differ uses of {}_nbs=[{}] ) '.format(atom_type, atom_type, nbs)
                 self.pre_edge[i] = comment
             
         
         # Find post-rxn edge atoms
         for i in post_atoms:
             nb = len(post_graph[i]); element = self.post_elements[i]; atom_type = self.post_types[i]
-            nbs_per_type = set(allN_types2nb_lst[atom_type])
+            nbs_per_type = set(allN_types2nb_lst.get(atom_type, []))
             if atom_type in dataN_types2nb_map:
                 
                 # If nb not in nb_dataN it must be an edge atom or the user messed something up either way, look it as an edge atom.
                 if nb not in dataN_types2nb_map[atom_type] and nb == 1:
-                    comment = '{} (   nb>=1 and nb does not match most common nb for the atom-type from the dataN tagged files     ) '.format(atom_type)
+                    comment = '{:^4} (   nb>=1 and nb does not match most common nb for the atom-type from the dataN tagged files     ) '.format(atom_type)
                     self.post_edge[i] = comment
                 
             # elif only try guessing based on known terminating elements if len(dataN_types2nb_map) == 0
             elif element not in elements2skip and nb == 1 and len(dataN_types2nb_map) == 0:
-                comment = '{} (   nb==1 and not a known terminating element of: {}   ) '.format(atom_type, ', '.join(elements2skip))
+                comment = '{:^4} (   nb==1 and not a known terminating element of: {}   ) '.format(atom_type, ', '.join(elements2skip))
                 self.post_edge[i] = comment
                 
             # elif try guessing if number of bonded atoms differ between all dataN, preN, and postN tagged files
             elif len(nbs_per_type) > 1 and nb == 1:
                 nbs = ', '.join([str(i) for i in nbs_per_type])
-                comment = '{} (   nb==1 and number of bonded atoms differ between differ uses of {}_nbs=[{}] ) '.format(atom_type, atom_type, nbs)
+                comment = '{:^4} (   nb==1 and number of bonded atoms differ between differ uses of {}_nbs=[{}] ) '.format(atom_type, atom_type, nbs)
                 self.post_edge[i] = comment   
+
 
         ############################################################################
         # Loop through pre_atoms and check against post_atoms and assign costs ... #
         ############################################################################
-        cost_tally = {} # { tuple(pre-atomid : postatomid): COST TALLY}
-        cost_dict =  {} # { tuple(pre-atomid : postatomid): COST DICT}
+        self.cost_tally = {} # { tuple(pre-atomid : postatomid): COST TALLY}
+        self.cost_dict =  {} # { tuple(pre-atomid : postatomid): COST DICT}
         pretypes = [self.pre_types[i] for i in self.pre_types]
         for pre_atom in pre_atoms:
             for post_atom in post_atoms:
                 if post_atom in CreateIDs: continue
                 # Find pair, pre/post comment
                 pair = tuple([pre_atom, post_atom])
-                pre_comment = pre.atoms[pre_atom].comment
-                post_comment = post.atoms[post_atom].comment
                 
                 # Find pre/post element
-                pre_element = pre_comment[pre_comment.rfind('/')+1:].capitalize()
-                post_element = post_comment[post_comment.rfind('/')+1:].capitalize()
+                pre_element = self.pre_elements[pre_atom]
+                post_element = self.post_elements[post_atom]
                 
                 # Find pre/post atom-type
-                pre_atomtype = pre_comment[:pre_comment.rfind('/')]
-                post_atomtype = post_comment[:post_comment.rfind('/')]
+                pre_atomtype = self.pre_types[pre_atom]
+                post_atomtype = self.post_types[post_atom]
                 
                 # Find pre/post molID to assign any possible deleteID costs
                 pre_molid = self.pre_molids[pre_atom]
@@ -157,7 +161,7 @@ class find:
                 post_cumulative_neighs = bfs_neighs_depth(post_atom, post_graph)
                 
                 # Only procede if pre/post elements are the same (enforce chemistry to reduce errors and minimize equivalence search space)
-                if pre_element == post_element and pair not in cost_tally:
+                if pre_element == post_element and pair not in self.cost_tally:
                 
                     # Intialize tmpcost dict with zeros and update later on
                     tmpcost = {'atom-type':0, 'nb':0, 'neigh_1st_atom-types':0, 'neigh_1st_elements':0,
@@ -186,7 +190,8 @@ class find:
                     
                     # cummulative neigh costs: atom-types, elements, and nbs
                     max_neigh_depth = min( [len(pre_cumulative_neighs), len(post_cumulative_neighs)] ) - 1
-                    cumulative_neigh_types_cost = 0; cumulative_neigh_elements_cost = 0; cumulative_neigh_nb_cost = 0;
+                    cumulative_neigh_types_cost = 0; cumulative_neigh_elements_cost = 0;
+                    cumulative_neigh_nb_cost = 0; 
                     for n in range(max_neigh_depth):
                         # Difference in cummulative atom types
                         cumulative_pre_types = [self.pre_types[i] for i in pre_cumulative_neighs[n]]
@@ -201,7 +206,7 @@ class find:
                         # Difference in cummulative nbs
                         cumulative_pre_nb = [len(pre_graph[i]) for i in pre_cumulative_neighs[n]]
                         cumulative_post_nb = [len(post_graph[i]) for i in post_cumulative_neighs[n] if i not in CreateIDs]
-                        cumulative_neigh_types_cost += diff_lst(cumulative_pre_nb, cumulative_post_nb)
+                        cumulative_neigh_nb_cost += diff_lst(cumulative_pre_nb, cumulative_post_nb)
                     if len(post_cumulative_neighs) != len(pre_cumulative_neighs):
                         ndiff = 10*abs(len(pre_cumulative_neighs) - len(post_cumulative_neighs))
                         cumulative_neigh_types_cost += ndiff
@@ -209,7 +214,7 @@ class find:
                         cumulative_neigh_nb_cost += ndiff
                     
                     # deleteID cost if post_molid > 1 assign a large cost to help deleteIDs be assigned lass
-                    if post_molid > 1: deleteID_cost = 20
+                    if post_molid > 1: deleteID_cost = len(post_molecules)*10
                     else: deleteID_cost = 0
                     
                     # molID cost to assign all atoms from smaller molecules last
@@ -221,19 +226,85 @@ class find:
                     # have a clear match and making the equivalence assignment last on these types will reduce the number
                     # of possibilities to increase the probability of getting it correct).
                     if post_atomtype in pretypes: new_type_cost = 0
-                    else: new_type_cost = 10
+                    else: new_type_cost = 1
                     
                     # Depth from edge cost which assigns a penality based on the difference of each atoms (pre/post)
                     # shortest path depth(s) to all edges atoms found prior to assigning cost fitting
-                    pre_depth_from_edge = []; post_depth_from_edge = [];
+                    pre_depth_from_edge = []; post_depth_from_edge = []
+                    pre_paths_to_edge  = [] # [[('C', 'C', 'O'), ('cp', 'c3', 'oc')] ... Npaths]
+                    post_paths_to_edge = [] # [[('C', 'N', 'O'), ('cp', 'nn', 'op')], ... Npaths]
                     for edge_atom in self.pre_edge:
                         shortest_path = gt.find_shortest_path(pre_graph, pre_atom, edge_atom)
-                        if shortest_path: pre_depth_from_edge.append(len(shortest_path))
+                        if shortest_path: 
+                            pre_depth_from_edge.append(len(shortest_path))
+                            #print(shortest_path)
+                            path_to_edge_elements = [self.pre_elements[i] for i in shortest_path if i != pre_atom]
+                            path_to_edge_types = [self.pre_types[i] for i in shortest_path if i != pre_atom]
+                            pre_paths_to_edge.append( [tuple(path_to_edge_elements), tuple(path_to_edge_types)] )
                     for edge_atom in self.post_edge:
                         shortest_path = gt.find_shortest_path(post_graph, post_atom, edge_atom)
-                        if shortest_path: post_depth_from_edge.append(len(shortest_path))
-                    pre_depth_from_edge = sorted(pre_depth_from_edge); post_depth_from_edge = sorted(post_depth_from_edge);
+                        if shortest_path: 
+                            post_depth_from_edge.append(len(shortest_path))
+                            path_to_edge_elements = [self.post_elements[i] for i in shortest_path if i != post_atom]
+                            path_to_edge_types = [self.post_types[i] for i in shortest_path if i != post_atom]
+                            post_paths_to_edge.append( [tuple(path_to_edge_elements), tuple(path_to_edge_types)] )
+                    
+                    # Edge: Depth from edge
+                    pre_depth_from_edge = sorted(pre_depth_from_edge)
+                    post_depth_from_edge = sorted(post_depth_from_edge)
                     depth_from_edge = 2*diff_lst(pre_depth_from_edge, post_depth_from_edge) # Weight it by 2 since this is important
+                    
+                    # Edge: Elemental path to edge
+                    path_to_edge_types = 0
+                    path_to_edge_elements = 0
+                    if pre_depth_from_edge:
+                        #print()
+                        #print(pair, pre_atomtype, post_atomtype)
+                        #print('pre_elemental_paths_to_edge = ', pre_elemental_paths_to_edge)
+                        
+                        
+                        shortest_path_len = min(pre_depth_from_edge) - 1
+                        path_diffs_types, path_diffs_elements = [], []
+                        for pre_path_elements, pre_path_types in pre_paths_to_edge:
+                            if len(pre_path_elements) != shortest_path_len: continue
+                            for post_path_elements, post_path_types in post_paths_to_edge:
+                                if len(post_path_elements) != shortest_path_len: continue
+                                
+                                # Elements check
+                                diffs_elements = [1 for i, j in zip(pre_path_elements, post_path_elements) if i != j]
+                                if diffs_elements: diff = sum(diffs_elements)
+                                else: diff = 0
+                                path_diffs_elements.append(diff)
+                                
+                                # Types check
+                                diffs_types = [1 for i, j in zip(pre_path_types, post_path_types) if i != j]
+                                if diffs_types: diff = sum(diffs_types)
+                                else: diff = 0
+                                path_diffs_types.append(diff)
+                                
+                                
+                                # print('pre_types  =', pre_path_types)
+                                # print('post_types =', post_path_types)
+                                # print('diff_types = ', diffs_types)
+
+                        # Assign path cost based on elements
+                        if path_diffs_elements:
+                            path_to_edge_elements = 10*min(path_diffs_elements)
+                        else:
+                            path_to_edge_elements = 10*depth_from_edge
+                                
+                        # Assign path cost based on types
+                        if path_diffs_types:
+                            path_to_edge_types = 10*min(path_diffs_types)
+                        else:
+                            path_to_edge_types = 10*depth_from_edge
+                    
+                    # print('path_to_edge_types    = ', path_to_edge_types)
+                    # print('path_to_edge_elements =', path_to_edge_elements)
+                    # print('shortest_path_len     = ', shortest_path_len+1)
+                    # print('pre_depth_from_edge   =', pre_depth_from_edge)
+                        
+                                
                     
                     # edge_cost = a penality if both atoms are not edge atoms
                     if pre_atom in self.pre_edge and post_atom not in self.post_edge: 
@@ -248,8 +319,20 @@ class find:
                     # since it may cause issues for some templates. The purpose of this cost is to keep atomIDs
                     # as close as possible to one another, especially in very symmertric templates.
                     if pre_atom == post_atom: ID_cost = 0
-                    else: ID_cost = round(abs(pre_atom-post_atom)/2, 2) 
-                    
+                    else: 
+                        ID_cost = abs(pre_atom-post_atom)/len(pre_atoms) # bound between 0 - 1
+                        ID_cost = ID_cost/1000 # bound between 0 - 0.001, to only cause atomID matching for extremely similar atoms like H's
+                        
+                    # EXPEIRMENTAL COST
+                    neigh_ID_cost = 0
+                    try: pre_neighs1 = pre_cumulative_neighs[0]
+                    except: pre_neighs1 = []
+                    try: post_neighs1 = post_cumulative_neighs[0]
+                    except: post_neighs1 = []
+                    neigh_ID_cost = diff_lst(pre_neighs1, post_neighs1)
+                    neigh_ID_cost = neigh_ID_cost/(len(pre_atoms)*len(pre_neighs1)) # bound between 0 - 1
+                    neigh_ID_cost = neigh_ID_cost/1000 # bound between 0 - 0.001, to only cause atomID matching for extremely similar atoms like H's
+
                     # Update tmpcost with new found costs
                     tmpcost['neigh_1st_atom-types'] = neigh_1st_atomtypes_cost
                     tmpcost['neigh_1st_elements'] = neigh_1st_elements_cost
@@ -264,12 +347,15 @@ class find:
                     tmpcost['deleteID'] = deleteID_cost
                     tmpcost['ID'] = ID_cost
                     tmpcost['molID'] = molID_cost
+                    tmpcost['neigh_ID_cost'] = neigh_ID_cost
+                    tmpcost['path_to_edge_types'] = path_to_edge_types
+                    tmpcost['path_to_edge_elements'] = path_to_edge_elements
 
                     # If pair not already in cost_tally add to cost_tally and cost_dict
                     # Also make sure edge_cost is zero so edges are mapped properly
-                    if pair not in cost_tally and edge_cost == 0:
-                        cost_tally[pair] = sum(list(tmpcost.values()))
-                        cost_dict[pair] = tmpcost
+                    if pair not in self.cost_tally:
+                        self.cost_tally[pair] = sum(list(tmpcost.values()))
+                        self.cost_dict[pair] = tmpcost
 
                         
         ##################################################################################################
@@ -280,16 +366,14 @@ class find:
             self.map[i] = 0; 
             self.cost[(i, 0)] = {'atom-type':0, 'nb': 0, 'neigh_1st_atom-types':0, 'neigh_1st_elements':0,
                                  'edge':0, 'new-type':0, 'depth_from_edge':0, 'deleteID':0, 'ID':0, 'molID':0,
-                                 'cumulative_neigh_types':0, 'cumulative_neigh_elements':0, 'cumulative_neigh_nb':0}
+                                 'cumulative_neigh_types':0, 'cumulative_neigh_elements':0, 'cumulative_neigh_nb':0,
+                                 'neigh_ID_cost':0, 'path_to_edge_types':0, 'path_to_edge_elements':0}
                         
-        # Dynamically check all possible equivalences based on cost approach with two Methods: 1) if user supplies BondingIDs 2) general cost minimizer
+        # Minize cost matrix using one of two Methods: 1) if user supplies BondingIDs or 2) general cost minimizer
         used_postids = set(CreateIDs); used_preids = set(); paired = set([]); # Data-structs to keep track of what has been used
-        while_count = 0; max_while = 250*len(pre_atoms);  # while count and max loop break condition
-        acceptable_cost = 0; cost_increment = 1; # acceptable cost (tally); increment 
-        update = 2; # update condtion to increment acceptable_cost by (>=2 seems to work best, gives N-chances to match per acceptable_cost)
-        #--------------------------------------------------------------------------------------------------------------------#
-        # Method 1 (if user provideds BondingIDs get intial maps from BFS radial searching and let Method 2 handle the rest) #
-        #--------------------------------------------------------------------------------------------------------------------#
+        #-----------------------------------------------------------------------------------#
+        # Method 1 (if user provideds BondingIDs get intial maps from BFS radial searching) #
+        #-----------------------------------------------------------------------------------#
         if len(BondingIDs) == 4:
             # Get pre-rxn/post mol1 and mol2 and set BondingIDs equivs and log associated info
             log.out(f'  BondingIDs {str(BondingIDs)} will be used as much as possible in a BFS mapping pattern')
@@ -298,76 +382,73 @@ class find:
             self.map[BondingIDs[0]] = BondingIDs[2]; self.cost[(BondingIDs[0], BondingIDs[2])] = {'BondingIDs-BFS-pattern-Depth-0-mol1':0}
             self.map[BondingIDs[1]] = BondingIDs[3]; self.cost[(BondingIDs[1], BondingIDs[3])] = {'BondingIDs-BFS-pattern-Depth-0-mol2':0}
             used_preids.add(BondingIDs[0]); used_preids.add(BondingIDs[1]); used_postids.add(BondingIDs[2]); used_postids.add(BondingIDs[3]);
-            keys = ['atom-type', 'nb', 'neigh_1st_elements', 'neigh_1st_atom-types', 'cumulative_neigh_types'] 
-            
+            keys = ['atom-type', 'nb', 'neigh_1st_elements', 'neigh_1st_atom-types', 'edge', 'depth_from_edge',
+                    'cumulative_neigh_types','cumulative_neigh_elements', 'deleteID', 'ID', 'molID'] 
+    
             # Map pre_mol1 to post_mol1
-            min_depth = min([len(pre_mol1_BFS), len(post_mol1_BFS)]); tmp_count = 0; tmp_cost = 0; 
-            for depth in range(min_depth):
-                pre_neighs = pre_mol1_BFS[depth]; post_neighs = post_mol1_BFS[depth]; max_map = min([len(pre_neighs), len(post_neighs)]); tmp_used = [];
-                while len(tmp_used) < max_map:
-                    tmp_count += 1;
-                    if tmp_count % update: tmp_cost += cost_increment
-                    for i in pre_neighs:
-                        tmptally, tmpdicts = reduce_and_sort_costdict(i, cost_dict, keys, paired, post_graph)
-                        for pair in tmptally:
-                            if pair[1] not in post_neighs: continue
-                            preid, postid = pair; cost = tmptally[pair];
-                            if preid not in used_preids and postid not in used_postids and cost <= acceptable_cost:
-                                used_preids.add(preid);  used_postids.add(postid); tmp_used.append(preid); paired.add(pair); self.map[preid] = postid;
-                                self.cost[pair] = tmpdicts[pair]; self.cost[pair] = {'BondingIDs-BFS-pattern-Depth-'+str(depth+1)+'-mol1':0}; break;
-                    if tmp_count >= max_while/10: break
+            max_depth = min([len(pre_mol1_BFS), len(post_mol1_BFS)])
+            for depth in range(max_depth):
+                pre_neighs = [i for i in pre_mol1_BFS[depth] if i not in used_preids]
+                post_neighs = [i for i in post_mol1_BFS[depth] if i not in used_postids]
+                if not pre_neighs or not post_neighs: continue
+                shell_map, shell_costs = solve_global_mapping(pre_neighs, post_neighs, self.cost_dict, keys, CreateIDs, log, check_impossible=False)
+                for preid, postid in shell_map.items():
+                    if postid == 0: continue
                 
+                    pair = (preid, postid)
+                    used_preids.add(preid)
+                    used_postids.add(postid)
+                    paired.add(pair)
+                
+                    self.map[preid] = postid
+                    self.cost[pair] = shell_costs[pair]
+
             # Map pre_mol2 to post_mol2
-            min_depth = min([len(pre_mol2_BFS), len(post_mol2_BFS)]); tmp_count = 0; tmp_cost = 0; 
-            for depth in range(min_depth):
-                pre_neighs = pre_mol2_BFS[depth]; post_neighs = post_mol2_BFS[depth]; max_map = min([len(pre_neighs), len(post_neighs)]); tmp_used = [];
-                while len(tmp_used) < max_map:
-                    tmp_count += 1;
-                    if tmp_count % update: tmp_cost += cost_increment
-                    for i in pre_neighs:
-                        tmptally, tmpdicts = reduce_and_sort_costdict(i, cost_dict, keys, paired, post_graph)
-                        for pair in tmptally:
-                            if pair[1] not in post_neighs: continue
-                            preid, postid = pair; cost = tmptally[pair];
-                            if preid not in used_preids and postid not in used_postids and cost <= acceptable_cost:
-                                used_preids.add(preid);  used_postids.add(postid); tmp_used.append(preid); paired.add(pair); self.map[preid] = postid;
-                                self.cost[pair] = tmpdicts[pair]; self.cost[pair] = {'BondingIDs-BFS-pattern-Depth-'+str(depth+1)+'-mol2':0}; break;
-                    if tmp_count >= max_while/10: break
+            max_depth = min([len(pre_mol2_BFS), len(post_mol2_BFS)])
+            for depth in range(max_depth):
+                pre_neighs = [i for i in pre_mol2_BFS[depth] if i not in used_preids]
+                post_neighs = [i for i in post_mol2_BFS[depth] if i not in used_postids]
+                if not pre_neighs or not post_neighs: continue
+                shell_map, shell_costs = solve_global_mapping(pre_neighs, post_neighs, self.cost_dict, keys, CreateIDs, log, check_impossible=False)
+                for preid, postid in shell_map.items():
+                    if postid == 0: continue
+                
+                    pair = (preid, postid)
+                    used_preids.add(preid)
+                    used_postids.add(postid)
+                    paired.add(pair)
+                
+                    self.map[preid] = postid
+                    self.cost[pair] = shell_costs[pair]
+                    
+            # Solve any atoms not assigned by the BFS-shell mapping
+            keys.append('path_to_edge_types')
+            keys.append('path_to_edge_elements')
+            remaining_pre = [i for i in pre_atoms if i not in used_preids]
+            remaining_post = [j for j in post_atoms if j not in used_postids and j not in CreateIDs]
+            leftover_map, leftover_costs = solve_global_mapping(remaining_pre, remaining_post, self.cost_dict, keys, CreateIDs, log, check_impossible=False)
+            for preid, postid in leftover_map.items():
+                if postid == 0: continue
+            
+                pair = (preid, postid)
+                used_preids.add(preid)
+                used_postids.add(postid)
+                paired.add(pair)
+            
+                self.map[preid] = postid
+                self.cost[pair] = leftover_costs[pair]
         
         #--------------------------------------------------------#
         # Method 2 (Default if user does not provide BondingIDs) #
         #--------------------------------------------------------#
-        #sorted_cost_tally = dict(sorted(cost_tally.items(), key=lambda x:x[1], reverse=False))  # [0=keys;1=values] sort by cost
-        #pre_atoms = [i[0] for i in sorted_cost_tally] # iterate through atomIDs with increasing costs
-        #pre_atoms = sorted(pre_atoms, reverse=True)
-        # sorted_cost_tally = dict(sorted(cost_tally.items(), key=lambda x:x[1], reverse=False))  # [0=keys;1=values] sort by cost
-        # for i in sorted_cost_tally:
-        #     keys = ['atom-type', 'nb', 'neigh_1st_elements', 'edge', 'depth_from_edge', 'deleteID', 'cumulative_neigh_types',
-        #             'cumulative_neigh_elements', 'molID', 'neigh_1st_atom-types']
-        #     tmptally, tmpdicts = reduce_and_sort_costdict(i[0], cost_dict, keys, paired, post_graph)
-        #     if i[0] == 1:
-        #         print()
-        #         print(i, tmptally[i])
-        #         print(tmpdicts[i])
-        while len(used_preids) < len(pre_atoms):
-            while_count += 1
-            if while_count % update:
-                acceptable_cost += cost_increment
-            for i in pre_atoms:
-                keys = ['atom-type', 'nb', 'neigh_1st_elements', 'edge', 'depth_from_edge', 'deleteID', 'cumulative_neigh_types',
-                        'cumulative_neigh_elements', 'molID', 'neigh_1st_atom-types']                 
-                if len(set(pre_formulas)) == 1: keys.append('ID') # If pre-rxn template has the same formula, assume the symmetry and assign 'ID' to constrain the domain
-                tmptally, tmpdicts = reduce_and_sort_costdict(i, cost_dict, keys, paired, post_graph)
-                for pair in tmptally:
-                    preid, postid = pair; cost = tmptally[pair];
-                    if preid not in used_preids and postid not in used_postids and cost <= acceptable_cost:
-                        used_preids.add(preid); used_postids.add(postid); paired.add(pair);
-                        self.map[preid] = postid; self.cost[pair] = tmpdicts[pair]; break
-            if while_count >= max_while: 
-                log.warn(' WARNING Equivalence map timed out. NOT ALL Equivalences could be found for {} -> {}'.format(pairname[0], pairname[1]));  break
-
-        # Update convergence criteria: self.iterations with while_count and self.max cost with most current acceptable_cost
-        self.iterations = while_count; self.max_cost = acceptable_cost;
+        else:
+            keys = ['atom-type', 'nb', 'neigh_1st_elements', 'neigh_1st_atom-types', 'edge', 'depth_from_edge',
+                    'cumulative_neigh_types','cumulative_neigh_elements', 'deleteID', 'ID', 'molID',
+                    'path_to_edge_types', 'path_to_edge_elements'] 
+            
+            self.map, solved_costs = solve_global_mapping(pre_atoms, post_atoms, self.cost_dict, keys, CreateIDs, log)
+            for pair, costdict in solved_costs.items():
+                self.cost[pair] = solved_costs[pair]
         
 
         ###################################################################################################################
@@ -478,55 +559,65 @@ class find:
                 log.out('    {}'.format(self.deleteIDs[i]))
                 
                 
-###########################################################
-# Function to "order" atoms about an atomID. For example: #
-#   atomID = 3                                            #
-#   atoms = [1,2,3,4,5,6]                                 #
-# The returned list of atoms will be:                     #
-#  [3, 2, 4, 1, 5, 6]                                     #
-###########################################################
-def order_atomIDs_around_atomID(atomID, atoms):
-    atomID_diffs = {i:abs(i-atomID) for i in sorted(atoms)} # {atomID : differents between atomIDs}
-    atomID_diffs = dict(sorted(atomID_diffs.items(), key=lambda x:x[1], reverse=False))  # [0=keys;1=values]
-    ordered_atoms = list(atomID_diffs.keys())
-    return ordered_atoms
+##############################################
+# Use SciPy’s Hungarian algorithm to fit map #
+##############################################
+def solve_global_mapping(pre_atoms, post_atoms, cost_dict, keys, create_ids, log, check_impossible=True):
+    # Initialize inputs
+    available_post = [j for j in post_atoms if j not in create_ids]
+    mapping = {pre_id: 0 for pre_id in pre_atoms}
+    mapping_costs = {}
+    if not pre_atoms:
+        return mapping, mapping_costs
+    if not available_post:
+        log.warn('  WARNING no available post atoms for mapping.')
+        return mapping, mapping_costs
+    
+    # Fill the cost matrix
+    big = 1e9
+    cost_matrix = np.full((len(pre_atoms), len(available_post)), big)
+    for r, pre_id in enumerate(pre_atoms):
+        for c, post_id in enumerate(available_post):
+            pair = (pre_id, post_id)
+            if pair in cost_dict:
+                costs = [cost_dict[pair].get(k, 0) for k in keys]
+                cost_matrix[r, c] = sum(costs)
                 
-                
-################################################################################
-# Function to reduce inner dict and sort based atomids in pair and lowest cost #
-################################################################################
-def reduce_and_sort_costdict(atomid, cost_dict, keys, paired, post_graph):            
-    tmptally = {} # { tuple(pre-atomid : postatomid): COST TALLY}
-    tmpdicts = {} # { tuple(pre-atomid : postatomid): COST DICT}
-    for pair in cost_dict:
-        if pair[0] == atomid and pair not in list(paired):
-            tmp = {i:cost_dict[pair][i] for i in cost_dict[pair] if i in keys}
-            tally = sum([cost_dict[pair][i] for i in cost_dict[pair] if i in keys])
-            tmpdicts[pair] = tmp;  tmptally[pair] = tally;
-            
-    # Check for duplicate tally and if duplicates found add the atomID cost
-    tallies = list(tmptally.values())
-    duplicates = set([x for x in tallies if tallies.count(x) > 1])
-    if duplicates:
-        for pair in tmptally:
-            if tmptally[pair] in duplicates:
-                tmptally[pair] += cost_dict[pair]['ID']
-                tmpdicts[pair]['ID'] = cost_dict[pair]['ID']
-                
-    # Sort tmptally then create tmpdicts from tmptally since tmptally has already been sorted
-    # and tmpdicts will inherit tmptally sequence (ASSUMES PYTHON 3.7 OR GREATER)
-    tmptally = dict(sorted(tmptally.items(), key=lambda x:x[0][0], reverse=False)) # [0=keys;1=values][0=preID] 
-    tmptally = dict(sorted(tmptally.items(), key=lambda x:x[0][1], reverse=False)) # [0=keys;1=values][1=postID] 
-    tmptally = dict(sorted(tmptally.items(), key=lambda x:x[1], reverse=False))    # [0=keys;1=values] sort by cost 
-    tmpdicts = {j:tmpdicts[j] for j in tmptally} # ReBuild tmpdicts from order in tmpy tally
-    return tmptally, tmpdicts
-                
+    # Check for atomIDs that are unmappable (should not be run with BondingIDs)
+    if check_impossible:
+        impossible_rows = [pre_atoms[r] for r in range(len(pre_atoms))
+                           if np.all(cost_matrix[r, :] >= big)]
+        if impossible_rows:
+            log.warn(f'  WARNING unmappable pre atom IDs: {impossible_rows}')
+        
+    # Pad columns so every pre atom can be assigned either a real post atom or dummy 0.
+    if len(pre_atoms) > len(available_post):
+        pad = np.full((len(pre_atoms), len(pre_atoms) - len(available_post)), big, dtype=float)
+        cost_matrix = np.hstack([cost_matrix, pad])
+
+    # Minizmie the cost matrix
+    rows, cols = linear_sum_assignment(cost_matrix)
+    for r, c in zip(rows, cols):
+        pre_id = pre_atoms[r]
+        if c >= len(available_post) or cost_matrix[r, c] >= big:
+            mapping[pre_id] = 0
+            continue
+
+        post_id = available_post[c]
+        pair = (pre_id, post_id)
+    
+        mapping[pre_id] = post_id
+        mapping_costs[pair] = cost_dict[pair]
+
+    return mapping, mapping_costs
+
 
 ####################################################
 # Function to get info from LAMMPS datafile header #
 ####################################################
 def get_lmp_header_info(m, log):
-    BondingIDs = []; CreateIDs = []; Reduce = []; Remove = []; Keep = []; filename = os.path.basename(m.filename);
+    BondingIDs = []; CreateIDs = []; Reduce = []; Remove = []; Keep = []; MapFile = ''
+    filename = os.path.basename(m.filename);
     
     # Function to parse header and get list
     def get_list(line):
@@ -535,7 +626,7 @@ def get_lmp_header_info(m, log):
         for i in line[-1]:
             if i == '=': equal = True; continue
             if i == '[': bracket = True; count1 += 1; continue;
-            if i == ']': bracket = False; count2 += 1; continue;
+            if i == ']':   bracket = False; count2 += 1; continue;
             if count1 > 1 or count2 > 1: bracket = False
             if bracket and equal: string += i
         string = string.split(',') # split by commas
@@ -543,6 +634,18 @@ def get_lmp_header_info(m, log):
             try: lst.append(int(ID))
             except: pass
         return lst
+    
+    # Function to parse header and get string
+    def get_string(line):
+        string = ''; bracket = False; equal = False;
+        count1 = 0; count2 = 0;
+        for i in line[-1]:
+            if i == '=': equal = True; continue
+            if i == '"': bracket = True; count1 += 1; continue;
+            if i == '"':   bracket = False; count2 += 1; continue;
+            if count1 > 1 or count2 > 1: bracket = False
+            if bracket and equal: string += i
+        return string
     
     # Try getting BondingIDs
     if 'BondingIDs' in m.header:
@@ -573,7 +676,13 @@ def get_lmp_header_info(m, log):
         line = m.header.split('CreateIDs') # Find CreateIDs string 
         CreateIDs = get_list(line) # Get list of info
         if CreateIDs: log.out(f'{filename} had the following CreateIDs specified in the header: {str(CreateIDs)}')
-    return BondingIDs, CreateIDs, Reduce, Remove, Keep
+        
+    # Try getting MapFile
+    if 'MapFile' in m.header:
+        line = m.header.split('MapFile') # Find BondingIDs string 
+        MapFile = get_string(line) # Get list of info
+        if MapFile: log.out(f'{filename} had the following MapFile specified in the header: {str(MapFile)}')
+    return BondingIDs, CreateIDs, Reduce, Remove, Keep, MapFile
     
 
 ########################################################################
@@ -828,7 +937,11 @@ def write_map(filename, pre2post, title, version, comment_flag):
     def string_dict(dictionary):
         string = ''
         for key in dictionary:
-            string += '{:<2} {}: {:^5} {:>2}'.format('', key, dictionary[key], '')
+            value = dictionary[key]
+            if isinstance(value, (float, int)):
+                string += '{:<2} {}: {:^8.4f} {:>2}'.format('', key, value, '')
+            else:
+                string += '{:<2} {}: {:^8} {:>2}'.format('', key, value, '')
         return string
     
     # Open and write file
@@ -890,9 +1003,9 @@ def write_map(filename, pre2post, title, version, comment_flag):
             j = pre2post.map[i]
             
             # Build comment for data logging
-            costdict = pre2post.cost[(i, j)];
-            totalcost = sum(list(costdict.values()));
-            breakdowncost = string_dict(costdict);
+            costdict = pre2post.cost[(i, j)]
+            totalcost = sum(list(costdict.values()))
+            breakdowncost = string_dict(costdict)
             
             # Find pre/post types and molids
             pretype = pre2post.pre_types[i];
@@ -903,7 +1016,7 @@ def write_map(filename, pre2post, title, version, comment_flag):
             except: postmolid = 0
             types = '{:^5} {:^5} -> {:^5}'.format('types: ', pretype, posttype);
             molid = '{:^5} {:^5} -> {:^5}'.format('molids: ', premolid, postmolid)
-            cost_total = '{:^5} {:>5.3f}'.format('Total cost: ', totalcost)
+            cost_total = '{:^5} {:>8.4f}'.format('Total cost: ', totalcost)
             cost_breakdown = '( {:^5} )'.format(breakdowncost)
             comment = '# {:<20} {:>15} {:>20} {:>100}'.format(types, molid, cost_total, cost_breakdown)
             
@@ -911,4 +1024,101 @@ def write_map(filename, pre2post, title, version, comment_flag):
             if comment_flag:
                 f.write('{:>2} {:^15} {}\n'.format(i, j, comment))
             else: f.write('{:>2} {:^15}\n'.format(i, j))      
+    return
+
+# Function to generate cost matrix plot
+def generate_figure(pre2post, filename):
+    plt.close('all')
+
+    #----------------------------------#
+    # Build common atom-id index space #
+    #----------------------------------#
+    pre_ids = sorted({k[0] for k in pre2post.cost_tally})
+    post_ids = sorted({k[1] for k in pre2post.cost_tally})
+
+    pre_idx = {atom: i for i, atom in enumerate(pre_ids)}
+    post_idx = {atom: i for i, atom in enumerate(post_ids)}
+
+    #-------------------------#
+    # Build full cost matrix  #
+    #-------------------------#
+    cost_matrix = np.full((len(post_ids), len(pre_ids)), np.nan)
+    for (pre_atom, post_atom), cost in pre2post.cost_tally.items():
+        row = post_idx[post_atom]
+        col = pre_idx[pre_atom]
+        cost_matrix[row, col] = cost
+
+    #----------------------------#
+    # Build solved mapping matrix#
+    #----------------------------#
+    solved_matrix = np.full((len(post_ids), len(pre_ids)), np.nan)
+    for pre_atom, post_atom in pre2post.map.items():
+        if post_atom == 0:
+            continue
+
+        row = post_idx[post_atom]
+        col = pre_idx[pre_atom]
+
+        costdict = pre2post.cost[(pre_atom, post_atom)]
+        solved_matrix[row, col] = sum(costdict.values())
+        
+    #----------------------------------------#
+    # Shared color scaling between both axes #
+    #----------------------------------------#
+    matrices = [cost_matrix[np.isfinite(cost_matrix)],
+                solved_matrix[np.isfinite(solved_matrix)]]
+    valid_costs = np.concatenate(matrices)
+    vmin = np.min(valid_costs)
+    vmax = np.max(valid_costs)
+    norm = plt.Normalize(vmin=vmin, vmax=vmax)
+
+    #-------------#
+    # Create plot #
+    #-------------#
+    fs = 8
+    fig = plt.figure(figsize=(14, 7))
+    
+    gs = fig.add_gridspec(1, 3, width_ratios=[1, 1, 0.04], wspace=0.2)
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax2 = fig.add_subplot(gs[0, 1])
+    cax = fig.add_subplot(gs[0, 2])
+
+    #--------#
+    # Plot 1 #
+    #--------#
+    im1 = ax1.imshow(solved_matrix, origin='lower', aspect='auto', cmap='viridis', norm=norm)
+
+    ax1.set_xlabel('Pre AtomID', fontsize=fs)
+    ax1.set_ylabel('Post AtomID', fontsize=fs)
+    ax1.set_title('Solved Atom Mapping', fontsize=fs)
+    ax1.tick_params(axis='both', labelsize=fs)
+
+    #--------#
+    # Plot 2 #
+    #--------#
+    im2 = ax2.imshow(cost_matrix, origin='lower', aspect='auto', cmap='viridis', norm=norm)
+
+    ax2.set_xlabel('Pre AtomID', fontsize=fs)
+    ax2.set_ylabel('Post AtomID', fontsize=fs)
+    ax2.set_title('Full Cost Matrix', fontsize=fs)
+    ax2.tick_params(axis='both', labelsize=fs)
+
+    #----------------#
+    # Shared colorbar#
+    #----------------#
+    cbar = fig.colorbar(im2, cax=cax)
+    cbar.set_label('Cost', fontsize=fs)
+    cbar.ax.tick_params(labelsize=fs)
+    
+    #--------------------------#
+    # Rest ticks to ever other #
+    #--------------------------#
+    for ax in [ax1, ax2]:
+        ax.set_xticks(np.arange(0, len(pre_ids), 2))
+        ax.set_xticklabels(pre_ids[::2], fontsize=fs)
+    
+        ax.set_yticks(np.arange(0, len(post_ids), 2))
+        ax.set_yticklabels(post_ids[::2], fontsize=fs)
+    
+    fig.savefig(filename, dpi=300)
     return

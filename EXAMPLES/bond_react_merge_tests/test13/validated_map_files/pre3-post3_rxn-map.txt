@@ -1,0 +1,48 @@
+Map file: bond_react_merge: v1.19 / 1 June 2026 auto-generated mapfile for r3_pre_typed_IFF.data  ->  r3_post_typed_IFF.data    rxnid: 3
+
+6 edgeIDs
+27 equivalences
+
+InitiatorIDs
+
+ 5
+18
+
+EdgeIDs
+
+ 1
+ 3
+11
+15
+19
+27
+
+Equivalences
+
+ 1        1       
+ 2        2       
+ 3        3       
+ 4        4       
+ 5        5     
+ 6       15        
+ 7       16       
+ 8       17       
+ 9       18       
+10       26       
+11        6      
+12        7       
+13        8       
+14        9       
+15       10        
+16       11        
+17       12        
+18       13       
+19       14       
+20       19       
+21       20       
+22       21       
+23       27       
+24       22       
+25       23       
+26       24    
+27       25       

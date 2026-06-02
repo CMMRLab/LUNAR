@@ -21,6 +21,7 @@ gpush.sh
 
 # ignore automatic test outputs
 automatic_tests/outputs
+EXAMPLES/bond_react_merge_tests/*/run/*
 
 # ignore log_analysis outputs
 EXAMPLES/log_analysis/*.jpeg

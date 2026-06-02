@@ -15,10 +15,22 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 30May2026)
+LUNAR (version 2June2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+2June2026          JDK         - bond_react_merge.py: Swithed a hand built minimizer for a Scipy Hungarian
+                                                      minimizer for minimizing the cost matrix to generate the
+                                                      map file (scipy and numpy are now both requirements to
+                                                      generate a mapfile). Also added more costs such as "path
+                                                      to edge atoms" using both elemental paths and atom type 
+                                                      paths. Finally added a visualization of the cost matrix
+                                                      per each reaction. All of these changes have resulted in
+                                                      35 out of 35 tests to be properly mapped. Hydrogens may 
+                                                      still not be mapped exactly, but these atoms can get 
+                                                      "pulled through the reaction area" pretty easily and will
+                                                      have little effect on the reaction site minimizing properly.
+
 30May2026          JDK         - bond_react_merge.py: Added ability for map file generator to find edge atoms
                                                       when those edge atoms are generated in a sequential
                                                       template and are not present in a dataN tagged file.

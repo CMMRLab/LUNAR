@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.19
-May 30, 2026
+June 2, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -270,10 +270,14 @@ atom_style = 'full'
 #      default to using the Reduce option with list length of 5 elements. Also note that pairing any of the Reduce options  #
 #      with the Keep or Remove option maybe a productive way to use the Reduce option, when dealing w/ a complex reaction.  #
 #                                                                                                                           #
+#   MapFile = "MyMapName"                                                                                                   #
+#      A string that looks like a python variable and a python string in opening and closing double quotes (the opening and #
+#      closing quotes are a requirement). This will over-ride the default naming of the auto-generated mapfile naming.      #
+#                                                                                                                           #
 #    Pairing keywords and lists in a single header of the preN tagged file. BondingIDs, CreateIDs, and Reduce can be set in #
 #    header as well where location doest not matter. Examples:                                                              #
 #      HEADER > all2lmp: v1.4 / 9 Jan 2023 > CreateIDs = [1] BondingIDs = [7, 14, 7, 9] other text                          #
-#      HEADER, BondingID = [7, 14, 7, 9] and CreateIDs = [1, 2, 3, 4] and Reduce = [3, 4]                                   #
+#      HEADER, BondingID = [7, 14, 7, 9] and CreateIDs = [1, 2, 3, 4] and Reduce = [3, 4]; MapFile = "MyMapName"            #
 #                                                                                                                           #
 # Update generate_map_file as required.                                                                                     #
 #############################################################################################################################

@@ -1,0 +1,53 @@
+Map file: bond_react_merge: v1.19 / 1 June 2026 auto-generated mapfile for pre_2_peg_dab_typed_DREIDING.data  ->  post_2_peg_dab_typed_DREIDING.data    rxnid: 2
+
+4 edgeIDs
+28 equivalences
+2 deleteIDs
+
+InitiatorIDs
+
+ 9
+24
+
+EdgeIDs
+
+ 1
+ 3
+11
+23
+
+DeleteIDs
+
+16
+20
+
+Equivalences
+
+ 1        1       
+ 2        2       
+ 3        3       
+ 4        4       
+ 5        5       
+ 6        6       
+ 7        7       
+ 8        8       
+ 9        9       
+10       10       
+11       11       
+12       12       
+13       13       
+14       14       
+15       15       
+16       16       
+17       17       
+18       18       
+19       19       
+20       24
+21       20     
+22       21      
+23       22       
+24       23      
+25       27  
+26       28       
+27       25       
+28       26       

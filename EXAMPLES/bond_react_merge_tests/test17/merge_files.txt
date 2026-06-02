@@ -1,0 +1,13 @@
+# Will append EXAMPLES/bond_react_merge_tests/test11 to the begining of all filenames
+path="EXAMPLES/bond_react_merge_tests/test17" 
+
+# file-tag   filename
+  data1      ERL4221_v2_IFF.data
+  pre1       pre_18_YpOH_Mp_v4_IFF.data 
+  post1      post_18_YpOH_Mp_v4_IFF.data
+
+
+# Specify the parent_directory of where to write results to
+parent_directory = "topofile/run"
+
+
