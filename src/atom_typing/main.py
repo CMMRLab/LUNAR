@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.11
-April 14, 2025
+Revision 1.12
+July 2, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -153,7 +153,7 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
         # Initialize some preliminary information #
         ###########################################
         # set version and print starting information to screen
-        version = 'v1.11 / 14 April 2025'
+        version = 'v1.12 / 2 June 2026'
         log.out(f'\n\nRunning atom_typing: {version}')
         log.out(f'Using Python version: {sys.version}')
         log.out(f'Using Python executable: {sys.executable}')
@@ -215,6 +215,7 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
         # .ring = integer value of partioned ring                                                              #
         # .ringID = ringID (zero if not logical)                                                               #
         # .ringformula = ring formula (blank if not logical)                                                   #
+        # .cycles = set( (1,2,3), (4,5,6,7,8,9), ... Nrings atom belongs to) )                                 #
         ########################################################################################################
         #supported_elements = ['C', 'H', 'O', 'N', 'S', 'F', 'Si','Xe', 'Ne', 'Kr', 'He', 'D', 'Cl', 'Ca', 'Br', 'Ar', 'P']
         find_rings = {'elements2walk': mm.elements,    # List of elements to walk (recommended to walk along all elements in system).
@@ -305,7 +306,9 @@ def main(topofile, bondfile, parent_directory, newfile, ff_name, delete_atoms, m
         # Will also add .supported_types to mm class; were supported_types = {'element': [lst #
         # of atom-types that belong to that element]}; IE. {'C': ['cp', 'c'], 'H': ['hc']}    #
         #######################################################################################
-        if 'PCFF-IFF' in ff_name:
+        if 'PCFF-IFF-CMMR' in ff_name:
+            import src.atom_typing.typing.PCFF_IFF_CMMR as typing
+        elif 'PCFF-IFF' in ff_name:
             import src.atom_typing.typing.PCFF_IFF as typing
         elif 'PCFF' in ff_name:
             import src.atom_typing.typing.PCFF as typing

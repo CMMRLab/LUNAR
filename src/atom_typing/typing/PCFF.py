@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.3
-May 29, 2026
+Revision 1.4
+June 2, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -180,7 +180,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'User-defined for Open Valence ReaxFF polymerization (element:C, ring:5, nb:2)'
 
             # For 6 member-ring open valence
-            elif ring >= 6:
+            elif ring >= 6 and tf.check_aromaticity(i, mm.atoms):
                 atom.nta_type = 'cp'; tally['found'] += 1;
                 atom.nta_info = 'User-defined for Open Valence ReaxFF polymerization (element:C, ring:>=6, nb:2)'
                 
@@ -188,7 +188,7 @@ def nta(mm, basename, ff_name):
             # Strict PCFF atom-typing that occurs after User defined atom-typing attempts #
             #-----------------------------------------------------------------------------#
             # ct      12.01115      C          2        sp carbon involved in a triple bond
-            elif ring == 0:
+            elif ring == 0 and tf.check_aromaticity(i, mm.atoms):
                 tally['found'] += 1
                 atom.nta_type = 'ct'
                 atom.nta_info = 'Correctly found'
@@ -216,7 +216,7 @@ def nta(mm, basename, ff_name):
             #----------------------------------------------------------------------------#
             # cp       12.01115      C          3        sp2 aromatic carbon
             # For 7 and 8 member rings on carbonized structures
-            if ring > 6:
+            if ring > 6 and tf.check_aromaticity(i, mm.atoms):
                 atom.nta_type = 'cp'; tally['found'] += 1;
                 atom.nta_info = 'User-defined for 7/8-ring carbonization (element:C, ring:>6, nb:3)'
                 
@@ -243,7 +243,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # c5       12.01115      C          3        sp2 aromatic carbon in 5-membered ring  
-            elif ring == 5 and elements1.count('S') == 0:
+            elif ring == 5 and elements1.count('S') == 0 and tf.check_aromaticity(i, mm.atoms):
                 atom.nta_type = 'c5'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -253,7 +253,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # cp       12.01115      C          3        sp2 aromatic carbon
-            elif ring == 6:
+            elif ring == 6 and tf.check_aromaticity(i, mm.atoms):
                 atom.nta_type = 'cp'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 2.2
-July 15th, 2025
+Revision 2.1
+July 2, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -430,17 +430,20 @@ def add_ring_data2m(m, find_rings, log):
     rings_data = ring_analysis(m, find_rings, log)
     
     # add rings and find_rings attributes to m
-    m.rings = rings_data; m.find_rings = find_rings;
+    m.rings = rings_data 
+    m.find_rings = find_rings
     
     # add .rings .ring .ringID .ringformula to m.atoms[ID]
     # .rings = [lst or ringsizes atom belongs too]
     # .ring = integer value of partioned ring
     # .ringID = ringID (zero if not logical)
     # .ringformula = ring formula (blank if not logical)
+    # .cycles = set( (1,2,3), (4,5,6,7,8,9), ... Nrings atom belongs to) )
     for i in m.atoms:
         atom = m.atoms[i]
         atom.rings = sorted(rings_data.rings_set[i])
         atom.ring = rings_data.atoms_partitioned[i]
+        atom.cycles = set()
         
 
         # Get ringID for atom if it is logical. It is not logical if the atom
@@ -456,4 +459,9 @@ def add_ring_data2m(m, find_rings, log):
         # If fused rings are found add fusedringID to atom; else set as zero
         if find_rings['fused-rings']: atom.fusedringID = rings_data.fused.atom2fusedringIDs[i]
         else: atom.fusedringID = 0
+    
+    # Add cycles to atom.rings_atoms
+    for cycle in rings_data.cycles:
+        for i in cycle:
+            m.atoms[i].cycles.add( cycle )
     return m

@@ -19,6 +19,12 @@ LUNAR (version 2June2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+2June2026          JDK         - atom_typing.py: Added general aromaticity checking function to PCFF cp and c5
+                                                 atom types and started building "PCFF-IFF-CMMR" atom typing
+                                                 scheme. NOTE: "PCFF-IFF-CMMR" is EXPERIMENTAL work and unless
+                                                 you are in CMMRLab as a researcher should not be using these
+                                                 atom types as they are not validated yet.												 
+
 2June2026          JDK         - bond_react_merge.py: Swithed a hand built minimizer for a Scipy Hungarian
                                                       minimizer for minimizing the cost matrix to generate the
                                                       map file (scipy and numpy are now both requirements to

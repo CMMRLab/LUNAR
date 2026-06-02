@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-January 18th, 2023
+Revision 1.1
+June 2, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -13,6 +13,30 @@ to help in finding atom-types for different
 force feilds
 """
 
+
+
+
+# Function to check the atom is aromatic
+def check_aromaticity(atomid, atoms):
+    aromaticity = True
+    atom        = atoms[atomid]
+    rings       = atom.rings
+    cycles      = atom.cycles
+    if not rings: # early break-out check
+        return False
+    
+    # Optional check for ring sizes to continue checking for aromaticity.
+    # For let ring size checks occur out of this function
+    # if all(isinstance(x, int) and x in (5, 6) for x in rings):
+    #     return False
+    
+    # Ensure every ring this atom is in that all other atoms only have 2 or 3-nbs
+    for cycle in cycles:
+        nbs_lst = [atoms[i].nb for i in cycle]
+        if max(nbs_lst) > 3:
+            aromaticity = False
+            break
+    return aromaticity
 
 # Function to write to assumed file when needed
 def write2assumed(file, tag, assumed, atom, ff_name, atomid):
@@ -208,6 +232,10 @@ def check_peo_topo(atom, element_type):
 
 # Function to update atomtype in supported_types dictionary with flag if flag is needed for typing
 def update_supported_types(supported_types, element, atomtype, flag):
+    # add element if not in supported types
+    if element not in supported_types:
+        supported_types[element] = [atomtype]
+    
     # Find index in list
     typeindex = supported_types[element].index(atomtype)
     

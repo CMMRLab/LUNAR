@@ -45,7 +45,8 @@ def nta(mm, basename, ff_name):
                                        'c1', 'c2', 'c3', 'c4o', 'c'],
                        
                        'Hydrogen':    ['hi', 'he1 (Q)', 'ha1 (Q)', 'cge (Q)', 'hc', 'hpan', 'hw', 'hos', 'hoy',
-                                       'ho2', 'ho', 'hn2', 'hn', 'h*', 'hsi', 'hs', 'hdm', 'h'],
+                                       'ho2', 'ho', 'hn2', 'hn', 'h*', 'hsi', 'hs', 'hdm', 'h',
+                                       'hc1', 'hcp', 'hc2', 'hc3'],
                        
                        'Oxygen':      ['o_1', 'oo', 'o=', 'o-', 'o*', 'oe1 (Q)', 'oa1 (Q)', 'oz', 'o_2','oc',
                                        'o3e', 'o4e', 'op', 'o2h', 'osh', 'osi', 'oc23', 'oh', 'ob'],
@@ -175,7 +176,9 @@ def nta(mm, basename, ff_name):
         # print('neighs1 = ', neighs1)
         # print('neighs11 = ', neighs11)
         # print('neighs11_nb = ', neighs11_nb)
+        # print('cycles = ', atom.cycles)
         # print(ring, atom.rings)
+        # print(tf.check_aromaticity(i, mm.atoms))
         
         # Debugging
         # print()
@@ -532,6 +535,26 @@ def nta(mm, basename, ff_name):
                 atom.nta_type = 'cge'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 atom.charge = -0.1500000 # reset C-element charge for IFF if graphene atom-type
+                
+            # hcp      1.00797      H          1        hydrogen bonded to aromatic carbon (CMMRLab expeirmental work)
+            elif elements1[0] == 'C' and tf.check_aromaticity(neighs1[0], mm.atoms):
+                atom.nta_type = 'hcp'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+                
+            # hc2      1.00797      H          1        hydrogen bonded to sp2 carbon (CMMRLab expeirmental work)
+            elif elements1[0] == 'C'  and nbs1.count(3) == len(nbs1):
+                atom.nta_type = 'hc2'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+                
+            # hc3      1.00797      H          1        hydrogen bonded to sp3 carbon (CMMRLab expeirmental work)
+            elif elements1[0] == 'C'  and 4 in nbs1:
+                atom.nta_type = 'hc3'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+                
+            # hc1      1.00797      H          1        hydrogen bonded to sp1 carbon (CMMRLab expeirmental work)
+            elif elements1[0] == 'C'  and 2 in nbs1:
+                atom.nta_type = 'hc1'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
                 
             # hc      1.00797      H          1        hydrogen bonded to carbon
             elif elements1[0] == 'C':

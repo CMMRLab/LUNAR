@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-May 13th, 2024
+June 2, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -163,7 +163,7 @@ class atom_typing_GUI:
         self.options_frame.grid(row=1, column=0, columnspan=2, sticky='news', padx=xpadding, pady=ypadding)
                 
         # ff_class drop down menu
-        styles = ['PCFF-IFF', 'PCFF', 'compass', 'CVFF-IFF', 'CVFF', 'Clay-FF', 'DREIDING', 'OPLS-AA', 'general:0',
+        styles = ['PCFF-IFF', 'PCFF', 'PCFF-IFF-CMMR', 'compass', 'CVFF-IFF', 'CVFF', 'Clay-FF', 'DREIDING', 'OPLS-AA', 'general:0',
                   'general:1', 'general:2', 'general:3', 'general:4', 'general-pp:2', 'general-pp:3', 'general-pp:4']
         self.ff_name = ttk.Combobox(self.options_frame, values=styles, width=int(maxwidth/7), font=font_settings)
         self.ff_name.current(styles.index(ff_name))
