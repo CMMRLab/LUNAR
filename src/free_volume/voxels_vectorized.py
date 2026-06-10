@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-December 6th, 2023
+Revision 1.2
+June 10, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -14,7 +14,6 @@ import src.free_volume.misc_func as misc_func
 from tqdm import tqdm
 import numpy as np
 import math
-import sys
 
 
 ############################
@@ -38,7 +37,10 @@ class generate:
         elif vdw_method in ['class1', 'class2']:
             for i in m.pair_coeffs:
                 sigma = m.pair_coeffs[i].coeffs[1]
-                vdw_radii = sigma/2
+                if vdw_method == 'class1':
+                    vdw_radii = ( (2**(1/6))*sigma )/2
+                if vdw_method == 'class2':
+                    vdw_radii = sigma/2
                 system_vdw_radii.add(vdw_radii)
         else: log.error(f'ERROR vdw_method {vdw_method} not supported')
         system_vdw_radii = sorted(system_vdw_radii)
@@ -205,101 +207,60 @@ class analyze:
                 self.spatial_distributions['z'][zpos] += self.voxel_volume
             
             
-        #-------------------------------------------------------------------#
-        # Free volume connectivity and distribution analysis (EXPEIRMENTAL) #
-        #-------------------------------------------------------------------# 
+        #----------------------------------------------------#
+        # Free volume connectivity and distribution analysis #
+        #----------------------------------------------------# 
         if compute_free_volume_distributions:
             log.out('\n\n----------------------------------------------')
             log.out('| Starting free volume distribution analysis |')
             log.out('----------------------------------------------')
             
-            # Determine "nearness" to edge. Only search periodic image if atom is this close to an edge.
-            freeID_edgeflags = {} # { VoxelID : edge flag }
-            for i in self.voxel_freeIDs:
-                x, y, z, = self.voxel_freeIDs[i]
-                if v.pflags.count('f') == 3: freeID_edgeflags[i] = False # If system is non-periodic set all to False (speed-up)
-                else: freeID_edgeflags[i] = misc_func.check_near_edge(x, y, z, max_voxel_size, v.xlo, v.xhi, v.ylo, v.yhi, v.zlo, v.zhi)
-            
-            # # Find free volume connectivity (SOME ISSUES with numpy implementation)
-            # free_volume_voxel_graph = {ID:set() for ID in self.voxel_freeIDs} # { voxelID : set(bonded voxels) }
-            # self.pbc_bonded_count = 0; connect_flags = np.copy(flags);
-            # print('Finding free volume voxelID connectivity (vectorized) ...')
-            # for id1 in tqdm(self.voxel_freeIDs):
-            #     x1, y1, z1 = self.voxel_freeIDs[id1]
-            #     r1 = v.radial_voxel[id1-1]
-            #     min_radius = r1 - 2*max_voxel_size
-            #     max_radius = r1 + 2*max_voxel_size
-                    
-            #     # If near edge of simulation cell check periodic images
-            #     if not freeID_edgeflags[id1]:
-            #         periodic_postions = misc_func.find_periodic_postions(v.scaled_images, x1, y1, z1, v.cx, v.cy, v.cz, Npos=12)
-            #         for x1i, y1i, z1i in periodic_postions:
-            #             free = np.where( (connect_flags > 0) & np.logical_and(radial_voxel > min_radius, radial_voxel < max_radius) )[0]
-            #             connect_indexes = np.where( (abs(voxels[free,0]-x1i) <= max_voxel_size) & (abs(voxels[free,1]-y1i) <= max_voxel_size) & (abs(voxels[free,2]-z1i) <= max_voxel_size) )[0]
-            #             for index in connect_indexes:   
-            #                 global_index = free[index]
-            #                 id2 = global_index + 1
-            #                 free_volume_voxel_graph[id1].add(id2)
-            #                 free_volume_voxel_graph[id2].add(id1)
-                    
-            #     # else only check main simulation cell
-            #     else:
-            #         free = np.where( (connect_flags > 0) & np.logical_and(radial_voxel > min_radius, radial_voxel < max_radius) )[0]
-            #         connect_indexes = np.where( (abs(voxels[free,0]-x1) <= max_voxel_size) & (abs(voxels[free,1]-y1) <= max_voxel_size) & (abs(voxels[free,2]-z1) <= max_voxel_size) )[0]
-            #         for index in connect_indexes:
-            #             global_index = free[index]
-            #             id2 = global_index + 1 
-            #             free_volume_voxel_graph[id1].add(id2)
-            #             free_volume_voxel_graph[id2].add(id1)
-            #     connect_flags[id1-1] = 0
-                    
-
-            
-            # Find free volume connectivity (7 sec -> 3 sec)
-            free_volume_voxel_graph = {ID:set() for ID in self.voxel_freeIDs} # { voxelID : set(bonded voxels) }
-            self.pbc_bonded_count = 0; freeIDs = {i for i in self.voxel_freeIDs}
-            log.out('Finding free volume voxelID connectivity (standard library) ...')
+            # Find free volume connectivity using fractional/indexed voxel adjacency
+            free_volume_voxel_graph = {ID: set() for ID in self.voxel_freeIDs}
+            log.out('Finding free volume voxelID connectivity (standard library - indexed) ...')
+            pflags_num = [1 if flag == 'p' else 0 for flag in v.pflags]
+            freeIDs = set(self.voxel_freeIDs)
+            nx = v.nx; ny = v.ny; nz = v.nz
             for id1 in tqdm(self.voxel_freeIDs):
-                x1, y1, z1 = self.voxel_freeIDs[id1]
-                r1 = v.radial_voxel[id1-1]
-                freeIDs.remove(id1);
-                min_radius = r1 - 2*max_voxel_size
-                max_radius = r1 + 2*max_voxel_size
-                if freeID_edgeflags[id1]:
-                    periodic_postions = misc_func.find_periodic_postions(v.scaled_images, x1, y1, z1, v.cx, v.cy, v.cz, Npos=12)
-                for id2 in freeIDs:
-                    if id1 == id2: continue
-                    if min_radius < v.radial_voxel[id2-1] < max_radius:
-                        x2, y2, z2 = self.voxel_freeIDs[id2]
-                    
-                        # Find non periodically bonded free volume voxelIDs
-                        if not freeID_edgeflags[id1] or not freeID_edgeflags[id2]:
-                            if abs(x1-x2) > max_voxel_size: continue
-                            elif abs(y1-y2) > max_voxel_size: continue
-                            elif abs(z1-z2) > max_voxel_size: continue
-                            dx = (x1 - x2)**2
-                            dy = (y1 - y2)**2
-                            dz = (z1 - z2)**2
-                            distance = math.sqrt(dx + dy + dz)
-                            if distance <= max_voxel_size:
-                                free_volume_voxel_graph[id1].add(id2)
-                                free_volume_voxel_graph[id2].add(id1)
-                        
-                        # Find periodically bonded free volume voxelIDs
-                        elif freeID_edgeflags[id1] and freeID_edgeflags[id2]:
-                            for x1i, y1i, z1i in periodic_postions:
-                                if abs(x1i - x2) > max_voxel_size: continue
-                                elif abs(y1i - y2) > max_voxel_size: continue
-                                elif abs(z1i - z2) > max_voxel_size: continue
-                                dx = (x1i - x2)**2
-                                dy = (y1i - y2)**2
-                                dz = (z1i - z2)**2
-                                distance = math.sqrt(dx + dy + dz)
-                                if distance <= max_voxel_size:
-                                    free_volume_voxel_graph[id1].add(id2)
-                                    free_volume_voxel_graph[id2].add(id1)
-                                    self.pbc_bonded_count += 1; break;
-        
+                idx = id1 - 1
+                if idx < 0: continue
+            
+                i = idx // (ny*nz)
+                rem = idx - i*ny*nz
+                j = rem // nz
+                k = rem - j*nz
+                for di in [-1, 0, 1]:
+                    ni = i + di
+                    if ni < 0 or ni >= nx:
+                        if pflags_num[0] == 1:
+                            ni = ni % nx
+                        else: continue
+            
+                    for dj in [-1, 0, 1]:
+                        nj = j + dj
+                        if nj < 0 or nj >= ny:
+                            if pflags_num[1] == 1:
+                                nj = nj % ny
+                            else: continue
+            
+                        for dk in [-1, 0, 1]:
+                            if di == 0 and dj == 0 and dk == 0:
+                                continue
+            
+                            nk = k + dk
+                            if nk < 0 or nk >= nz:
+                                if pflags_num[2] == 1:
+                                    nk = nk % nz
+                                else: continue
+            
+                            idx2 = ni*ny*nz + nj*nz + nk
+                            id2 = idx2 + 1
+                            if id2 == id1: continue
+                            if id2 not in freeIDs: continue
+            
+                            free_volume_voxel_graph[id1].add(id2)
+                            free_volume_voxel_graph[id2].add(id1)
+
             # Find free volume clusters
             free_volume_clusters = set([]) # { (tuple of atoms in cluster1), (nclusters) }
             checked = {ID:False for ID in self.voxel_freeIDs}
@@ -320,7 +281,7 @@ class analyze:
             # Analyze free volume clusters
             class Info: pass # .size .volume .pvolume
             voxel_volume = v.dx*v.dy*v.dz; self.free_volume_clusters = {} # { clusterID : Info object }
-            self.voxelclusterID2molID = {i:len(free_volume_clusters)+1 for i in self.voxel_freeIDs} # { voxelID : clustered }
+            self.voxelclusterID2molID = {i:len(free_volume_clusters)+1 for i in self.voxel_freeIDs} # { voxelID : clusterID }
             for ID, cluster in enumerate(free_volume_clusters, 1):
                 for i in cluster:
                     self.voxelclusterID2molID[i] = ID
@@ -336,7 +297,6 @@ class analyze:
                 self.free_volume_clusters[ID] = I
                 
                 
-            #print('self.pbc_bonded_count', self.pbc_bonded_count)
             #bonded = {len(free_volume_voxel_graph[i]) for i in free_volume_voxel_graph}
             #print(bonded)
             #print(len(self.free_volume_clusters))

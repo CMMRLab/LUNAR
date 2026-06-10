@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 2/17/2025
+# Last edited 6/10/2026
 #
 ************
 * Overview *
@@ -38,38 +38,25 @@
     have been provided to try to optimize the run time, but also control the number of additional Python packages needed to run the code. The
     following run modes are supported with a description and their dependencies:
       'stl'       which runs on the standard Python library and requires: tqdm. This is the slowest-performing run mode but has the least amount
-                  of dependencies.
+                  of dependencies. Works on orthogonal boxes ONLY.
       
 	  'numpy'     which runs on the standard Python library uses numpy vectorization and requires tqdm and numpy. This is the medium-performing
-                  run mode and has a medium amount of dependencies.
+                  run mode and has a medium amount of dependencies. Works on orthogonal boxes ONLY.
       
-	  'numba'     which runs on the standard Python library and uses numba to compile numpy arrays down to machine code and runs in serial and
-                  requires: tqdm, numpy, and numba. This is one of the fastest-performing run modes and has the most amount of dependencies.
+	  'stl-dd'    which has the same meaning as 'stl', but uses a domain decomposition and linked cell list algorithm instead of the default
+                  algorithm. The domain decomposition and linked cell list algorithm may be quicker for all models over the 'stl' run_mode.
+                  Works on orthogonal boxes ONLY.
       
-	  'numba-p'    which runs on the standard Python library and uses numba to compile numpy arrays down to machine code runs in parallel and
-                   requires: tqdm, numpy, and numba. This is one of the fastest-performing run modes and has the most amount of dependencies.
-                   The numba documentation does not say how it determines the number of processors it will use to parallelize the code, so it is
-                   best to assume that it will use all available processors to run the code in parallel, which means you should be cautious
-                   about running free_volume.py on an HPC infrastructure in 'numba-p' mode, since it may try to run on all the HPC processors
-                   (this also depends on the queuing system and architecture or the HPC clusters).
+	  'numba-dd'  which has the same meaning as 'numba', but uses a domain decomposition and linked cell list algorithm instead of the default
+                  algorithm. The domain decomposition and linked cell list algorithm may be quicker for some models over the 'numba' run_mode.
+                  Works on BOTH orthogonal and triclinic boxes.
       
-	  'stl-dd'     which has the same meaning as 'stl', but uses a domain decomposition and linked cell list algorithm instead of the default
-                   algorithm. The domain decomposition and linked cell list algorithm may be quicker for all models over the 'stl' run_mode.
+	  'numba-ddp' which has the same meaning as 'numba-p', but uses a domain decomposition and linked cell list algorithm instead of the default
+                  algorithm. The domain decomposition and linked cell list algorithm may be quicker for some models over the 'numba-p' run_mode.
+                  Works on BOTH orthogonal and triclinic boxes.
       
-	  'numba-dd'   which has the same meaning as 'numba', but uses a domain decomposition and linked cell list algorithm instead of the default
-                   algorithm. The domain decomposition and linked cell list algorithm may be quicker for some models over the 'numba' run_mode.
-      
-	  'numba-ddp'  which has the same meaning as 'numba-p', but uses a domain decomposition and linked cell list algorithm instead of the default
-                   algorithm. The domain decomposition and linked cell list algorithm may be quicker for some models over the 'numba-p' run_mode.
-      
-	  'CUDA'       which runs on the standard Python library and uses numba to compile numpy arrays down to machine code runs in parallel on the
-                   GPU and requires: tqdm, numpy, and numba. This is one of the fastest-performing run modes and has the most amount of
-                   dependencies. This mode requires that you have a CUDA-enabled GPU (i.e. a NVIDIA GPU) and the number of threads per block for
-                   atom operations and voxel operations are defined via the Python variables CUDA_threads_per_block_atoms and
-                   CUDA_threads_per_block_voxels, respectively. 
-      
-	  'CUDA-dd'    which has the same meaning as 'CUDA', but uses a domain decomposition and linked cell list algorithm instead of the default
-                   algorithm. The domain decomposition and linked cell list algorithm may be quicker for some models over the 'CUDA' run_mode.
+	  'CUDA-dd'   which has the same meaning as 'CUDA', but uses a domain decomposition and linked cell list algorithm instead of the default
+                  algorithm. Works on BOTH orthogonal and triclinic boxes.
       
 	  'dd' variants define the subdomain size from the following equation:
         subdomain = round(2.1*max(system_vdw_radii), 2) + 2*max_voxel_size + probe_diameter

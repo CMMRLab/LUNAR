@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-January 1st, 2024
+Revision 1.3
+June 10, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -18,13 +18,306 @@ import math
 import time
 
 
+###############################################################
+# Local sparse triclinic helpers compatible with numba njit   #
+# h = [lx, ly, lz, yz, xz, xy]                                #
+###############################################################
+def get_box_parameters(m):    
+    xline = m.xbox_line.split(); yline = m.ybox_line.split(); zline = m.zbox_line.split()
+    xlo = float(xline[0]); xhi = float(xline[1])
+    ylo = float(yline[0]); yhi = float(yline[1])
+    zlo = float(zline[0]); zhi = float(zline[1])
+    lx = xhi - xlo; ly = yhi - ylo; lz = zhi - zlo
+    yz = m.yz; xz = m.xz; xy = m.xy
+
+    if lx == 0: lx = 1.0
+    if ly == 0: ly = 1.0
+    if lz == 0: lz = 1.0
+
+    h = np.array([lx, ly, lz, yz, xz, xy], dtype=np.float64)
+    h_inv = np.zeros(6, dtype=np.float64)
+    h_inv[0] = 1.0/h[0]
+    h_inv[1] = 1.0/h[1]
+    h_inv[2] = 1.0/h[2]
+    h_inv[3] = -h[3] / (h[1]*h[2])
+    h_inv[4] = (h[3]*h[5] - h[1]*h[4]) / (h[0]*h[1]*h[2])
+    h_inv[5] = -h[5] / (h[0]*h[1])
+    boxlo = np.array([xlo, ylo, zlo], dtype=np.float64)
+    boxhi = np.array([xhi, yhi, zhi], dtype=np.float64)
+    tilts = np.array([xy, xz, yz], dtype=np.float64)
+    return h, h_inv, boxlo, boxhi, tilts
+
+
+@numba.njit(parallel=False)
+def frac2pos_njit(fx, fy, fz, h, boxlo):
+    x = h[0]*fx + h[5]*fy + h[4]*fz + boxlo[0]
+    y = h[1]*fy + h[3]*fz + boxlo[1]
+    z = h[2]*fz + boxlo[2]
+    return x, y, z
+
+
+@numba.njit(parallel=False)
+def pos2frac_njit(x, y, z, h_inv, boxlo):
+    dx = x - boxlo[0]
+    dy = y - boxlo[1]
+    dz = z - boxlo[2]
+    fx = h_inv[0]*dx + h_inv[5]*dy + h_inv[4]*dz
+    fy = h_inv[1]*dy + h_inv[3]*dz
+    fz = h_inv[2]*dz
+    return fx, fy, fz
+
+
+@numba.njit(parallel=False)
+def wrap_frac_scalar(f):
+    return f - math.floor(f)
+
+@numba.njit(parallel=False)
+def frac_delta_to_cart_njit(dfx, dfy, dfz, h):
+    # Convert a fractional displacement, not a position, to Cartesian.
+    # Uses boxlo = 0 implicitly. h = [lx, ly, lz, yz, xz, xy].
+    dx = h[0]*dfx + h[5]*dfy + h[4]*dfz
+    dy = h[1]*dfy + h[3]*dfz
+    dz = h[2]*dfz
+    return dx, dy, dz
+
+@numba.njit(parallel=False)
+def mic_distance_frac_njit(fx1, fy1, fz1, fx2, fy2, fz2, h):
+    # Minimum-image displacement in fractional space, then true Cartesian length.
+    dfx = fx2 - fx1
+    dfy = fy2 - fy1
+    dfz = fz2 - fz1
+    dfx -= round(dfx)
+    dfy -= round(dfy)
+    dfz -= round(dfz)
+    dx, dy, dz = frac_delta_to_cart_njit(dfx, dfy, dfz, h)
+    return math.sqrt(dx*dx + dy*dy + dz*dz)
+
+
+@numba.njit(parallel=False)
+def clamp_int(i, lo, hi):
+    if i < lo:
+        return lo
+    if i > hi:
+        return hi
+    return i
+
+
+@numba.njit(parallel=False)
+def fractional_domain_id(fx, fy, fz, nxx, nyy, nzz):
+    # wrap into [0, 1) for periodic-style binning
+    fx = wrap_frac_scalar(fx)
+    fy = wrap_frac_scalar(fy)
+    fz = wrap_frac_scalar(fz)
+
+    ii = int(math.floor(fx*nxx))
+    jj = int(math.floor(fy*nyy))
+    kk = int(math.floor(fz*nzz))
+    ii = clamp_int(ii, 0, nxx-1)
+    jj = clamp_int(jj, 0, nyy-1)
+    kk = clamp_int(kk, 0, nzz-1)
+    return ii*nyy*nzz + jj*nzz + kk
+
+
+@numba.njit(parallel=False)
+def find_zero_index(arr):
+    for i in range(arr.shape[0]):
+        if arr[i] == 0:
+            return i
+    return arr.shape[0] - 1
+
+
+@numba.njit(parallel=False)
+def add_graph_edge(graph, id1, id2):
+    if id1 == id2:
+        return
+    if not np.any(graph[id1] == id2):
+        g1 = find_zero_index(graph[id1])
+        if g1 < graph.shape[1] - 1:
+            graph[id1][g1] = id2
+    if not np.any(graph[id2] == id1):
+        g2 = find_zero_index(graph[id2])
+        if g2 < graph.shape[1] - 1:
+            graph[id2][g2] = id1
+
+
+@numba.njit(parallel=False)
+def build_fractional_domain_graph(nxx, nyy, nzz, pflags):
+    # Same shape convention as old code: 0 means empty. Domain id 0 is valid,
+    # but the old code also used zeros as empty slots. This preserves behavior,
+    # but downstream code should eventually move to -1 sentinels.
+    ndomains = nxx*nyy*nzz
+    graph = np.zeros((ndomains, 30), dtype=np.int64)
+
+    px = pflags[0] == 1
+    py = pflags[1] == 1
+    pz = pflags[2] == 1
+
+    for ii in range(nxx):
+        for jj in range(nyy):
+            for kk in range(nzz):
+                id1 = ii*nyy*nzz + jj*nzz + kk
+                for di in range(-1, 2):
+                    ni = ii + di
+                    if ni < 0 or ni >= nxx:
+                        if px:
+                            ni = ni % nxx
+                        else:
+                            continue
+                    for dj in range(-1, 2):
+                        nj = jj + dj
+                        if nj < 0 or nj >= nyy:
+                            if py:
+                                nj = nj % nyy
+                            else:
+                                continue
+                        for dk in range(-1, 2):
+                            nk = kk + dk
+                            if nk < 0 or nk >= nzz:
+                                if pz:
+                                    nk = nk % nzz
+                                else:
+                                    continue
+                            id2 = ni*nyy*nzz + nj*nzz + nk
+                            add_graph_edge(graph, id1, id2)
+    return graph
+
+@numba.njit(parallel=False)
+def generate_fractional_serial(nx, ny, nz, nxx, nyy, nzz, h, h_inv, boxlo, pflags):
+    print('\n\nGenerating voxels (fractional/triclinic - serial) ...')
+    nvoxels = nx*ny*nz
+    ndomains = nxx*nyy*nzz
+
+    numpy_voxels = np.zeros((nvoxels, 3), dtype=np.float64)
+    numpy_frac_voxels = np.zeros((nvoxels, 3), dtype=np.float64)
+    numpy_radial = np.zeros(nvoxels, dtype=np.float64)
+    numpy_flags = np.ones(nvoxels, dtype=np.float64)
+    voxel_domains = np.zeros(nvoxels, dtype=np.int64)
+
+    # Domain array is retained mostly for compatibility/debugging.
+    # Columns: flox, fhix, floy, fhiy, floz, fhiz, fcx, fcy, fcz, cart_r_from_cell_center
+    domain = np.zeros((ndomains, 10), dtype=np.float64)
+    count = 0
+    for ii in range(nxx):
+        for jj in range(nyy):
+            for kk in range(nzz):
+                flox = ii/nxx; fhix = (ii + 1)/nxx
+                floy = jj/nyy; fhiy = (jj + 1)/nyy
+                floz = kk/nzz; fhiz = (kk + 1)/nzz
+                fcx = (ii + 0.5)/nxx
+                fcy = (jj + 0.5)/nyy
+                fcz = (kk + 0.5)/nzz
+                x, y, z = frac2pos_njit(fcx, fcy, fcz, h, boxlo)
+                cx, cy, cz = frac2pos_njit(0.5, 0.5, 0.5, h, boxlo)
+                dx = x - cx; dy = y - cy; dz = z - cz
+                domain[count][0] = flox; domain[count][1] = fhix
+                domain[count][2] = floy; domain[count][3] = fhiy
+                domain[count][4] = floz; domain[count][5] = fhiz
+                domain[count][6] = fcx; domain[count][7] = fcy; domain[count][8] = fcz
+                domain[count][9] = math.sqrt(dx*dx + dy*dy + dz*dz)
+                count += 1
+
+    print('  Generating voxel centers and assigning fractional domains')
+    count = 0
+    progress_increment = 10
+    cx, cy, cz = frac2pos_njit(0.5, 0.5, 0.5, h, boxlo)
+    for i in range(nx):
+        fx = (i + 0.5)/nx
+        for j in range(ny):
+            fy = (j + 0.5)/ny
+            for k in range(nz):
+                fz = (k + 0.5)/nz
+                x, y, z = frac2pos_njit(fx, fy, fz, h, boxlo)
+                dx = x - cx; dy = y - cy; dz = z - cz
+                numpy_voxels[count][0] = x
+                numpy_voxels[count][1] = y
+                numpy_voxels[count][2] = z
+                numpy_frac_voxels[count][0] = fx
+                numpy_frac_voxels[count][1] = fy
+                numpy_frac_voxels[count][2] = fz
+                numpy_radial[count] = math.sqrt(dx*dx + dy*dy + dz*dz)
+                voxel_domains[count] = fractional_domain_id(fx, fy, fz, nxx, nyy, nzz)
+                count += 1
+                if 100*count/nvoxels % progress_increment == 0:
+                    print('    progress: ', int(100*count/nvoxels), '%')
+
+    domain_graph = build_fractional_domain_graph(nxx, nyy, nzz, pflags)
+    return numpy_voxels, numpy_frac_voxels, numpy_radial, numpy_flags, domain, domain_graph, ndomains, voxel_domains
+
+
+@numba.njit(parallel=False)
+def assign_domain_fractional_from_cart(x, y, z, h_inv, boxlo, nxx, nyy, nzz):
+    fx, fy, fz = pos2frac_njit(x, y, z, h_inv, boxlo)
+    return fractional_domain_id(fx, fy, fz, nxx, nyy, nzz)
+
+@numba.njit(parallel=False)
+def generate_fractional_domain_serial(nxx, nyy, nzz, h, boxlo, pflags):
+    ndomains = nxx*nyy*nzz
+    domain = np.zeros((ndomains, 10), dtype=np.float64)
+    cx, cy, cz = frac2pos_njit(0.5, 0.5, 0.5, h, boxlo)
+
+    count = 0
+    for ii in range(nxx):
+        for jj in range(nyy):
+            for kk in range(nzz):
+                flox = ii/nxx
+                fhix = (ii + 1)/nxx
+                floy = jj/nyy
+                fhiy = (jj + 1)/nyy
+                floz = kk/nzz
+                fhiz = (kk + 1)/nzz
+
+                fcx = (ii + 0.5)/nxx
+                fcy = (jj + 0.5)/nyy
+                fcz = (kk + 0.5)/nzz
+
+                x, y, z = frac2pos_njit(fcx, fcy, fcz, h, boxlo)
+
+                dx = x - cx
+                dy = y - cy
+                dz = z - cz
+
+                domain[count, 0] = flox
+                domain[count, 1] = fhix
+                domain[count, 2] = floy
+                domain[count, 3] = fhiy
+                domain[count, 4] = floz
+                domain[count, 5] = fhiz
+                domain[count, 6] = fcx
+                domain[count, 7] = fcy
+                domain[count, 8] = fcz
+                domain[count, 9] = math.sqrt(dx*dx + dy*dy + dz*dz)
+
+                count += 1
+
+    domain_graph = build_fractional_domain_graph(nxx, nyy, nzz, pflags)
+
+    return domain, domain_graph, ndomains
+
+##########################################################
+# numba njit compilation for unique x, y and z locations #
+##########################################################
+@numba.njit(parallel=False)
+def unique_xyz(numpy_voxels):
+    numpyx = np.unique(numpy_voxels[:,0])
+    numpyy = np.unique(numpy_voxels[:,1])
+    numpyz = np.unique(numpy_voxels[:,2])
+    return numpyx, numpyy, numpyz
+
+
+
 ############################
 # Class to generate voxels #
 ############################
 class generate:
     def __init__(self, m, max_voxel_size, boundary, vdw_radius, probe_diameter, vdw_method, run_mode, log):        
-        # Get box dimensions
-        self.lx, self.ly, self.lz, self.cx, self.cy, self.cz, self.xlo, self.xhi, self.ylo, self.yhi, self.zlo, self.zhi = misc_func.get_box_dimensions(m)
+        # Get box dimensions        
+        self.h, self.h_inv, self.boxlo, self.boxhi, self.tilts = get_box_parameters(m)
+        self.cx, self.cy, self.cz = frac2pos_njit(0.5, 0.5, 0.5, self.h, self.boxlo)
+        self.xlo, self.ylo, self.zlo = self.boxlo
+        self.xhi, self.yhi, self.zhi = self.boxhi
+        self.lx = self.boxhi[0] - self.boxlo[0]
+        self.ly = self.boxhi[1] - self.boxlo[1]
+        self.lz = self.boxhi[2] - self.boxlo[2]
         
         # Find voxel domain decomposition grid size and check vdw radii is provided
         system_vdw_radii = set()
@@ -36,7 +329,10 @@ class generate:
         elif vdw_method in ['class1', 'class2']:
             for i in m.pair_coeffs:
                 sigma = m.pair_coeffs[i].coeffs[1]
-                vdw_radii = sigma/2
+                if vdw_method == 'class1':
+                    vdw_radii = ( (2**(1/6))*sigma )/2
+                if vdw_method == 'class2':
+                    vdw_radii = sigma/2
                 system_vdw_radii.add(vdw_radii)
         else: log.error(f'ERROR vdw_method {vdw_method} not supported')
         system_vdw_radii = sorted(system_vdw_radii)
@@ -50,8 +346,9 @@ class generate:
         self.nx = math.ceil(self.lx/max_voxel_size)
         self.ny = math.ceil(self.ly/max_voxel_size)
         self.nz = math.ceil(self.lz/max_voxel_size)
-        self.dx = self.lx/self.nx; self.dy = self.ly/self.ny; self.dz = self.lz/self.nz;
-        self.halfdx = self.dx/2; self.halfdy = self.dy/2; self.halfdz = self.dz/2
+        self.dx = self.lx/self.nx
+        self.dy = self.ly/self.ny
+        self.dz = self.lz/self.nz
         
         # Set probe_diameter if shortcut flag exists
         self.probe_diameter = probe_diameter
@@ -59,497 +356,219 @@ class generate:
             log.out("probe_diameter = 'min-voxel', finding minimum dimension of voxel ...")
             self.probe_diameter = min([self.dx, self.dy, self.dz])
             log.out(f'   updated probe_diameter = {self.probe_diameter}')
+
+    
+        # Find images and scaled images 
+        self.images, self.pflags = misc_func.generate_iflags(m, boundary, log)
+        self.scaled_images = []
+        for ix, iy, iz in self.images:
+            sx, sy, sz = frac2pos_njit(ix, iy, iz, self.h, np.array([0.0, 0.0, 0.0]))
+            self.scaled_images.append((sx, sy, sz))
         
+        # Generate voxels (numba method)
+        # pflags as numeric for numba: 1 periodic, 0 non-periodic.
+        pflags_num = np.zeros(3, dtype=np.int64)
+        for i, flag in enumerate(self.pflags):
+            if flag == 'p': pflags_num[i] = 1
+                
         # Find domain decomposition grid size
         self.domain_size = round(2.1*max(system_vdw_radii), 2) + 2*max_voxel_size + self.probe_diameter
         self.min_cell = 3*self.domain_size
         
+        # Fractional domain counts.
+        a_len = self.h[0]
+        b_len = math.sqrt(self.h[5]**2 + self.h[1]**2)
+        c_len = math.sqrt(self.h[4]**2 + self.h[3]**2 + self.h[2]**2)
+        self.nxx = max(1, math.ceil(a_len/self.domain_size))
+        self.nyy = max(1, math.ceil(b_len/self.domain_size))
+        self.nzz = max(1, math.ceil(c_len/self.domain_size))
+        
         # Exiting conditions (for domain decomposition)
-        if self.lx < self.min_cell or self.ly < self.min_cell or self.lz < self.min_cell:
-            log.out('ERROR simulation cell dimensions to small to use CUDA-dd run_mode. Minimum');
-            log.out(f'simulation cell dimensions for numba-dd or numba-ddp is {self.min_cell}x{self.min_cell}x{self.min_cell} angstroms. Current')
-            log.error(f'simulation cell dimensions {self.lx}x{self.ly}x{self.ly}. Please use other run_mode.')
-        
-        # Find images and scaled images 
-        self.images, self.pflags = misc_func.generate_iflags(m, boundary, log)
-        self.scaled_images = [(ix*self.lx, iy*self.ly, iz*self.lz) for (ix, iy, iz) in self.images]
-        np_scaled_images = np.array(self.scaled_images)
-        
-
+        if a_len < self.min_cell or b_len < self.min_cell or c_len < self.min_cell:
+            log.out('WARNING simulation cell is small relative to domain_size.')
+            log.out('Using at least one fractional domain in each direction.')
         
         # Generatre voxels on CPU or GPU based on inputs
         start_time = time.time()
         if m.CUDA_threads_per_block_voxels == 0:# or m.CUDA_threads_per_block_voxels >= 0:
-            self.numpy_voxels, self.numpy_radial, self.numpy_flags, self.numpyx, self.numpyy, self.numpyz, self.domain, self.domain_graph, self.nxx, self.nyy, self.nzz, ndomains, self.voxel_domains = generate_serial(self.nx, self.ny, self.nz, self.dx, self.dy, self.dz, self.xlo, self.xhi, self.ylo, self.yhi, self.zlo, self.zhi, self.cx, self.cy, self.cz, self.lx, self.ly, self.lz, self.domain_size, np_scaled_images, run_mode)
+            # Keep serial first; parallelizing this part is not the bottleneck compared with atom/voxel marking.
+            out = generate_fractional_serial(self.nx, self.ny, self.nz, self.nxx, self.nyy, self.nzz, self.h, self.h_inv, self.boxlo, pflags_num)
+            (self.numpy_voxels, self.numpy_frac_voxels, self.numpy_radial, self.numpy_flags, self.domain, self.domain_graph, ndomains, self.voxel_domains) = out
         else:            
             # CUDA Kernel to Generate voxels
             @cuda.jit
-            def generate_CUDA(numpy_voxels, n_xyz, d_xyz, xyz_add):
-                i, j = cuda.grid(2)
-                if i < n_xyz[0] and j < n_xyz[1]:
-                    for k in range(n_xyz[2]):
-                        cuda.syncthreads()
-                        numpy_voxels[i*n_xyz[1]*n_xyz[2] + j*n_xyz[2] + k][0] = i*d_xyz[0] + xyz_add[0]
-                        numpy_voxels[i*n_xyz[1]*n_xyz[2] + j*n_xyz[2] + k][1] = j*d_xyz[1] + xyz_add[1]
-                        numpy_voxels[i*n_xyz[1]*n_xyz[2] + j*n_xyz[2] + k][2] = k*d_xyz[2] + xyz_add[2]
-                        cuda.syncthreads()
-                        
-            # CUDA Kernel to find radius from center
-            @cuda.jit
-            def radial_CUDA(numpy_voxels, domain, numpy_radial, voxel_domains, c_xyz):
-                i = cuda.grid(1)
-                if i < numpy_voxels.shape[:1][0]:
-                    cuda.syncthreads()
-                    diffx = c_xyz[0] - numpy_voxels[i][0]
-                    diffy = c_xyz[1] - numpy_voxels[i][1]
-                    diffz = c_xyz[2] - numpy_voxels[i][2]
-                    numpy_radial[i] = ( diffx*diffx + diffy*diffy + diffz*diffz )**0.5
-                    for domainID in range(domain.shape[:1][0]):
-                        if domain[domainID][0] <= numpy_voxels[i][0] <= domain[domainID][1] and domain[domainID][2] <= numpy_voxels[i][1] <= domain[domainID][3] and domain[domainID][4] <= numpy_voxels[i][2] <= domain[domainID][5]:
-                            voxel_domains[i] = domainID; break
-                    cuda.syncthreads()
+            def generate_fractional_CUDA_3D(numpy_voxels, numpy_frac_voxels, numpy_radial, numpy_flags, voxel_domains, nx, ny, nz, nxx, nyy, nzz, h, boxlo):
+                i, j, k = cuda.grid(3)
+                if i >= nx or j >= ny or k >= nz:
+                    return
             
-            # Initialize data structs for GPU
-            nvoxels = self.nx*self.ny*self.nz;
-            xadd = self.dx/2 + self.xlo; yadd =  self.dy/2 + self.ylo; zadd = self.dz/2 + self.zlo;
-            xyz_add = cuda.to_device(np.array([xadd, yadd, zadd]))
-            n_xyz = cuda.to_device(np.array([self.nx, self.ny, self.nz]))
-            d_xyz = cuda.to_device(np.array([self.dx, self.dy, self.dz]))
-            c_xyz = cuda.to_device(np.array([self.cx, self.cy, self.cz]))
-            numpy_voxels = cuda.to_device(np.zeros(3*nvoxels).reshape((nvoxels, 3)))
-            numpy_radial = cuda.to_device(np.zeros(nvoxels)); 
-            voxel_domains = cuda.to_device(np.zeros(nvoxels, dtype=np.int64))
+                idx = i*ny*nz + j*nz + k
+                fx = (i + 0.5) / nx
+                fy = (j + 0.5) / ny
+                fz = (k + 0.5) / nz
+            
+                x = h[0]*fx + h[5]*fy + h[4]*fz + boxlo[0]
+                y = h[1]*fy + h[3]*fz + boxlo[1]
+                z = h[2]*fz + boxlo[2]
+            
+                cx = h[0]*0.5 + h[5]*0.5 + h[4]*0.5 + boxlo[0]
+                cy = h[1]*0.5 + h[3]*0.5 + boxlo[1]
+                cz = h[2]*0.5 + boxlo[2]
+            
+                dx = x - cx
+                dy = y - cy
+                dz = z - cz
+            
+                numpy_voxels[idx, 0] = x
+                numpy_voxels[idx, 1] = y
+                numpy_voxels[idx, 2] = z
+            
+                numpy_frac_voxels[idx, 0] = fx
+                numpy_frac_voxels[idx, 1] = fy
+                numpy_frac_voxels[idx, 2] = fz
+            
+                numpy_radial[idx] = math.sqrt(dx*dx + dy*dy + dz*dz)
+                numpy_flags[idx] = 1.0
+            
+                di = int(math.floor(fx*nxx))
+                dj = int(math.floor(fy*nyy))
+                dk = int(math.floor(fz*nzz))
+            
+                if di >= nxx:
+                    di = nxx - 1
+                if dj >= nyy:
+                    dj = nyy - 1
+                if dk >= nzz:
+                    dk = nzz - 1
+            
+                voxel_domains[idx] = di*nyy*nzz + dj*nzz + dk
             
             # Function to round threads_per_block to nears 4th
             def round2nearest(value):
-                opt = [4, 8, 16, 32, 64, 128, 512, 1024]
+                opt = [2, 4, 8, 16, 32, 64, 128, 512, 1024]
                 dif = [abs(i-value) for i in opt]
                 idx = dif.index(min(dif))
                 return opt[idx]
             
-            # Generate voxels on GPU
-            threads_per_block_xy = round2nearest( m.CUDA_threads_per_block_voxels**(1/3) )
-            threadsperblock = (threads_per_block_xy, threads_per_block_xy)
-            blockspergrid_x = int(math.ceil(self.nx / threadsperblock[0]))
-            blockspergrid_y = int(math.ceil(self.ny / threadsperblock[1]))
-            blockspergrid = (blockspergrid_x, blockspergrid_y)
-            log.out(f'\n\nGenerating voxels ({run_mode}-{threads_per_block_xy}x{threads_per_block_xy}x{threads_per_block_xy}) ...')
-            generate_CUDA[blockspergrid, threadsperblock](numpy_voxels, n_xyz, d_xyz, xyz_add)
-            self.numpy_voxels = numpy_voxels.copy_to_host();
+            # Initialize data structs for GPU
+            nvoxels = self.nx*self.ny*self.nz
+            numpy_voxels_d = cuda.device_array((nvoxels, 3), dtype=np.float64)
+            numpy_frac_voxels_d = cuda.device_array((nvoxels, 3), dtype=np.float64)
+            numpy_radial_d = cuda.device_array(nvoxels, dtype=np.float64)
+            numpy_flags_d = cuda.device_array(nvoxels, dtype=np.float64)
+            voxel_domains_d = cuda.device_array(nvoxels, dtype=np.int64)
             
-            # Generate domain and find its connectivty using the CPU
-            self.domain, self.domain_graph, self.nxx, self.nyy, self.nzz, ndomains = generate_domain(self.xlo, self.xhi, self.ylo, self.yhi, self.zlo, self.zhi, self.cx, self.cy, self.cz, self.lx, self.ly, self.lz, self.domain_size, np_scaled_images, run_mode)
+            threads_per_block_xyz = round2nearest(m.CUDA_threads_per_block_voxels**(1/3))
+            threadsperblock = (threads_per_block_xyz, threads_per_block_xyz, threads_per_block_xyz)
+            blockspergrid =   (math.ceil(self.nx / threadsperblock[0]),
+                               math.ceil(self.ny / threadsperblock[1]),
+                               math.ceil(self.nz / threadsperblock[2]))
             
-            # Finding radial voxels
-            threads_per_block_voxels = m.CUDA_threads_per_block_voxels
-            log.out(f'Finding radius of voxels from center and assigning voxel to domains ({run_mode}-{threads_per_block_voxels}) ...')
-            blocks_per_grid_voxels = math.ceil(nvoxels / threads_per_block_voxels) 
-            radial_CUDA[blocks_per_grid_voxels, threads_per_block_voxels](cuda.to_device(self.numpy_voxels), cuda.to_device(self.domain), numpy_radial, voxel_domains, c_xyz)
-            self.numpy_radial = numpy_radial.copy_to_host();
-            self.voxel_domains = voxel_domains.copy_to_host();
-            self.numpy_flags = np.ones(nvoxels)
-            self.numpyx, self.numpyy, self.numpyz = unique_xyz(self.numpy_voxels)
+            # Voxel generaction of GPU
+            h_d = cuda.to_device(self.h)
+            boxlo_d = cuda.to_device(self.boxlo)
+            log.out(f'\n\nGenerating voxels ({run_mode}-{threads_per_block_xyz}x{threads_per_block_xyz}x{threads_per_block_xyz}) ...')
+            generate_fractional_CUDA_3D[blockspergrid, threadsperblock](numpy_voxels_d, numpy_frac_voxels_d, numpy_radial_d, numpy_flags_d,
+                voxel_domains_d, self.nx, self.ny, self.nz, self.nxx, self.nyy, self.nzz, h_d, boxlo_d)
             
-        # Generate required pytonh voxelIDs dict
-        self.voxelIDs = dict(enumerate(self.numpy_voxels, 1))  # { voxelID : (x, y, z) }
-        execution_time = (time.time() - start_time)
-        log.out(f'Voxel generation execution time: {execution_time} (seconds)')
+            self.numpy_voxels = numpy_voxels_d.copy_to_host()
+            self.numpy_frac_voxels = numpy_frac_voxels_d.copy_to_host()
+            self.numpy_radial = numpy_radial_d.copy_to_host()
+            self.numpy_flags = numpy_flags_d.copy_to_host()
+            self.voxel_domains = voxel_domains_d.copy_to_host()
+            self.threadsperblock = threadsperblock
+            self.blockspergrid   = blockspergrid
+            
+            # Domain generation on GPU
+            @cuda.jit
+            def generate_fractional_domain_CUDA_3D(domain, nxx, nyy, nzz, h, boxlo):
+                ii, jj, kk = cuda.grid(3)
+            
+                if ii >= nxx or jj >= nyy or kk >= nzz:
+                    return
+            
+                idx = ii*nyy*nzz + jj*nzz + kk
+            
+                flox = ii / nxx
+                fhix = (ii + 1) / nxx
+                floy = jj / nyy
+                fhiy = (jj + 1) / nyy
+                floz = kk / nzz
+                fhiz = (kk + 1) / nzz
+            
+                fcx = (ii + 0.5) / nxx
+                fcy = (jj + 0.5) / nyy
+                fcz = (kk + 0.5) / nzz
+            
+                x = h[0]*fcx + h[5]*fcy + h[4]*fcz + boxlo[0]
+                y = h[1]*fcy + h[3]*fcz + boxlo[1]
+                z = h[2]*fcz + boxlo[2]
+            
+                cx = h[0]*0.5 + h[5]*0.5 + h[4]*0.5 + boxlo[0]
+                cy = h[1]*0.5 + h[3]*0.5 + boxlo[1]
+                cz = h[2]*0.5 + boxlo[2]
+            
+                dx = x - cx
+                dy = y - cy
+                dz = z - cz
+            
+                domain[idx, 0] = flox
+                domain[idx, 1] = fhix
+                domain[idx, 2] = floy
+                domain[idx, 3] = fhiy
+                domain[idx, 4] = floz
+                domain[idx, 5] = fhiz
+                domain[idx, 6] = fcx
+                domain[idx, 7] = fcy
+                domain[idx, 8] = fcz
+                domain[idx, 9] = math.sqrt(dx*dx + dy*dy + dz*dz)
+
+            # Initialize data structs for GPU
+            ndomains = self.nxx*self.nyy*self.nzz            
+            domain_d = cuda.device_array((ndomains, 10), dtype=np.float64)
+            threads_per_block_xyz = round2nearest(m.CUDA_threads_per_block_voxels**(1/3))
+            threadsperblock = (threads_per_block_xyz, threads_per_block_xyz, threads_per_block_xyz)
+            blockspergrid   = (math.ceil(self.nxx / threadsperblock[0]),
+                               math.ceil(self.nyy / threadsperblock[1]),
+                               math.ceil(self.nzz / threadsperblock[2]))
+
+            h_d = cuda.to_device(self.h)
+            boxlo_d = cuda.to_device(self.boxlo)
+            log.out(f'Generating domain ({run_mode}-{threads_per_block_xyz}x{threads_per_block_xyz}x{threads_per_block_xyz}) ...')
+            generate_fractional_domain_CUDA_3D[blockspergrid, threadsperblock](domain_d, self.nxx, self.nyy, self.nzz, h_d, boxlo_d)
+            
+            
+            self.domain = domain_d.copy_to_host()
+            self.domain_graph = build_fractional_domain_graph(self.nxx, self.nyy, self.nzz, pflags_num)
+            ndomains = self.nxx*self.nyy*self.nzz
+            
+        self.numpyx, self.numpyy, self.numpyz = unique_xyz(self.numpy_voxels)
+        self.voxelIDs = dict(enumerate(self.numpy_voxels, 1))
+        log.out(f'Voxel generation execution time: {time.time() - start_time} (seconds)')
         
-        # Generate linked list of domains and voxels in domain
+        # Same linked-list layout as old code.
         start_time = time.time()
         log.out('  Generating linked list (serial)')
-        self.linked_lst = [set() for i in range(ndomains)]
-        nvoxels_domains = self.voxel_domains.shape[:1][0]
-        count = 0; progress_increment = 10;
-        for voxelID in range(nvoxels_domains):
-            domainID = self.voxel_domains[voxelID]
+        self.linked_lst = [set() for _ in range(ndomains)]
+        for voxelID in range(self.voxel_domains.shape[0]):
+            domainID = int(self.voxel_domains[voxelID])
             self.linked_lst[domainID].add(voxelID)
-            count += 1
-            if 100*count/nvoxels_domains % progress_increment == 0:
-                log.out(f'    progress: {int(100*count/nvoxels_domains)} %')
-                
-        # Making linked list homogeneous
-        log.out('  Making linked list homogeneous (serial)')
-        nmax = len(max(self.linked_lst, key=len))+1; # need an extra zero to modify in GPU run
-        count = 0; progress_increment = 10;
-        self.linked_lst = [list(i) for i in self.linked_lst]
-        for n, i in enumerate(self.linked_lst):
-            diff_zeros = abs(len(i)-nmax)*[0]
-            self.linked_lst[n].extend(diff_zeros)
-            count += 1
-            if 100*count/ndomains % progress_increment == 0:
-                print('    progress: ', int(100*count/ndomains),'%')
-        self.linked_lst = np.array(self.linked_lst)
-        execution_time = (time.time() - start_time)
-        log.out(f'Linked list generation execution time: {execution_time} (seconds)')
         
-        # Set atom domain
+        log.out('  Making linked list homogeneous (serial)')
+        nmax = len(max(self.linked_lst, key=len))
+        self.linked_lst = [list(i) for i in self.linked_lst]
+        for n, entries in enumerate(self.linked_lst):
+            #entries.extend([0]*(nmax - len(entries)))
+            entries.extend([-1]*(nmax - len(entries)))
+        self.linked_lst = np.array(self.linked_lst, dtype=np.int64)
+        log.out(f'Linked list generation execution time: {time.time() - start_time} (seconds)')
+        
+        # Set atom domain using fractional binning.
         for i in m.atoms:
             atom = m.atoms[i]
-            x = atom.x; y = atom.y; z = atom.z;
-            atom.domainID = assign_domain(x, y, z, self.domain)
+            atom.domainID = assign_domain_fractional_from_cart(
+                atom.x, atom.y, atom.z, self.h_inv, self.boxlo, self.nxx, self.nyy, self.nzz)
             
-        
-        
-#######################################################
-# numba njit compilation for assigning atom to domain #
-#######################################################
-@numba.njit(parallel=False)
-def assign_domain(xpos, ypos, zpos, domain):
-    try:
-        d = np.where( np.logical_and(xpos >= domain[:,0], xpos <= domain[:,1]) & np.logical_and(ypos >= domain[:,2], ypos <= domain[:,3])  & np.logical_and(zpos >= domain[:,4], zpos <= domain[:,5]) )[0]
-        domainID = int(np.min(d))
-    except:
-        domainID = 0;
-        for i in range(domain.shape[:1][0]):
-            d = domain[i]
-            if d[0] <= xpos <= d[1] and d[2] <= ypos <= d[3] and d[4] <= zpos <= d[5]:
-                domainID = i; break;
-    return domainID
-
-
-##########################################################
-# numba njit compilation for unique x, y and z locations #
-##########################################################
-@numba.njit(parallel=False)
-def unique_xyz(numpy_voxels):
-    numpyx = np.unique(numpy_voxels[:,0])
-    numpyy = np.unique(numpy_voxels[:,1])
-    numpyz = np.unique(numpy_voxels[:,2])
-    return numpyx, numpyy, numpyz
-
-##################################################
-# numba njit compilitation for generating domain #
-##################################################
-@numba.njit(parallel=False)
-def generate_domain(xlo, xhi, ylo, yhi, zlo, zhi, cx, cy, cz, lx, ly, lz, domain_size, scaled_images, run_mode):
-    # Find subdomain regions
-    nxx = math.ceil(lx/domain_size)
-    nyy = math.ceil(ly/domain_size)
-    nzz = math.ceil(lz/domain_size)
-    dxx = lx/nxx; dyy = ly/nyy; dzz = lz/nzz;
-    halfdxx = dxx/2; halfdyy = dyy/2; halfdzz = dzz/2;
-    xxadd = halfdxx + xlo; yyadd =  halfdyy + ylo; zzadd = halfdzz + zlo;
-    ndomains = nxx*nyy*nzz; count = 0; 
-    domain = np.zeros(10*ndomains).reshape((ndomains, 10)) #  ( (xlo, xhi, ylo, yhi, zlo, zhi, xc, yc, zc, r) )
-    print('  Generating Domains (serial)')
-    for ii in range(nxx):
-        for jj in range(nyy):
-            for kk in range(nzz):
-                xc = ii*dxx + xxadd
-                yc = jj*dyy + yyadd
-                zc = kk*dzz + zzadd
-                diffx = cx - xc
-                diffy = cy - yc
-                diffz = cz - zc
-                domain[count][0] = xc - halfdxx
-                domain[count][1] = xc + halfdxx
-                domain[count][2] = yc - halfdyy
-                domain[count][3] = yc + halfdyy
-                domain[count][4] = zc - halfdzz
-                domain[count][5] = zc + halfdzz
-                domain[count][6] = xc
-                domain[count][7] = yc
-                domain[count][8] = zc
-                domain[count][9] = np.sqrt(diffx*diffx + diffy*diffy + diffz*diffz)
-                count += 1
-                
-    # Generate domain graph
-    domain_graph = domain_connectivty_serial(ndomains, domain, domain_size, scaled_images)
-    return domain, domain_graph, nxx, nyy, nzz, ndomains
-
-
-###################################################################################
-# numba njit compilation for generating voxels and creating linked list in serial #
-###################################################################################
-@numba.njit(parallel=False)
-def generate_serial(nx, ny, nz, dx, dy, dz, xlo, xhi, ylo, yhi, zlo, zhi, cx, cy, cz, lx, ly, lz, domain_size, scaled_images, run_mode):
-    print('\n\nGenerating voxels (compiled - serial) ...')
-    # Find subdomain regions
-    nxx = math.ceil(lx/domain_size)
-    nyy = math.ceil(ly/domain_size)
-    nzz = math.ceil(lz/domain_size)
-    dxx = lx/nxx; dyy = ly/nyy; dzz = lz/nzz;
-    halfdxx = dxx/2; halfdyy = dyy/2; halfdzz = dzz/2;
-    xxadd = halfdxx + xlo; yyadd =  halfdyy + ylo; zzadd = halfdzz + zlo;
-    ndomains = nxx*nyy*nzz; count = 0; 
-    domain = np.zeros(10*ndomains).reshape((ndomains, 10)) #  ( (xlo, xhi, ylo, yhi, zlo, zhi, xc, yc, zc, r) )
-    print('  Generating Domains (serial)')
-    for ii in range(nxx):
-        for jj in range(nyy):
-            for kk in range(nzz):
-                xc = ii*dxx + xxadd
-                yc = jj*dyy + yyadd
-                zc = kk*dzz + zzadd
-                diffx = cx - xc
-                diffy = cy - yc
-                diffz = cz - zc
-                domain[count][0] = xc - halfdxx
-                domain[count][1] = xc + halfdxx
-                domain[count][2] = yc - halfdyy
-                domain[count][3] = yc + halfdyy
-                domain[count][4] = zc - halfdzz
-                domain[count][5] = zc + halfdzz
-                domain[count][6] = xc
-                domain[count][7] = yc
-                domain[count][8] = zc
-                domain[count][9] = np.sqrt(diffx*diffx + diffy*diffy + diffz*diffz)
-                count += 1
-
-    # Generate voxels
-    nvoxels = nx*ny*nz; progress_increment = 10; count = 0;
-    xadd = dx/2 + xlo; yadd =  dy/2 + ylo; zadd = dz/2 + zlo;
-    numpy_voxels = np.zeros(3*nvoxels).reshape((nvoxels, 3))
-    numpy_radial = np.zeros(nvoxels); numpy_flags = np.ones(nvoxels)
-    voxel_domains = np.zeros(nvoxels, dtype=np.int64);
-    domain_guess = 0
-    print('  Generating voxels and assigning to domain (serial)')
-    for i in range(nx):
-        for j in range(ny):
-            for k in range(nz):
-                xpos = i*dx + xadd
-                ypos = j*dy + yadd
-                zpos = k*dz + zadd
-                diffx = cx - xpos
-                diffy = cy - ypos
-                diffz = cz - zpos
-                
-                # Use previous voxel domain to guess current voxel domain (speed-up)
-                d = domain[domain_guess]
-                if d[0] <= xpos <= d[1] and d[2] <= ypos <= d[3] and d[4] <= zpos <= d[5]:
-                    domainID = domain_guess
-                else:
-                    domainID = assign_domain(xpos, ypos, zpos, domain)
-                    domain_guess = domainID
-                numpy_radial[count] = np.sqrt(diffx*diffx + diffy*diffy + diffz*diffz)                 
-                numpy_voxels[count][0] = xpos
-                numpy_voxels[count][1] = ypos
-                numpy_voxels[count][2] = zpos
-                voxel_domains[count] = domainID
-                count += 1
-                if 100*count/nvoxels % progress_increment == 0:
-                    print('    progress: ', int(100*count/nvoxels),'%')
-                    
-    # Find unique x, y, and z locations
-    numpyx = np.unique(numpy_voxels[:,0])
-    numpyy = np.unique(numpy_voxels[:,1])
-    numpyz = np.unique(numpy_voxels[:,2])
-    
-    # Generate domain graph
-    domain_graph = domain_connectivty_serial(ndomains, domain, domain_size, scaled_images)
-    return numpy_voxels, numpy_radial, numpy_flags, numpyx, numpyy, numpyz, domain, domain_graph, nxx, nyy, nzz, ndomains, voxel_domains
-
-
-#####################################################################################
-# numba njit compilation for generating voxels and creating linked list in parallel #
-#####################################################################################
-@numba.njit(parallel=True)
-def generate_parallel(nx, ny, nz, dx, dy, dz, xlo, xhi, ylo, yhi, zlo, zhi, cx, cy, cz, lx, ly, lz, domain_size, scaled_images, run_mode):
-    print('\n\nGenerating voxels (compiled - parallel) ...')
-    # Find subdomain regions
-    nxx = math.ceil(lx/domain_size)
-    nyy = math.ceil(ly/domain_size)
-    nzz = math.ceil(lz/domain_size)
-    dxx = lx/nxx; dyy = ly/nyy; dzz = lz/nzz;
-    halfdxx = dxx/2; halfdyy = dyy/2; halfdzz = dzz/2;
-    xxadd = halfdxx + xlo; yyadd =  halfdyy + ylo; zzadd = halfdzz + zlo;
-    ndomains = nxx*nyy*nzz; count = 0; 
-    domain = np.zeros(10*ndomains).reshape((ndomains, 10)) #  ( (xlo, xhi, ylo, yhi, zlo, zhi, xc, yc, zc, r) )
-    print('  Generating Domains (serial)')
-    for ii in range(nxx):
-        for jj in range(nyy):
-            for kk in range(nzz):
-                xc = ii*dxx + xxadd
-                yc = jj*dyy + yyadd
-                zc = kk*dzz + zzadd
-                diffx = cx - xc
-                diffy = cy - yc
-                diffz = cz - zc
-                domain[count][0] = xc - halfdxx
-                domain[count][1] = xc + halfdxx
-                domain[count][2] = yc - halfdyy
-                domain[count][3] = yc + halfdyy
-                domain[count][4] = zc - halfdzz
-                domain[count][5] = zc + halfdzz
-                domain[count][6] = xc
-                domain[count][7] = yc
-                domain[count][8] = zc
-                domain[count][9] = np.sqrt(diffx*diffx + diffy*diffy + diffz*diffz)
-                count += 1
-
-    # Generate voxels
-    nvoxels = nx*ny*nz;
-    xadd = dx/2 + xlo; yadd =  dy/2 + ylo; zadd = dz/2 + zlo;
-    numpy_voxels = np.zeros(3*nvoxels).reshape((nvoxels, 3))
-    numpy_radial = np.zeros(nvoxels); numpy_flags = np.ones(nvoxels)
-    voxel_domains = np.zeros(nvoxels, dtype=np.int64);
-    domain_guess = 0
-    print('  Generating voxels and assigning to domain (parallel)')
-    for i in range(nx):
-        for j in range(ny):
-            for k in range(nz):
-                xpos = i*dx + xadd
-                ypos = j*dy + yadd
-                zpos = k*dz + zadd
-                diffx = cx - xpos
-                diffy = cy - ypos
-                diffz = cz - zpos
-                
-                # Use previous voxel domain to guess current voxel domain (speed-up)
-                d = domain[domain_guess]
-                if d[0] <= xpos <= d[1] and d[2] <= ypos <= d[3] and d[4] <= zpos <= d[5]:
-                    domainID = domain_guess
-                else:
-                    domainID = assign_domain(xpos, ypos, zpos, domain)
-                    domain_guess = domainID
-                numpy_radial[i*ny*nz+j*nz+k] = np.sqrt(diffx*diffx + diffy*diffy + diffz*diffz)                 
-                numpy_voxels[i*ny*nz+j*nz+k][0] = xpos
-                numpy_voxels[i*ny*nz+j*nz+k][1] = ypos
-                numpy_voxels[i*ny*nz+j*nz+k][2] = zpos
-                voxel_domains[i*ny*nz+j*nz+k] = domainID
-                    
-    # Find unique x, y, and z locations
-    numpyx = np.unique(numpy_voxels[:,0])
-    numpyy = np.unique(numpy_voxels[:,1])
-    numpyz = np.unique(numpy_voxels[:,2])
-    
-    # Generate domain graph
-    domain_graph = domain_connectivty_serial(ndomains, domain, domain_size, scaled_images)
-    return numpy_voxels, numpy_radial, numpy_flags, numpyx, numpyy, numpyz, domain, domain_graph, nxx, nyy, nzz, ndomains, voxel_domains
-
-
-###################################################################
-# numba njit compilation for finding domain connectivty in serial #
-###################################################################
-@numba.njit(parallel=False)
-def domain_connectivty_serial(ndomains, domain, domain_size, scaled_images):
-    domain_graph = np.zeros(30*ndomains, dtype=np.int64).reshape((ndomains, 30))
-    internal_flags = np.ones(ndomains)
-    print('  Finding Domain connectivity (serial)')
-    for i in range(ndomains):
-        x1 = domain[i][6]; y1 = domain[i][7];
-        z1 = domain[i][8]; r1 = domain[i][9];
-        min_radius = r1 - 2*domain_size
-        max_radius = r1 + 2*domain_size
-        periodic_postions = np.zeros(27*3).reshape((27, 3))
-        for a in range(27):
-            ixlx, iyly, izlz = scaled_images[a]
-            periodic_postions[a][0] = x1+ixlx
-            periodic_postions[a][1] = y1+iyly
-            periodic_postions[a][2] = z1+izlz
-        for j in range(i, ndomains):
-            if internal_flags[j] == 0 or i == j: continue
-            x2 = domain[j][6]; y2 = domain[j][7];
-            z2 = domain[j][8]; r2 = domain[j][9];
-            if min_radius < r2 < max_radius:
-                for x1i, y1i, z1i in periodic_postions:
-                    if abs(x1i-x2) > domain_size: continue
-                    elif abs(y1i-y2) > domain_size: continue
-                    elif abs(z1i-z2) > domain_size: continue
-                    gindex1 = np.min(np.where(domain_graph[i] == 0)[0])
-                    gindex2 = np.min(np.where(domain_graph[j] == 0)[0])
-                    if gindex1 < 29 and gindex2 < 29:
-                        if j not in domain_graph[i]:
-                            domain_graph[i][gindex1] = j
-                        if i not in domain_graph[j]:
-                            domain_graph[j][gindex2] = i
-                    break
-        internal_flags[i] = 0
-    return domain_graph
-                    
-
-######################################################################
-# numba njit compilation for finding atom/free volume in serial mode #
-######################################################################
-@numba.njit(parallel=False)
-def atom_vol_calc_serial(atoms, periodic_atoms, radial_voxel, voxels, flags, max_voxel_size, domain_graph, probe_radius, linked_lst):
-    print('Finding atom volumes and free volumes (compiled - domain decomposition serial) ...')
-    progress_increment = 10; checked = np.zeros(len(atoms)); natoms = atoms.shape[:1][0];
-    pbc_count = 0; npossible_pbc = 0; voxel_atomIndexs = np.zeros(voxels.shape[:1])
-    for i in range(natoms):
-        atom = atoms[i]; checked[i] = 1;
-        x1 = atom[0]; y1 = atom[1]; z1 = atom[2]; radial_atom = atom[3];
-        atompos = np.array([x1, y1, z1])
-        vdw_radii = atom[4] + probe_radius; atom_edgeflag = atom[5];
-        if atom_edgeflag == 1: npossible_pbc += 1
-        domainID = int(atom[6])
-        tmp = np.unique(domain_graph[domainID])
-        atom_domains = np.append(tmp, domainID)
-        min_radius = radial_atom - vdw_radii - max_voxel_size
-        max_radius = radial_atom + vdw_radii + max_voxel_size
-        if 100*np.sum(checked)/natoms % progress_increment == 0:
-            print('progress: ', int(100*np.sum(checked)/natoms),'%')
-        for domainID in atom_domains:
-            voxelIDs = linked_lst[domainID]
-            for j in voxelIDs:
-                if flags[j] == 0: continue
-                if min_radius < radial_voxel[j] < max_radius:
-                    if atom_edgeflag == 1:
-                        voxel = voxels[j]
-                        for x1i, y1i, z1i in periodic_atoms[i]:
-                            if abs(voxel[0] - x1i) > vdw_radii: continue
-                            elif abs(voxel[1] - y1i) > vdw_radii: continue
-                            elif abs(voxel[2] - z1i) > vdw_radii: continue
-                            atompos = np.array([x1i, y1i, z1i])
-                            distance_ppp = np.linalg.norm(atompos-voxels[j])
-                            if distance_ppp < vdw_radii:
-                                flags[j] = 0; voxel_atomIndexs[j] = atom[7]; pbc_count += 1;
-                    else:
-                        voxel = voxels[j]
-                        if abs(voxel[0] - x1) > vdw_radii: continue
-                        elif abs(voxel[1] - y1) > vdw_radii: continue
-                        elif abs(voxel[2] - z1) > vdw_radii: continue
-                        distance_fff = np.linalg.norm(atompos-voxels[j])
-                        if distance_fff < vdw_radii:
-                            flags[j] = 0; voxel_atomIndexs[j] = atom[7];
-    return pbc_count, npossible_pbc, voxel_atomIndexs
-
-
-########################################################################
-# numba njit compilation for finding atom/free volume in parallel mode #
-########################################################################
-@numba.njit(parallel=True)
-def atom_vol_calc_parallel(atoms, periodic_atoms, radial_voxel, voxels, flags, max_voxel_size, domain_graph, probe_radius, linked_lst):
-    print('Finding atom volumes and free volumes (compiled - domain decomposition parallel) ...')
-    progress_increment = 10; checked = np.zeros(len(atoms)); natoms = atoms.shape[:1][0];
-    pbc_count = 0; npossible_pbc = 0; voxel_atomIndexs = np.zeros(voxels.shape[:1])
-    for i in numba.prange(natoms):
-        atom = atoms[i]; checked[i] = 1;
-        x1 = atom[0]; y1 = atom[1]; z1 = atom[2]; radial_atom = atom[3];
-        atompos = np.array([x1, y1, z1])
-        vdw_radii = atom[4] + probe_radius; atom_edgeflag = atom[5];
-        if atom_edgeflag == 1: npossible_pbc += 1
-        domainID = int(atom[6])
-        tmp = np.unique(domain_graph[domainID])
-        atom_domains = np.append(tmp, domainID)
-        min_radius = radial_atom - vdw_radii - max_voxel_size
-        max_radius = radial_atom + vdw_radii + max_voxel_size
-        if 100*np.sum(checked)/natoms % progress_increment == 0:
-            print('progress: ', int(100*np.sum(checked)/natoms),'%')
-        for domainID in atom_domains:
-            voxelIDs = linked_lst[domainID]
-            for j in voxelIDs:
-                if flags[j] == 0: continue
-                if min_radius < radial_voxel[j] < max_radius:
-                    if atom_edgeflag == 1:
-                        voxel = voxels[j]
-                        for x1i, y1i, z1i in periodic_atoms[i]:
-                            if abs(voxel[0] - x1i) > vdw_radii: continue
-                            elif abs(voxel[1] - y1i) > vdw_radii: continue
-                            elif abs(voxel[2] - z1i) > vdw_radii: continue
-                            atompos = np.array([x1i, y1i, z1i])
-                            distance_ppp = np.sqrt(np.sum(np.square(atompos-voxels[j])))
-                            if distance_ppp < vdw_radii:
-                                flags[j] = 0; voxel_atomIndexs[j] = atom[7]; pbc_count += 1;
-                    else:
-                        voxel = voxels[j]
-                        if abs(voxel[0] - x1) > vdw_radii: continue
-                        elif abs(voxel[1] - y1) > vdw_radii: continue
-                        elif abs(voxel[2] - z1) > vdw_radii: continue
-                        distance_fff = np.sqrt(np.sum(np.square(atompos-voxels[j])))
-                        if distance_fff < vdw_radii:
-                            flags[j] = 0; voxel_atomIndexs[j] = atom[7];
-    return pbc_count, npossible_pbc, voxel_atomIndexs
 
 
 ############################################################
@@ -596,165 +615,65 @@ def spat_dist_parallel(xpos, ypos, zpos, voxels, flags, voxel_volume):
     return volx, voly, volz
 
 
-################################################################
-# numba njit compilation for free volume distribution (serial) #
-################################################################
-@numba.njit(parallel=False)
-def find_zero_index(arr):
-    index = 0;
-    for index in range(arr.shape[0]):
-        if arr[index] == 0: break
-    return index
-
-@numba.njit(parallel=False)
-def free_dist_serial(voxels, flags, max_voxel_size, xlo, xhi, ylo, yhi, zlo, zhi, scaled_images, radial_voxel, voxel_domains, domain_graph, linked_lst):
-    # Find if voxels periodic postions
-    nvoxels = voxels.shape[:1][0];
-    voxel_periodic_flags = np.zeros(nvoxels);
-    for i in range(nvoxels):
-        if flags[i] == 0: continue
-        x, y, z = voxels[i]; flag = 0;
-        if abs(x - xlo) <= max_voxel_size or abs(x + xlo) <= max_voxel_size: flag = 1
-        elif abs(x - xhi) <= max_voxel_size or abs(x + xhi) <= max_voxel_size: flag = 1 
-        elif abs(y - ylo) <= max_voxel_size or abs(y + ylo) <= max_voxel_size: flag = 1
-        elif abs(y - yhi) <= max_voxel_size or abs(y + yhi) <= max_voxel_size: flag = 1
-        elif abs(z - zlo) <= max_voxel_size or abs(z + zlo) <= max_voxel_size: flag = 1
-        elif abs(z - zhi) <= max_voxel_size or abs(z + zhi) <= max_voxel_size: flag = 1
-        voxel_periodic_flags[i] = flag
-    
-    # Find voxel connectivty
-    numpy_graph = np.zeros(30*(nvoxels+1), dtype=np.int64).reshape((nvoxels+1, 30)) # should be 27, but 30 allows overflow
-    internal_flags = np.copy(flags); progress_increment = 10; count = 0; nimages = 27
-    for i in range(nvoxels):
-        count += 1
-        if 100*count/nvoxels % progress_increment == 0:
-            print('progress: ', int(100*count/nvoxels),'%')
-        if internal_flags[i] == 0: continue
-        x1, y1, z1 = voxels[i]
-        r1 = radial_voxel[i]
-        min_radius = r1 - 2*max_voxel_size
-        max_radius = r1 + 2*max_voxel_size
-        domainID = voxel_domains[i]
-        tmp = np.unique(domain_graph[domainID])
-        domains = np.append(tmp, domainID)
-        periodic_postions = np.zeros(nimages*3).reshape((nimages, 3))
-        for a in range(nimages):
-            ixlx, iyly, izlz = scaled_images[a]
-            periodic_postions[a][0] = x1+ixlx
-            periodic_postions[a][1] = y1+iyly
-            periodic_postions[a][2] = z1+izlz
-        for domainID in domains:
-            voxelIDs = linked_lst[domainID]
-            for j in voxelIDs:
-                if internal_flags[j] == 0 or i == j: continue
-                if min_radius < radial_voxel[j] < max_radius:
-                    x2, y2, z2 = voxels[j]
-                    # Find non-periodic connectivity
-                    if voxel_periodic_flags[i] == 0 and voxel_periodic_flags[j] == 0:
-                        if abs(x1-x2) <= max_voxel_size and abs(y1-y2) <= max_voxel_size and abs(z1-z2) <= max_voxel_size:
-                            distance = np.sqrt(np.sum(np.square(voxels[i]-voxels[j])))
-                            if distance <= max_voxel_size:
-                                id1 = i+1; id2 = j+1;
-                                gindex1 = find_zero_index(numpy_graph[id1])
-                                gindex2 = find_zero_index(numpy_graph[id2])
-                                if gindex1 < 29 and gindex2 < 29:
-                                    if not np.any(numpy_graph[id1] == id2):
-                                        numpy_graph[id1][gindex1] = id2
-                                    if not np.any(numpy_graph[id2] == id1):
-                                        numpy_graph[id2][gindex2] = id1
-                    else: # else find periodic connectivty
-                        for x1i, y1i, z1i in periodic_postions:
-                            if abs(x1i-x2) <= max_voxel_size and abs(y1i-y2) <= max_voxel_size and abs(z1i-z2) <= max_voxel_size:
-                                voxels_ppp = np.array([x1i, y1i, z1i])
-                                distance = np.sqrt(np.sum(np.square(voxels_ppp-voxels[j])))
-                                if distance <= max_voxel_size:
-                                    id1 = i+1; id2 = j+1;
-                                    gindex1 = find_zero_index(numpy_graph[id1])
-                                    gindex2 = find_zero_index(numpy_graph[id2])
-                                    if gindex1 < 29 and gindex2 < 29:
-                                        if not np.any(numpy_graph[id1] == id2):
-                                            numpy_graph[id1][gindex1] = id2
-                                        if not np.any(numpy_graph[id2] == id1):
-                                            numpy_graph[id2][gindex2] = id1
-                                    break
-        internal_flags[i] = 0
-    return numpy_graph
-
-
 ##################################################################
 # numba njit compilation for free volume distribution (parallel) #
 ##################################################################
 @numba.njit(parallel=True)
-def free_dist_parallel(voxels, flags, max_voxel_size, xlo, xhi, ylo, yhi, zlo, zhi, scaled_images, radial_voxel, voxel_domains, domain_graph, linked_lst):
-    # Find if voxels periodic postions
-    nvoxels = voxels.shape[:1][0];
-    voxel_periodic_flags = np.zeros(nvoxels);
-    for i in range(nvoxels):
-        if flags[i] == 0: continue
-        x, y, z = voxels[i]; flag = 0;
-        if abs(x - xlo) <= max_voxel_size or abs(x + xlo) <= max_voxel_size: flag = 1
-        elif abs(x - xhi) <= max_voxel_size or abs(x + xhi) <= max_voxel_size: flag = 1 
-        elif abs(y - ylo) <= max_voxel_size or abs(y + ylo) <= max_voxel_size: flag = 1
-        elif abs(y - yhi) <= max_voxel_size or abs(y + yhi) <= max_voxel_size: flag = 1
-        elif abs(z - zlo) <= max_voxel_size or abs(z + zlo) <= max_voxel_size: flag = 1
-        elif abs(z - zhi) <= max_voxel_size or abs(z + zhi) <= max_voxel_size: flag = 1
-        voxel_periodic_flags[i] = flag
-    
-    # Find voxel connectivty
-    numpy_graph = np.zeros(30*(nvoxels+1), dtype=np.int64).reshape((nvoxels+1, 30)) # should be 27, but 30 allows overflow
-    internal_flags = np.copy(flags); nimages = 27
-    for i in numba.prange(nvoxels):
-        if internal_flags[i] == 0: continue
-        x1, y1, z1 = voxels[i]
-        r1 = radial_voxel[i]
-        min_radius = r1 - 2*max_voxel_size
-        max_radius = r1 + 2*max_voxel_size
-        domainID = voxel_domains[i]
-        tmp = np.unique(domain_graph[domainID])
-        domains = np.append(tmp, domainID)
-        periodic_postions = np.zeros(nimages*3).reshape((nimages, 3))
-        for a in range(nimages):
-            ixlx, iyly, izlz = scaled_images[a]
-            periodic_postions[a][0] = x1+ixlx
-            periodic_postions[a][1] = y1+iyly
-            periodic_postions[a][2] = z1+izlz
-        for domainID in domains:
-            voxelIDs = linked_lst[domainID]
-            for j in voxelIDs:
-                if internal_flags[j] == 0 or i == j: continue
-                if min_radius < radial_voxel[j] < max_radius:
-                    x2, y2, z2 = voxels[j]
-                    # Find non-periodic connectivity
-                    if voxel_periodic_flags[i] == 0 and voxel_periodic_flags[j] == 0:
-                        if abs(x1-x2) <= max_voxel_size and abs(y1-y2) <= max_voxel_size and abs(z1-z2) <= max_voxel_size:
-                            distance = np.sqrt(np.sum(np.square(voxels[i]-voxels[j])))
-                            if distance <= max_voxel_size:
-                                id1 = i+1; id2 = j+1;
-                                gindex1 = find_zero_index(numpy_graph[id1])
-                                gindex2 = find_zero_index(numpy_graph[id2])
-                                if gindex1 < 29 and gindex2 < 29:
-                                    if not np.any(numpy_graph[id1] == id2):
-                                    #if id2 not in numpy_graph[id1]:
-                                        numpy_graph[id1][gindex1] = id2
-                                    if not np.any(numpy_graph[id2] == id1):
-                                    #if id1 not in numpy_graph[id2]:
-                                        numpy_graph[id2][gindex2] = id1
-                    else: # else find periodic connectivty
-                        for x1i, y1i, z1i in periodic_postions:
-                            if abs(x1i-x2) <= max_voxel_size and abs(y1i-y2) <= max_voxel_size and abs(z1i-z2) <= max_voxel_size:
-                                voxels_ppp = np.array([x1i, y1i, z1i])
-                                distance = np.sqrt(np.sum(np.square(voxels_ppp-voxels[j])))
-                                if distance <= max_voxel_size:
-                                    id1 = i+1; id2 = j+1;
-                                    gindex1 = find_zero_index(numpy_graph[id1])
-                                    gindex2 = find_zero_index(numpy_graph[id2])
-                                    if gindex1 < 29 and gindex2 < 29:
-                                        if not np.any(numpy_graph[id1] == id2):
-                                            numpy_graph[id1][gindex1] = id2
-                                        if not np.any(numpy_graph[id2] == id1):
-                                            numpy_graph[id2][gindex2] = id1
-                                    break
-        internal_flags[i] = 0
+def free_dist_parallel_frac_indexed(flags, nx, ny, nz, pflags):
+    nvoxels = nx*ny*nz
+    numpy_graph = np.zeros((nvoxels + 1, 30), dtype=np.int64)
+
+    for idx in numba.prange(nvoxels):
+        if flags[idx] == 0:
+            continue
+
+        i = idx // (ny*nz)
+        rem = idx - i*ny*nz
+        j = rem // nz
+        k = rem - j*nz
+
+        id1 = idx + 1
+
+        for di in range(-1, 2):
+            ni = i + di
+            if ni < 0 or ni >= nx:
+                if pflags[0] == 1:
+                    ni = ni % nx
+                else:
+                    continue
+
+            for dj in range(-1, 2):
+                nj = j + dj
+                if nj < 0 or nj >= ny:
+                    if pflags[1] == 1:
+                        nj = nj % ny
+                    else:
+                        continue
+
+                for dk in range(-1, 2):
+                    if di == 0 and dj == 0 and dk == 0:
+                        continue
+
+                    nk = k + dk
+                    if nk < 0 or nk >= nz:
+                        if pflags[2] == 1:
+                            nk = nk % nz
+                        else:
+                            continue
+
+                    idx2 = ni*ny*nz + nj*nz + nk
+
+                    # write one direction only; Python graph build later symmetrizes
+                    if idx2 <= idx:
+                        continue
+
+                    if flags[idx2] == 0:
+                        continue
+
+                    gindex = find_zero_index(numpy_graph[id1])
+                    if gindex < 29:
+                        numpy_graph[id1][gindex] = idx2 + 1
+
     return numpy_graph
 
         
@@ -780,89 +699,144 @@ class analyze:
             
         # Generate numpy arrays  (use for vectorizing euclidean distances calculations)
         log.out('\n\nBuilding numpy arrays to compile code')
-        voxels = v.numpy_voxels; flags = v.numpy_flags;  radial_voxel = v.numpy_radial; periodic_atoms = [] # [x, y, z]
-        atoms = [] # [x, y, z, r, vdw, pbcflag, domainID]; pbcflag = 0 (not near edge); pbcflag = 1 (near edge);  
+        frac_voxels = v.numpy_frac_voxels
+        voxels = v.numpy_voxels
+        flags = v.numpy_flags
+        atoms_frac = []  # [fx, fy, fz, vdw_radius, domainID, atom_type]
         for i in m.atoms:
             atom = m.atoms[i]
-            x = atom.x; y = atom.y; z = atom.z;
-            radial_atom = misc_func.compute_distance(x, y, z, v.cx, v.cy, v.cz)
-            
-            # Set atom vdw radii based on method
+            x = atom.x; y = atom.y; z = atom.z
+        
             if vdw_method == 'dict':
                 vdw_radii = vdw_radius[atom.element]
             elif vdw_method in ['class1', 'class2']:
                 sigma = m.pair_coeffs[atom.type].coeffs[1]
                 if vdw_method == 'class1':
-                    vdw_radii = ( (2**(1/6))*sigma )/2
-                if vdw_method == 'class2':
+                    vdw_radii = ((2**(1/6))*sigma)/2
+                elif vdw_method == 'class2':
                     vdw_radii = sigma/2
-            else: log.error(f'ERROR vdw_method {vdw_method} not supported')
-            
-            if v.pflags.count('f') == 3: atom_edgeflag = False
-            else: atom_edgeflag = misc_func.check_near_edge(x, y, z, vdw_radii, v.xlo, v.xhi, v.ylo, v.yhi, v.zlo, v.zhi)
-            pbcflag = 0;
-            if atom_edgeflag: pbcflag = 1;
-            periodic_atoms.append(misc_func.find_periodic_postions(v.scaled_images, x, y, z, v.cx, v.cy, v.cz, Npos=12))
-            atoms.append([x, y, z, radial_atom, vdw_radii, pbcflag, atom.domainID, atom.type])
-        atoms = np.array(atoms); periodic_atoms = np.array(periodic_atoms)
+            else:
+                log.error(f'ERROR vdw_method {vdw_method} not supported')
+        
+            fx, fy, fz = pos2frac_njit(x, y, z, v.h_inv, v.boxlo)
+            fx = fx - math.floor(fx)
+            fy = fy - math.floor(fy)
+            fz = fz - math.floor(fz)
+            atoms_frac.append([fx, fy, fz, vdw_radii, atom.domainID, atom.type])
+        
+        atoms_frac = np.array(atoms_frac, dtype=np.float64)
         
         #-----------------------------------------#
         # CUDA Kernel to compute atom/free volume #
         #-----------------------------------------#
         start_time = time.time()
         @cuda.jit
-        def atom_vol_calc_CUDA(atoms, periodic_atoms, radial_voxel, voxels, domain_graph, linked_lst, flags, voxel_atomIndexs, sizes, pbc):
+        def atom_vol_calc_CUDA_frac(atoms_frac, frac_voxels, domain_graph, linked_lst, flags, voxel_atomIndexs, h, probe_radius):
             i = cuda.grid(1)
-            if i < atoms.shape[:1][0]:
-                atom = atoms[i]
-                x1 = atom[0]; y1 = atom[1]; z1 = atom[2]; radial_atom = atom[3];
-                vdw_radii = atom[4] + sizes[1]; atom_edgeflag = atom[5];
-                min_radius = radial_atom - vdw_radii - sizes[0]
-                max_radius = radial_atom + vdw_radii + sizes[0]
-                domainID = int(atom[6])
-                atom_domains = domain_graph[domainID]
-                atom_domains[-1] = domainID # extra zero is available to do this
-                if atom_edgeflag == 1: cuda.atomic.add(pbc, 1, 1)
-                for domainID in atom_domains:
-                    voxelIDs = linked_lst[domainID]
-                    for j in voxelIDs:
-                        if flags[j] == 0: continue
-                        if min_radius < radial_voxel[j] < max_radius:
-                            if atom_edgeflag == 1:
-                                voxel = voxels[j]
-                                for x1i, y1i, z1i in periodic_atoms[i]:
-                                    if abs(voxel[0] - x1i) > vdw_radii: continue
-                                    elif abs(voxel[1] - y1i) > vdw_radii: continue
-                                    elif abs(voxel[2] - z1i) > vdw_radii: continue
-                                    dx = x1i - voxel[0]; dy = y1i - voxel[1]; dz = z1i - voxel[2];
-                                    distance_ppp = math.sqrt(dx*dx + dy*dy + dz*dz)
-                                    if distance_ppp < vdw_radii:
-                                        flags[j] = 0; voxel_atomIndexs[j] = int(atom[7]);
-                                        cuda.atomic.add(pbc, 0, 1)
-                            else:
-                                voxel = voxels[j]
-                                if abs(voxel[0] - x1) > vdw_radii: continue
-                                elif abs(voxel[1] - y1) > vdw_radii: continue
-                                elif abs(voxel[2] - z1) > vdw_radii: continue
-                                dx = atom[0] - voxel[0]; dy = atom[1] - voxel[1]; dz = atom[2] - voxel[2];
-                                distance_fff = math.sqrt(dx*dx + dy*dy + dz*dz)
-                                if distance_fff < vdw_radii:
-                                    flags[j] = 0; voxel_atomIndexs[j] = int(atom[7]);
-                                
-        # Host data struct setup
-        nvoxels = voxels.shape[:1][0]; natoms = atoms.shape[:1][0];
-        voxel_atomIndexs = cuda.to_device(np.zeros(nvoxels))
-        pbc = cuda.to_device(np.array([0, 0])) # [pbc_count, npossible_pbc]
-        sizes = cuda.to_device(np.array([max_voxel_size, probe_diameter/2]))
-        flags = cuda.to_device(flags)
+            if i >= atoms_frac.shape[0]:
+                return
         
-        # Finding volumes using CUDA
+            atom = atoms_frac[i]
+            fax = atom[0]
+            fay = atom[1]
+            faz = atom[2]
+            cutoff = atom[3] + probe_radius
+            cutoff2 = cutoff*cutoff
+            domainID = int(atom[4])
+            atom_type = int(atom[5])
+        
+            # Neighbor domains from domain_graph.
+            for dindex in range(domain_graph.shape[1]):
+                domainID2 = int(domain_graph[domainID][dindex])
+        
+                # domain_graph still uses 0 as empty, so this preserves current behavior.
+                # Later, switch domain_graph to -1 sentinels and use: if domainID2 < 0: continue
+                if domainID2 < 0:
+                    continue
+        
+                voxelIDs = linked_lst[domainID2]
+                for jj in range(voxelIDs.shape[0]):
+                    j = int(voxelIDs[jj])
+                    if j < 0:
+                        continue
+                    if flags[j] == 0:
+                        continue
+        
+                    fv = frac_voxels[j]
+        
+                    dfx = fv[0] - fax
+                    dfy = fv[1] - fay
+                    dfz = fv[2] - faz
+        
+                    dfx = dfx - round(dfx)
+                    dfy = dfy - round(dfy)
+                    dfz = dfz - round(dfz)
+        
+                    dx = h[0]*dfx + h[5]*dfy + h[4]*dfz
+                    dy = h[1]*dfy + h[3]*dfz
+                    dz = h[2]*dfz
+        
+                    d2 = dx*dx + dy*dy + dz*dz
+        
+                    if d2 < cutoff2:
+                        flags[j] = 0
+                        voxel_atomIndexs[j] = atom_type
+        
+            # Also process the atom's own domain explicitly.
+            voxelIDs = linked_lst[domainID]
+            for jj in range(voxelIDs.shape[0]):
+                j = int(voxelIDs[jj])
+                if j < 0:
+                    continue
+                if flags[j] == 0:
+                    continue
+        
+                fv = frac_voxels[j]
+        
+                dfx = fv[0] - fax
+                dfy = fv[1] - fay
+                dfz = fv[2] - faz
+        
+                dfx = dfx - round(dfx)
+                dfy = dfy - round(dfy)
+                dfz = dfz - round(dfz)
+        
+                dx = h[0]*dfx + h[5]*dfy + h[4]*dfz
+                dy = h[1]*dfy + h[3]*dfz
+                dz = h[2]*dfz
+        
+                d2 = dx*dx + dy*dy + dz*dz
+        
+                if d2 < cutoff2:
+                    flags[j] = 0
+                    voxel_atomIndexs[j] = atom_type
+            
+    
+        # Host data struct setup
+        nvoxels = frac_voxels.shape[0]
+        natoms = atoms_frac.shape[0]
+        
+        voxel_atomIndexs = cuda.to_device(np.zeros(nvoxels, dtype=np.float64))
+        flags_device = cuda.to_device(flags.astype(np.float64))
         threads_per_block_atoms = m.CUDA_threads_per_block_atoms
         blocks_per_grid_atoms = math.ceil(natoms / threads_per_block_atoms)
+        
         log.out(f'Finding atom volumes and free volumes ({run_mode}-{threads_per_block_atoms}) ...')
-        atom_vol_calc_CUDA[blocks_per_grid_atoms, threads_per_block_atoms](cuda.to_device(atoms), cuda.to_device(periodic_atoms), cuda.to_device(radial_voxel), cuda.to_device(voxels), cuda.to_device(v.domain_graph), cuda.to_device(v.linked_lst), flags, voxel_atomIndexs, sizes, pbc)
-        flags = flags.copy_to_host(); voxel_atomIndexs = voxel_atomIndexs.copy_to_host();
-        self.pbc_count = pbc[0]; self.npossible_pbc = pbc[1]
+        atom_vol_calc_CUDA_frac[blocks_per_grid_atoms, threads_per_block_atoms](
+            cuda.to_device(atoms_frac),
+            cuda.to_device(frac_voxels),
+            cuda.to_device(v.domain_graph),
+            cuda.to_device(v.linked_lst),
+            flags_device,
+            voxel_atomIndexs,
+            cuda.to_device(v.h),
+            probe_diameter/2)
+        
+        flags = flags_device.copy_to_host()
+        voxel_atomIndexs = voxel_atomIndexs.copy_to_host()
+        
+        self.pbc_count = 0
+        self.npossible_pbc = 0
         execution_time = (time.time() - start_time)
         log.out(f'Atom volume calculation execution time: {execution_time} (seconds)')
         
@@ -886,7 +860,7 @@ class analyze:
         self.simulation_volume = v.lx*v.ly*v.lz
         
         # Find free volume
-        self.voxel_volume = v.dx*v.dy*v.dz
+        self.voxel_volume = self.simulation_volume / (v.nx*v.ny*v.nz)
         self.atom_volume = self.voxel_volume*nvoxel_atomIDs
         self.free_volume = self.voxel_volume*nvoxel_freeIDs
         self.pfree_volume = 100*(self.free_volume/self.simulation_volume)
@@ -913,117 +887,77 @@ class analyze:
             log.out('\n\n----------------------------------------------')
             log.out('| Starting free volume distribution analysis |')
             log.out('----------------------------------------------')
-            if m.CUDA_threads_per_block_voxels == 0:
-                log.out('Finding free volume voxelID connectivity (compiled - parallel) ...')
-                numpy_graph = free_dist_parallel(voxels, flags, max_voxel_size, v.xlo, v.xhi, v.ylo, v.yhi, v.zlo, v.zhi, np.array(v.scaled_images), radial_voxel, v.voxel_domains, v.domain_graph, v.linked_lst)
+            pflags_num = np.zeros(3, dtype=np.int64)
+            for i, flag in enumerate(v.pflags):
+                if flag == 'p':  pflags_num[i] = 1
+                
+            # Perform free volume connectivity anaylsis on GPU
+            if m.CUDA_threads_per_block_voxels > 0:# or m.CUDA_threads_per_block_voxels >= 0:
+                @cuda.jit
+                def free_dist_CUDA_frac_indexed_3D(flags, numpy_graph, nx, ny, nz, pflags):
+                    i, j, k = cuda.grid(3)
+                    if i >= nx or j >= ny or k >= nz:
+                        return
+                
+                    idx = i*ny*nz + j*nz + k
+                    if flags[idx] == 0:
+                        return
+                
+                    id1 = idx + 1
+                    gindex = 0
+                
+                    for di in range(-1, 2):
+                        ni = i + di
+                        if ni < 0 or ni >= nx:
+                            if pflags[0] == 1:
+                                ni = ni % nx
+                            else:
+                                continue
+                
+                        for dj in range(-1, 2):
+                            nj = j + dj
+                            if nj < 0 or nj >= ny:
+                                if pflags[1] == 1:
+                                    nj = nj % ny
+                                else:
+                                    continue
+                
+                            for dk in range(-1, 2):
+                                if di == 0 and dj == 0 and dk == 0:
+                                    continue
+                
+                                nk = k + dk
+                                if nk < 0 or nk >= nz:
+                                    if pflags[2] == 1:
+                                        nk = nk % nz
+                                    else:
+                                        continue
+                
+                                idx2 = ni*ny*nz + nj*nz + nk
+                
+                                if idx2 <= idx:
+                                    continue
+                
+                                if flags[idx2] == 0:
+                                    continue
+                
+                                if gindex < 30:
+                                    numpy_graph[id1, gindex] = idx2 + 1
+                                    gindex += 1
+                
+                log.out(f'Setting up free volume voxelID connectivity calculation ({run_mode}-{v.threadsperblock[0]}x{v.threadsperblock[1]}x{v.threadsperblock[2]}) ...')
+                nvoxels = v.nx*v.ny*v.nz
+                numpy_graph_d = cuda.device_array((nvoxels + 1, 30), dtype=np.int64)
+                flags_d = cuda.to_device(flags.astype(np.float64))
+                pflags_d = cuda.to_device(pflags_num.astype(np.int64))
+                
+                free_dist_CUDA_frac_indexed_3D[v.blockspergrid, v.threadsperblock](flags_d, numpy_graph_d, v.nx, v.ny, v.nz, pflags_d)
+                numpy_graph = numpy_graph_d.copy_to_host()
             else:
-                #-------------------------------------------------#
-                # CUDA Kernel to compute free volume connectivity #
-                # is slower then numba parallel so will not use   #
-                # until further optimization can happen ....      #
-                #-------------------------------------------------#
-                # Generate intial data structs
-                @cuda.jit
-                def free_dist_pre_setup_CUDA(voxels, voxel_periodic_flags, scaled_images, max_voxel_size, box):
-                    i = cuda.grid(1)
-                    if i < voxels.shape[:1][0]:
-                        # Set periodic flags
-                        x, y, z = voxels[i]; flag = 0;
-                        if abs(x - box[0]) <= max_voxel_size or abs(x + box[0]) <= max_voxel_size: flag = 1
-                        elif abs(x - box[1]) <= max_voxel_size or abs(x + box[1]) <= max_voxel_size: flag = 1 
-                        elif abs(y - box[2]) <= max_voxel_size or abs(y + box[2]) <= max_voxel_size: flag = 1
-                        elif abs(y - box[3]) <= max_voxel_size or abs(y + box[3]) <= max_voxel_size: flag = 1
-                        elif abs(z - box[4]) <= max_voxel_size or abs(z + box[4]) <= max_voxel_size: flag = 1
-                        elif abs(z - box[5]) <= max_voxel_size or abs(z + box[5]) <= max_voxel_size: flag = 1
-                        voxel_periodic_flags[i] = flag
-                
-                # Host data struct setup
-                start_time = time.time()
-                voxel_periodic_flags = cuda.to_device(np.zeros(nvoxels))
-                
-                # Generate free dist intial arrays
-                threads_per_block_voxels = m.CUDA_threads_per_block_voxels
-                blocks_per_grid_voxels = math.ceil(nvoxels / threads_per_block_voxels)
-                log.out(f'Setting up free volume voxelID connectivity calculation ({run_mode}-{threads_per_block_voxels}) ...')
-                box = cuda.to_device(np.array([v.xlo, v.xhi, v.ylo, v.yhi, v.zlo, v.zhi]))
-                simages = cuda.to_device(np.array(v.scaled_images))
-                free_dist_pre_setup_CUDA[blocks_per_grid_voxels, threads_per_block_voxels](cuda.to_device(voxels), voxel_periodic_flags, simages, max_voxel_size, box)
-                voxel_periodic_flags = voxel_periodic_flags.copy_to_host();
-    
-                # Perform free volume connectivity anaylsis         
-                @cuda.jit
-                def free_dist_CUDA(voxels, radial_voxel, scaled_images, internal_flags, voxel_periodic_flags, voxel_domains, domain_graph, linked_lst, numpy_graph, max_voxel_size):
-                    i = cuda.grid(1)
-                    if i < voxels.shape[:1][0] and internal_flags[i] != 0:
-                        x1, y1, z1 = voxels[i]
-                        r1 = radial_voxel[i]
-                        min_radius = r1 - 2*max_voxel_size
-                        max_radius = r1 + 2*max_voxel_size  
-                        domain_graph[voxel_domains[i]][-1] = voxel_domains[i] # extra zero is available to do this
-                        for domainID in domain_graph[voxel_domains[i]]:
-                            for j in linked_lst[domainID]:
-                                if internal_flags[j] == 0 or i == j: continue
-                                if min_radius < radial_voxel[j] < max_radius:
-                                    x2, y2, z2 = voxels[j]
-                                    # Find non-periodic connectivity
-                                    if voxel_periodic_flags[i] == 0 and voxel_periodic_flags[j] == 0:
-                                        if abs(x1-x2) <= max_voxel_size and abs(y1-y2) <= max_voxel_size and abs(z1-z2) <= max_voxel_size:
-                                            dx = (x1 - x2)**2
-                                            dy = (y1 - y2)**2
-                                            dz = (z1 - z2)**2
-                                            distance = math.sqrt(dx + dy + dz)
-                                            if distance <= max_voxel_size:
-                                                id1 = i+1; id2 = j+1;
-                                                for gindex1 in range(numpy_graph[id1].shape[0]):
-                                                    if numpy_graph[id1][gindex1] == 0: break
-                                                for gindex2 in range(numpy_graph[id2].shape[0]):
-                                                    if numpy_graph[id2][gindex2] == 0: break
-                                                if gindex1 < 29 and gindex2 < 29:
-                                                    for k in range(numpy_graph[id1].shape[0]):
-                                                        if numpy_graph[id1][k] == id2: break
-                                                    if k+1 == numpy_graph[id1].shape[0]:
-                                                        numpy_graph[id1][gindex1] = id2
-                                                    for l in range(numpy_graph[id2].shape[0]):
-                                                        if numpy_graph[id2][l] == id1: break
-                                                    if l+1 == numpy_graph[id2].shape[0]:
-                                                        numpy_graph[id2][gindex1] = id1
-                                    else: # else find periodic connectivty
-                                        for a in range(scaled_images.shape[:1][0]):
-                                            ixlx, iyly, izlz = scaled_images[a]
-                                            x1i = x1+ixlx; y1i = y1+iyly; z1i = z1+izlz;
-                                            if abs(x1i-x2) <= max_voxel_size and abs(y1i-y2) <= max_voxel_size and abs(z1i-z2) <= max_voxel_size:
-                                                dx = (x1i - x2)**2
-                                                dy = (y1i - y2)**2
-                                                dz = (z1i - z2)**2
-                                                distance = math.sqrt(dx + dy + dz)
-                                                if distance <= max_voxel_size:
-                                                    id1 = i+1; id2 = j+1;
-                                                    for gindex1 in range(numpy_graph[id1].shape[0]):
-                                                        if numpy_graph[id1][gindex1] == 0: break
-                                                    for gindex2 in range(numpy_graph[id2].shape[0]):
-                                                        if numpy_graph[id2][gindex2] == 0: break
-                                                    if gindex1 < 29 and gindex2 < 29:
-                                                        for k in range(numpy_graph[id1].shape[0]):
-                                                            if numpy_graph[id1][k] == id2: break
-                                                        if k+1 == numpy_graph[id1].shape[0]:
-                                                            numpy_graph[id1][gindex1] = id2   
-                                                        for l in range(numpy_graph[id2].shape[0]):
-                                                            if numpy_graph[id2][l] == id1: break
-                                                        if l+1 == numpy_graph[id2].shape[0]:
-                                                            numpy_graph[id2][gindex1] = id1
-                                                    break
-                        internal_flags[i] = 0
-                
-                # Find voxel connectivty
-                numpy_graph = cuda.to_device(np.zeros(30*(nvoxels+1), dtype=np.int64).reshape((nvoxels+1, 30))) # should be 27, but 30 allows overflow
-                internal_flags = np.copy(flags);
-                log.out(f'Finding free volume voxelID connectivity ({run_mode}-{threads_per_block_voxels}) ...')
-                scaled_images = np.array(v.scaled_images)
-                free_dist_CUDA[blocks_per_grid_voxels, threads_per_block_voxels](cuda.to_device(voxels), cuda.to_device(radial_voxel), cuda.to_device(scaled_images), cuda.to_device(internal_flags), cuda.to_device(voxel_periodic_flags), cuda.to_device(v.voxel_domains), cuda.to_device(v.domain_graph), cuda.to_device(v.linked_lst), numpy_graph, max_voxel_size)
-                log.out('Copying graph from GPU back to host ...')
-                numpy_graph = numpy_graph.copy_to_host()
-                
-            # Generate graph for CPU and pure python
+                log.out('Finding free volume voxelID connectivity (compiled - parallel) ...')
+                numpy_graph = free_dist_parallel_frac_indexed(flags, v.nx, v.ny, v.nz, pflags_num)
+            
+            # Convert numpy graph to python dict
             free_volume_voxel_graph = {ID:set() for ID in self.voxel_freeIDs} # { voxelID : set(bonded voxels) }
             for i in range(numpy_graph.shape[:1][0]):
                 if sum(numpy_graph[i]) > 0 and i > 0:
@@ -1034,7 +968,7 @@ class analyze:
                             free_volume_voxel_graph[id2].add(id1)
             execution_time = (time.time() - start_time)
             log.out(f'Free volume distribution analysis execution time: {execution_time} (seconds)')
-            
+        
             # Find free volume clusters
             free_volume_clusters = set([]) # { (tuple of atoms in cluster1), (nclusters) }
             checked = {ID:False for ID in self.voxel_freeIDs}
@@ -1054,7 +988,7 @@ class analyze:
             
             # Analyze free volume clusters
             class Info: pass # .size .volume .pvolume
-            voxel_volume = v.dx*v.dy*v.dz; self.free_volume_clusters = {} # { clusterID : Info object }
+            self.free_volume_clusters = {} # { clusterID : Info object }
             self.voxelclusterID2molID = {i:len(free_volume_clusters)+1 for i in self.voxel_freeIDs} # { voxelID : clustered }
             for ID, cluster in enumerate(free_volume_clusters, 1):
                 for i in cluster:
@@ -1063,8 +997,8 @@ class analyze:
                 I = Info()
                 I.size = len(cluster)
                 I.psize = 100*len(cluster)/len(self.voxel_freeIDs)
-                I.volume = len(cluster)*voxel_volume
-                I.pvolume = 100*(len(cluster)*voxel_volume)/self.simulation_volume
+                I.volume = len(cluster)*self.voxel_volume
+                I.pvolume = 100*(len(cluster)*self.voxel_volume)/self.simulation_volume
                 I.xspan = xspan
                 I.yspan = yspan
                 I.zspan = zspan

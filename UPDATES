@@ -15,10 +15,24 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 2June2026)
+LUNAR (version 10June2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+10June2026         JDK         - free_volume.py: Added triclinic support to the following run modes:
+                                                   * numba-dd
+                                                   * numba-ddp
+                                                   * CUDA-dd
+                                                 In addition, the domain decomposition was made more robust
+                                                 to work on both small boxes and large boxes, thus the following
+                                                 run modes have been deprecated, because you can just use the
+                                                 "dd" variant an any box size now:
+                                                   * numba
+                                                   * numba-p
+                                                   * CUDA						
+                                                 This resulted in less refactoring to add triclinic support and 
+                                                 less code to maintain in the future.												 
+
 2June2026          JDK         - atom_typing.py: Added general aromaticity checking function to PCFF cp and c5
                                                  atom types and started building "PCFF-IFF-CMMR" atom typing
                                                  scheme. NOTE: "PCFF-IFF-CMMR" is EXPERIMENTAL work and unless

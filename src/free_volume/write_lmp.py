@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-December 30th, 2023
+Revision 1.2
+June 10, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -85,6 +85,8 @@ def free_only(m, grid, compute_free_volume_distributions, basename, version, log
         f.write(f'{len(grid.voxel_freeIDs)} atoms\n\n')
         f.write('1 atom types\n\n')
         f.write(f'{m.xbox_line}\n{m.ybox_line}\n{m.zbox_line}\n')
+        if m.xy != 0 or m.xz != 0 or m.yz != 0:
+            f.write('{:>12.9f} {:^9.9f} {:^9.9f} {} {} {}\n'.format(m.xy, m.xz, m.yz, 'xy', 'xz', 'yz'))
         
         # Write masses
         f.write('\nMasses\n\n')
@@ -118,6 +120,8 @@ def atoms_free(m, grid, compute_free_volume_distributions, basename, version, lo
         f.write(f'{len(grid.voxel_atomIDs)+len(grid.voxel_freeIDs)} atoms\n\n')
         f.write('2 atom types\n\n')
         f.write(f'{m.xbox_line}\n{m.ybox_line}\n{m.zbox_line}\n')
+        if m.xy != 0 or m.xz != 0 or m.yz != 0:
+            f.write('{:>12.9f} {:^9.9f} {:^9.9f} {} {} {}\n'.format(m.xy, m.xz, m.yz, 'xy', 'xz', 'yz'))
         
         # Write masses
         f.write('\nMasses\n\n')
@@ -173,6 +177,8 @@ def bonds_free(m, grid, compute_free_volume_distributions, basename, version, lo
         
         # write box
         f.write(f'{m.xbox_line}\n{m.ybox_line}\n{m.zbox_line}\n')
+        if m.xy != 0 or m.xz != 0 or m.yz != 0:
+            f.write('{:>12.9f} {:^9.9f} {:^9.9f} {} {} {}\n'.format(m.xy, m.xz, m.yz, 'xy', 'xz', 'yz'))
         
         # Write masses
         f.write('\nMasses\n\n')

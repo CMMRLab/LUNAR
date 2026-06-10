@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-September 28th, 2023
+Revision 1.1
+June 10, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -101,8 +101,8 @@ def generate_iflags(m, boundary, log):
     count = pflags.count('f') + pflags.count('p')
     if len(pflags) != 3 and count != 3:
         log.error('ERROR boundary does not contain 3-dimensions or boundary flags are not f or p')
-    if m.xy != 0 or m.xz != 0 or m.yz != 0:
-        log.error('ERROR simulaiton cell is NOT orthogonal.')
+    # if m.xy != 0 or m.xz != 0 or m.yz != 0:
+    #     log.error('ERROR simulaiton cell is NOT orthogonal.')
     
     # Image information
     nimages = 1 # only use minimum image convention

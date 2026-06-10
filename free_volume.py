@@ -144,20 +144,12 @@ boundary = 'p p p'
 #     'stl'       runs on the standard python libraby (slowest) and requires the "tqdm" module.                  #
 #     'numpy'     uses numpy vectorization to speedup the code (medium speed) and requires the "tqdm" and "numpy"#
 #                 modules.                                                                                       #
-#     'numba'     uses numpy looped version compiled to machine code via the numba.njit methodolgy (quickest) and#
-#                 requires the "tqdm", "numpy", and "numba" modules.                                             #
-#     'numba-p'   uses numpy looped version compiled to machine code and runs in parallel via the numba.njit and #
-#                 parallel=True argument and requires the "tqdm", "numpy", and "numba" modules. numba will       #
-#                 control the number of processors that is informed based on your hardware setup.                #
 #     'stl-dd'    same meaning as 'stl', but uses a domain decomposition and linked cell list algorithm instead  #
 #                 of the default algorithm.                                                                      #
 #     'numba-dd'  same meaning as 'numba', but uses a domain decomposition and linked cell list algorithm        #
 #                 instead of the default algorithm.                                                              #
 #     'numba-ddp' same meaning as 'numba-p', but uses a domain decomposition and linked cell list algorithm      #
 #                 instead of the default algorithm.                                                              #
-#     'CUDA'      uses numpy looped version compiled to machine code via the numba.cuda.jit methodolgy (quickest)#
-#                 and requires the "tqdm", "numpy", and "numba" modules. Will excecute the slow parts of the code#
-#                 on the GPU (NOTE must have an NVIDIA GPU for this method to work on your machine).             #
 #     'CUDA-dd'   uses numpy looped version compiled to machine code via the numba.cuda.jit methodolgy (quickest)#
 #                 and requires the "tqdm", "numpy", and "numba" modules. Will excecute the slow parts of the code#
 #                 on the GPU (NOTE must have an NVIDIA GPU for this method to work on your machine).             #
@@ -175,7 +167,7 @@ boundary = 'p p p'
 #                                                                                                                #
 # Update run_mode as desired (If numba is installed, default should be 'numba-ddp', since it is the quickest).   #
 ##################################################################################################################
-run_mode = 'CUDA-dd'
+run_mode = 'numba-ddp'
 
 
 ##################################################################################################################

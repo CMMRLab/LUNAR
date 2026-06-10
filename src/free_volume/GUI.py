@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-May 13th, 2024
+June 10, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -130,7 +130,7 @@ class free_volume_GUI:
         self.dir_button.grid(column=0, row=1)
         
         # run mode drop menu
-        styles = ['stl', 'numpy', 'numba', 'numba-p', 'stl-dd', 'numba-dd', 'numba-ddp', 'CUDA', 'CUDA-dd']
+        styles = ['stl', 'numpy', 'stl-dd', 'numba-dd', 'numba-ddp', 'CUDA-dd']
         self.run_mode = ttk.Combobox(self.inputs_frame, values=styles, width=int(maxwidth/1.023), font=font_settings)
         self.run_mode.current(styles.index(run_mode))
         self.run_mode.grid(column=1, row=2)

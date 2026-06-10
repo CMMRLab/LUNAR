@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-December 6th, 2023
+Revision 1.2
+June 10, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -87,15 +87,9 @@ def out(m, v, grid, execution_time, boundary, max_voxel_size, compute_free_volum
     log.out(f'Number of voxels created {len(v.voxelIDs)}')
     log.out(f'probe_diameter = {probe_diameter}')
     
-    # Write PBC info
-    log.out('\n\nPBC information:')
-    log.out(f'System periodic boundary flags                        : {boundary}')
-    log.out(f'Count of atoms that are near cell edge (possibly PBC) : {grid.npossible_pbc}')
-    log.out(f'Total Count of periodically determined occupied voxels: {grid.pbc_count}')
-    
     # Write results
     log.out('\n\nFree volume analysis results:')
-    #log.out(f'PBC flags             : {boundary}')
+    log.out(f'PBC flags             : {boundary}')
     log.out(f'vdw radii method      : {vdw_method}')
     log.out(f'Simulation cell volume: {grid.simulation_volume} A^3')
     log.out(f'Atom volume           : {grid.atom_volume} A^3')

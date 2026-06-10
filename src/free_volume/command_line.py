@@ -3,7 +3,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-Sept 29th, 2023
+June 10, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -76,11 +76,8 @@ def print_man_page(topofile, max_voxel_size, boundary, parent_directory, compute
     print('    modules. The following run mode optiohs are available (order from slowest to quickest):')
     print('        stl        runs on the standard python libraby (slowest)')
     print('        numpy      uses numpy vectorization to speedup the code (medium speed)')
-    print('        numba      uses numpy looped version compiled to machine code via the numba.njit methodolgy (quickest)')
-    print('        numba-p    uses numpy looped version compiled to machine code via the numba.njit methodolgy and runs in parallel (quickest)')
     print('        numba-dd   uses numpy looped version compiled to machine code via the numba.njit methodolgy applying a domain decompositions (quickest)')
     print('        numba-ddp  uses numpy looped version compiled to machine code via the numba.njit methodolgy  applying a domain decompositions and runs in parallel (quickest)')
-    print('        CUDA       uses numpy looped version compiled to machine code for NVIDIA GPU via the numba.cuda.jit methodolgy (quickest)')
     print('        CUDA-dd    uses numpy looped version compiled to machine code for NVIDIA GPU via the numba.cuda.jit methodolgy  applying a domain decompositions (quickest)')
     print('    Example usage:')
     print('        python3 free_volume.py -run-mode  numba')

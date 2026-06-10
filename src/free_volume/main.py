@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.12
-April 14, 2025
+Revision 1.13
+June 10, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -105,37 +105,11 @@ def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_direct
         #log.configure(level='debug')
         
         # set version and print starting information to screen
-        version = 'v1.12 / 14 April 2025'
+        version = 'v1.13 / 10 June 2026'
         log.out(f'\n\nRunning free_volume: {version}')
         log.out(f'Using Python version: {sys.version}')
         log.out(f'Using Python executable: {sys.executable}')
         
-        #--------------------------------------------------#
-        # Define run mode to find voxels to atom distances #
-        #--------------------------------------------------#
-        if run_mode == 'stl':
-            import src.free_volume.voxels_standard as voxels
-            log.out('Running in stl mode (standard library mode)')
-        elif run_mode == 'stl-dd':
-            import src.free_volume.voxels_standard_domain as voxels
-            log.out('Running in stl mode (standard library mode w/domain decomposition optimization)')
-        elif run_mode == 'numpy':
-            import src.free_volume.voxels_vectorized as voxels
-            log.out('Running in numpy mode (numpy vectorized mode)')
-        elif run_mode in ['numba', 'numba-p']:
-            import src.free_volume.voxels_compiled as voxels
-            log.out('Running in numba mode (compiled numpy arrays mode)')
-        elif run_mode in ['numba-dd', 'numba-ddp']:
-            import src.free_volume.voxels_compiled_domain as voxels
-            log.out('Running in numba mode (compiled numpy arrays mode w/domain decomposition optimization)')  
-        elif 'CUDA-dd' in run_mode:
-            import src.free_volume.voxels_CUDA_domain as voxels
-            log.out('Running in numba CUDA-dd mode (some parts will still run on CPU)')
-        elif 'CUDA' in run_mode:
-            import src.free_volume.voxels_CUDA as voxels
-            log.out('Running in numba CUDA mode (some parts will still run on CPU)')
-        else: log.error(f'ERROR input run_mode = {run_mode} not supported')
-    
         #------------------#
         # Find free volume #
         #------------------#
@@ -145,6 +119,48 @@ def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_direct
             log.out(f'Read in {m.filename} LAMMPS datafile')
         else: log.error(f'ERROR lammps datafile: {topofile} does not exist')
         log.out(f'System boundary {boundary}')
+        
+        #--------------------------------------------------#
+        # Define run mode to find voxels to atom distances #
+        #--------------------------------------------------#
+        if run_mode == 'stl':
+            import src.free_volume.voxels_standard as voxels
+            log.out('Running in stl mode (standard library mode)')
+            if m.xy != 0 or m.xz != 0 or m.yz != 0:
+                log.error('ERROR simulaiton cell is NOT orthogonal and "stl" does not support triclinic. Switch to "numba-dd" or "numba-ddp" or "CUDA".')
+        
+        elif run_mode == 'stl-dd':
+            import src.free_volume.voxels_standard_domain as voxels
+            log.out('Running in stl mode (standard library mode w/domain decomposition optimization)')
+            if m.xy != 0 or m.xz != 0 or m.yz != 0:
+                log.error('ERROR simulaiton cell is NOT orthogonal and "stl" does not support triclinic. Switch to "numba-dd" or "numba-ddp" or "CUDA".')
+        
+        elif run_mode == 'numpy':
+            import src.free_volume.voxels_vectorized as voxels
+            log.out('Running in numpy mode (numpy vectorized mode)')
+            if m.xy != 0 or m.xz != 0 or m.yz != 0:
+                log.error('ERROR simulaiton cell is NOT orthogonal and "stl" does not support triclinic. Switch to "numba-dd" or "numba-ddp" or "CUDA".')
+        
+        elif run_mode in ['numba-dd', 'numba-ddp']:
+            import src.free_volume.voxels_compiled_domain as voxels
+            log.out('Running in numba mode (compiled numpy arrays mode w/domain decomposition optimization)')  
+        
+        elif 'CUDA-dd' in run_mode:
+            import src.free_volume.voxels_CUDA_domain as voxels
+            log.out('Running in numba CUDA-dd mode (some parts will still run on CPU)')
+            
+            # CUDA Checks
+            from numba import cuda
+            log.out(f' * cuda.is_available() = {cuda.is_available()}')
+            try:
+                dev = cuda.get_current_device()
+                log.out(f' * CUDA device: {dev.name}')
+            except Exception as e:
+                log.out(f'Failed to get CUDA device: {e}')
+                log.error('ERROR unable to initialize CUDA context. Use run_mode "numba-dd" or "numba-ddp"')
+        
+        else: log.error(f'ERROR input run_mode = {run_mode} not supported')
+
         
         # Add elements to m
         m.elements = set()
