@@ -15,10 +15,21 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 10June2026)
+LUNAR (version 26June2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+26June2026          JDK         - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing of doubly nitrogens
+                                                  in the molecule and near the edge. Pulled c4o compass atom type
+                                                  out of all PCFF typing routines (initial parameters where added
+                                                  to PCFF-IFF, but lacked full support. c4o typing routine was left
+                                                  over from those days and it did need to be pulled from the routines.
+                                                  "Turned back on" the hn2 over hn support for amines, prior work 
+                                                  demonstrated that hn generates more parameters in all2lmp, but hn2
+                                                  is the correct chemical typing. If enough complaints come back in 
+                                                  on models crashing due to the hn2 being turned back on, this maybe
+                                                  reverted back later.
+
 10June2026         JDK         - free_volume.py: Added triclinic support to the following run modes:
                                                    * numba-dd
                                                    * numba-ddp

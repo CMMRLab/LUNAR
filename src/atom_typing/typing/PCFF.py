@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.4
-June 2, 2026
+Revision 1.5
+June 26, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -129,6 +129,7 @@ def nta(mm, basename, ff_name):
         
         # Find 3rd-neighbor info (denoted by nameN; where N=neighbor depth)
         #rings3 = tf.neigh_extract(atom, depth=3, info='ring') # Example: [3, 3, 3]
+        #elements3 = tf.neigh_extract(atom, depth=3, info='element') # Example: ['C', 'C', 'N']
         
         
         # Set intial .nta and .nta_comments and update later on if found
@@ -151,6 +152,7 @@ def nta(mm, basename, ff_name):
         # print(i, element)
         # print('elements1 = ', elements1)
         # print('elements2 = ', elements2)
+        # #print('elements3 = ', elements3)
         # print('nbs1 = ', nbs1)
         # print('nbs2 = ', nbs2)
         # print('neighs1 = ', neighs1)
@@ -235,10 +237,13 @@ def nta(mm, basename, ff_name):
             elif ring == 0 and elements1.count('N') == 3 and formula == 'C6-H14-N4-O2':
                 atom.nta_type = 'cr'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
+            elif ring == 0 and elements1.count('N') == 3:
+                atom.nta_type = 'cr'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
             
             # c-        12.01115      C          3        C in charged carboxylate  
             # (N atom would be at index 1 and 2 in rings1 so check that rings[1 and 2] are zero)
-            elif ring == 0 and elements1.count('C') == 1 and elements1.count('N') == 2 and rings1[1] == 0  and rings1[2] == 0:
+            elif ring == 0 and elements1.count('C') == 1 and elements1.count('O') == 2 and rings1[1] == 0  and rings1[2] == 0:
                 atom.nta_type = 'c-'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -414,9 +419,9 @@ def nta(mm, basename, ff_name):
                 
             # c4o     12.01115       C          4        Carbon atom, sp3, bonded to oxygen (+0.054, compass)
             # Setting near end so all other types can be tried 1st since it is not very unique
-            elif 'O' in elements1:              
-                atom.nta_type = 'c4o'; tally['found'] += 1;
-                atom.nta_info = 'Correctly found'
+            # elif 'O' in elements1:              
+            #     atom.nta_type = 'c4o'; tally['found'] += 1;
+            #     atom.nta_info = 'Correctly found'
                 
             # General Sp3 C atom types
             # c         12.01115      C          4        generic SP3 carbon
@@ -483,11 +488,11 @@ def nta(mm, basename, ff_name):
                 atom.nta_type = 'ho'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
-            # # hn2    1.00800      H          1        amino hydrogen
-            # # An amino group is a nitrogen atom bonded to two hydrogen atoms
-            # elif elements1[0] == 'N' and len(elements2) == 2 and elements2[0] == 'C' and elements2[1] == 'H':
-            #     atom.nta_type = 'hn2'; tally['found'] += 1;
-            #     atom.nta_info = 'Correctly found'
+            # hn2    1.00800      H          1        amino hydrogen
+            # An amino group is a nitrogen atom bonded to two hydrogen atoms
+            elif elements1[0] == 'N' and len(elements2) == 2 and elements2[0] == 'C' and elements2[1] == 'H':
+                atom.nta_type = 'hn2'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
 
             # hn      1.00797      H          1        hydrogen bonded to nitrogen
             elif elements1[0] == 'N':
@@ -536,12 +541,12 @@ def nta(mm, basename, ff_name):
             # Strict PCFF atom-typing that occurs after User defined atom-typing attempts #
             #-----------------------------------------------------------------------------#
             # o_1     15.99940      O          1        oxygen in carbonyl group
-            if ring == 0 and elements1.count('C') == 1 and 'C' in elements2:# and 'O' not in elements2:              
+            if ring == 0 and elements1.count('C') == 1 and elements2.count('O') <= 1:        
                 atom.nta_type = 'o_1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # oo       15.99940      O          1        oxygen in carbonyl group, carbonate only
-            elif ring == 0 and elements1.count('C') == 1 and 'O' in elements2 and 'C' not in elements2:              
+            elif ring == 0 and elements1.count('C') == 1 and elements2.count('O') > 1:              
                 atom.nta_type = 'oo'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -724,16 +729,16 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # n=       14.00670      N          2        non aromatic end doubly bonded nitrogen
-            elif ring == 0 and nbs1.count(1) >= 1:
+            elif ring == 0 and nbs1.count(1) == 2:
                 atom.nta_type = 'n='; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
-                
+                                
             # n=1     14.00670      N          2        non aromatic, next to end doubly bonded carbon
-            elif ring == 0 and nbs2.count(1) == 1:
+            elif ring == 0 and 2 in neighs11_nb:
                 atom.nta_type = 'n=1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
-            # n=2     14.00670      N          2        non aromatic doubly bonded nitrogen  
+            # n=2     14.00670      N          2        non aromatic doubly bonded nitrogen   
             elif ring == 0:
                 atom.nta_type = 'n=2'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
@@ -771,7 +776,10 @@ def nta(mm, basename, ff_name):
             # n2        14.00670      N          3        sp2 nitrogen (NH2) in guanidinium group (HN=C(NH2)2)
             # nr        14.00670      N          3        sp2 nitrogen (NH2) in guanidinium group (HN=C(NH2)2)
             elif ring == 0 and formula == 'C1-H5-N3':
-                atom.nta_type = 'n1'; tally['found'] += 1;
+                atom.nta_type = 'nr'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+            elif ring == 0 and elements1.count('C') == 1 and elements2.count('N') == 2:
+                atom.nta_type = 'nr'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # n_2     14.01000       N          3        nitrogen of urethane
