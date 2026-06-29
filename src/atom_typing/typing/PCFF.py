@@ -151,7 +151,7 @@ def nta(mm, basename, ff_name):
         # C=C(OC)OC(C)=O. Since there are correct 2nd neighbors from the oxygen near the double bonded, but
         # one of the 2nd neighbors is pointing in the wrong direction.
         use_oz = False
-        if tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=1) == 1 and tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=2) == 1:
+        if element == 'O' and nb == 2 and tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=1) == 1 and tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=2) == 1:
 
             # Find the doubly bonded 2nd neigh
             doubly_bonded_oxygen = None
