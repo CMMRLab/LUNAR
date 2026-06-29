@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.5
-June 26, 2026
+Revision 1.6
+June 29, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -164,6 +164,24 @@ def nta(mm, basename, ff_name):
             tmp = [mm.atoms[j].nb for j in n1] # [nb_atom1, nb_atom2, ...]
             if len(tmp) == 3: # this neigh needs to have 3-bonds to be doubly bonded
                 neighs11_nb.append( tmp.count(1) )
+                
+        # Below is to help disitinguish between the "oz" ester oxygen in carbonate and the "o_2" atom type in
+        # C=C(OC)OC(C)=O. Since there are correct 2nd neighbors from the oxygen near the double bonded, but
+        # one of the 2nd neighbors is pointing in the wrong direction.
+        use_oz = False
+        if tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=1) == 1 and tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=2) == 1:
+
+            # Find the doubly bonded 2nd neigh
+            doubly_bonded_oxygen = None
+            for j in atom.neighbor_ids[2]:
+                if mm.atoms[j].element == 'O' and mm.atoms[j].nb == 1:
+                    doubly_bonded_oxygen = j
+                    break
+
+            # Ensure there are two "oz" atom types to the right and left of the doubly bonded
+            if doubly_bonded_oxygen is not None:
+                oz_count = tf.count_neigh(mm.atoms[doubly_bonded_oxygen].neighbor_info[2], element='O', ring=0, nb=2)
+                if oz_count == 2: use_oz = True
         
         # Debugging
         # print()
@@ -266,7 +284,7 @@ def nta(mm, basename, ff_name):
             
             # c-        12.01115      C          3        C in charged carboxylate  
             # (N atom would be at index 1 and 2 in rings1 so check that rings[1 and 2] are zero)
-            elif ring == 0 and elements1.count('C') == 1 and elements1.count('O') == 2 and rings1[1] == 0  and rings1[2] == 0:
+            elif ring == 0 and elements1.count('C') == 1 and elements1.count('O') == 2 and rings1[1] == 0  and rings1[2] == 0 and tf.count_neigh(atom.neighbor_info[1], element='O', ring=0, nb=1) == 2:
                 atom.nta_type = 'c-'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -295,44 +313,44 @@ def nta(mm, basename, ff_name):
                 atom.nta_type = 'cp'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
-            # c_0     12.01115      C          3        carbonyl carbon of aldehydes, ketones 
-            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 1 and nbs1[2] == 1:
+            # c_0     12.01115      C          3        carbonyl carbon of aldehydes, ketones  
+            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 1 and nbs1[2] == 1 and tf.count_neigh(atom.neighbor_info[1], element='O', ring=0, nb=1) == 1:
                 atom.nta_type = 'c_0'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             # Ketone (O-index=2 in nbs1)
-            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 1 and nbs1[2] == 1:
+            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 1 and nbs1[2] == 1 and tf.count_neigh(atom.neighbor_info[1], element='O', ring=0, nb=1) == 1:
                 atom.nta_type = 'c_0'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             # Aldehyde (O-index=2 in nbs1)
-            elif ring == 0 and elements1.count('C') == 1 and elements1.count('O') == 1 and elements1.count('H') == 1 and nbs1[2] == 1:
+            elif ring == 0 and elements1.count('C') == 1 and elements1.count('O') == 1 and elements1.count('H') == 1 and nbs1[2] == 1 and tf.count_neigh(atom.neighbor_info[1], element='O', ring=0, nb=1) == 1:
                 atom.nta_type = 'c_0'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             # Aldehyde (O-index=2 in nbs1)
-            elif ring == 0 and elements1.count('C') == 1 and elements1.count('O') == 1 and elements1.count('H') == 1 and nbs1[2] == 1:
+            elif ring == 0 and elements1.count('C') == 1 and elements1.count('O') == 1 and elements1.count('H') == 1 and nbs1[2] == 1 and tf.count_neigh(atom.neighbor_info[1], element='O', ring=0, nb=1) == 1:
                 atom.nta_type = 'c_0'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # c_1     12.01115      C          3        carbonyl carbon of acid, ester, amide 
             # Amide (C-index=0, N-index=1, O-index=2 in elements1)
-            elif ring == 0 and elements1[0] == 'C' and elements1[1] == 'N' and elements1[2] == 'O':# and rings1.count(0) == 3:
+            elif ring == 0 and elements1[0] == 'C' and elements1[1] == 'N' and elements1[2] == 'O' and tf.count_neigh(atom.neighbor_info[1], element='O', ring=0, nb=1) == 1:
                 atom.nta_type = 'c_1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             # Ester, Carboxylic acid (C-index=0, O-index=1, O-index=2 in elements1)
-            elif ring == 0 and elements1[0] == 'C' and elements1[1] == 'O' and elements1[2] == 'O':# and rings1.count(0) == 3:
+            elif ring == 0 and elements1[0] == 'C' and elements1[1] == 'O' and elements1[2] == 'O' and tf.count_neigh(atom.neighbor_info[1], element='O', ring=0, nb=1) == 1:
                 atom.nta_type = 'c_1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             # Ester (H-index=0, O-index=1, O-index=2 in elements1)
-            elif ring == 0 and elements1[0] == 'H' and elements1[1] == 'O' and elements1[2] == 'O':# and rings1.count(0) == 3:
+            elif ring == 0 and elements1[0] == 'H' and elements1[1] == 'O' and elements1[2] == 'O' and tf.count_neigh(atom.neighbor_info[1], element='O', ring=0, nb=1) == 1:
                 atom.nta_type = 'c_1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # c_2     12.01100      C          3        carbonyl carbon of carbamate, urea
             # Carbamate (N-index=0, O-index=1, O-index=2 in elements1)
-            elif ring == 0 and elements1[0] == 'N' and elements1[1] == 'O' and elements1[2] == 'O':# and rings1.count(0) == 3:
+            elif ring == 0 and elements1[0] == 'N' and elements1[1] == 'O' and elements1[2] == 'O' and tf.count_neigh(atom.neighbor_info[1], element='O', ring=0, nb=1) == 1:
                 atom.nta_type = 'c_2'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
             # Urea (N-index=0, N-index=1, O-index=2 in elements1)
-            elif ring == 0 and elements1[0] == 'N' and elements1[1] == 'N' and elements1[2] == 'O':# and rings1.count(0) == 3:
+            elif ring == 0 and elements1[0] == 'N' and elements1[1] == 'N' and elements1[2] == 'O' and tf.count_neigh(atom.neighbor_info[1], element='O', ring=0, nb=1) == 1:
                 atom.nta_type = 'c_2'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -693,7 +711,7 @@ def nta(mm, basename, ff_name):
                 atom.charge = -0.600000 # reset O-element charge for IFF if PEO atom-type
                 
             # oz       15.99940      O          2        ester oxygen in carbonate
-            elif ring == 0  and len(rings1) == rings1.count(0) and elements1.count('C') == 2 and tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=1) == 1 and tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=2) == 1:              
+            elif ring == 0  and len(rings1) == rings1.count(0) and use_oz:           
                 atom.nta_type = 'oz'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 

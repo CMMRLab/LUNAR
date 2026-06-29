@@ -15,10 +15,13 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 26June2026)
+LUNAR (version 29June2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+29June2026          JDK         - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing of carbonyl vs
+                                                  next to doubly bonded carbon.
+
 26June2026          JDK         - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing of doubly nitrogens
                                                   in the molecule and near the edge. Pulled c4o compass atom type
                                                   out of all PCFF typing routines (initial parameters where added
