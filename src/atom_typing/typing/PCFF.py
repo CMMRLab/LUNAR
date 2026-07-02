@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.6
-June 29, 2026
+Revision 1.7
+July 2, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -146,29 +146,9 @@ def nta(mm, basename, ff_name):
             tmp = [mm.atoms[j].nb for j in n1] # [nb_atom1, nb_atom2, ...]
             if len(tmp) == 3: # this neigh needs to have 3-bonds to be doubly bonded
                 neighs11_nb.append( tmp.count(1) )
-                
-        # Below is to help disitinguish between the "oz" ester oxygen in carbonate and the "o_2" atom type in
-        # C=C(OC)OC(C)=O. Since there are correct 2nd neighbors from the oxygen near the double bonded, but
-        # one of the 2nd neighbors is pointing in the wrong direction.
-        use_oz = False
-        if element == 'O' and nb == 2 and tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=1) == 1 and tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=2) == 1:
 
-            # Find the doubly bonded 2nd neigh
-            doubly_bonded_oxygen = None
-            for j in atom.neighbor_ids[2]:
-                if mm.atoms[j].element == 'O' and mm.atoms[j].nb == 1:
-                    doubly_bonded_oxygen = j
-                    break
-
-            # Ensure there are two "oz" atom types to the right and left of the doubly bonded
-            if doubly_bonded_oxygen is not None:
-                oz_count = tf.count_neigh(mm.atoms[doubly_bonded_oxygen].neighbor_info[2], element='O', ring=0, nb=2)
-                if oz_count == 2: use_oz = True
-
-                
-                
         
-        # Debugging
+        # # Debugging
         # print(i, element)
         # print('elements1 = ', elements1)
         # print('elements2 = ', elements2)
@@ -179,7 +159,7 @@ def nta(mm, basename, ff_name):
         # print('neighs11 = ', neighs11)
         # print('neighs11_nb = ', neighs11_nb)
         # print(ring, atom.rings)
-        # print('use_oz = ', use_oz)
+        # #print('use_oz = ', use_oz)
         # print(tf.count_neigh(atom.neighbor_info[1], element='O', ring=0, nb=1))
         # print()
         
@@ -371,6 +351,14 @@ def nta(mm, basename, ff_name):
         # Sp3 Carbon atom typing (ordering of nested if/elif/else statements set precedence) #
         ######################################################################################
         elif element == 'C' and nb == 4:
+            # Count the number of hydroxls to help distingush from co to c1, c2, c3 or c
+            hydroxls = []
+            for j in neighs1:
+                neigh_atom = mm.atoms[j]
+                neigh_elements1 = tf.neigh_extract(neigh_atom, depth=1, info='element')
+                if neigh_atom.element == 'O' and neigh_atom.nb == 2 and neigh_elements1.count('H') == 1:
+                    hydroxls.append(j)
+            
             #----------------------------------------------------------------------------#
             # User defined intial attempts (For ReaxFF with open valence polymerization) #
             #----------------------------------------------------------------------------#
@@ -413,7 +401,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # co        12.01115      C          4        sp3 carbon in acetals
-            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 2:              
+            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 2 and len(hydroxls) == 0:              
                 atom.nta_type = 'co'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -596,6 +584,23 @@ def nta(mm, basename, ff_name):
         # 2-bonded Oxygen atom typing (ordering of nested if/elif/else statements set precedence) #
         ###########################################################################################
         elif element == 'O' and nb == 2:
+            # Below is to help disitinguish between the "oz" ester oxygen in carbonate and the "o_2" atom type in
+            # C=C(OC)OC(C)=O. Since there are correct 2nd neighbors from the oxygen near the double bonded, but
+            # one of the 2nd neighbors is pointing in the wrong direction.
+            use_oz = False
+                
+            # Find the doubly bonded 2nd neigh
+            doubly_bonded_oxygen = None
+            for j in atom.neighbor_ids[2]:
+                if mm.atoms[j].element == 'O' and mm.atoms[j].nb == 1:
+                    doubly_bonded_oxygen = j
+                    break
+
+            # Ensure there are two "oz" atom types to the right and left of the doubly bonded
+            if doubly_bonded_oxygen is not None:
+                oz_count = tf.count_neigh(mm.atoms[doubly_bonded_oxygen].neighbor_info[2], element='O', ring=0, nb=2)
+                if oz_count == 2: use_oz = True
+            
             #----------------------------------------------------------------------------#
             # User defined intial attempts (For ReaxFF with open valence polymerization) #
             #----------------------------------------------------------------------------#

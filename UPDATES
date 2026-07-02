@@ -15,14 +15,22 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
+LUNAR (version 7July2026)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+7July2026          JDK         - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing of "co" vs "c"
+                                                 and missing a side for the "oz" type and using "o_2" instead.
+
+-------------------------------------------------------------------------------------------------------------
 LUNAR (version 29June2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
-29June2026          JDK         - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing of carbonyl vs
+29June2026         JDK          - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing of carbonyl vs
                                                   next to doubly bonded carbon.
 
-26June2026          JDK         - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing of doubly nitrogens
+26June2026         JDK          - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing of doubly nitrogens
                                                   in the molecule and near the edge. Pulled c4o compass atom type
                                                   out of all PCFF typing routines (initial parameters where added
                                                   to PCFF-IFF, but lacked full support. c4o typing routine was left
