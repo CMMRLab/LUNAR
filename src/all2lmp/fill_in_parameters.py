@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.11
-February 17, 2026
+Revision 1.12
+July 9, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -2734,8 +2734,8 @@ def find_bondbond_parameters(frc, BADI, angle_map, r0s, use_auto_equivalence, so
             continue    
         
         # Try matching bondbond in forward/reverse. Attempts: 1) without equivalences, 2) with equivalences
-        if ff_functions.match_3_body(type1, type2, type3, log, frc.bondbond, equivalences=frc.equivalences, wildcard_search=False, form='equiv')[0]:
-            boolean, match, order, equiv = ff_functions.match_3_body(type1, type2, type3, log, frc.bondbond, equivalences=frc.equivalences, wildcard_search=False, form='equiv')
+        if ff_functions.match_3_body(type1, type2, type3, log, frc.bondbond, equivalences=frc.equivalences, wildcard_search=True, form='equiv')[0]:
+            boolean, match, order, equiv = ff_functions.match_3_body(type1, type2, type3, log, frc.bondbond, equivalences=frc.equivalences, wildcard_search=True, form='equiv')
             bondbond_coeff = frc.bondbond[match]
             bondbond_flag = True
             
@@ -2845,8 +2845,8 @@ def find_bondangle_parameters(frc, BADI, angle_map, r0s, use_auto_equivalence, s
             continue    
         
         # Try matching bondangle in forward/reverse. Attempts: 1) without equivalences, 2) with equivalences
-        if ff_functions.match_3_body(type1, type2, type3, log, frc.bondangle, equivalences=frc.equivalences, wildcard_search=False, form='equiv')[0]:
-            boolean, match, order, equiv = ff_functions.match_3_body(type1, type2, type3, log, frc.bondangle, equivalences=frc.equivalences, wildcard_search=False, form='equiv')
+        if ff_functions.match_3_body(type1, type2, type3, log, frc.bondangle, equivalences=frc.equivalences, wildcard_search=True, form='equiv')[0]:
+            boolean, match, order, equiv = ff_functions.match_3_body(type1, type2, type3, log, frc.bondangle, equivalences=frc.equivalences, wildcard_search=True, form='equiv')
             bondangle_coeff = frc.bondangle[match]
             bondangle_flag = True
             
@@ -2972,8 +2972,8 @@ def find_angleangletorsion_parameters(frc, BADI, dihedral_map, theta0s, use_auto
             continue   
         
         # Try matching frc.angleangletorsion in forward/reverse. Attempts: 1) without equivalences, 2) with equivalences
-        if ff_functions.match_4_body(type1, type2, type3, type4, log, frc.angleangletorsion, equivalences=frc.equivalences, wildcard_search=False, form='equiv')[0]:
-            boolean, match, order, equiv = ff_functions.match_4_body(type1, type2, type3, type4, log, frc.angleangletorsion, equivalences=frc.equivalences, wildcard_search=False, form='equiv')
+        if ff_functions.match_4_body(type1, type2, type3, type4, log, frc.angleangletorsion, equivalences=frc.equivalences, wildcard_search=True, form='equiv')[0]:
+            boolean, match, order, equiv = ff_functions.match_4_body(type1, type2, type3, type4, log, frc.angleangletorsion, equivalences=frc.equivalences, wildcard_search=True, form='equiv')
             angleangletorsion_coeff = frc.angleangletorsion[match]
             angleangletorsion_flag = True
             
@@ -3089,8 +3089,8 @@ def find_endbondtorsion_parameters(frc, BADI, dihedral_map, r0s, use_auto_equiva
             continue   
         
         # Try matching frc.endbondtorsion in forward/reverse. Attempts: 1) without equivalences, 2) with equivalences
-        if ff_functions.match_4_body(type1, type2, type3, type4, log, frc.endbondtorsion, equivalences=frc.equivalences, wildcard_search=False, form='equiv')[0]:
-            boolean, match, order, equiv = ff_functions.match_4_body(type1, type2, type3, type4, log, frc.endbondtorsion, equivalences=frc.equivalences, wildcard_search=False, form='equiv')
+        if ff_functions.match_4_body(type1, type2, type3, type4, log, frc.endbondtorsion, equivalences=frc.equivalences, wildcard_search=True, form='equiv')[0]:
+            boolean, match, order, equiv = ff_functions.match_4_body(type1, type2, type3, type4, log, frc.endbondtorsion, equivalences=frc.equivalences, wildcard_search=True, form='equiv')
             ebt = frc.endbondtorsion[match]
             endbondtorsion_flag = True
             
@@ -3223,8 +3223,8 @@ def find_middlebondtorsion_parameters(frc, BADI, dihedral_map, r0s, use_auto_equ
             continue   
         
         # Try matching frc.middlebondtorsion in forward/reverse. Attempts: 1) without equivalences, 2) with equivalences
-        if ff_functions.match_4_body(type1, type2, type3, type4, log, frc.middlebondtorsion, equivalences=frc.equivalences, wildcard_search=False, form='equiv')[0]:
-            boolean, match, order, equiv = ff_functions.match_4_body(type1, type2, type3, type4, log, frc.middlebondtorsion, equivalences=frc.equivalences, wildcard_search=False, form='equiv')
+        if ff_functions.match_4_body(type1, type2, type3, type4, log, frc.middlebondtorsion, equivalences=frc.equivalences, wildcard_search=True, form='equiv')[0]:
+            boolean, match, order, equiv = ff_functions.match_4_body(type1, type2, type3, type4, log, frc.middlebondtorsion, equivalences=frc.equivalences, wildcard_search=True, form='equiv')
             mbt = frc.middlebondtorsion[match]
             middlebondtorsion_flag = True
             
@@ -3346,8 +3346,8 @@ def find_bondbond13_parameters(frc, BADI, dihedral_map, r0s, use_auto_equivalenc
             continue   
         
         # Try matching frc.bondbond13 in forward/reverse. Attempts: 1) without equivalences, 2) with equivalences
-        if ff_functions.match_4_body(type1, type2, type3, type4, log, frc.bondbond13, equivalences=frc.equivalences, wildcard_search=False, form='equiv')[0]:
-            boolean, match, order, equiv = ff_functions.match_4_body(type1, type2, type3, type4, log, frc.bondbond13, equivalences=frc.equivalences, wildcard_search=False, form='equiv')
+        if ff_functions.match_4_body(type1, type2, type3, type4, log, frc.bondbond13, equivalences=frc.equivalences, wildcard_search=True, form='equiv')[0]:
+            boolean, match, order, equiv = ff_functions.match_4_body(type1, type2, type3, type4, log, frc.bondbond13, equivalences=frc.equivalences, wildcard_search=True, form='equiv')
             bondbond13_coeff = frc.bondbond13[match]
             bondbond13_flag = True
             
@@ -3462,8 +3462,8 @@ def find_angletorsion_parameters(frc, BADI, dihedral_map, theta0s, use_auto_equi
             continue   
         
         # Try matching frc.angletorsion in forward/reverse. Attempts: 1) without equivalences, 2) with equivalences
-        if ff_functions.match_4_body(type1, type2, type3, type4, log, frc.angletorsion, equivalences=frc.equivalences, wildcard_search=False, form='equiv')[0]:
-            boolean, match, order, equiv = ff_functions.match_4_body(type1, type2, type3, type4, log, frc.angletorsion, equivalences=frc.equivalences, wildcard_search=False, form='equiv')
+        if ff_functions.match_4_body(type1, type2, type3, type4, log, frc.angletorsion, equivalences=frc.equivalences, wildcard_search=True, form='equiv')[0]:
+            boolean, match, order, equiv = ff_functions.match_4_body(type1, type2, type3, type4, log, frc.angletorsion, equivalences=frc.equivalences, wildcard_search=True, form='equiv')
             at = frc.angletorsion[match]
             angletorsion_flag = True
             

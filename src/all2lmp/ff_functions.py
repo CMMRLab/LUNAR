@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.3
-November 13th, 2024
+Revision 1.4
+July 9, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -741,6 +741,39 @@ def match_3_body(type1, type2, type3, log, dict2search, equivalences, wildcard_s
         equiv = (type3, type2, type1)
         boolean = True
         
+    # Try matching using wildcards in forward and reverse
+    elif wildcard_search:
+        # If test = [1, 1, 0] look for exact match of first two atoms, but last atom can be a wild card
+        if match_angle_wildcards((type1, type2, type3), dict2search, [1, 1, 0], log)[0]:
+            match = match_angle_wildcards((type1, type2, type3), dict2search, [1, 1, 0], log)[1]
+            order = (type1, type2, type3)
+            equiv = (type1, type2, type3)
+            boolean = True 
+        elif match_angle_wildcards((type3, type2, type1), dict2search, [1, 1, 0], log)[0]:
+            match = match_angle_wildcards((type3, type2, type1), dict2search, [1, 1, 0], log)[1]
+            order = (type3, type2, type1)
+            equiv = (type3, type2, type1)
+            boolean = True 
+            
+        # If test = [0, 1, 1] look for exact match of last two atoms, but first atom can be a wild card
+        elif match_angle_wildcards((type1, type2, type3), dict2search, [0, 1, 1], log)[0]:
+            match = match_angle_wildcards((type1, type2, type3), dict2search, [0, 1, 1], log)[1]
+            order = (type1, type2, type3)
+            equiv = (type1, type2, type3)
+            boolean = True 
+        elif match_angle_wildcards((type3, type2, type1), dict2search, [0, 1, 1], log)[0]:
+            match = match_angle_wildcards((type3, type2, type1), dict2search, [0, 1, 1], log)[1]
+            order = (type3, type2, type1)
+            equiv = (type3, type2, type1)
+            boolean = True 
+
+        # If test = [0, 1, 0] look for exact match of center atoms, but outer atom can be a wild card
+        elif match_angle_wildcards((type1, type2, type3), dict2search, [0, 1, 0], log)[0]:
+            match = match_angle_wildcards((type1, type2, type3), dict2search, [0, 1, 0], log)[1]
+            order = (type1, type2, type3)
+            equiv = (type1, type2, type3)
+            boolean = True 
+        
     # Next try using equivalences if equivalences not False
     if not boolean and equivalences:
         equiv_flag = False # set flag and if found update as True
@@ -935,6 +968,46 @@ def match_4_body(type1, type2, type3, type4, log, dict2search, equivalences, wil
         order = (type4, type3, type2, type1)
         equiv = (type4, type3, type2, type1)
         boolean = True
+
+    # Try matching using wildcards in forward and reverse
+    elif wildcard_search:
+        # If test = [1, 1, 1, 0] look for exact match of first three atoms, but last atom can be a wild card
+        if match_dihedral_wildcards((type1, type2, type3, type4), dict2search, [1, 1, 1, 0], log)[0]:
+            match = match_dihedral_wildcards((type1, type2, type3, type4), dict2search, [1, 1, 1, 0], log)[1]
+            order = (type1, type2, type3, type4)
+            equiv = (type1, type2, type3, type4)
+            boolean = True 
+        elif match_dihedral_wildcards((type4, type3, type2, type1), dict2search, [1, 1, 1, 0], log)[0]:
+            match = match_dihedral_wildcards((type4, type3, type2, type1), dict2search, [1, 1, 1, 0], log)[1]
+            order = (type4, type3, type2, type1)
+            equiv = (type4, type3, type2, type1)
+            boolean = True 
+            
+        # If test = [0, 1, 1, 1] look for exact match of last three atoms, but first atom can be a wild card
+        elif match_dihedral_wildcards((type1, type2, type3, type4), dict2search, [0, 1, 1, 1], log)[0]:
+            match = match_dihedral_wildcards((type1, type2, type3, type4), dict2search, [0, 1, 1, 1], log)[1]
+            order = (type1, type2, type3, type4)
+            equiv = (type1, type2, type3, type4)
+            boolean = True 
+        elif match_dihedral_wildcards((type4, type3, type2, type1), dict2search, [0, 1, 1, 1], log)[0]:
+            match = match_dihedral_wildcards((type4, type3, type2, type1), dict2search, [0, 1, 1, 1], log)[1]
+            order = (type4, type3, type2, type1)
+            equiv = (type4, type3, type2, type1)
+            boolean = True 
+        
+        # If test = [0, 1, 1, 0] look for exact match of inner two atoms, but outer atoms can be a wild card
+        elif match_dihedral_wildcards((type1, type2, type3, type4), dict2search, [0, 1, 1, 0], log)[0]:
+            match = match_dihedral_wildcards((type1, type2, type3, type4), dict2search, [0, 1, 1, 0], log)[1]
+            order = (type1, type2, type3, type4)
+            equiv = (type1, type2, type3, type4)
+            boolean = True 
+            
+        # If test = [0, 1, 1, 0] look for exact match of inner two atoms in reverse, but outer atoms can be a wild card
+        elif match_dihedral_wildcards((type4, type3, type2, type1), dict2search, [0, 1, 1, 0], log)[0]:
+            match = match_dihedral_wildcards((type4, type3, type2, type1), dict2search, [0, 1, 1, 0], log)[1]
+            order = (type4, type3, type2, type1)
+            equiv = (type4, type3, type2, type1)
+            boolean = True 
         
     # Next try using equivalences if equivalences not False
     if not boolean and equivalences:
@@ -1021,7 +1094,6 @@ def match_4_body(type1, type2, type3, type4, log, dict2search, equivalences, wil
                 #-----------------------------------------------------------------#
                 # LIKELY DREIDING ONLY, but still try finding these cases as well #
                 #-----------------------------------------------------------------#
-                    
                 # If test = [0, 1, 0, 0] look for exact match of inner two atomID2 in forward, but outer atoms can be a wild card
                 elif match_dihedral_wildcards((equiv1, equiv2, equiv3, equiv4), dict2search, [0, 1, 0, 0], log)[0]:
                     match = match_dihedral_wildcards((equiv1, equiv2, equiv3, equiv4), dict2search, [0, 1, 0, 0], log)[1]
@@ -1207,6 +1279,36 @@ def match_4_body_oop(type1, type2, type3, type4, log, dict2search, equivalences,
         order = (type4, type2, type3, type1)
         equiv = (type4, type2, type3, type1)
         boolean = True   
+        
+    # Try matching using wildcards in forward and reverse
+    elif wildcard_search:
+        # look for exact match of 3 atoms including center/central atom
+        if match_improper_wildcards((type1, type2, type3, type4), dict2search, [1, 1, 1, 0], log)[0]:
+           match = match_improper_wildcards((type1, type2, type3, type4), dict2search, [1, 1, 1, 0], log)[1]
+           order = (type1, type2, type3, type4)
+           equiv = (type1, type2, type3, type4)
+           boolean = True 
+            
+        # look for exact match of 3 atoms including center/central atom
+        elif match_improper_wildcards((type1, type2, type3, type4), dict2search, [0, 1, 1, 1], log)[0]:
+             match = match_improper_wildcards((type1, type2, type3, type4), dict2search, [0, 1, 1, 1], log)[1]
+             order = (type1, type2, type3, type4)
+             equiv = (type1, type2, type3, type4)
+             boolean = True 
+            
+        # look for exact match of 2 atoms including center/central atom
+        elif match_improper_wildcards((type1, type2, type3, type4), dict2search, [0, 1, 1, 0], log)[0]:
+             match = match_improper_wildcards((type1, type2, type3, type4), dict2search, [0, 1, 1, 0], log)[1]
+             order = (type1, type2, type3, type4)
+             equiv = (type1, type2, type3, type4)
+             boolean = True 
+        
+        # Look for exact match of only center/central atom
+        elif match_improper_wildcards((type1, type2, type3, type4), dict2search, [0, 1, 0, 0], log)[0]:
+             match = match_improper_wildcards((type1, type2, type3, type4), dict2search, [0, 1, 0, 0], log)[1]
+             order = (type1, type2, type3, type4)
+             equiv = (type1, type2, type3, type4)
+             boolean = True 
         
     # Next try using equivalences if equivalences not False
     if not boolean and equivalences:

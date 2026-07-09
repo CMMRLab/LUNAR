@@ -15,10 +15,24 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 7July2026)
+LUNAR (version 9July2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+9July2026          JDK         - all2lmp.py: Changed FF-matching routines from:
+                                               1. exact atom types (forward and reverse)
+                                               2. equivalences w/o wildcards (forward and reverse)
+                                               3. equivalences w/ wildcards (forward and reverse)
+                                             To:
+                                               1. exact atom types w/o wildcards (forward and reverse)
+                                               2. exact atom types w/ wildcards (forward and reverse)
+                                               3. equivalences w/o wildcards (forward and reverse)
+                                               4. equivalences w/ wildcards (forward and reverse)
+                                             where now "exact atom types w/ wildcards" is also attempted prior
+                                             to moving to equivalences. This is to add support to new versions
+                                             of PCFF that CMMRLab is working on. Wildcard matching has now also
+                                             been enabled on crossterms for classII FF's.
+
 7July2026          JDK         - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing of "co" vs "c"
                                                  and missing a side for the "oz" type and using "o_2" instead.
 
