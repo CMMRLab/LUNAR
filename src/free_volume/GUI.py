@@ -2,7 +2,7 @@
 """
 @author: Josh Kemppainen
 Revision 1.0
-June 10, 2026
+July 9, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -29,7 +29,7 @@ import os
 # LUNAR/free_volume GUI #
 #########################
 class free_volume_GUI:
-    def __init__(self, topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory,
+    def __init__(self, topofile, dumpfile, dump_settings, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory,
                  compute_free_volume_distributions, files2write, run_mode, probe_diameter, vdw_method,
                  CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, GUI_zoom):
         
@@ -121,37 +121,51 @@ class free_volume_GUI:
         self.topofile.grid(column=1, row=0)
         self.topofile_button = tk.Button(self.inputs_frame, text='topofile', font=font_settings, command=self.topofile_path)
         self.topofile_button.grid(column=0, row=0)
+        
+        # dumpfile selection button
+        self.dumpfile = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
+        self.dumpfile.insert(0, dumpfile)
+        self.dumpfile.grid(column=1, row=1)
+        self.dumpfile_button = tk.Button(self.inputs_frame, text='dumpfile', font=font_settings, command=self.dumpfile_path)
+        self.dumpfile_button.grid(column=0, row=1)
 
         # parent_directory entry
         self.parent_directory = tk.Entry(self.inputs_frame, width=maxwidth, font=font_settings)
         self.parent_directory.insert(0, parent_directory)
-        self.parent_directory.grid(column=1, row=1)
+        self.parent_directory.grid(column=1, row=2)
         self.dir_button = tk.Button(self.inputs_frame, text='parent_directory', font=font_settings, command=self.directory_path)
-        self.dir_button.grid(column=0, row=1)
+        self.dir_button.grid(column=0, row=2)
         
         # run mode drop menu
         styles = ['stl', 'numpy', 'stl-dd', 'numba-dd', 'numba-ddp', 'CUDA-dd']
         self.run_mode = ttk.Combobox(self.inputs_frame, values=styles, width=int(maxwidth/1.023), font=font_settings)
         self.run_mode.current(styles.index(run_mode))
-        self.run_mode.grid(column=1, row=2)
+        self.run_mode.grid(column=1, row=3)
         self.run_mode_label = tk.Label(self.inputs_frame, text='run_mode', font=font_settings)
-        self.run_mode_label.grid(column=0, row=2)
+        self.run_mode_label.grid(column=0, row=3)
         
         # CUDA_threads_per_block_atoms down menu
         m8 = [8, 16, 32, 64, 128, 256, 512, 1024]
         self.CUDA_threads_per_block_atoms = ttk.Combobox(self.inputs_frame, values=m8, width=int(maxwidth/1.023), font=font_settings)
         self.CUDA_threads_per_block_atoms.current(m8.index(CUDA_threads_per_block_atoms))
-        self.CUDA_threads_per_block_atoms.grid(column=1, row=3)
+        self.CUDA_threads_per_block_atoms.grid(column=1, row=4)
         self.CUDA_threads_per_block_atoms_label = tk.Label(self.inputs_frame, text='CUDA_threads_per_block_atoms', font=font_settings)
-        self.CUDA_threads_per_block_atoms_label.grid(column=0, row=3)
+        self.CUDA_threads_per_block_atoms_label.grid(column=0, row=4)
         
         # CUDA_threads_per_block_voxels down menu
         m8.append(0)
         self.CUDA_threads_per_block_voxels = ttk.Combobox(self.inputs_frame, values=m8, width=int(maxwidth/1.023), font=font_settings)
         self.CUDA_threads_per_block_voxels.current(m8.index(CUDA_threads_per_block_voxels))
-        self.CUDA_threads_per_block_voxels.grid(column=1, row=4)
+        self.CUDA_threads_per_block_voxels.grid(column=1, row=5)
         self.CUDA_threads_per_block_voxels_label = tk.Label(self.inputs_frame, text='CUDA_threads_per_block_voxels', font=font_settings)
-        self.CUDA_threads_per_block_voxels_label.grid(column=0, row=4)
+        self.CUDA_threads_per_block_voxels_label.grid(column=0, row=5)
+        
+        # dump_settings entry
+        self.dump_settings = tk.Entry(self.inputs_frame, width=int(maxwidth), font=font_settings)
+        self.dump_settings.insert(0, dump_settings)
+        self.dump_settings.grid(column=1, row=6)
+        self.dump_settings_label = tk.Label(self.inputs_frame, text='dump_settings', font=font_settings)
+        self.dump_settings_label.grid(column=0, row=6)
         
         # Add padding to all frames in self.inputs_frame
         for widget in self.inputs_frame.winfo_children():
@@ -339,6 +353,15 @@ class free_volume_GUI:
             self.topofile.delete(0, tk.END); self.topofile.insert(0, path);
         return
     
+    # Function to get filepath for dumpfile
+    def dumpfile_path(self):
+        ftypes = (('all files', '*.*'), ('dump files', '*.dump *.dump.gz'), )
+        path = filedialog.askopenfilename(title='Open dumpfile?', filetypes=ftypes)
+        if path:
+            path = os.path.relpath(path)
+            self.dumpfile.delete(0, tk.END); self.dumpfile.insert(0, path);
+        return
+    
     # Function to get directory
     def directory_path(self):
         path =filedialog.askdirectory()
@@ -362,6 +385,8 @@ class free_volume_GUI:
         # Get information from GUI
         boolean = {'False':False, 'True':True}
         topofile = self.topofile.get()
+        dumpfile = self.dumpfile.get()
+        dump_settings = self.dump_settings.get() 
         parent_directory = self.parent_directory.get() 
         mass_map = self.mass_map
         vdw_radius = self.vdw_radius
@@ -392,8 +417,8 @@ class free_volume_GUI:
         # Run LUNAR/free_volume
         if valid_inputs:
             try: 
-                inputs = (topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory,
-                          compute_free_volume_distributions, files2write, run_mode, probe_diameter,
+                inputs = (topofile, dumpfile, dump_settings, max_voxel_size, mass_map, vdw_radius, boundary, 
+                          parent_directory, compute_free_volume_distributions, files2write, run_mode, probe_diameter,
                           vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, [], log)
                 t1=threading.Thread(target=main, args=inputs)
                 t1.start()
@@ -420,6 +445,10 @@ class free_volume_GUI:
         # Get information from GUI
         boolean = {'False':False, 'True':True}
         topofile = io_functions.path_to_string(self.topofile.get())
+        
+        dumpfile =  io_functions.path_to_string(self.dumpfile.get())
+        dump_settings =  io_functions.path_to_string(self.dump_settings.get())
+
         parent_directory = io_functions.path_to_string(self.parent_directory.get()) 
         boundary = self.boundary.get()
         max_voxel_size = float(self.max_voxel_size.get())
@@ -454,6 +483,10 @@ class free_volume_GUI:
                 #     line = psm.parse_and_modify(line, True, stringflag=False, splitchar='=')
                 # if line.startswith('topofile') and inputsflag:
                 #     line = psm.parse_and_modify(line, topofile, stringflag=True, splitchar='=')
+                # if line.startswith('dumpfile') and inputsflag:
+                #     line = psm.parse_and_modify(line, dumpfile, stringflag=True, splitchar='=')
+                if line.startswith('dump_settings') and inputsflag:
+                    line = psm.parse_and_modify(line, dump_settings, stringflag=True, splitchar='=')
                 if line.startswith('parent_directory') and inputsflag:
                     line = psm.parse_and_modify(line, parent_directory, stringflag=True, splitchar='=')
                 if line.startswith('boundary') and inputsflag:

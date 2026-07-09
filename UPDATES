@@ -19,6 +19,13 @@ LUNAR (version 9July2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+9July2026          JDK         - free_volume.py: Add support to automatically log results to a .csv when using
+                                                 wildcards in the topofile string, for 100% automated result
+                                                 curation. In addition reading of dump files is now also supported
+                                                 directly, for easier bulk free_volume analysis. The documentation
+                                                 for usage of dump files can be read when clicking on the "Quick Help"
+                                                 button on te GUI.												 
+
 9July2026          JDK         - all2lmp.py: Changed FF-matching routines from:
                                                1. exact atom types (forward and reverse)
                                                2. equivalences w/o wildcards (forward and reverse)

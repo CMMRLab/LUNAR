@@ -50,7 +50,13 @@ def out(m, v, grid, execution_time, boundary, max_voxel_size, compute_free_volum
     lz = float(zline[1])-float(zline[0])
     volume = lx*ly*lz*angstromcubed2cmcubed
     density = mass/volume
-        
+    
+    m.lx = lx
+    m.ly = ly
+    m.lz = lz
+    m.volume = volume
+    m.density = density    
+    
     # Write header info and file purpose 
     log.out(f'This is a saved .txt file for the print outs that appear when running free_volume.py {version}')
     log.out(f'Running in {run_mode} mode\n')
@@ -138,4 +144,4 @@ def out(m, v, grid, execution_time, boundary, max_voxel_size, compute_free_volum
         
     # Write excutation time
     log.out(f'\n\nExecution time in seconds:    {execution_time}') 
-    return
+    return m 

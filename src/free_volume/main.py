@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.13
-June 10, 2026
+Revision 1.14
+July 9, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -10,10 +10,14 @@ Houghton, MI 49931
 ##############################
 # Import Necessary Libraries #
 ##############################
+import src.free_volume.dump_splitting as dump_splitting
+import src.free_volume.array_logging as array_logging
 import src.free_volume.command_line as command_line
 import src.free_volume.out2console as out2console
 import src.free_volume.write_lmp as write_lmp
+import src.glob_wildcards as glob_wildcards
 import src.io_functions as io_functions
+import src.read_dump as read_dump
 import src.read_lmp as read_lmp
 import traceback
 import glob
@@ -26,7 +30,7 @@ import os
 ############################################
 # Main function to analyze the free volume #
 ############################################
-def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory, compute_free_volume_distributions,
+def main(topofile, dumpfile, dump_settings, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory, compute_free_volume_distributions,
          files2write, run_mode, probe_diameter, vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels,
          commandline_inputs, log=None):
     
@@ -59,41 +63,242 @@ def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_direct
         vdw_method = over_rides.vdw_method
         CUDA_threads_per_block_atoms = over_rides.CUDA_threads_per_block_atoms
         CUDA_threads_per_block_voxels = over_rides.CUDA_threads_per_block_voxels
+        
+    #---------------------------#
+    # Set up dump file analysis #
+    #---------------------------#
+    if os.path.isfile(str(topofile)) and os.path.isfile(str(dumpfile)):
+        if log is None: log = io_functions.LUNAR_logger()
+        log.configure(level='production', print2console=True, write2log=True)
+        
+        # Read topofile and dump file
+        mol = read_lmp.Molecule_File(topofile, method='forward', sections=['Atoms', 'Bonds'])
+        log.out(f'Read in {mol.filename} LAMMPS datafile')
+        
+        dump = read_dump.read_dumpfile(dumpfile)
+        log.out(f'Read in {dump.filename} LAMMPS dump')
+        
+        # Get the steps in dump and corresponding section numbers
+        step_lst = sorted( dump.steps.keys() )
+        sections = [i+1 for i in range(len(step_lst))]
+        
+        # User settings from dump_settings. Example string is:
+        #   dump_settings = 'start=1; end=10; nevery=1; style=step'
+        #   dump_settings = 'start=1; end=10; nevery=1; style=section'
+        dump_dict = dump_splitting.get_misc_setting(dump_settings)
+        style = dump_dict.get('style', 'step')
+        nevery = dump_dict.get('nevery', 1)
+        if style == 'step':
+            start = dump_dict.get('start', min(step_lst))
+            end   = dump_dict.get('end',   max(step_lst))
+        elif style == 'section':
+            start = dump_dict.get('start', min(sections))
+            end   = dump_dict.get('end',   max(sections))
+        else:
+            log.error('ERROR - dump splitting: style="{}" is not a dump splitting supported style. Use "step" or "section"'.format(style))
+        if not isinstance(nevery, int):
+            log.error('ERROR - dump splitting: nevery="{}" is not an int.'.format(nevery))
+        if not isinstance(start, (int,float)):
+            log.error('ERROR - dump splitting: start="{}" is not an int or a float.'.format(start))
+        if not isinstance(end, (int,float)):
+            log.error('ERROR - dump splitting: end="{}" is not an int or a float.'.format(end))
+            
+        # Pick the steps to use for analysis
+        steps_in_bounds = []
+        for section, step in zip(sections, step_lst):
+            if style == 'step':
+                gauge_value = step
+        
+            elif style == 'section':
+                gauge_value = section
+        
+            if start <= gauge_value <= end:
+                steps_in_bounds.append(step)
+        
+        # Apply nevery after bounds filtering
+        steps = steps_in_bounds[::nevery]
+        
+        # Incrementally write sections from the dump file to a datafile
+        array_file = 'free_volume_dump_logging'
+        processed_files, failed_files = [], []
+        array_data = {} # {'filename': output_dict}
+        loop_time = time.time()
+        pwd_loop  = os.getcwd()
+        path, m, grid = None, None, None
+        loop_dumpfile, loop_dump_settings = '', ''
+        for n, step in enumerate(steps, 1):
+            datafile = '{}.{}.data'.format(dumpfile, step)
+            os.chdir(pwd_loop) # in-case of a crash 
+            log.clear_all()
+            log.out('\n\nUsing dump splitting option:')
+            log.out(' - topofile     : {}'.format(topofile))
+            log.out(' - dumpfile     : {}'.format(dumpfile))
+            log.out(' - step in dump : {}'.format(step))
+            log.out(' - elapsed time : {:.2f} (seconds)'.format(time.time() - loop_time))
+            log.out(' - progress     : {} of {} ({:.2f}%)'.format(n, len(steps), 100*(n/len(steps))))
+            
+            # Try converting to a datafile
+            try:
+                box, atoms = dump.parse_atoms_and_box(step)
+                dump_splitting.topo_dump_to_data(mol, box, atoms, datafile)
+            except:
+                stack_trace_string = traceback.format_exc()
+                log.out(f'\nAn error occurred: {stack_trace_string}')
+                log.out(f'Skipping step={step} from dumpfile="{dumpfile}", because the step failed to be converted to a datafile.')
+                failed_files.append( datafile )
+                continue
+            
+            try: # we dont want crashes to exit this loop
+                m, grid = main(datafile, loop_dumpfile, loop_dump_settings, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory, compute_free_volume_distributions,
+                               files2write, run_mode, probe_diameter, vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels,
+                               commandline_inputs, log)
+                
+                # Generate dict of outputs
+                output_dict = {}
+                output_dict['step'] = step
+                output_dict['lx'] = float(m.lx)
+                output_dict['ly'] = float(m.ly)
+                output_dict['lz'] = float(m.lz)
+                output_dict['density'] = float(m.density)
+                output_dict['cell_volume'] = float(grid.simulation_volume)
+                output_dict['atom_volume'] = float(grid.atom_volume)
+                output_dict['free_volume'] = float(grid.free_volume)
+                output_dict['percent_free_volume'] = float(grid.pfree_volume)
+                array_data[datafile] = output_dict
+                processed_files.append( datafile )
+                path = os.path.normpath(m.path)
+            except: 
+                stack_trace_string = traceback.format_exc()
+                log.out(f'\nAn error occurred: {stack_trace_string}')
+                failed_files.append( datafile )
+                
+        # Log values for array processing
+        if array_data and path not in [None, '']:                 
+            # Change to location to write file, then change back to pwd
+            log.out('\n\nWriting files in: {}'.format(path))
+            log.out(' - array_file={}'.format(f'{array_file}.csv'))
+            os.chdir(pwd_loop) # in-case of a crash  
+            os.chdir(path)   
+            
+            # Write array data
+            array_logging.output(array_file, array_data)
+            
+            # Finalize array files
+            os.chdir(pwd_loop)
+        
+        # Log any failed files
+        if failed_files:
+            log.out('\n\nFiles that failed to be analyzed for unknown reasons:')
+            for file in failed_files:
+                log.out(' - {}'.format(file))
+                
+        # Finalize array processing
+        execution_time = (time.time() - loop_time)
+        log.out('\n\nDump analysis time in seconds: ' + str(execution_time))
+        print('\a') # Alert    
+        return m, grid
 
     #---------------------------------------------------#
     # Set up Tristan's "array" analysis using recursion #
     #---------------------------------------------------#
-    if not os.path.isfile(str(topofile)):
+    elif not os.path.isfile(str(topofile)):
         if log is None: log = io_functions.LUNAR_logger()
         log.configure(level='production', print2console=True, write2log=True)
+        #log.configure(level='production', print2console=False, write2log=True)
         files = glob.glob(topofile); array_time = time.time()
         if files:
+            # Try sorting files
+            try:
+                from natsort import natsorted
+                files = natsorted(files)
+                log.out('Read in xrdfiles were sorted using natsort, thus they should be iterated through')
+                log.out('in a sequence that represents evolution or progression and logged in that order.')
+            except:
+                files = sorted(files)
+                log.warn('WARNING natsort was not installed and read in xrdfiles were sorted using pythons')
+                log.out('sorted function. The file iteration sequence may be unorder from a evolution or')
+                log.out('progression stand point. Depending on the names given to the read in files. You may')
+                log.out('intall natsort with:  pip3 install natsort   (if pip manager is installed)')
+            
+            # Setup loop data structures
+            array_file = 'free_volume_array_logging'
+            processed_files, failed_files = [], []
+            array_data = {} # {'filename': output_dict}
+            loop_time = time.time()
+            pwd_loop  = os.getcwd()
+            path, m, grid = None, None, None
+            loop_dumpfile, loop_dump_settings = '', ''
             for n, file in enumerate(files, 1):
+                os.chdir(pwd_loop) # in-case of a crash 
                 log.clear_all()
                 log.out('\n\nUsing array input option:')
                 log.out(' - topofile     : {}'.format(topofile))
                 log.out(' - matched file : {}'.format(file))
                 log.out(' - elapsed time : {:.2f} (seconds)'.format(time.time() - array_time))
                 log.out(' - progress     : {} of {} ({:.2f}%)'.format(n, len(files), 100*(n/len(files))))
-                if io_functions.check_outfile_existance(file, ':', parent_directory, filetype='topofile'):
-                    log.warn(f' - WARNING matched file {file} already has been processed and was skipped')
-                    continue
-                if file.endswith('voxels_only.data') or file.endswith('atoms_only.data') or file.endswith('free_only.data'):
-                    log.warn(f' - WARNING matched file {file} has free_volume extension. Skipping file to avoid processing a free_volume output.')
-                    continue
-                elif file.endswith('atoms_free.data') or file.endswith('bonds_free.data'):
-                    log.warn(f' - WARNING matched file {file} has free_volume extension. Skipping file to avoid processing a free_volume output.')
-                    continue
+                # if io_functions.check_outfile_existance(file, ':', parent_directory, filetype='topofile'):
+                #     log.warn(f' - WARNING matched file {file} already has been processed and was skipped')
+                #     continue
+                # if file.endswith('voxels_only.data') or file.endswith('atoms_only.data') or file.endswith('free_only.data'):
+                #     log.warn(f' - WARNING matched file {file} has free_volume extension. Skipping file to avoid processing a free_volume output.')
+                #     continue
+                # elif file.endswith('atoms_free.data') or file.endswith('bonds_free.data'):
+                #     log.warn(f' - WARNING matched file {file} has free_volume extension. Skipping file to avoid processing a free_volume output.')
+                #     continue
                 try: # we dont want crashes to exit this loop
-                    main(file, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory, compute_free_volume_distributions,
-                         files2write, run_mode, probe_diameter, vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels,
-                         commandline_inputs, log)
+                    m, grid = main(file, loop_dumpfile, loop_dump_settings, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory, compute_free_volume_distributions,
+                                   files2write, run_mode, probe_diameter, vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels,
+                                   commandline_inputs, log)
+                    
+                    # Get wildcards
+                    wildcards = glob_wildcards.get_glob_wildcards(str(topofile), file)
+                    
+                    # Generate dict of outputs
+                    output_dict = {}
+                    output_dict['wildcards'] = wildcards
+                    output_dict['lx'] = float(m.lx)
+                    output_dict['ly'] = float(m.ly)
+                    output_dict['lz'] = float(m.lz)
+                    output_dict['density'] = float(m.density)
+                    output_dict['cell_volume'] = float(grid.simulation_volume)
+                    output_dict['atom_volume'] = float(grid.atom_volume)
+                    output_dict['free_volume'] = float(grid.free_volume)
+                    output_dict['percent_free_volume'] = float(grid.pfree_volume)
+                    array_data[file] = output_dict
+                    processed_files.append( file )
+                    path = os.path.normpath(m.path)
                 except: 
                     stack_trace_string = traceback.format_exc()
                     log.out(f'\nAn error occurred: {stack_trace_string}')
+                    failed_files.append( file )
+                    
+            # Log values for array processing
+            if array_data and path not in [None, '']:                 
+                # Change to location to write file, then change back to pwd
+                log.out('\n\nWriting files in: {}'.format(path))
+                log.out(' - array_file={}'.format(f'{array_file}.csv'))
+                os.chdir(pwd_loop) # in-case of a crash  
+                os.chdir(path)   
+                
+                # Write array data
+                array_logging.output(array_file, array_data)
+                
+                # Finalize array files
+                os.chdir(pwd_loop)
+            
+            # Log any failed files
+            if failed_files:
+                log.out('\n\nFiles that failed to be analyzed for unknown reasons:')
+                for file in failed_files:
+                    log.out(' - {}'.format(file))
+                    
+            # Finalize array processing
+            execution_time = (time.time() - loop_time)
+            log.out('\n\nArray time in seconds: ' + str(execution_time))
             print('\a') # Alert
+        
         else: log.error(f'ERROR topofile: {topofile} unwrapped zero files or does not exist')
-        return 
+        return m, grid
     else:
         # To remove recursion, un-indedent this all the way to the return and delete the lines above
         start_time = time.time()
@@ -105,7 +310,7 @@ def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_direct
         #log.configure(level='debug')
         
         # set version and print starting information to screen
-        version = 'v1.13 / 10 June 2026'
+        version = 'v1.14 / 9 July 2026'
         log.out(f'\n\nRunning free_volume: {version}')
         log.out(f'Using Python version: {sys.version}')
         log.out(f'Using Python executable: {sys.executable}')
@@ -216,6 +421,7 @@ def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_direct
         # Change the current working directory to path
         # to write all new files to outputs directory
         os.chdir(path)
+        m.path = path
         
         
         #----------------------------------#
@@ -239,7 +445,7 @@ def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_direct
         execution_time = (time.time() - start_time)
         
         # log to console
-        out2console.out(m, v, grid, execution_time, boundary, max_voxel_size, compute_free_volume_distributions, basename, version, run_mode, files2write, probe_diameter, vdw_method, log)
+        m = out2console.out(m, v, grid, execution_time, boundary, max_voxel_size, compute_free_volume_distributions, basename, version, run_mode, files2write, probe_diameter, vdw_method, log)
         
         # Print file locations
         log.out(f'\n\nAll outputs can be found in {path} directory')
@@ -255,4 +461,4 @@ def main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_direct
         
         # Change back to the intial directory to keep directory free for deletion
         os.chdir(pwd)
-        return
+        return m, grid

@@ -1,0 +1,82 @@
+#
+# Test script for writing datafiles and dump
+# file for array logging on LUNAR/free_volume.py
+#---------Initialization---------
+units            real
+dimension        3
+newton           on
+boundary         p p p
+atom_style       full
+
+
+#---------InputParameters---------
+# System info
+variable        replicate string 1
+variable        system string detda
+variable        FF string PCFF
+
+# I/O settings
+variable        inter equal 1     # Intervals to write datafiles (ps)
+variable        stime equal 0     # Start time (ps) to add to file naming (if 1st sim set as 0, if sequential sim set as 1st sim duration)
+
+# Enviroment settings
+variable        press equal 1     # pressure (atm; 1 GPa ~= 10,000 atm) 
+variable        temp equal  300   # process temp (K)
+variable        time equal  10    # run time (ps)
+variable        wtime equal 1     # Write time for logfile in (PS). Will write to dump file every 10x this value.
+
+# Set naming convention
+variable     myid  string ${system}_rep_${replicate}_free_volume_test
+
+
+#---------Force-field---------
+bond_style       class2
+angle_style      class2
+dihedral_style   class2
+improper_style   class2
+
+pair_style       lj/class2/coul/long 12.0
+kspace_style     pppm 1e-6
+pair_modify      mix sixthpower
+special_bonds    lj/coul 0 0 1
+
+neighbor         2.0 bin
+neigh_modify     delay 0 every 1 check yes one 5000 page 100000
+
+read_data        detda_typed_PCFF.data
+
+kspace_style     pppm 1e-6
+pair_modify      mix sixthpower
+timestep         1.0
+
+#---------LoggingInfo---------
+
+# Determine Time and temperature based on heating rate
+variable        Time equal step*dt/1000+v_stime # time in picoseconds
+
+# Setup logging and restart files
+variable        wstep equal round(${wtime}/dt*1000) # steps for thermo output
+
+thermo          ${wstep}
+thermo_style    custom step temp v_Time press etotal ke pe density lx ly lz vol pxx pyy pzz pxy pxz pyz
+restart         ${wstep} rst1.a.${myid} rst2.a.${myid}
+log             ${myid}.log.lammps
+dump            1 all custom $(1*v_wstep) ${myid}.dump id type x y z fx fy fz ix iy iz vx vy vz xu yu zu mass # every 1*${wstep}
+dump_modify     1 pbc yes # ensure atom postions in dump are within the simulation cell (requirement for free_volume.py)
+
+
+#---------NPT run---------
+# Determine write data intervals and time to call datafile time
+variable        runtime equal  round((v_time-v_stime)*1000/dt)
+variable        writeint equal round(v_inter*1000/dt)
+variable        datatime equal v_Time
+
+# Set up ensemble
+fix             1 all npt temp ${temp} ${temp} $(100*dt) aniso ${press} ${press} $(1000*dt) 
+
+# Run for runtime and every writeint
+run             ${runtime} every ${writeint} &
+		"write_data   ${myid}_time_${datatime}ps.data"
+ 
+write_data      ${myid}_time_${datatime}ps_end_of_every.data
+

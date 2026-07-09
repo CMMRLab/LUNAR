@@ -330,7 +330,7 @@ class LUNAR:
         import free_volume as fv
 
         # Run free_volume GUI
-        free_volume_GUI(fv.topofile, fv.max_voxel_size, fv.mass_map, fv.vdw_radius, fv.boundary, fv.parent_directory,
+        free_volume_GUI(fv.topofile, fv.dumpfile, fv.dump_settings, fv.max_voxel_size, fv.mass_map, fv.vdw_radius, fv.boundary, fv.parent_directory,
                         fv.compute_free_volume_distributions, fv.files2write, fv.run_mode, fv.probe_diameter, fv.vdw_method,
                         fv.CUDA_threads_per_block_atoms, fv.CUDA_threads_per_block_voxels, self.GUI_zoom)
         return

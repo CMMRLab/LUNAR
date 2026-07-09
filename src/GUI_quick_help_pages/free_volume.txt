@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 6/10/2026
+# Last edited 7/9/2026
 #
 ************
 * Overview *
@@ -75,6 +75,65 @@
       blocks_per_grid_voxels  = math.ceil( natoms  / CUDA_threads_per_block_voxels )
     The threads per block should be in doubling multiples of 8 (i.e. 8, 16, 32, 64, 128, 256, 512, and 1024), where some GPUs may not be able
     to go up to 1024.
+	
+******************
+* Dump splitting *
+******************
+
+  LUNAR/free_volume.py can analyze multiple timesteps from a LAMMPS dump file by using the dump splitting option. This option requires both a
+  LAMMPS data file and a LAMMPS dump file. The data file is used to provide the force-field information, atom types, masses, pair coefficients,
+  and topology information. The dump file is used to provide the changing atom coordinates and simulation cell dimensions for each timestep.
+
+  dumpfile
+    Button to load in a LAMMPS dump file to analyze with the dump splitting option. You may also directly type the filename in the entry to the
+    right of the button as well. The dump file must contain atom IDs, atom types, and atom coordinates (e.g. LAMMPS keywords of "id" "type" "x"
+	"y" "z"). Optional columns such as q, ix, iy, and iz will be used if they are present. You must also use the "dump_modify pbc yes" command
+    to ensure atoms are inside the box. Currently free_volume.py does not check for this and it may crash or wreck the analysis. Below is a
+    valid LAMMPS script section:
+      dump            1 all custom 10 traj.dump id type x y z fx fy fz ix iy iz vx vy vz xu yu zu mass; every 10 steps
+      dump_modify     1 pbc yes; Ensure atom postions in dump are within the simulation cell (requirement for free_volume.py)
+
+
+    When both topofile and dumpfile exist as files, free_volume.py will activate the dump splitting workflow. For each selected timestep in the
+    dump file, the code will read the dump timestep, combine the dump coordinates with the force-field information from the topofile, write a
+    temporary LAMMPS data file, and then run the free volume calculation on that temporary data file.
+
+    Orthogonal and triclinic dump boxes are supported. For triclinic boxes, the LAMMPS dump-file box bounds are converted back to the LAMMPS
+    data-file style box dimensions before the temporary data file is written.
+	
+  dump_settings
+    An entry to control which timesteps or dump sections are analyzed from the dumpfile. The dump_settings string is written as a semicolon
+    separated list of keyword=value pairs. The supported keywords are start, end, nevery, and style. The general format is:
+      dump_settings = "start=1; end=10; nevery=1; style=section"
+
+    The style keyword controls whether start and end are interpreted as LAMMPS timesteps or as dump section numbers. The supported style options
+    are:
+
+      style=step
+        The start and end values are interpreted as LAMMPS timestep values from the dump file.
+
+      style=section
+        The start and end values are interpreted as the section number in the dump file. Section numbering starts at 1 for the first timestep
+        found in the dump file.
+
+    The nevery keyword controls how frequently selected dump sections are analyzed after applying the start and end bounds. For example, if
+    style=section, start=1, end=10, and nevery=2, then sections 1, 3, 5, 7, and 9 will be analyzed.
+
+    Example settings:
+      dump_settings = "start=0; end=100000; nevery=10000; style=step"
+        Analyze dump timesteps from 0 to 100000, selecting every 10000th selected timestep.
+
+      dump_settings = "start=1; end=10; nevery=1; style=section"
+        Analyze the first 10 dump sections.
+
+      dump_settings = "start=1; end=10; nevery=2; style=section"
+        Analyze dump sections 1, 3, 5, 7, and 9.
+		
+      dump_settings = "style=step"
+        Analyze all timesteps in the dump file using the default start, end, and nevery values.
+
+    If start is not provided, the first available timestep or section is used. If end is not provided, the last available timestep or section is
+    used. If nevery is not provided, every selected timestep or section is analyzed.
 	
 ********************
 * Array processing *

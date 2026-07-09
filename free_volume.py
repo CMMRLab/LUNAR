@@ -61,6 +61,22 @@ GUI_zoom = 100
 # Update topofile as desired.                                                                                    #
 ##################################################################################################################
 topofile = 'EXAMPLES/free_volume/propanal_natoms_1000_typed_IFF.data'
+topofile = 'EXAMPLES/free_volume/wildcard_DETDA/detda_rep_1_free_volume_test_time_1ps.data'
+
+
+##################################################################################################################
+# LAMMPS dumpfile to analyze. A corresponding topofile must also be provided, which supplies the force-field,    #
+# masses, and topology information. Selected dump timesteps are converted into temporary LAMMPS data files and   #
+# analyzed individually. Both topofile and dumpfile must exist to enable dump splitting.                         #
+#                                                                                                                #
+# dump_settings syntax: "start=<value>; end=<value>; nevery=<N>; style=step|section"                             #
+#   style=step    -> start/end are LAMMPS timesteps.                                                             #
+#   style=section -> start/end are sequential dump sections (starting at 1).                                     #
+#   nevery        -> analyze every Nth selected timestep/section.                                                #
+##################################################################################################################
+dumpfile = ''
+dumpfile = 'EXAMPLES/free_volume/wildcard_DETDA/detda_rep_1_free_volume_test.dump'
+dump_settings = 'start=1; end=10; nevery=1; style=section'
 
 
 ##################################################################################################################
@@ -309,10 +325,10 @@ if __name__ == "__main__":
     if use_GUI or '-gui' in commandline_inputs:
         print('\n\n\nfree_volume is currently running in GUI mode, where all GUI inputs are intialized from free_volume.\n\n\n')
         from src.free_volume.GUI import free_volume_GUI
-        free_volume_GUI(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory,
+        free_volume_GUI(topofile, dumpfile, dump_settings, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory,
                         compute_free_volume_distributions, files2write, run_mode, probe_diameter, 
                         vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, GUI_zoom)
     else:
-        main.main(topofile, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory,
+        main.main(topofile, dumpfile, dump_settings, max_voxel_size, mass_map, vdw_radius, boundary, parent_directory,
                   compute_free_volume_distributions, files2write, run_mode, probe_diameter, 
                   vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, commandline_inputs)
