@@ -40,7 +40,7 @@ def main(topofile, dumpfile, dump_settings, max_voxel_size, mass_map, vdw_radius
     # if -opt or -man option is in commandline_inputs print options and stop code execution
     if '-opt' in commandline_inputs or  '-man' in commandline_inputs:
         # call man page and exit if '-opt' or '-man' is provided at the command line
-        command_line.print_man_page(topofile, max_voxel_size, boundary, parent_directory, compute_free_volume_distributions, run_mode, probe_diameter,
+        command_line.print_man_page(topofile, dumpfile, dump_settings, max_voxel_size, boundary, parent_directory, compute_free_volume_distributions, run_mode, probe_diameter,
                                     vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels)
         sys.exit()
     
@@ -49,11 +49,13 @@ def main(topofile, dumpfile, dump_settings, max_voxel_size, mass_map, vdw_radius
     #---------------------------------------------------------------------------------#
     if '-opt' not in commandline_inputs and commandline_inputs:    
         # call inputs for commandline over rides
-        over_rides = command_line.inputs(topofile, max_voxel_size, boundary, parent_directory, compute_free_volume_distributions, run_mode, probe_diameter,
+        over_rides = command_line.inputs(topofile, dumpfile, dump_settings, max_voxel_size, boundary, parent_directory, compute_free_volume_distributions, run_mode, probe_diameter,
                                          vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, commandline_inputs)
         
         # Set new inputs from over_rides class
         topofile = over_rides.topofile
+        dumpfile = dump_settings
+        dump_settings = dump_settings
         parent_directory = over_rides.parent_directory
         max_voxel_size = over_rides.max_voxel_size
         boundary = over_rides.boundary

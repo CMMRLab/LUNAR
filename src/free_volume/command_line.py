@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.0
-June 10, 2026
+Revision 1.1
+June 9, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -19,16 +19,17 @@ inputs.
 import sys
 
 
-def print_man_page(topofile, max_voxel_size, boundary, parent_directory, compute_free_volume_distributions, run_mode, probe_diameter,
+def print_man_page(topofile, dumpfile, dump_settings, max_voxel_size, boundary, parent_directory, compute_free_volume_distributions, run_mode, probe_diameter,
                    vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels):
 
     # print general command line options
     print('\n\nfree_volume.py has been run with -opt or -man option to show the optional command line overrides available. Command line option summary [-tag <tag-input>]:')
-    print('python3 free_volume.py [-topo <topo-filename>] [-dir <new directory name>] [-voxel <float>] [-pbc <p-p-p or f-f-f or p-f-f or ...>]')
-    print("                       [-probe-diameter <float or 'min-voxel'>] [-run-mode <stl or stl-dd or numpy or numba or numba-p or numba-dd")
-    print("                       or numba-ddp or CUDA or CUDA-dd>] [-cuda-atoms <int>] [-cuda-voxels <int>] <-opt>|<-man> [*NOTE: Not all")
-    print("                       options found in free_volume.py are currently supported via command line overrides.*]")
-    
+    print('python3 free_volume.py [-topo <topo-filename>] [-dump <dump-filename>] [-dump-settings <settings-string>]')
+    print('                       [-dir <new directory name>] [-voxel <float>] [-pbc <p-p-p or f-f-f or p-f-f or ...>]')
+    print("                       [-probe-diameter <float or 'min-voxel'>] [-run-mode <stl or stl-dd or numpy or numba")
+    print("                       or numba-dd or numba-ddp or CUDA-dd>] [-cuda-atoms <int>] [-cuda-voxels <int>]")
+    print("                       <-opt>|<-man> [*NOTE: Not all options found in free_volume.py are currently supported")
+    print("                       via command line overrides.*]")
     
     print('\n*NOTE: If the command line input options are not used the hard coded inputs in the inputs section of the atom_typing.py')
     print('file will be enforced. The command line inputs option gives more flexibility to the code depending on IDE usage or')
@@ -51,6 +52,24 @@ def print_man_page(topofile, max_voxel_size, boundary, parent_directory, compute
     print('                 flags set by LAMMPS)')
     print('    Example usage:')
     print('        python3 free_volume.py -topo EXAMPLE_TOPO-FILE.data')
+    
+    # print -dump option
+    print(f'\n -dump or -df <dump-filename>   free_volume variable: dumpfile    hard coded: {dumpfile}')
+    print('    Command line option to specify a LAMMPS dump file for dump splitting analysis. When both')
+    print('    topofile and dumpfile exist, each selected dump timestep is converted into a temporary')
+    print('    LAMMPS data file using the topology and force-field information from the topofile and')
+    print('    analyzed individually. Example usage:')
+    print('        python3 free_volume.py -dump EXAMPLE_DUMP-FILE.dump')
+    
+    # print -dump-settings option
+    print(f'\n -dump-settings or -ds <settings-string>   free_volume variable: dump_settings    hard coded: {dump_settings}')
+    print('    Command line option to select which dump timesteps or sections to analyze. The input is')
+    print('    a semicolon-separated string with the format:')
+    print('        "start=<value>; end=<value>; nevery=<int>; style=step|section"')
+    print('    where style=step interprets start/end as LAMMPS timesteps and style=section interprets')
+    print('    them as sequential dump sections beginning at 1. The nevery option analyzes every Nth')
+    print('    selected timestep or section after the start/end bounds are applied. Example usage:')
+    print('        python3 free_volume.py -dump-settings "start=0; end=100000; nevery=1000; style=step"')
     
     # # print -dir option
     print(f'\n -dir or -d <new directory name>   free_volume variable: parent_directory    hard coded: {parent_directory}')
@@ -134,12 +153,14 @@ def print_man_page(topofile, max_voxel_size, boundary, parent_directory, compute
 
 # Class to update inputs
 class inputs:
-    def __init__(self, topofile, max_voxel_size, boundary, parent_directory, compute_free_volume_distributions, run_mode, probe_diameter,
+    def __init__(self, topofile, dumpfile, dump_settings, max_voxel_size, boundary, parent_directory, compute_free_volume_distributions, run_mode, probe_diameter,
                  vdw_method, CUDA_threads_per_block_atoms, CUDA_threads_per_block_voxels, commandline_inputs,):
         
         # Give access to inputs (update later on if command line over ride is given)
         self.commandline_inputs = commandline_inputs
         self.topofile = topofile
+        self.dumpfile = dump_settings
+        self.dump_settings = dump_settings
         self.parent_directory = parent_directory
         self.boundary = boundary
         self.max_voxel_size = max_voxel_size
@@ -165,16 +186,18 @@ class inputs:
         
         # Check that tag is supported and log if tag from the command line
         # set supported tags
-        supported_tags = ['-topo', '-dir', '-pbc', '-voxel', '-free-vol-dist', '-run-mode', '-probe-diameter', '-vdw-method', '-cuda-atoms', '-cuda-voxels']
+        supported_tags = ['-topo', '-dir', '-pbc', '-voxel', '-free-vol-dist', '-run-mode', '-probe-diameter',
+                          '-vdw-method', '-cuda-atoms', '-cuda-voxels', '-dump', '-dump-settings']
         
         # set shortcut_tags mapping
         shortcut_tags = {'-t':'-topo', '-d':'-dir', '-p':'-pbc', '-v':'-voxel', '-fve':'-free-vol-dist', '-run':'-run-mode', '-pd':'-probe-diameter',
-                         '-vdw':'-vdw-method', '-ca':'-cuda-atoms', '-cv': '-cuda-voxels'}
+                         '-vdw':'-vdw-method', '-ca':'-cuda-atoms', '-cv': '-cuda-voxels', '-df':'-dump', '-ds':'-dump-settings'}
         
         # set default variables
-        default_variables ={'-topo': self.topofile, '-dir': self.parent_directory, '-pbc': self.boundary, '-voxel': self.max_voxel_size,
-                            '-free-vol-dist':self.compute_free_volume_distributions, '-run-mode': self.run_mode, '-probe-diameter':self.probe_diameter,
-                            '-vdw-method':self.vdw_method, '-cuda-atoms':self.CUDA_threads_per_block_atoms, '-cuda-voxels': self.CUDA_threads_per_block_voxels}
+        default_variables ={'-topo': self.topofile, '-dump': self.dumpfile, '-dump-settings': self.dump_settings, '-dir': self.parent_directory,
+                            '-pbc': self.boundary, '-voxel': self.max_voxel_size, '-free-vol-dist':self.compute_free_volume_distributions,
+                            '-run-mode': self.run_mode, '-probe-diameter':self.probe_diameter, '-vdw-method':self.vdw_method,
+                            '-cuda-atoms':self.CUDA_threads_per_block_atoms, '-cuda-voxels': self.CUDA_threads_per_block_voxels}
         
         # set tag/tag-input pair as empty string and update
         tags = {i:'' for i in supported_tags}
