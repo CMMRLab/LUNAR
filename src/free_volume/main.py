@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.14
-July 9, 2026
+Revision 1.15
+July 14, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -84,20 +84,37 @@ def main(topofile, dumpfile, dump_settings, max_voxel_size, mass_map, vdw_radius
         step_lst = sorted( dump.steps.keys() )
         sections = [i+1 for i in range(len(step_lst))]
         
-        # User settings from dump_settings. Example string is:
-        #   dump_settings = 'start=1; end=10; nevery=1; style=step'
-        #   dump_settings = 'start=1; end=10; nevery=1; style=section'
+        # User settings from dump_settings. The start and end values may be
+        # numeric bounds or the strings "start" and "end", which select the
+        # first and last available timestep or section, respectively.
+        #
+        # Examples:
+        #   dump_settings = 'start=start; end=end; nevery=1; style=step'
+        #   dump_settings = 'start=0; end=100000; nevery=10; style=step'
+        #   dump_settings = 'start=start; end=end; nevery=1; style=section'
+        #   dump_settings = 'start=1; end=10; nevery=2; style=section'
         dump_dict = dump_splitting.get_misc_setting(dump_settings)
-        style = dump_dict.get('style', 'step')
+        
+        style  = dump_dict.get('style',  'step')
         nevery = dump_dict.get('nevery', 1)
+        start  = dump_dict.get('start',  'start')
+        end    = dump_dict.get('end',    'end')
+       
+        # Resolve generic start/end strings using either the available
+        # timestep values or the sequential dump section numbers.
         if style == 'step':
-            start = dump_dict.get('start', min(step_lst))
-            end   = dump_dict.get('end',   max(step_lst))
+            if start == 'start': 
+                start = min(step_lst)
+            if end == 'end':
+                end = max(step_lst)
         elif style == 'section':
-            start = dump_dict.get('start', min(sections))
-            end   = dump_dict.get('end',   max(sections))
+            if start == 'start':
+                start = min(sections)
+            if end == 'end': 
+                end = max(sections)
         else:
             log.error('ERROR - dump splitting: style="{}" is not a dump splitting supported style. Use "step" or "section"'.format(style))
+        
         if not isinstance(nevery, int):
             log.error('ERROR - dump splitting: nevery="{}" is not an int.'.format(nevery))
         if not isinstance(start, (int,float)):
@@ -166,6 +183,7 @@ def main(topofile, dumpfile, dump_settings, max_voxel_size, mass_map, vdw_radius
                 output_dict['atom_volume'] = float(grid.atom_volume)
                 output_dict['free_volume'] = float(grid.free_volume)
                 output_dict['percent_free_volume'] = float(grid.pfree_volume)
+                output_dict['elapsed_time_seconds'] = time.time() - loop_time
                 array_data[datafile] = output_dict
                 processed_files.append( datafile )
                 path = os.path.normpath(m.path)
@@ -266,6 +284,7 @@ def main(topofile, dumpfile, dump_settings, max_voxel_size, mass_map, vdw_radius
                     output_dict['atom_volume'] = float(grid.atom_volume)
                     output_dict['free_volume'] = float(grid.free_volume)
                     output_dict['percent_free_volume'] = float(grid.pfree_volume)
+                    output_dict['elapsed_time_seconds'] = time.time() - loop_time
                     array_data[file] = output_dict
                     processed_files.append( file )
                     path = os.path.normpath(m.path)
@@ -312,7 +331,7 @@ def main(topofile, dumpfile, dump_settings, max_voxel_size, mass_map, vdw_radius
         #log.configure(level='debug')
         
         # set version and print starting information to screen
-        version = 'v1.14 / 9 July 2026'
+        version = 'v1.14 / 14 July 2026'
         log.out(f'\n\nRunning free_volume: {version}')
         log.out(f'Using Python version: {sys.version}')
         log.out(f'Using Python executable: {sys.executable}')

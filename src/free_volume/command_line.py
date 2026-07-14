@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-June 9, 2026
+Revision 1.2
+June 14, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -63,13 +63,17 @@ def print_man_page(topofile, dumpfile, dump_settings, max_voxel_size, boundary, 
     
     # print -dump-settings option
     print(f'\n -dump-settings or -ds <settings-string>   free_volume variable: dump_settings    hard coded: {dump_settings}')
-    print('    Command line option to select which dump timesteps or sections to analyze. The input is')
-    print('    a semicolon-separated string with the format:')
-    print('        "start=<value>; end=<value>; nevery=<int>; style=step|section"')
-    print('    where style=step interprets start/end as LAMMPS timesteps and style=section interprets')
-    print('    them as sequential dump sections beginning at 1. The nevery option analyzes every Nth')
-    print('    selected timestep or section after the start/end bounds are applied. Example usage:')
-    print('        python3 free_volume.py -dump-settings "start=0; end=100000; nevery=1000; style=step"')
+    print('    Command line option to select which dump timesteps or sections to analyze. The input is a')
+    print('    semicolon-separated string with the format:')
+    print('        "start=<value|start>; end=<value|end>; nevery=<int>; style=step|section"')
+    print('    The style option determines how start and end are interpreted:')
+    print('        style=step     start/end are LAMMPS timestep values.')
+    print('        style=section  start/end are sequential dump sections beginning at 1.')
+    print('    The strings start=start and end=end select the first and last available timestep or section,')
+    print('    respectively. The nevery option analyzes every Nth selected timestep or section after the')
+    print('    start/end bounds are applied. Example usages:')
+    print('        python3 free_volume.py -dump-settings "start=start; end=end; nevery=1; style=section"')
+    print('        python3 free_volume.py -dump-settings "start=0; end=100000; nevery=10; style=step"')
     
     # # print -dir option
     print(f'\n -dir or -d <new directory name>   free_volume variable: parent_directory    hard coded: {parent_directory}')

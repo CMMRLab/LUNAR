@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 7/9/2026
+# Last edited 7/14/2026
 #
 ************
 * Overview *
@@ -87,7 +87,7 @@
   dumpfile
     Button to load in a LAMMPS dump file to analyze with the dump splitting option. You may also directly type the filename in the entry to the
     right of the button as well. The dump file must contain atom IDs, atom types, and atom coordinates (e.g. LAMMPS keywords of "id" "type" "x"
-	"y" "z"). Optional columns such as q, ix, iy, and iz will be used if they are present. You must also use the "dump_modify pbc yes" command
+    "y" "z"). Optional columns such as q, ix, iy, and iz will be used if they are present. You must also use the "dump_modify pbc yes" command
     to ensure atoms are inside the box. Currently free_volume.py does not check for this and it may crash or wreck the analysis. Below is a
     valid LAMMPS script section:
       dump            1 all custom 10 traj.dump id type x y z fx fy fz ix iy iz vx vy vz xu yu zu mass; every 10 steps
@@ -102,38 +102,43 @@
     data-file style box dimensions before the temporary data file is written.
 	
   dump_settings
-    An entry to control which timesteps or dump sections are analyzed from the dumpfile. The dump_settings string is written as a semicolon
-    separated list of keyword=value pairs. The supported keywords are start, end, nevery, and style. The general format is:
-      dump_settings = "start=1; end=10; nevery=1; style=section"
+    An entry to control which timesteps or dump sections are analyzed from the dumpfile. The setting is written as a semicolon-separated list of
+    keyword=value pairs. The supported keywords are start, end, nevery, and style. The general format is:
 
-    The style keyword controls whether start and end are interpreted as LAMMPS timesteps or as dump section numbers. The supported style options
-    are:
+      dump_settings = "start=<value|start>; end=<value|end>; nevery=<int>; style=step|section"
+
+    The style keyword determines how the start and end bounds are interpreted:
 
       style=step
-        The start and end values are interpreted as LAMMPS timestep values from the dump file.
+        The start and end values are interpreted as LAMMPS timestep values.
 
       style=section
-        The start and end values are interpreted as the section number in the dump file. Section numbering starts at 1 for the first timestep
-        found in the dump file.
+        The start and end values are interpreted as sequential dump section numbers. Section numbering begins at 1.
 
-    The nevery keyword controls how frequently selected dump sections are analyzed after applying the start and end bounds. For example, if
-    style=section, start=1, end=10, and nevery=2, then sections 1, 3, 5, 7, and 9 will be analyzed.
+    Numeric values may be supplied for start and end to select a specific range. The following generic strings are also supported:
 
-    Example settings:
-      dump_settings = "start=0; end=100000; nevery=10000; style=step"
-        Analyze dump timesteps from 0 to 100000, selecting every 10000th selected timestep.
+      start=start
+        Begin with the first available timestep when style=step, or the first dump section when style=section.
 
-      dump_settings = "start=1; end=10; nevery=1; style=section"
-        Analyze the first 10 dump sections.
+      end=end
+        Finish with the last available timestep when style=step, or the last dump section when style=section.
+
+    The nevery keyword analyzes every Nth entry after the start and end bounds have been applied. Therefore, nevery refers to the order of the
+    selected dump entries and does not necessarily represent a fixed difference between physical LAMMPS timestep values. Example settings:
+
+      dump_settings = "start=start; end=end; nevery=1; style=step"
+        Analyze every timestep in the dump file.
+
+      dump_settings = "start=0; end=100000; nevery=10; style=step"
+        Select timesteps between 0 and 100000 and analyze every 10th selected dump entry.
+
+      dump_settings = "start=start; end=end; nevery=1; style=section"
+        Analyze every dump section from the first through the last.
 
       dump_settings = "start=1; end=10; nevery=2; style=section"
-        Analyze dump sections 1, 3, 5, 7, and 9.
-		
-      dump_settings = "style=step"
-        Analyze all timesteps in the dump file using the default start, end, and nevery values.
+        Analyze sections 1, 3, 5, 7, and 9.
 
-    If start is not provided, the first available timestep or section is used. If end is not provided, the last available timestep or section is
-    used. If nevery is not provided, every selected timestep or section is analyzed.
+    If a keyword is omitted, the defaults are start=start, end=end, nevery=1, and style=step.
 	
 ********************
 * Array processing *

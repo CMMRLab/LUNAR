@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.14
-July 9, 2026
+Revision 1.15
+July 14, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -69,14 +69,21 @@ topofile = 'EXAMPLES/free_volume/wildcard_DETDA/detda_rep_1_free_volume_test_tim
 # masses, and topology information. Selected dump timesteps are converted into temporary LAMMPS data files and   #
 # analyzed individually. Both topofile and dumpfile must exist to enable dump splitting.                         #
 #                                                                                                                #
-# dump_settings syntax: "start=<value>; end=<value>; nevery=<N>; style=step|section"                             #
-#   style=step    -> start/end are LAMMPS timesteps.                                                             #
-#   style=section -> start/end are sequential dump sections (starting at 1).                                     #
-#   nevery        -> analyze every Nth selected timestep/section.                                                #
+# dump_settings syntax: "start=<value|start>; end=<value|end>; nevery=<N>; style=step|section"                   #
+#   style=step    -> start/end are LAMMPS timestep values.                                                       #
+#   style=section -> start/end are sequential dump sections, starting at 1.                                      #
+#   start=start   -> begin with the first available timestep or section.                                         #
+#   end=end       -> finish with the last available timestep or section.                                         #
+#   nevery        -> analyze every Nth selected timestep or section after applying the bounds.                   #
+#                                                                                                                #
+# Examples:                                                                                                      #
+#  dump_settings = 'start=start; end=end;  nevery=1; style=section'                                              #
+#  dump_settings = 'start=start; end=1000; nevery=1; style=section'                                              #
+#  dump_settings = 'start=0;     end=1000; nevery=1; style=step'                                                 #
 ##################################################################################################################
 dumpfile = ''
 dumpfile = 'EXAMPLES/free_volume/wildcard_DETDA/detda_rep_1_free_volume_test.dump'
-dump_settings = 'start=1; end=10; nevery=1; style=section'
+dump_settings = 'start=start; end=end; nevery=1; style=section'
 
 
 ##################################################################################################################
