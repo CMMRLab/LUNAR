@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.7
-July 2, 2026
+Revision 1.8
+August 10, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -76,6 +76,7 @@ def nta(mm, basename, ff_name):
     
     # Set lst of heavy elements (NOTE: MUST BE UPDATED IF MORE IFF ATOM TYPES GET CODED IN)
     heavies = ['C', 'O', 'N', 'S', 'F', 'Si', 'Xe', 'Ne', 'Kr', 'Cl', 'Br', 'Ar', 'P']
+    typically_monovalent = ['H', 'F', 'Cl', 'Br', 'I']
     
     # PCFF-IFF flags to help set correct atom-types (True to use False not to use)
     use_graphene_types = False # Option to use cg1/cge atom-types else cp/hc will be used (charge will also be reset)
@@ -153,18 +154,6 @@ def nta(mm, basename, ff_name):
         # Set intial .nta and .nta_comments and update later on if found
         atom.nta_type = '{}-type-yourself'.format(element)
         atom.nta_info = 'FAILED TO BE TYPED:  element: {}, ring: {}, nb: {}'.format(element, ring, nb)
-        
-
-        # Below is to help type c=1 (nonaromatic, next to end doubly bonded carbon). If there is
-        # a grouped 2nd neigh that has two terminating atoms, then c=1 is correct.
-        # First neighbors of this atom
-        neighs1 = atom.neighbor_ids[1] # First neighbors of this atom
-        neighs11 = [mm.atoms[j].neighbor_ids[1] for j in neighs1] # First neighbors of the first neighbors (grouped 2nd-neighs)
-        neighs11_nb = [] # [count(terminating_atoms_on_neigh_atom1), count(terminating_atoms_on_neigh_atom2)]
-        for n1 in neighs11:
-            tmp = [mm.atoms[j].nb for j in n1] # [nb_atom1, nb_atom2, ...]
-            if len(tmp) == 3: # this neigh needs to have 3-bonds to be doubly bonded
-                neighs11_nb.append( tmp.count(1) )
                 
         # Debugging
         # print()
@@ -239,6 +228,17 @@ def nta(mm, basename, ff_name):
         # Sp2 Carbon atom typing (ordering of nested if/elif/else statements set precedence) #
         ######################################################################################
         elif element == 'C' and nb == 3:
+            # Below is to help type c=1 (nonaromatic, next to end doubly bonded carbon). If there is
+            # a grouped 2nd neigh that has two terminating atoms, then c=1 is correct.
+            # First neighbors of this atom
+            neighs1 = [j for j in atom.neighbor_ids[1] if mm.atoms[j].element == 'C'] # First neighbors of this atom
+            neighs11 = [mm.atoms[j].neighbor_ids[1] for j in neighs1] # First neighbors of the first neighbors (grouped 2nd-neighs)
+            neighs11_nb = [] # [count(terminating_atoms_on_neigh_atom1), count(terminating_atoms_on_neigh_atom2)]
+            for n1 in neighs11:
+                tmp = [mm.atoms[j].nb for j in n1 if mm.atoms[j].element in typically_monovalent] # [nb_atom1, nb_atom2, ...]
+                if len(n1) == 3 and len(tmp) == 2: # this neigh needs to have 3-bonds to be doubly bonded and two need to be terminating atoms
+                    neighs11_nb.append( tmp.count(1) )
+            
             #----------------------------------------------------------------------------#
             # User defined intial attempts (For ReaxFF with open valence polymerization) #
             #----------------------------------------------------------------------------#
@@ -263,9 +263,9 @@ def nta(mm, basename, ff_name):
             elif ring == 0 and elements1.count('N') == 3 and formula == 'C6-H14-N4-O2':
                 atom.nta_type = 'cr'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
-            elif ring == 0 and elements1.count('N') == 3:
-                atom.nta_type = 'cr'; tally['found'] += 1;
-                atom.nta_info = 'Correctly found'
+            # elif ring == 0 and elements1.count('N') == 3:
+            #     atom.nta_type = 'cr'; tally['found'] += 1;
+            #     atom.nta_info = 'Correctly found'
             
             # c-        12.01115      C          3        C in charged carboxylate  
             # (N atom would be at index 1 and 2 in rings1 so check that rings[1 and 2] are zero)
@@ -351,7 +351,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # c=       12.01115      C          3        nonaromatic end doubly bonded carbon
-            elif ring == 0 and nbs1.count(1) == 2:
+            elif ring == 0 and nbs1.count(1) == 2 and any(element in elements1 for element in typically_monovalent):
                 atom.nta_type = 'c='; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                                 
@@ -384,6 +384,7 @@ def nta(mm, basename, ff_name):
         ######################################################################################
         elif element == 'C' and nb == 4:
             # Count the number of hydroxls to help distingush from co to c1, c2, c3 or c
+            neighs1 = atom.neighbor_ids[1] # First neighbors of this atom
             hydroxls = []
             for j in neighs1:
                 neigh_atom = mm.atoms[j]
@@ -423,7 +424,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # c_a      12.01115      C          4        general amino acid alpha carbon (sp3)
-            elif ring == 0 and elements1.count('C') == 2 and elements1.count('H') == 1 and elements1.count('N') == 1:              
+            elif ring == 0 and elements1.count('C') == 2 and elements1.count('H') == 1 and elements1.count('N') == 1 and elements2.count('O') >= 2:             
                 atom.nta_type = 'c_a'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -594,7 +595,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # # ho2    1.00800      H          1        hydroxyl hydrogen
-            # elif elements1[0] == 'O' and 'C' in elements2 or 'S' in elements2:
+            # elif elements1[0] == 'O' and any(element in elements2 for element in ['C', 'S', 'N', 'B', 'Si', 'P', 'Cl', 'M', 'O']):
             #     atom.nta_type = 'ho2'; tally['found'] += 1;
             #     atom.nta_info = 'Correctly found'
                 
@@ -880,6 +881,17 @@ def nta(mm, basename, ff_name):
         # 2-bonded Nitrogen atom typing (ordering of nested if/elif/else statements set precedence) #
         #############################################################################################
         elif element == 'N' and nb == 2:
+            # Below is to help type n=1 (nonaromatic, next to end doubly bonded carbon). If there is
+            # a grouped 2nd neigh that has two terminating atoms, then n=2 is correct.
+            # First neighbors of this atom
+            neighs1 = [j for j in atom.neighbor_ids[1] if mm.atoms[j].element == 'C'] # First neighbors of this atom
+            neighs11 = [mm.atoms[j].neighbor_ids[1] for j in neighs1] # First neighbors of the first neighbors (grouped 2nd-neighs)
+            neighs11_nb = [] # [count(terminating_atoms_on_neigh_atom1), count(terminating_atoms_on_neigh_atom2)]
+            for n1 in neighs11:
+                tmp = [mm.atoms[j].nb for j in n1 if mm.atoms[j].element in typically_monovalent] # [nb_atom1, nb_atom2, ...]
+                if len(n1) == 3 and len(tmp) == 2: # this neigh needs to have 3-bonds to be doubly bonded and two need to be terminating atoms
+                    neighs11_nb.append( tmp.count(1) )
+            
             #----------------------------------------------------------------------------#
             # User defined intial attempts (For ReaxFF with open valence polymerization) #
             #----------------------------------------------------------------------------#
@@ -899,7 +911,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # n=       14.00670      N          2        non aromatic end doubly bonded nitrogen
-            elif ring == 0 and nbs1.count(1) == 2:
+            elif ring == 0 and nbs1.count(1) == 1 and any(element in elements1 for element in typically_monovalent):
                 atom.nta_type = 'n='; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                                 
@@ -930,6 +942,21 @@ def nta(mm, basename, ff_name):
         # 3-bonded Nitrogen atom typing (ordering of nested if/elif/else statements set precedence) #
         #############################################################################################
         elif element == 'N' and nb == 3:
+            # Below is to help type nr vs na in certain cases. For nr, the central carbon should have 
+            # 3-nitrogen neighbors. This is more of a "similarity test" rather then a strict guanidinium
+            # molecular formula based typing.
+            use_nr = False
+            if ring == 0 and elements1.count('C') == 1 and elements2.count('N') == 2:
+                neighs1_cr = [j for j in atom.neighbor_ids[1] if mm.atoms[j].element == 'C'] # First neighbors of this atom
+                if len(neighs1_cr) == 1:
+                    central_carbonID = neighs1_cr[0]
+                    central_carbon_atom = mm.atoms[central_carbonID]
+                    central_carbon_neighs = central_carbon_atom.neighbor_ids[1]
+                    if len(central_carbon_neighs) == 3:
+                        central_carbon_neigh_elements = [mm.atoms[j].element for j in central_carbon_neighs]
+                        if central_carbon_neigh_elements.count('N') == 3:
+                            use_nr = True
+            
             #----------------------------------------------------------------------------#
             # User defined intial attempts (For ReaxFF with open valence polymerization) #
             #----------------------------------------------------------------------------#
@@ -945,10 +972,7 @@ def nta(mm, basename, ff_name):
                 
             # n2        14.00670      N          3        sp2 nitrogen (NH2) in guanidinium group (HN=C(NH2)2)
             # nr        14.00670      N          3        sp2 nitrogen (NH2) in guanidinium group (HN=C(NH2)2)
-            elif ring == 0 and formula == 'C1-H5-N3':
-                atom.nta_type = 'nr'; tally['found'] += 1;
-                atom.nta_info = 'Correctly found'
-            elif ring == 0 and elements1.count('C') == 1 and elements2.count('N') == 2:
+            elif ring == 0 and formula == 'C1-H5-N3':# or use_nr:
                 atom.nta_type = 'nr'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -1008,12 +1032,12 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # n4n      14.00670      N          3        sp2 nitrogen in 4- membered ring (ASSUME n means w/ N like H for c4h)
-            elif ring == 4 and 'N' in elements1 or 'N' in elements2:
+            elif ring == 4 and 'N' in elements1 or ring == 4 and 'N' in elements2:
                 atom.nta_type = 'n4n'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # n4m     14.00670      N          3        sp3 nitrogen in 4- membered ring (ASSUME m means member like m for c4m)
-            elif ring == 4 and 'N' in elements1 or 'N' in elements2:
+            elif ring == 4 and 'N' in elements1 or ring == 4 and 'N' in elements2:
                 atom.nta_type = 'n4m'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 

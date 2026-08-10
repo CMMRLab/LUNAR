@@ -15,10 +15,12 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 14July2026)
+LUNAR (version 10August2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+10August2026       JDK         - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing posted August 3rd and 5th.
+
 14July2026         JDK         - free_volume.py: Added easier keywords/value pairs for dump file parsing settings
                                                  that are more general to transfer more easily across any dump file.
                                                  The keyword/value pairs are start=start and end=end, and are the 
