@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.8
-August 10, 2026
+Revision 1.9
+August 19, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -463,6 +463,16 @@ def nta(mm, basename, ff_name):
         # Hydrogen atom typing (ordering of nested if/elif/else statements set precedence) #
         ####################################################################################
         elif element == 'H' and nb == 1:
+            # Helper booleans to determine if H is bonded to an amine
+            h_bonded_to_amine = False
+            if elements1[0] == 'N':
+                for nitrogen_id in atom.neighbor_ids[1]:
+                    if tf.is_aromatic_amine_nitrogen(mm, nitrogen_id):
+                        h_bonded_to_amine = True
+                    if tf.is_sp3_amine_nitrogen(mm, nitrogen_id):
+                        h_bonded_to_amine = True
+            
+            
             #----------------------------------------------------------------------------#
             # User defined intial attempts (For ReaxFF with open valence polymerization) #
             #----------------------------------------------------------------------------#
@@ -504,7 +514,7 @@ def nta(mm, basename, ff_name):
                 
             # hn2    1.00800      H          1        amino hydrogen
             # An amino group is a nitrogen atom bonded to two hydrogen atoms
-            elif elements1[0] == 'N' and len(elements2) == 2 and elements2[0] == 'C' and elements2[1] == 'H':
+            elif h_bonded_to_amine: #and len(elements2) == 2 and elements2[0] == 'C' and elements2[1] == 'H':
                 atom.nta_type = 'hn2'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
 
@@ -805,17 +815,17 @@ def nta(mm, basename, ff_name):
             # Below is to help type nr vs na in certain cases. For nr, the central carbon should have 
             # 3-nitrogen neighbors. This is more of a "similarity test" rather then a strict guanidinium
             # molecular formula based typing.
-            use_nr = False
-            if ring == 0 and elements1.count('C') == 1 and elements2.count('N') == 2:
-                neighs1_cr = [j for j in atom.neighbor_ids[1] if mm.atoms[j].element == 'C'] # First neighbors of this atom
-                if len(neighs1_cr) == 1:
-                    central_carbonID = neighs1_cr[0]
-                    central_carbon_atom = mm.atoms[central_carbonID]
-                    central_carbon_neighs = central_carbon_atom.neighbor_ids[1]
-                    if len(central_carbon_neighs) == 3:
-                        central_carbon_neigh_elements = [mm.atoms[j].element for j in central_carbon_neighs]
-                        if central_carbon_neigh_elements.count('N') == 3:
-                            use_nr = True
+            # use_nr = False
+            # if ring == 0 and elements1.count('C') == 1 and elements2.count('N') == 2:
+            #     neighs1_cr = [j for j in atom.neighbor_ids[1] if mm.atoms[j].element == 'C'] # First neighbors of this atom
+            #     if len(neighs1_cr) == 1:
+            #         central_carbonID = neighs1_cr[0]
+            #         central_carbon_atom = mm.atoms[central_carbonID]
+            #         central_carbon_neighs = central_carbon_atom.neighbor_ids[1]
+            #         if len(central_carbon_neighs) == 3:
+            #             central_carbon_neigh_elements = [mm.atoms[j].element for j in central_carbon_neighs]
+            #             if central_carbon_neigh_elements.count('N') == 3:
+            #                 use_nr = True
             
             #----------------------------------------------------------------------------#
             # User defined intial attempts (For ReaxFF with open valence polymerization) #
@@ -841,23 +851,6 @@ def nta(mm, basename, ff_name):
                 atom.nta_type = 'n_2'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
-            # nn       14.00670       N          3        sp2 nitrogen in aromatic amines
-            # nb       14.00670       N          3        sp2 nitrogen in aromatic amines
-            elif len([i for i in rings1 if i > 0]) > 0 and 3 in nbs1 and ring == 0:
-                atom.nta_type = 'nn'; tally['found'] += 1;
-                atom.nta_info = 'Correctly found'
-                
-            # na        14.00670      N          3        sp3 nitrogen in amines
-            elif ring == 0 and elements1.count('H') == 2 and elements1.count('C') == 1:
-                atom.nta_type = 'na'; tally['found'] += 1;
-                atom.nta_info = 'Correctly found'
-            elif ring == 0 and elements1.count('H') == 1 and elements1.count('C') == 2:
-                atom.nta_type = 'na'; tally['found'] += 1;
-                atom.nta_info = 'Correctly found'
-            elif ring == 0 and elements1.count('C') == 3:
-                atom.nta_type = 'na'; tally['found'] += 1;
-                atom.nta_info = 'Correctly found'
-                
             # nho     14.00670      N           3        sp2 nitrogen in 6 membered ring next to a carbonyl
             elif ring == 6 and tf.count_neigh(atom.neighbor_info[2], element='O', ring=0, nb=1) >= 1 and 'C' in elements1:
                 atom.nta_type = 'nho'; tally['found'] += 1;
@@ -874,11 +867,6 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
             elif ring >= 5 and tf.count_heavies(elements2, heavies) > 0 and 'H' not in elements1:
                 atom.nta_type = 'npc'; tally['found'] += 1;
-                atom.nta_info = 'Correctly found'
-                
-            # nh       14.00670      N           3        sp2 nitrogen in 5 or 6 membered ring
-            elif ring >= 5:  
-                atom.nta_type = 'nh'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # n3n      14.00670      N          3        sp2 nitrogen in 3- membered ring (ASSUME n means w/ N like H for c3h)
@@ -899,6 +887,30 @@ def nta(mm, basename, ff_name):
             # n4m     14.00670      N          3        sp3 nitrogen in 4- membered ring (ASSUME m means member like m for c4m)
             elif ring == 4 and 'N' in elements1 or ring == 4 and 'N' in elements2:
                 atom.nta_type = 'n4m'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+                
+            # nn       14.00670       N          3        sp2 nitrogen in aromatic amines
+            # nb       14.00670       N          3        sp2 nitrogen in aromatic amines
+            elif ring == 0 and tf.is_aromatic_amine_nitrogen(mm, i):
+                atom.nta_type = 'nn'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+                
+            # na        14.00670      N          3        sp3 nitrogen in amines
+            elif tf.is_sp3_amine_nitrogen(mm, i):
+                atom.nta_type = 'na'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+            # Specialized N,N-dialkylhydrazone-like nitrogen:
+            # - three-connected N
+            # - two saturated carbon neighbors
+            # - one nitrogen neighbor
+            # - that N neighbor participates in N=C
+            elif tf.is_sp3_dialkyl_hydrazone_nitrogen(mm, i):
+                atom.nta_type = 'na'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+                
+            # nh       14.00670      N           3        sp2 nitrogen in 5 or 6 membered ring
+            elif ring in (5, 6):  
+                atom.nta_type = 'nh'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # n          14.00670      N          3        generic sp2 nitrogen (in amids))

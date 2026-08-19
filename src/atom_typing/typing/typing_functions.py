@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-June 2, 2026
+Revision 1.2
+August 19, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -13,11 +13,182 @@ to help in finding atom-types for different
 force feilds
 """
 
+def is_sp3_dialkyl_hydrazone_nitrogen(mm, nitrogen_id):
+    """
+    Recognize the pyramidal/sp3-like dialkylamino nitrogen in a
+    dialkylhydrazone environment:
 
+        R2N-N=C(R)R
+
+    Expected first-neighbor environment of the candidate nitrogen:
+
+        two saturated/sp3 carbon atoms
+        one imine nitrogen atom
+
+    This is a PCFF atom-type analogy for assigning 'na'; chemically,
+    the atom belongs to a hydrazone/hydrazine functional group rather
+    than an ordinary tertiary amine.
+
+    Call only after charged nitrogen and other specialized nitrogen
+    environments have been excluded.
+
+    Explicit hydrogen atoms are required for the carbon coordination
+    check.
+    """
+    atom = mm.atoms[nitrogen_id]
+    neighbor_ids = atom.neighbor_ids[1]
+
+    # Candidate must be a neutral-looking, three-coordinate nitrogen.
+    if atom.element != 'N' or int(atom.nb) != 3:
+        return False
+
+    # Exclude nitrogen that is itself part of an aromatic ring.
+    if check_aromaticity(nitrogen_id, mm.atoms, check_rings=True):
+        return False
+
+    carbon_neighbor_ids = [
+        neighbor_id
+        for neighbor_id in neighbor_ids
+        if mm.atoms[neighbor_id].element == 'C'
+    ]
+
+    nitrogen_neighbor_ids = [
+        neighbor_id
+        for neighbor_id in neighbor_ids
+        if mm.atoms[neighbor_id].element == 'N'
+    ]
+
+    # Dialkylhydrazone pattern: C-N(-C)-N
+    if len(carbon_neighbor_ids) != 2:
+        return False
+
+    if len(nitrogen_neighbor_ids) != 1:
+        return False
+
+    # Both alkyl carbons directly bonded to the candidate N
+    # must be saturated/sp3.
+    for carbon_id in carbon_neighbor_ids:
+        carbon = mm.atoms[carbon_id]
+        if int(carbon.nb) != 4:
+            return False
+
+    # Examine the N directly bonded to the candidate nitrogen.
+    imine_nitrogen_id = nitrogen_neighbor_ids[0]
+    imine_nitrogen = mm.atoms[imine_nitrogen_id]
+
+    # In R2N-N=C, the imine N normally has two neighbors:
+    # the candidate N and the imine carbon.
+    if int(imine_nitrogen.nb) != 2:
+        return False
+
+    if check_aromaticity(imine_nitrogen_id, mm.atoms, check_rings=True):
+        return False
+
+    imine_nitrogen_other_neighbors = [
+        neighbor_id
+        for neighbor_id in imine_nitrogen.neighbor_ids[1]
+        if neighbor_id != nitrogen_id
+    ]
+
+    if len(imine_nitrogen_other_neighbors) != 1:
+        return False
+
+    # The other neighbor must be a three-coordinate, nonaromatic
+    # carbon consistent with an imine carbon.
+    imine_carbon_id = imine_nitrogen_other_neighbors[0]
+    imine_carbon = mm.atoms[imine_carbon_id]
+
+    if imine_carbon.element != 'C':
+        return False
+
+    if int(imine_carbon.nb) != 3:
+        return False
+
+    if check_aromaticity(imine_carbon_id, mm.atoms, check_rings=True):
+        return False
+
+    return True
+
+
+def is_aromatic_amine_nitrogen(mm, nitrogen_id):
+    """
+    Recognize an aromatic-amine candidate.
+
+    Call only after amide, guanidine, charged-N, and other specialized
+    nitrogen environments have been excluded.
+    """
+    amine_class = amine_candidate_class(mm, nitrogen_id)
+    if amine_class not in ('primary', 'secondary', 'tertiary'):
+        return False
+
+    # Exclude nitrogen that is itself part of an aromatic ring,
+    # such as pyrrole or carbazole nitrogen.
+    if check_aromaticity(nitrogen_id, mm.atoms, check_rings=True):
+        return False
+
+    # Aromatic amines must be directly bonded to an aromatic carbon.
+    for neighbor_id in mm.atoms[nitrogen_id].neighbor_ids[1]:
+        neighbor = mm.atoms[neighbor_id]
+        is_aromatic = check_aromaticity(neighbor_id, mm.atoms, check_rings=True)
+        if neighbor.element == 'C' and is_aromatic:
+            return True
+
+    return False
+
+
+def amine_candidate_class(mm, nitrogen_id):
+    """
+    Classify a three-coordinate nitrogen having only C/H neighbors.
+
+    This identifies a possible primary, secondary, or tertiary amine.
+    Amides, guanidines, aromatic-ring nitrogens, charged nitrogens,
+    and other specialized environments must be excluded separately.
+    """
+    atom = mm.atoms[nitrogen_id]
+    nb = int(atom.nb)
+    elements1 = neigh_extract(atom, depth=1, info='element') # Example: ['C', 'C', 'H']
+    if atom.element != 'N' or nb != 3:
+        return ''
+
+    # Conventional amines have only C/H directly bonded to nitrogen.
+    if any(element not in {'C', 'H'} for element in elements1):
+        return ''
+
+    number_of_carbons = elements1.count('C')
+    amine_classes = {1: 'primary', 2: 'secondary', 3: 'tertiary'}
+    amine_class = amine_classes.get(number_of_carbons, '')
+    return amine_class
+
+
+def is_sp3_amine_nitrogen(mm, nitrogen_id):
+    """
+    Recognize an ordinary sp3-amine candidate.
+
+    Call only after charged nitrogen, small-ring nitrogen, and other
+    specialized nitrogen environments have been excluded.
+
+    Explicit hydrogen atoms are required.
+    """
+    amine_class = amine_candidate_class(mm, nitrogen_id)
+    if amine_class not in ('primary', 'secondary', 'tertiary'):
+        return False
+
+    # Exclude nitrogen that is itself part of an aromatic ring.
+    if check_aromaticity(nitrogen_id, mm.atoms, check_rings=True):
+        return False
+
+    # Every carbon directly bonded to N must be saturated/sp3.
+    for neighbor_id in mm.atoms[nitrogen_id].neighbor_ids[1]:
+        neighbor = mm.atoms[neighbor_id]
+
+        if neighbor.element == 'C' and int(neighbor.nb) != 4:
+            return False
+
+    return True
 
 
 # Function to check the atom is aromatic
-def check_aromaticity(atomid, atoms):
+def check_aromaticity(atomid, atoms, check_rings=False):
     aromaticity = True
     atom        = atoms[atomid]
     rings       = atom.rings
@@ -27,8 +198,8 @@ def check_aromaticity(atomid, atoms):
     
     # Optional check for ring sizes to continue checking for aromaticity.
     # For let ring size checks occur out of this function
-    # if all(isinstance(x, int) and x in (5, 6) for x in rings):
-    #     return False
+    if check_rings and not all(isinstance(x, int) and x in (5, 6) for x in rings):
+        return False
     
     # Ensure every ring this atom is in that all other atoms only have 2 or 3-nbs
     for cycle in cycles:
