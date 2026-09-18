@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.9
-August 19, 2026
+Revision 1.10
+September 18, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -407,9 +407,17 @@ def nta(mm, basename, ff_name):
             elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 2 and len(hydroxls) == 0:              
                 atom.nta_type = 'co'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
+            # Rule for 6-member ring of cellulose
+            elif ring == 6 and elements1.count('C') == 2 and elements1.count('O') == 2 and len(hydroxls) == 0:              
+                atom.nta_type = 'co'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
                 
             # coh     12.01115      C          4        sp3 carbon in acetals with hydrogen
-            elif ring == 0 and elements1.count('C') == 1 and elements1.count('H') == 1 and elements1.count('O') == 2:              
+            elif ring == 0 and elements1.count('C') == 1 and elements1.count('H') == 1 and elements1.count('O') == 2 and len(hydroxls) == 0:               
+                atom.nta_type = 'coh'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+            # Rule for 6-member ring of cellulose
+            elif ring == 6 and elements1.count('C') == 1 and elements1.count('H') == 1 and elements1.count('O') == 2 and len(hydroxls) == 0:              
                 atom.nta_type = 'coh'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -642,6 +650,10 @@ def nta(mm, basename, ff_name):
             elif ring == 0 and elements1.count('C') == 2:              
                 atom.nta_type = 'oc'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
+            # Rule for 6-member ring of cellulose
+            elif ring == 6 and elements1.count('C') == 2:              
+                atom.nta_type = 'oc'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
                 
             # o3e     15.99940      O          2        sp3 oxygen  in three membered ring
             elif ring == 3 or 3 in atom.rings:              
@@ -654,7 +666,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # op       15.99940      O          2        sp2 aromatic in 5 membered ring
-            elif ring >= 5:              
+            elif ring >= 5 and tf.check_aromaticity(i, mm.atoms):              
                 atom.nta_type = 'op'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 

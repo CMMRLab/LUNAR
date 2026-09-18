@@ -15,10 +15,13 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 19August2026)
+LUNAR (version 18September 2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+18September2026    JDK         - atom_typing.py: Adding typing rules for celluose in PCFF and CVFF (neither FF has
+                                                 the exact type, thus the typing rules move it to the nect best type).
+
 19August2026       JDK         - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing posted August 13th.
 
 10August2026       JDK         - atom_typing.py: Fixed GitHub Issue #8 with PCFF atom typing posted August 3rd and 5th.

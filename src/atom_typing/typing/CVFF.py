@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.1
-August 10, 2026
+Revision 1.2
+September 18, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -281,6 +281,15 @@ def nta(mm, basename, ff_name):
         # Sp3 Carbon atom typing (ordering of nested if/elif/else statements set precedence) #
         ######################################################################################
         elif element == 'C' and nb == 4:
+            # Count the number of hydroxls to help distingush from co to c1, c2, c3 or c
+            neighs1 = atom.neighbor_ids[1] # First neighbors of this atom
+            hydroxls = []
+            for j in neighs1:
+                neigh_atom = mm.atoms[j]
+                neigh_elements1 = tf.neigh_extract(neigh_atom, depth=1, info='element')
+                if neigh_atom.element == 'O' and neigh_atom.nb == 2 and neigh_elements1.count('H') == 1:
+                    hydroxls.append(j)
+                    
             #----------------------------------------------------------------------------#
             # User defined intial attempts (For ReaxFF with open valence polymerization) #
             #----------------------------------------------------------------------------#
@@ -320,12 +329,20 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # co        12.01115      C          4        sp3 carbon in acetals
-            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 2:              
+            elif ring == 0 and elements1.count('C') == 2 and elements1.count('O') == 2 and len(hydroxls) == 0:              
+                atom.nta_type = 'co'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+            # Rule for 6-member ring of cellulose
+            elif ring == 6 and elements1.count('C') == 2 and elements1.count('O') == 2 and len(hydroxls) == 0:              
                 atom.nta_type = 'co'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # coh     12.01115      C          4        sp3 carbon in acetals with hydrogen
-            elif ring == 0 and elements1.count('C') == 1 and elements1.count('H') == 1 and elements1.count('O') == 2:              
+            elif ring == 0 and elements1.count('C') == 1 and elements1.count('H') == 1 and elements1.count('O') == 2 and len(hydroxls) == 0:               
+                atom.nta_type = 'coh'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
+            # Rule for 6-member ring of cellulose
+            elif ring == 6 and elements1.count('C') == 1 and elements1.count('H') == 1 and elements1.count('O') == 2 and len(hydroxls) == 0:              
                 atom.nta_type = 'coh'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -488,6 +505,10 @@ def nta(mm, basename, ff_name):
             elif ring == 0 and elements1.count('C') == 2 and elements2.count('O') == 1:              
                 atom.nta_type = 'oc'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
+            # Rule for 6-member ring of cellulose
+            elif ring == 6 and elements1.count('C') == 2:              
+                atom.nta_type = 'oc'; tally['found'] += 1;
+                atom.nta_info = 'Correctly found'
                 
             # o        15.999400    O           2        Sp3 oxygen in ether or ester groups
             elif ring == 0 and elements1.count('C') == 2:              
@@ -505,7 +526,7 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # op       15.99940      O          2        sp2 aromatic in 5 membered ring
-            elif ring >= 5:              
+            elif ring >= 5 and tf.check_aromaticity(i, mm.atoms):             
                 atom.nta_type = 'op'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
