@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-September 18, 2026
+Revision 1.3
+September 30, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -249,17 +249,17 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # c=       12.01115      C          3        nonaromatic end doubly bonded carbon
-            elif ring == 0 and nbs1.count(1) == 2 and any(element in elements1 for element in typically_monovalent):
+            elif not tf.check_aromaticity(i, mm.atoms) and nbs1.count(1) == 2 and any(element in elements1 for element in typically_monovalent):
                 atom.nta_type = 'c='; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                                 
             # c=1     12.01115      C          3        nonaromatic, next to end doubly bonded carbon 
-            elif ring == 0 and 2 in neighs11_nb:
+            elif not tf.check_aromaticity(i, mm.atoms) and 2 in neighs11_nb:
                 atom.nta_type = 'c=1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # c=2     12.01115      C          3        nonaromatic doubly bonded carbon  
-            elif ring == 0:
+            elif not tf.check_aromaticity(i, mm.atoms):
                 atom.nta_type = 'c=2'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
@@ -610,17 +610,17 @@ def nta(mm, basename, ff_name):
                 atom.nta_info = 'Correctly found'
                 
             # n=       14.00670      N          2        non aromatic end doubly bonded nitrogen
-            elif ring == 0 and nbs1.count(1) == 1 and any(element in elements1 for element in typically_monovalent):
+            elif not tf.check_aromaticity(i, mm.atoms) and nbs1.count(1) == 1 and any(element in elements1 for element in typically_monovalent):
                 atom.nta_type = 'n='; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                                 
             # n=1     14.00670      N          2        non aromatic, next to end doubly bonded carbon
-            elif ring == 0 and 2 in neighs11_nb:
+            elif not tf.check_aromaticity(i, mm.atoms) and 2 in neighs11_nb:
                 atom.nta_type = 'n=1'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 
             # n=2     14.00670      N          2        non aromatic doubly bonded nitrogen   
-            elif ring == 0:
+            elif not tf.check_aromaticity(i, mm.atoms):
                 atom.nta_type = 'n=2'; tally['found'] += 1;
                 atom.nta_info = 'Correctly found'
                 

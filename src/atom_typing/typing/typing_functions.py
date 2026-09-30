@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-August 19, 2026
+Revision 1.3
+September 30, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -202,11 +202,22 @@ def check_aromaticity(atomid, atoms, check_rings=False):
         return False
     
     # Ensure every ring this atom is in that all other atoms only have 2 or 3-nbs
+    aromatic_cycles = 0
+    nonaromatic_cycles = 0
     for cycle in cycles:
         nbs_lst = [atoms[i].nb for i in cycle]
         if max(nbs_lst) > 3:
-            aromaticity = False
-            break
+            nonaromatic_cycles += 1
+        else:
+            aromatic_cycles += 1
+    
+    # If an atom is in both an aromatic and non-aromatic 
+    # cycle, let its atom type be assigned to aromatic
+    if aromatic_cycles >= 1 and nonaromatic_cycles >= 1:
+        aromaticity = True
+    elif aromatic_cycles == 0 and nonaromatic_cycles >= 1:
+        aromaticity = False
+
     return aromaticity
 
 # Function to write to assumed file when needed
