@@ -7,6 +7,7 @@
 #version	pcff.frc	3.0	1-March-95
 #version	pcff.frc	3.1	1-April-96
 #version	pcff.frc	4.0	8-October-13
+#version	pcff.frc	4.1	6-October-26
 
 #define cff91
 
@@ -5514,6 +5515,8 @@
  2.2  9   c     si    si    h          -16.9141
  2.2  9   h     si    si    h          -10.8232
  2.2  9   h     si    si    si         -12.2861
+ 1.0 14   o3e   c3h   c3h   *            0.0000
+ 1.0 14   c3h   o3e   c3h   *            0.0000  
 
 
 #torsion-torsion_1    cff91
@@ -5590,4 +5593,13 @@ added 2-pyridinol; added polyphosphazene
 @Author LAMMPS Mailing List
 @Date 8-October-13
 added hydroxy-apatite related parameters
+#end
+
+#reference 14
+@Author Josh Kemppainen and Tristan Muzzy
+@Date 9-July-26
+Added angle-angle-torsion parameters for exact atom types and wildcards for epoxide rings (o3e and ch3)
+and set force constants to zero (e.g. "o3e c3h c3h *" and "o3e c3h c3h *"). This solves the epoxide epoxide
+numerical stability at high temperature issue. Credit for this solution goes to Tristan. For these to be
+parameterized properly you MUST use a LUNAR version of 9-July-2026 or newer.
 #end

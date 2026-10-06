@@ -15,6 +15,20 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
+LUNAR (version 06October2026)
+
+Date               Developer   Description
+-------------------------------------------------------------------------------------------------------------
+06October2026    JDK           - frc_files/pcff.frc: Fixed GitHub Issue #11 with PCFF and epoxide rings. The
+                                                     equivalences for an epoxide ring for the angle-angle-torsion
+                                                     do not respect the ring geometry and causes unstable sims.
+	                                                 The fix is to zero the angle-angle-torsion parameters for the
+                                                     epoxide ring and this pcff.frc will do that (NOTE: all2lmp.py
+                                                     was updated 9July2026 for this specific parameterization, this
+                                                     update is just a public fix to the pcff.frc file resulting in
+                                                     PCFF version 4.1 for the public PCFF parameters).
+
+-------------------------------------------------------------------------------------------------------------
 LUNAR (version 30September 2026)
 
 Date               Developer   Description
