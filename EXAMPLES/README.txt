@@ -1,3 +1,11 @@
-This folder contains all of the "Unit Tests" of the 
+This folder contains all of the examples of the 
 LUNAR distribution, but they also serve as examples,
 to learn the LUNAR distribution.
+
+PLEASE NOTE THAT THERE MAY EXIST OUTDATED FORCE FIELD
+PARAMETERIZATIONS IN THESE FOLDERS AND THESE FILES SHOULD
+NOT BE USED FOR PRODUCTION RUNS. THE FILES ONLY SERVE 
+THE PURPOSE TO HAVING SOMETHING TO RUN LUNAR INITIALLY 
+FOR USERS TO GET COMFORTABLE WITH LUNAR.
+
+For LUNAR updates track the LUNAR/UPDATES file.

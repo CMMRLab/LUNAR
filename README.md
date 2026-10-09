@@ -1,4 +1,4 @@
-# LUNAR (version 06October2026)
+# LUNAR (version 09October2026)
 LUNAR stands for LAMMPS Utility (for) Network Analysis (and) Reactivity and is a stand alone Python (3.7+) toolkit to supplement LAMMPS. LUNAR is focused on pre-processing and post-processing inputs and outputs of LAMMPS with emphasis of using LAMMPS for producing structure-property relationships for ICME process modeling of polymers. However many of the codes within LUNAR can be used outside of process modeling type of Molecular Dynamics simulations.
 
 LUNAR was written by Josh Kemppainen during his PhD at Michigan Technological Univeristy with Dr. Gregory M. Odegard being his research advisor. LUNAR is maintained by Josh Kemppainen and Dr. Jacob R. Gissinger. LUNAR is not planned on being packaged with PyPi, since all the source code is provided and allows the user to modify the source code easily. If users of LUNAR add considerably substantial modules please notify Josh Kemppainen or Dr. Jacob R. Gissinger to review the additions, such that they maybe included in the LUNAR distribution and maintained for future releases.
@@ -64,3 +64,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 - Tutorials and workshops related to LUNAR and LAMMPS will be posted at: https://www.youtube.com/@CMMRLab-LUNAR.
 - Files generated during posted tutorials on YouTube will be posted at: https://github.com/CMMRLab/LUNAR_tutorials/tree/main.
 - Feel free to add comments on the YouTube channel of questions.
+
+## LUNAR/EXAMPLES disclaimer
+- The LUNAR/EXAMPLES folder only provides example files to run LUNAR for the first time to lower the barrier to entry for learning LUNAR. It is possible (and likely true) that many .data files in the EXAMPLES folder are out dated and should not be used for production LAMMPS simulations. 
+- Please create your own files and cite the version of LUNAR used to generate your files to keep track of provenance of atom typing and force field parameterizations in the literature.

@@ -15,10 +15,12 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 06October2026)
+LUNAR (version 09October2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+09October2026    JDK           - Added disclaimer about EXAMPLES folder.           
+
 06October2026    JDK           - frc_files/pcff.frc: Fixed GitHub Issue #11 with PCFF and epoxide rings. The
                                                      equivalences for an epoxide ring for the angle-angle-torsion
                                                      do not respect the ring geometry and causes unstable sims.
