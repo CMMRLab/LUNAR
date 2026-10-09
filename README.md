@@ -68,3 +68,4 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 ## LUNAR/EXAMPLES disclaimer
 - The LUNAR/EXAMPLES folder only provides example files to run LUNAR for the first time to lower the barrier to entry for learning LUNAR. It is possible (and likely true) that many .data files in the EXAMPLES folder are out dated and should not be used for production LAMMPS simulations. 
 - Please create your own files and cite the version of LUNAR used to generate your files to keep track of provenance of atom typing and force field parameterizations in the literature.
+- The updates to LUNAR can be tracked in the LUNAR/UPDATES file.
