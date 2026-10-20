@@ -133,6 +133,18 @@ class analysis:
                     self.log.out('  {}'.format(message))
                     ydata = 'ycompute'
                 else: y = data[ydata] 
+
+                # Remove paired x/y values if either value is NaN or infinite
+                if xcompute or ycompute:
+                    x_values = np.asarray(x, dtype=float)
+                    y_values = np.asarray(y, dtype=float)
+                    valid = np.isfinite(x_values) & np.isfinite(y_values)
+                    indexes2remove = np.flatnonzero(~valid).tolist()
+                    if indexes2remove:
+                        self.log.out('  Removing non-finite x/y values at indexes: {}'.format(indexes2remove))
+                        x = x_values[valid].tolist()
+                        y = y_values[valid].tolist()                
+
                 self.log.out('  len(xdata)={}'.format(len(x)))
                 self.log.out('  len(ydata)={}'.format(len(y)))
                 

@@ -15,10 +15,14 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 09October2026)
+LUNAR (version 20October2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+20October2026    JDK           - log_analysis.py: added checks on the string x-compute and y-compute for div 
+                                                  by zero's. If there is that index is removed from the computed
+                                                  array.												  
+
 09October2026    JDK           - Added disclaimer about EXAMPLES folder.           
 
 06October2026    JDK           - frc_files/pcff.frc: Fixed GitHub Issue #11 with PCFF and epoxide rings. The

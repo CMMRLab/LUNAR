@@ -94,8 +94,13 @@ def thermo_data(data, compute_string):
     
         # Try computing
         try:
-            new_data = list(eval(cstring, globals_dict))
-            message += f'"{compute_string}" was succesfully evaluted.\n'
+            with np.errstate(divide='ignore', invalid='ignore'):
+                evaluated = eval(cstring, globals_dict)
+
+            new_data = np.asarray(evaluated)
+            new_data = np.where(np.isnan(new_data), 0, new_data).tolist()
+
+            message += f'"{compute_string}" was successfully evaluated.\n'
         except Exception:
             new_data = nzeros*[0]
             message += f'ERROR could not evalute "{compute_string}" compute.\n'
@@ -105,9 +110,15 @@ def thermo_data(data, compute_string):
 
 
 if __name__ == "__main__":
-    data = {'test':'loop '}
-    compute_string = "__import__('os').getlogin()"
-    #compute_string = "[d['test'] +let for let in 'abc']"
-    x = thermo_data(data, compute_string)
-    print(x[0])
-    print(x[1])
+    # data = {'test':'loop '}
+    # compute_string = "__import__('os').getlogin()"
+    # #compute_string = "[d['test'] +let for let in 'abc']"
+    # x = thermo_data(data, compute_string)
+    # print(x[0])
+    # print(x[1])
+    
+    
+    data = {'x': [0, 1, 2, 3]}
+    y = thermo_data(data, '1 / ${x}')
+    print(y)
+    
