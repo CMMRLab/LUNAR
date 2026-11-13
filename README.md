@@ -62,7 +62,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
     - atom typing (atom_typing.py)
 	- charge assigment (all2lmp.py)
 	- map file generation (bond_react_merge.py)
-  - The usage of "BondingIDs" and "Reduce" keywords help in each place because, when placed in the header of the pre-rxn datafile, its mean to take the current structures and let bond_react_merge.py reduce the structures 
+  - The usage of **BondingIDs" and **Reduce keywords help in each place because, when placed in the header of the pre-rxn datafile (read into bond_react_merge.py), its meant to take the current structures and let bond_react_merge.py reduce the structures 
     (cut-out the unneeded atoms). Thus for drawing the reaction, all you do is take the two molecules and connect them, then:
       1. atom_typing.py to assign all atom types with no missing topology, so atom types are correct.
       2. all2lmp.py to assign FF and charge with no missing topology, so charges are correct.
