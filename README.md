@@ -56,6 +56,14 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 - Note that Python v3.11+ will run about 1.5x as quick vs v3.10, thus it is recommended to install v.3.11+ even though the code assumes v3.7+ features.
 
+## Helpful per-code notes
+- bond_react_merge.py:
+  - Moving forward, Josh is recommendeding the usage of "BondingIDs" and "Reduce" keywords to let this code cut-down the reaction templates automatically. This is because it is quicker and solves many problems such as:
+    - atom typing (atom_typing.py)
+	- charge assigment (all2lmp.py)
+	- map file generation (bond_react_merge.py)
+    Because "BondingIDs" and "Reduce" keywords, when placed in
+
 ## Terms of use
 - You agree to acknowledge the use of the LUNAR in any reports or publications of results obtained with the LUNAR by citing "LUNAR: Automated Input Generation and Analysis for Reactive LAMMPS Simulations" at https://doi.org/10.1021/acs.jcim.4c00730.
 - LUNAR is not responsible for the validity contents of any linked website and does not accept any liability for actions or consequences applying LUNAR codes.
