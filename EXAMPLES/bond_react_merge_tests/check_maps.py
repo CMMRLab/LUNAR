@@ -89,7 +89,7 @@ def read_map_file(filename):
     return edge_ids, edge_types, equivalences, equiv_types
 
 # Function to check against validated map
-def run_check(maps_to_check, skip_hs=True):
+def run_check(maps_to_check, skip_hs=False):
     # Tallies
     passed = 0
     failed = 0

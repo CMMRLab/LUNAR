@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.4
-May 30, 2026
+Revision 1.5
+November 12, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -15,7 +15,6 @@ from scipy.optimize import linear_sum_assignment
 import matplotlib.pyplot as plt
 from collections import Counter
 import numpy as np
-import math
 import os
 
 
@@ -159,14 +158,17 @@ class find:
                 # Find cummulative neighs
                 pre_cumulative_neighs = bfs_neighs_depth(pre_atom, pre_graph)
                 post_cumulative_neighs = bfs_neighs_depth(post_atom, post_graph)
+
                 
                 # Only procede if pre/post elements are the same (enforce chemistry to reduce errors and minimize equivalence search space)
-                if pre_element == post_element and pair not in self.cost_tally:
+                if pre_element == post_element and pair not in self.cost_tally:                        
                 
                     # Intialize tmpcost dict with zeros and update later on
                     tmpcost = {'atom-type':0, 'nb':0, 'neigh_1st_atom-types':0, 'neigh_1st_elements':0,
                                'edge':0, 'new-type':0, 'depth_from_edge':0, 'deleteID':0, 'ID':0, 'molID':0,
-                               'cumulative_neigh_types':0, 'cumulative_neigh_elements':0, 'cumulative_neigh_nb':0}
+                               'cumulative_neigh_types':0, 'cumulative_neigh_elements':0, 'cumulative_neigh_nb':0,
+                               'element': 0}
+                               
                     
                     #########################
                     # Start assigning costs #
@@ -303,8 +305,6 @@ class find:
                     # print('path_to_edge_elements =', path_to_edge_elements)
                     # print('shortest_path_len     = ', shortest_path_len+1)
                     # print('pre_depth_from_edge   =', pre_depth_from_edge)
-                        
-                                
                     
                     # edge_cost = a penality if both atoms are not edge atoms
                     if pre_atom in self.pre_edge and post_atom not in self.post_edge: 
@@ -314,6 +314,7 @@ class find:
                         if nb_cost <= 1 and type_cost == 0: edge_cost = 10
                         else: edge_cost = 10
                     else: edge_cost = 0
+                    
                     
                     # ID_cost is a penality if atomID in pre/post differ. This should not be an extreme cost
                     # since it may cause issues for some templates. The purpose of this cost is to keep atomIDs
@@ -442,14 +443,31 @@ class find:
         # Method 2 (Default if user does not provide BondingIDs) #
         #--------------------------------------------------------#
         else:
+            log.out('  Using normal mapping methods (no BondingIDs string present in pre-rxn datafile)')
             keys = ['atom-type', 'nb', 'neigh_1st_elements', 'neigh_1st_atom-types', 'edge', 'depth_from_edge',
-                    'cumulative_neigh_types','cumulative_neigh_elements', 'deleteID', 'ID', 'molID',
+                    'cumulative_neigh_types','cumulative_neigh_elements', 'deleteID', 'molID'
                     'path_to_edge_types', 'path_to_edge_elements'] 
             
             self.map, solved_costs = solve_global_mapping(pre_atoms, post_atoms, self.cost_dict, keys, CreateIDs, log)
             for pair, costdict in solved_costs.items():
                 self.cost[pair] = solved_costs[pair]
-        
+                
+            # Refine H equivalences for each backbone atom with zero selected cost.
+            # Backbone means all non-H atoms. Select the costs used for this check.
+            # ID and neigh_ID_cost are omitted so numbering differences are allowed.
+            try:
+                # Per-atom eligibility: selected costs must sum to zero.
+                backbone_keys = ['atom-type', 'neigh_1st_elements']
+                backbone_keys = []
+                
+                # Costs minimized during hydrogen reassignment.
+                hydrogen_keys = ['atom-type', 'ID']
+                self.map, solved_costs = refine_hydrogen_mapping(self.map, solved_costs, self.cost_dict, hydrogen_keys,
+                                                                 self.pre_elements, self.post_elements, pre_graph,
+                                                                 post_graph, CreateIDs, log, backbone_keys)
+                for pair, costdict in solved_costs.items():
+                    self.cost[pair] = solved_costs[pair]
+            except: log.warn('  WARNING hydrogen refinement failed for unknown reasons. Relying on global mapping of Hs.')
 
         ###################################################################################################################
         # Find initiator ids from pre_molecules. First try for a two molecule search else warn about manual update status #
@@ -610,6 +628,142 @@ def solve_global_mapping(pre_atoms, post_atoms, cost_dict, keys, create_ids, log
         mapping_costs[pair] = cost_dict[pair]
 
     return mapping, mapping_costs
+
+
+#############################################################
+# Keep hydrogens attached to their mapped backbone atoms    #
+#############################################################
+def refine_hydrogen_mapping(mapping, mapping_costs, cost_dict, hydrogen_keys,
+                            pre_elements, post_elements, pre_graph, post_graph,
+                            create_ids, log, backbone_keys):
+    """Refine H mappings directly around each eligible backbone pair.
+
+    First match terminal hydrogens attached to corresponding backbone atoms.
+    Then match leftover participating hydrogens without the attachment
+    restriction, allowing hydrogen transfer.
+
+    Nonparticipating mappings remain fixed. Only existing targets belonging
+    to participating hydrogens are reused. If a complete assignment cannot
+    be found, retain the original mapping and costs.
+    """
+
+    # Find individually eligible backbone mappings.
+    backbone_pairs = {}
+    for i, j in mapping.items():
+        atom_cost = sum(mapping_costs[(i, j)].get(key, 0) for key in backbone_keys)
+        if post_elements.get(j) != pre_elements[i]: continue  # Require matching backbone elements.
+        if (i, j) not in mapping_costs: continue              # Skip backbone pairs without recorded costs.
+        if pre_elements[i] == 'H': continue                   # Skip hydrogens when selecting backbone atoms.
+        if j in create_ids: continue                          # Skip targets reserved for created atoms.
+        if atom_cost != 0: continue                           # Skip backbone pairs with nonzero selected cost.
+        if j == 0: continue                                   # Skip unmapped backbone atoms.
+        backbone_pairs[i] = j
+
+    # Collect terminal pre-Hs attached to eligible backbone atoms.
+    pre_hydrogens = {}
+    for i in mapping:
+        if pre_elements[i] != 'H': continue  # Skip non-hydrogen atoms.
+
+        neighbors = pre_graph[i]
+        if len(neighbors) != 1: continue  # Skip nonterminal hydrogens.
+
+        backbone_id = neighbors[0]
+        if backbone_id not in backbone_pairs: continue  # Skip hydrogens attached to ineligible backbones.
+
+        pre_hydrogens.setdefault(backbone_id, []).append(i)
+
+    participating = {i for hydrogens in pre_hydrogens.values() for i in hydrogens}
+    if not participating:
+        log.out('  Hydrogen refinement: no eligible hydrogens.')
+        return mapping, mapping_costs
+
+    # Release participating assignments conceptually; do not modify mapping yet.
+    # Keep the same target pool so nonparticipating mappings remain untouched.
+    available_post = {mapping[i] for i in participating}
+    fixed_targets = {j for i, j in mapping.items() if i not in participating and j != 0}
+
+    if (0 in available_post or len(available_post) != len(participating)
+        or available_post.intersection(fixed_targets) or available_post.intersection(create_ids)
+        or any(post_elements.get(j) != 'H' for j in available_post)):
+        log.warn('  WARNING hydrogen refinement skipped: participating H mappings '
+                 'must have unique, valid H targets that are not fixed or created.')
+        return mapping, mapping_costs
+
+    refined = {}
+    refined_costs = {}
+    remaining_pre = set(participating)
+    remaining_post = set(available_post)
+
+    # Match Hs directly around each mapped backbone pair.
+    for pre_backbone in sorted(pre_hydrogens):
+        post_backbone = backbone_pairs[pre_backbone]
+        pre_hs = sorted(pre_hydrogens[pre_backbone])
+
+        post_hs = []
+        for j in post_graph[post_backbone]:
+            if post_elements.get(j) != 'H':
+                continue  # Skip non-hydrogen neighbors.
+
+            if post_graph[j] != [post_backbone]:
+                continue  # Require a terminal post hydrogen.
+
+            if j not in remaining_post:
+                continue  # Skip fixed, created, or already assigned targets.
+
+            post_hs.append(j)
+
+        if not post_hs: continue  # Leave these pre-Hs for the leftover mapping.
+        local_map, local_costs = solve_global_mapping(pre_hs, sorted(set(post_hs)), cost_dict, hydrogen_keys,
+                                                      create_ids, log, check_impossible=False)
+        for i, j in local_map.items():
+            if j == 0:
+                continue  # Leave unmatched pre-Hs for the leftover mapping.
+
+            refined[i] = j
+            refined_costs[(i, j)] = local_costs[(i, j)]
+            remaining_pre.remove(i)
+            remaining_post.remove(j)
+
+    # Match leftovers across backbones, permitting hydrogen transfer.
+    transfer_count = 0
+    if remaining_pre:
+        leftover_map, leftover_costs = solve_global_mapping(
+            sorted(remaining_pre), sorted(remaining_post), cost_dict,
+            hydrogen_keys, create_ids, log,
+            check_impossible=False)
+        if any(j == 0 for j in leftover_map.values()):
+            log.warn('  WARNING hydrogen refinement skipped: local assignments '
+                     'left no complete H mapping. Original mappings retained.')
+            return mapping, mapping_costs
+
+        refined.update(leftover_map)
+        refined_costs.update(leftover_costs)
+
+    # Validate the complete result before applying any changes.
+    if (set(refined) != participating or len(set(refined.values())) != len(participating) or set(refined.values()) != available_post):
+        log.warn('  WARNING hydrogen refinement skipped: final H mapping '
+                 'did not preserve one-to-one target usage.')
+        return mapping, mapping_costs
+
+    new_mapping = mapping.copy()
+    new_costs = mapping_costs.copy()
+    changed = 0
+    for i, j in refined.items():
+        if j != mapping[i]:
+            changed += 1
+
+        expected_backbone = mapping[pre_graph[i][0]]
+        if post_graph[j] != [expected_backbone]:
+            transfer_count += 1
+
+        new_costs.pop((i, mapping[i]), None)
+        new_mapping[i] = j
+
+    new_costs.update(refined_costs)
+
+    log.out(f'  Hydrogen refinement: reassigned {changed} H atoms; '
+            f'{transfer_count} H mappings do not preserve backbone attachment.')
+    return new_mapping, new_costs
 
 
 ####################################################

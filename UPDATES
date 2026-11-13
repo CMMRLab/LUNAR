@@ -15,10 +15,45 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 20October2026)
+LUNAR (version 13November2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+13November2026    JDK          - bond_react_merge.py: added a hydrogen mapping refinement after the globabl
+                                                      mapping, such that the hydrogen stays attached to the
+                                                      backbone atoms, no matter what the global minization says.
+                                                      This assumes the globabl mapping of backbone atoms is 100%
+                                                      correct, which this algorthim is getting there. This only 
+                                                      runs when not using the "BondingIDs" or "Reduce" methods (
+                                                      read LUNAR/docs/LUNAR_manual_v1.docx "generate_map_file" 
+                                                      section under the "Code: bond_react_merge.py" Chapter. 
+													  However, JDK is going to start recommending the usage of:
+                                                        * BondingIDs = [preID1, preID2, postID1, postID2]
+                                                        * Reduce = [depth1, depth2]
+                                                      for building reaction templates anyhow, because this
+                                                      is much quicker and solves many problems, such as:
+                                                        * atom typing (atom_typing.py)
+                                                        * charge assigment (all2lmp.py)
+                                                        * map file generation (bond_react_merge.py)
+                                                      Because "BondingIDs" and "Reduce" keywords, when placed in
+                                                      the header of the pre-rxn datafile, mean to take the current
+                                                      structures and let bond_react_merge.py reduce the structures 
+                                                      (cut-out the unneeded atoms). Thus for drawing the reaction,
+                                                      all you do is take the two molecules and connect them, then:
+                                                        1. atom_typing.py to assign all atom types with no missing 
+                                                           topology, so atom types are correct.
+                                                        2. all2lmp.py to assign FF and charge with no missing
+                                                           topology, so charges are correct.
+                                                        3. bond_react_merge.py to merge FF, cut-out unneeded atoms,
+                                                           and generate the map file. Where using BondinIDs, has 
+                                                           guareenteed the mapfile Equivalences to be 100% correct
+                                                           in 35 test cases found in: 
+                                                           LUNAR/EXAMPLES/bond_react_merge_tests folder.
+                                                      Thus the usage of "BondingIDs" and "Reduce" start to connect
+                                                      atom_typing.py, all2lmp.py, and bond_react_merge.py in a much
+                                                      more holistic and complete workflow - leveraging the best 
+                                                      attributes of each method.													  
+
 20October2026    JDK           - log_analysis.py: added checks on the string x-compute and y-compute for div 
                                                   by zero's. If there is that index is removed from the computed
                                                   array.												  

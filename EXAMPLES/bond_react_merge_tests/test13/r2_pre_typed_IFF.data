@@ -1,4 +1,4 @@
-HEADER,  r2_pre.mol  read w/ mol2lmp > atom_typing v1.10 / 10 May 2024 w/PCFF-IFF atom-types > all2lmp: v1.21 / 13 November 2024  Class: 2
+HEADER,  r2_pre.mol  read w/ mol2lmp > atom_typing v1.10 / 10 May 2024 w/PCFF-IFF atom-types > all2lmp: v1.21 / 13 November 2024  Class: 2; BondingIDs = [5, 16, 5, 11]
 
 25 atoms
 23 bonds
