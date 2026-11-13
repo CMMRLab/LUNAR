@@ -62,7 +62,13 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
     - atom typing (atom_typing.py)
 	- charge assigment (all2lmp.py)
 	- map file generation (bond_react_merge.py)
-Because "BondingIDs" and "Reduce" keywords, when placed in
+  - The usage of "BondingIDs" and "Reduce" keywords help in each place because, when placed in the header of the pre-rxn datafile, its mean to take the current structures and let bond_react_merge.py reduce the structures 
+    (cut-out the unneeded atoms). Thus for drawing the reaction, all you do is take the two molecules and connect them, then:
+      1. atom_typing.py to assign all atom types with no missing topology, so atom types are correct.
+      2. all2lmp.py to assign FF and charge with no missing topology, so charges are correct.
+      3. bond_react_merge.py to merge FF, cut-out unneeded atoms, and generate the map file. Where using BondinIDs, has guareenteed the mapfile Equivalences to be 100% correct in 35 test cases found in: LUNAR/EXAMPLES/bond_react_merge_tests folder.
+  - Thus the usage of "BondingIDs" and "Reduce" start to connect atom_typing.py, all2lmp.py, and bond_react_merge.py in a much more holistic and complete workflow - leveraging the best attributes of each method.		
+  - Please read about these keywords in LUNAR/docs/LUNAR_manual_v1.docx "generate_map_file" section under the "Code: bond_react_merge.py" Chapter.   
 
 ## Terms of use
 - You agree to acknowledge the use of the LUNAR in any reports or publications of results obtained with the LUNAR by citing "LUNAR: Automated Input Generation and Analysis for Reactive LAMMPS Simulations" at https://doi.org/10.1021/acs.jcim.4c00730.
