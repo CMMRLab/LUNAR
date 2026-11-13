@@ -250,6 +250,7 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
     #--------------------------------------------------------------------------------------#
     ffs_stats = False
     pub_plots = False
+    fig1, fig2 = None, None
     
     #---------------------------------------------------------------------#
     # Data structs to continually add to through out the analysis process #
@@ -430,6 +431,7 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
     #   yp = 'min-v' means use the minimum valley of the 2nd derivatives
     xhi_yield = None; yhi_yield = None; yield_point_derivative = []; strain_yield = []; stress_yield = []; 
     xhi_ultimate = None; yhi_ultimate = None; ultimate_point = []
+    min_2d_fringe = None; events = None
     if isinstance(yp, int) and yp != 0 or yp in ['min-2d', 'min-v', 'max-d', 'min-r2d2'] or isinstance(up, int):        
         
         # Re-compute forward fringe slopes (ffs) moving 1-data point at a time for a 3rd time (in-case "maxxhi" option was used and then find the fringe and slopes after "xhi")
@@ -484,7 +486,10 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
         dslopes2_np   = np.array(dslopes2)
         dslopes2_diff = np.diff(dslopes2_np)
         dslopes2_abs  = np.abs(dslopes2_diff)
-        prominence    = float( max(dslopes2_abs) )
+        if len(dslopes2_abs) > 0:
+            prominence = float( max(dslopes2_abs) )
+        else:
+            prominence = None
         xpeaks, ypeaks, xvalleys, yvalleys, valley_depths = signal_processing.find_peaks_and_valleys(dfringe, dslopes2, prominence)
             
         # Perform one more check for valleys and if not set prominence as None to maximize the possibilty of finding valleys
@@ -495,9 +500,10 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
         
         # Find valleys
         valleys = [(x, y, d[0], d[1], d[2]) for x, y, d in zip(xvalleys, yvalleys, valley_depths)] # [ (x-value, y-value, avg-depth, small-depth, large-depth) ]
+        #print(valleys)
         
         # Set yield point based on yp index, if there are any valleys, else default to minimum 2nd derivative
-        if valleys and isinstance(yp, int) or isinstance(up, int):
+        if valleys and isinstance(yp, int) or valleys and isinstance(up, int) and up != 0:
             csv_data['reduced-fringe-slope-2nd-derivative-peaks'] = [xpeaks, ypeaks]
             csv_data['reduced-fringe-slope-2nd-derivative-valleys'] = [xvalleys, yvalleys]
             # valleys = sorted(valleys, key=lambda x: x[2]) # Sort by valley depth
@@ -522,6 +528,24 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
                     poisson_xhis.append(x_yield)
                     yield_point_derivative = [x_yield, y_yield]
                 except: print('  WARNING linear region is near end of stress-strain. Cant compute yield strength.')
+                
+                # Generate events = {'x':[], 'y':[]}
+                events = {'x':[], 'y':[]}
+                for n, (vx, vy, vd, vs, vl) in enumerate(valleys, 1):
+                    #if n <= yp: continue
+                    index = strain.index(vx)    
+                    events['x'].append( strain[index] )
+                    events['y'].append( stress[index] )
+                    
+                # Take derivative of events
+                if events['x']:
+                    ex_lo = min(events['x'])
+                    ex_hi = events['x'][events['y'].index(max( events['y'] ))]
+                    ex, ey = misc_funcs.reduce_data(events['x'], events['y'], ex_lo, ex_hi)
+                    dx_en, dy_e1, dy_e2 = misc_funcs.compute_derivative(ex, ey)
+                    events['dxn'] = dx_en
+                    events['dy1'] = dy_e1
+                    events['dy2'] = dy_e2
             
             # Testing ultimate predictions
             if isinstance(up, int) and up != 0:                
@@ -543,6 +567,35 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
                 x_ultimate = misc_funcs.closest(strain, xhi_ultimate)
                 y_ultimate = stress[strain.index(x_ultimate)]
                 ultimate_point = [x_ultimate, y_ultimate]
+                
+                
+                # Generate events = {'x':[], 'y':[]}
+                events = {'x':[], 'y':[]}
+                for n, (vx, vy, vd, vs, vl) in enumerate(valleys, 1):
+                    #if n <= yp: continue
+                    index = strain.index(vx)    
+                    events['x'].append( strain[index] )
+                    events['y'].append( stress[index] )
+                    
+                # Take derivative of events
+                ex_lo = min(events['x'])
+                ex_hi = events['x'][events['y'].index(max( events['y'] ))]
+                ex, ey = misc_funcs.reduce_data(events['x'], events['y'], ex_lo, ex_hi)
+                dx_en, dy_e1, dy_e2 = misc_funcs.compute_derivative(ex, ey)
+                events['dxn'] = dx_en
+                events['dy1'] = dy_e1
+                events['dy2'] = dy_e2
+                
+                # Find ultimate point
+                try:
+                    index = events['dy2'].index(min( events['dy2'] ))
+                    xhi_ultimate = events['dxn'][index]
+                    yhi_ultimate = events['dy2'][index]
+                    x_ultimate = misc_funcs.closest(strain, xhi_ultimate)
+                    y_ultimate = stress[strain.index(x_ultimate)]
+                    ultimate_point = [x_ultimate, y_ultimate]
+                except: pass
+            
                     
         # Set yield point based on maximum valley depth
         elif valleys and yp == 'max-d':
@@ -904,6 +957,34 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
         ax4.plot(xreg, yreg, '-', lw=4.0, color='lime', label='Linear regression (slope={:.4f})'.format(b1))
         if yield_point_derivative:
             ax4.plot(yield_point_derivative[0], yield_point_derivative[1], 'o', ms=10.0, markeredgecolor='black', color='tab:green', label='Yield point from "yp" (x,y):\n ({:.4f}, {:.4f}) NOT SHIFTED YET'.format(yield_point_derivative[0], yield_point_derivative[1]))
+        if events is not None and up != 0:
+            try:
+                ax5_color = 'tab:orange'
+                ax4.plot(events['x'], events['y'], '-o', lw=6, ms=10.0, color=ax5_color, zorder=-1, label='Linked events')
+                            
+                ax5 = ax3.twinx()
+                ex_hi = events['x'][events['y'].index(max( events['y'] ))]
+                
+                ax5.axvline(ex_hi, color=ax5_color, ls='--', lw=1.5, label='Maximum of event chain')
+                ax5.plot(events['dxn'], events['dy2'], '-o', lw=6, ms=10.0, color=ax5_color, zorder=-1, label='Linked events')
+                ax5.plot(xhi_ultimate, yhi_ultimate, 'o', ms=10.0, markeredgecolor='black', color='tab:purple', label='Ultimate point (x,y):\n ({:.4f}, {:.4f})'.format(xhi_ultimate, yhi_ultimate))
+    
+                
+                ax5.tick_params(axis='y', colors=ax5_color)
+                ax5.spines['right'].set_color(ax5_color)
+                ax5.set_ylabel('$dstrain^2$ / $devent^2$', color=ax5_color)
+                ymin = 3.0*min(events['dy2'])
+                ymax = 3.0*max(events['dy2'])
+                ax5.set_ylim(ymin, ymax)
+                ax5.legend(loc='upper right', bbox_to_anchor=(1, 1), fancybox=True, ncol=1, fontsize=8)
+                
+                # Ensure ax3 legend is above ax5 lines
+                ax3.set_zorder(2)
+                ax5.set_zorder(1)
+                ax3.patch.set_visible(False)
+                ax3.legend(loc='upper left')
+            except: pass
+        
         ax4.set_xlabel('Strain')
         ax4.set_ylabel('Stress {}'.format(stress_units))
         ax4.legend(loc='lower right', bbox_to_anchor=(1, 0), fancybox=True, ncol=1, fontsize=8)
@@ -985,6 +1066,13 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
         nu1 = abs(nu1_lr.b1)
         nu2 = abs(nu2_lr.b1)
         nu12 = abs(nu12_lr.b1)
+        
+        csv_data['t1'] = [strain, t1_reg]
+        csv_data['t2'] = [strain, t2_reg]
+        
+        csv_data['t1 reg'] = [nu1_lr.xreg, nu1_lr.yreg]
+        csv_data['t2 reg'] = [nu2_lr.xreg, nu2_lr.yreg]
+        
         
         # Plot results
         if t_12_avg:
@@ -1750,4 +1838,4 @@ def compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2, 
                     for i, j in zip(x, y):
                         f.write('{} {}\n'.format(i, j))
         
-    return xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12, ultimate_point
+    return xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12, ultimate_point, fig1, fig2

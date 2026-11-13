@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.2
-November 11th, 2024
+Revision 1.3
+July 28, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -19,6 +19,7 @@ Houghton, MI 49931
 ##############################
 import numpy as np
 import math
+import csv
 
 
 #############################################
@@ -38,6 +39,7 @@ class linear_regression:
             sum_xi += x; sum_yi += y; n += 1
             sum_xi_2 += x*x; sum_yi_2 += y*y; 
             sum_xi_yi += x*y
+        if n == 0: n = 1 # Avoid div by zero errors
                 
         # SSxy and Sxx
         self.SSxy = (sum_xi_yi) - ((1/n)*(sum_xi*sum_yi))
@@ -59,9 +61,14 @@ class linear_regression:
         self.MSres = self.SSres/(n - 2)
 
         # variances and r^2
-        self.b0_variance = self.MSres*( (1/n) + (self.x_bar*self.x_bar/self.SSxx) )
-        self.b1_variance = self.MSres/self.SSxx
-        self.r2 = self.SSreg/self.SStotal
+        if self.SSxx != 0:
+            self.b0_variance = self.MSres*( (1/n) + (self.x_bar*self.x_bar/self.SSxx) )
+            self.b1_variance = self.MSres/self.SSxx
+            self.r2 = self.SSreg/self.SStotal
+        else:
+            self.b0_variance = 0
+            self.b1_variance = 0
+            self.r2 = 0
         
         # linear regression data
         self.xreg = [min(xdata), max(xdata)]
@@ -418,7 +425,17 @@ def piecewise_regression(x, y, xlo, xhi, n):
 #    maxiter sets a cutoff for the maximum number of iterations                      #
 #    intial_guess list of parameters 1-N or None, if None scipy intializes the guess #
 ######################################################################################
-def fit_hyperbola(x, y, xlo, xhi, minimum_convergence=None, initial_guess=False, maxiter=10**4):
+def edge_tan_intersect(x, y, N=1):
+    '''
+    Discrete derivative tangent lines at edge(N steps from)
+    Returns analytical intersections between tangent lines
+    '''
+    yp = np.gradient(y, x)
+    xi = (-y[N] + y[-N] + x[N] * yp[N] - x[-N] * yp[-N]) / (yp[N] - yp[-N])
+    yi = yp[N] * (xi - x[N]) + y[N]
+    return xi, yi
+
+def fit_hyperbola(x, y, xlo, xhi, minimum_convergence=None, initial_guess=False, maxiter=10**4, slope_method='asymptote'):
     from scipy import optimize
       
     # define default outputs (in-case something goes wrong)
@@ -456,8 +473,18 @@ def fit_hyperbola(x, y, xlo, xhi, minimum_convergence=None, initial_guess=False,
     center = [t0, v0]
     slopes = [a, (a+b)]
     
-    # Find tangent intersection
-    m1, m2 = slopes # slopes at lo-end and hi-end
+    # Find tangent intersection   
+    if slope_method == 'asymptote':
+        m1, m2 = slopes # slopes at lo-end and hi-end
+    
+    # Tristan said derivitive method is better?
+    elif slope_method == 'tangent':
+        dxn, dy1, dy2 = compute_derivative(xout, yout)
+        m1 = dy1[0]  # numerical derivative at lo-end
+        m2 = dy1[-1] # numerical derivative at hi-end
+    else:
+        raise Exception('ERROR slope_method needs to be "{}" or "{}", but is "{}"'.format('asymptote', 'tangent', slope_method))
+    
     b1 = yout[0] - m1*xout[0] # Y-intercept at lo-end
     b2 = yout[-1] - m2*xout[-1] # Y-intercept at hi-end
     if m1 != m2:
@@ -505,40 +532,176 @@ def compute_variance(data):
  
 def compute_standard_deviation(data):
   variance = compute_variance(data)
-  return math.sqrt(variance)   
+  return math.sqrt(variance)  
+
+
+#########################################################################
+# Function to apply a bin-average to effectively "resample" LAMMPS data #
+#########################################################################
+def bin_average(x, y, dx, start=None, stop=None):
+    """Average y in bins of width dx along x.
+
+    Returns bin centers and mean y values. Empty bins are NaN.
+    The final bin may be narrower than dx.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+
+    if x.ndim != 1 or y.ndim != 1 or len(x) != len(y):
+        raise ValueError("x and y must be one-dimensional and the same length")
+    if dx <= 0:
+        raise ValueError("dx must be greater than zero")
+
+    valid = np.isfinite(x) & np.isfinite(y)
+    x, y = x[valid], y[valid]
+    if len(x) == 0:
+        return np.array([]), np.array([])
+
+    start = np.min(x) if start is None else start
+    stop = np.max(x) if stop is None else stop
+    if stop <= start:
+        raise ValueError("stop must be greater than start")
+
+    n_bins = int(np.ceil((stop - start) / dx))
+    edges = start + np.arange(n_bins + 1) * dx
+    edges[-1] = stop  # The final bin may be narrower than dx
+
+    centers = (edges[:-1] + edges[1:]) / 2
+    in_range = (x >= start) & (x < stop)
+
+    counts, _ = np.histogram(x[in_range], bins=edges)
+    sums, _ = np.histogram(x[in_range], bins=edges, weights=y[in_range])
+
+    averages = np.full(n_bins, np.nan)
+    occupied = counts > 0
+    averages[occupied] = sums[occupied] / counts[occupied]
+
+    return centers, averages
+
+
+###################################################
+# Function to interpolate data onto constant grid #
+###################################################
+def interp_constant_dx(xdata, ydata, dx, n_points):
+    # Look for duplicate x-values
+    unique = sorted(set(xdata))
+    if len(xdata) != len(unique):
+        print('WARNING interp-constant-dx found duplicate X-values. Grouping and averaging Y-values')
+        groups = {i:[] for i in unique}
+        for x, y in zip(xdata, ydata):
+            groups[x].append(y)
+            
+        averages = {x:sum(ys)/len(ys) for x, ys in groups.items()}
+        xdata    = [x for x in sorted(averages.keys())]
+        ydata    = [averages[x] for x in xdata]        
+        
+        
+    
+    # Covnert to numpy arrays
+    xdata = np.asarray(xdata, dtype=float)
+    ydata = np.asarray(ydata, dtype=float)
+    xmin  = min(xdata)
+    xmax  = max(xdata)
+    #print(dx, n_points)
+    
+    # Error check
+    if isinstance(n_points, int) and isinstance(dx, (int, float)):
+        raise Exception('ERROR np and dx can not be used simulationly')
+    
+    # Compute the desired number of points
+    if dx is None and n_points is None:
+        n_points = len(xdata)
+    elif isinstance(dx, (int, float)):
+        xspan    = xmax - xmin
+        n_points = int(math.ceil(xspan/dx))
+    elif isinstance(n_points, int):
+        n_points = n_points
+    
+    # Dont let number of points dip below the orignal data
+    if n_points < len(xdata):
+        n_points = len(xdata)
+        
+    xinterp = np.linspace(xmin, xmax, n_points)    
+    yinterp = np.interp(xinterp, xdata, ydata)
+    return xinterp, yinterp
+    
 
 
 #######################################################
 # Function to write Kemppainen-Muzzy data to csv file #
 #######################################################
 def savedata_to_csv(csv_data, csv_name):
-    with open(csv_name, 'w') as f:
-        csv_data = dict(sorted(csv_data.items(), key=lambda x: len(x[1][0]), reverse=True)) # x[value][index-in-value]
-        ncolumns = int(2*len(csv_data)); nrows = max([len(csv_data[i][0]) for i in csv_data])
-        matrix = [[None]*ncolumns for n in range(nrows)]; titles = []
-        for i in csv_data:
-            titles.append('{} (x)'.format(i[:75]))
-            titles.append('{} (y)'.format(i[:75]))
-        for i in range(nrows):
-            j = 0
-            for name in csv_data:
-                xd = csv_data[name][0]
-                yd = csv_data[name][1]
-                try: 
-                    matrix[i][j] = xd[i]
-                    j += 1
-                except: pass
-                try: 
-                    matrix[i][j] = yd[i]
-                    j += 1
-                except: pass
-                
-        # Join with comma's and write titles
-        titles = ', '.join(titles)
-        f.write('{}\n'.format(titles))
-        
-        # write rows
-        for row in matrix:
-            row = ', '.join([str(i) for i in row if i is not None])
-            f.write('{}\n'.format(row))
+    """
+    Write data using either format:
+
+        csv_data[label] = [xdata, ydata]
+        csv_data[label] = series
+        csv_data[label] = [series]       # Also supported
+
+    Paired data receives "(x)" and "(y)" column labels.
+    Standalone series use only the provided label.
+    """
+
+    def is_series(value):
+        """Return True for non-string iterable objects."""
+        if isinstance(value, (str, bytes)):
+            return False
+
+        try:
+            iter(value)
+            return True
+        except TypeError:
+            return False
+
+    data_groups = []
+    for label, data in csv_data.items():
+        label = str(label)[:75]
+
+        if not is_series(data):
+            raise TypeError(f'CSV data associated with "{label}" must be iterable.')
+
+        data = list(data)
+
+        # Paired x/y data: [xdata, ydata]
+        if len(data) == 2 and all(is_series(values) for values in data):
+            xdata = list(data[0])
+            ydata = list(data[1])
+
+            columns = [(f'{label} (x)', xdata), (f'{label} (y)', ydata)]
+
+        # Wrapped standalone series: [series]
+        elif len(data) == 1 and is_series(data[0]):
+            columns = [(label, list(data[0]))]
+
+        # Direct standalone series: [value1, value2, ...]
+        else:
+            columns = [(label, data)]
+
+        group_length = max(len(values) for _, values in columns)
+        data_groups.append((group_length, columns))
+
+    # Put the longest data groups first, matching the original behavior
+    data_groups.sort(key=lambda group: group[0], reverse=True)
+
+    # Flatten the groups into individual CSV columns
+    columns = [
+        column
+        for _, group_columns in data_groups
+        for column in group_columns
+    ]
+
+    nrows = max((len(values) for _, values in columns), default=0)
+    with open(csv_name, 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+
+        # Write column headings
+        writer.writerow([title for title, _ in columns])
+
+        # Write data, leaving blank cells for shorter columns
+        for row_index in range(nrows):
+            row = [
+                values[row_index] if row_index < len(values) else ''
+                for _, values in columns
+            ]
+            writer.writerow(row)
     return

@@ -51,7 +51,7 @@ GUI_zoom = 100
 ##################################################################################################################
 settings = {'mode': 'src/log_analysis/modes/default_blank.py', # Default run mode to load GUI with.
             'modes-dir': 'src/log_analysis/modes',       # Set directory where all modes are saved.
-            'replace_logfile_when_loading_mode': False,  # True or False default for replacing logfile when loading a mode.
+            'replace_logfile_when_loading_mode': True,   # True or False default for replacing logfile when loading a mode.
             'save-fig' : True,                           # True or False option to save figure are .jpeg
             'image-dpi': 300,                            # Set the image quality of the generated image (NOTE higher dpi's will result in slower code).
            }

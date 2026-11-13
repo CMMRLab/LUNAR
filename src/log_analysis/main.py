@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 @author: Josh Kemppainen
-Revision 1.3
-November 10, 2025
+Revision 1.5
+April 28, 2026
 Michigan Technological University
 1400 Townsend Dr.
 Houghton, MI 49931
@@ -14,19 +14,35 @@ import src.log_analysis.vectorized_string_compute as vectorized_string_compute
 import src.log_analysis.whittaker_smoother as whittaker_smoother
 import src.log_analysis.signal_processing as signal_processing
 import src.log_analysis.rfr_mechanical as rfr_mechanical
+import src.log_analysis.rfr_thermal as rfr_thermal
 import src.log_analysis.misc_funcs as misc_funcs
 import src.log_analysis.read_log as read_log
 import src.io_functions as io_functions
+import src.glob_wildcards as glob_wildcards
+from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 from cycler import cycler
 import numpy as np
+import traceback
+import copy
+import glob
 import math
 import time
 import os
 
 
+#colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+#color_index = 0
+
+# Color wheel defined by matplotlib:
+#   colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+# However, we can construct our own color wheel to prioritize the colors we want first and we can 
+# have way more colors defined than what matplotlib defines. Below is Josh's preferred color wheel
+colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:purple', 'tab:red', 'tab:gray','tab:olive', 'tab:cyan', 'tab:pink', 'teal',
+          'crimson', 'lime', 'tomato',  'blue', 'orange', 'green', 'purple', 'red', 'gray', 'olive', 'cyan', 'pink', 'tab:brown']
+
 # Get the colors from the 'tab20c' colormap
-colors = plt.cm.tab20c.colors
+#colors = plt.cm.tab20c.colors
 
 # Set the default color cycle using rcParams
 plt.rcParams['axes.prop_cycle'] = cycler(color=colors)
@@ -44,7 +60,639 @@ def import_file(path):
     spec = util.spec_from_file_location(root, path)
     module = util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module  
+    return module 
+
+
+#----------------------------#
+# Array processing functions #
+#----------------------------#
+# Function that parses the Misc column in the stack, but useful for other parsing
+def get_misc_setting(misc, use_eval=True):
+    # Setup the globals namespace to limit scope of what eval() can do
+    allowed_builtins = ['min','max','sum','abs','len','map','range','reversed']
+    copied_builtins = globals()['__builtins__'].copy()
+    globals_dict = {}
+    globals_dict['__builtins__'] = {key:copied_builtins[key] for key in allowed_builtins}
+    
+    # Parse misc string
+    setting = {} # {keyword:float or int or Boolean}
+    tmp1 = misc.split(';')
+    for tmp2 in tmp1:
+        tmp3 = tmp2.split('=')
+        if len(tmp3) >= 2:
+            i = tmp3[0].strip()
+            if use_eval:
+                try: j = eval(tmp3[1], globals_dict)
+                except: j = str(tmp3[1])
+            else: j = str(tmp3[1])
+            setting[i] = j
+    return setting
+
+
+#----------------------------#
+# Array processing functions #
+#----------------------------#
+# Function to perform averaging over multiple wildcard files and then
+# update the mode and files structs to analyze the single file.
+def wildcard_averaging(mode, files, log):
+    # Parse:
+    #   sections = "1,2,3-6; wavg=True"
+    sections = mode['sections']
+    sections_only, additional_settings = sections.split(';', 1)
+    sections_only       = sections_only.strip()
+    additional_settings = additional_settings.strip()
+    settings = get_misc_setting(additional_settings)
+
+    # If user wants wildcard averaging go through and collect all series to average together
+    wildcard_averaging = settings.get('wavg', False)
+    if not wildcard_averaging: # by-pass if user did ask for this
+        mode['sections'] = sections_only
+        return mode, files
+    
+    # Start averaging together files
+    import numpy as np
+    xdata_column = mode['xdata']
+    ydata_column = mode['ydata']
+    xcompute     = mode['xcompute']
+    ycompute     = mode['ycompute']
+    keywords     = mode['keywords']
+    sections     = sections_only
+    xdata_series, ydata_series, processed_files = [], [], []
+    for logfile in files:
+        if not os.path.isfile(logfile): continue
+    
+        logged = read_log.file(logfile, keywords=keywords, pflag=log.print2console)
+        data = logged.get_data(sections, remove_duplicates=True, pflag=log.print2console) # {column-name:[lst of data]}
+        
+        if xcompute:
+            xdata, message = vectorized_string_compute.thermo_data(data, xcompute)
+            log.out('  xcompute={}'.format(xcompute))
+            log.out('  {}'.format(message))
+        else: xdata = data[xdata_column]
+        
+        if ycompute:
+            ydata, message = vectorized_string_compute.thermo_data(data, ycompute)
+            log.out('  ycompute={}'.format(ycompute))
+            log.out('  {}'.format(message))
+        else: ydata = data[ydata_column]
+            
+        xdata = np.array(xdata, dtype=float)
+        ydata = np.array(ydata, dtype=float)
+        
+        # Ensure increasing x for interpolation
+        order = np.argsort(xdata)
+        xdata = xdata[order]
+        ydata = ydata[order]
+        xdata_series.append( xdata )
+        ydata_series.append( ydata )
+        processed_files.append( logfile )
+        
+    if not xdata_series:
+        log.warn('WARNING wildcard averaging found no valid files.')
+        return mode, files
+
+    # Common overlapping x-domain
+    xmin = max(x.min() for x in xdata_series)
+    xmax = min(x.max() for x in xdata_series)
+    if xmin >= xmax:
+        log.warn('WARNING wildcard averaging failed because X-ranges do not overlap.')
+        return mode, files
+    
+    # Use the shortest series length to avoid inventing extra resolution
+    npts = min(len(x) for x in xdata_series)
+    xavg = np.linspace(xmin, xmax, npts)
+    
+    # Interpolate all y-series onto common x-grid
+    y_interp = []
+    for xdata, ydata in zip(xdata_series, ydata_series):
+        y_interp.append(np.interp(xavg, xdata, ydata))
+    
+    yarr = np.vstack(y_interp)
+    yavg = np.mean(yarr, axis=0)
+    if yarr.shape[0] > 1:
+        ystd = np.std(yarr, axis=0, ddof=1)
+    else:
+        ystd = np.zeros_like(yavg)
+    
+    # Write averaged LAMMPS-style log file in path of last processed file
+    last_file = processed_files[-1]
+    outdir = os.path.dirname(os.path.abspath(last_file))
+    
+    array_file = mode.get('array_file', '')
+    if array_file:
+        basename = array_file
+    else:
+        basename = 'wildcard_average'
+    
+    avg_logfile = os.path.join(outdir, '{}.log.lammps'.format(basename))
+    if xcompute: xname = 'xavg'
+    else: xname = xdata_column
+    if ycompute: yname = 'yavg'
+    else: yname = ydata_column
+    with open(avg_logfile, 'w') as f:
+        f.write('LAMMPS log file generated by LUNAR/log_analysis.py wildcard averaging\n')
+        f.write('Averaged {} files:\n'.format(len(processed_files)))
+        for file in files:
+            if file in processed_files:
+                f.write(' - {:>8}: {}\n'.format('Averaged', file))
+            else:
+                f.write(' - {:>8}: {}\n'.format('Failed', file))
+        f.write('\n\n')
+        
+        f.write('{:>10} {:>24} {:>24} {:>24}\n'.format('Step', xname, yname, yname + '_std'))
+        for i, (x, y, s) in enumerate(zip(xavg, yavg, ystd)):
+            f.write('{:>10d} {:>24.16f} {:>24.16f} {:>24.16f}\n'.format(i, x, y, s))
+    
+        f.write('Loop time of 0 on 1 procs for {} steps\n'.format(len(xavg)))
+    
+    log.out(' - wildcard averaged logfile={}'.format(avg_logfile))
+    
+    # Update mode and files for the new averaged file
+    mode['sections'] = 'all'
+    mode['xdata']    = xname
+    mode['ydata']    = yname
+    mode['logfile']  = avg_logfile
+    mode['xcompute'] = '' # reset any computes since this is already handled
+    mode['ycompute'] = '' # reset any computes since this is already handled
+    files = [avg_logfile]
+    return mode, files
+
+
+#----------------------------#
+# Array processing functions #
+#----------------------------#
+# Partial name matching for wildcard switching
+def partial_name(compute):
+    # Strip function_name and parentheses
+    stripped = ''
+    left_parentheses = False
+    right_parentheses_removed = compute.strip()
+    if right_parentheses_removed.endswith(')'):
+        right_parentheses_removed = right_parentheses_removed[:-1]
+    for i in right_parentheses_removed:
+        if i == '(':
+            left_parentheses = True
+            continue
+        if left_parentheses:
+            stripped += i
+    
+    # Generate map
+    partial_to_variable = {} # {'partial_name':['variable', {'keyword':'key_var'}], ... }
+    split = stripped.split(',')
+    for pair in split:
+        if not pair: continue
+        
+        # We need to support semi-colon stringing operations
+        # to tie back to a specific analysis run
+        semi_colon = pair.split(';', 1)
+        before = semi_colon[0]
+        after  = semi_colon[1:]
+        if after:
+            after = ' '.join(after)
+            after_semi_colon = after.split(';')
+            analysis_dict = {}
+            for string in after_semi_colon:
+                equate = string.split('=')
+                if len(equate) == 2:
+                    keyword = equate[0].strip()
+                    key_var = equate[1].strip()
+                    analysis_dict[keyword] = key_var
+        else: analysis_dict = {}
+        
+        # Determine partial_to_variable
+        paired = before.split('=')
+        if len(paired) == 2:
+            partial = paired[0].strip()
+            variable = paired[1].strip()
+            partial_to_variable[partial] = [variable, analysis_dict]
+    return partial_to_variable
+
+
+#----------------------------#
+# Array processing functions #
+#----------------------------#
+# Wildcard matching for wildcard switching
+def wild_match(compute):
+    # Strip function_name and parentheses
+    stripped = ''
+    left_parentheses = False
+    right_parentheses_removed = compute.strip()
+    if right_parentheses_removed.endswith(')'):
+        right_parentheses_removed = right_parentheses_removed[:-1]
+    for i in right_parentheses_removed:
+        if i == '(':
+            left_parentheses = True
+            continue
+        if left_parentheses:
+            stripped += i
+    
+    # Generate map
+    wildcard_to_variable = {} # {('wildcard[i]', 'match'):['variable', {'keyword':'key_var'}]}
+    split = stripped.split(',')
+    for pair in split:
+        if not pair: continue
+    
+        # We need to support semi-colon stringing operations
+        # to tie back to a specific analysis run
+        semi_colon = pair.split(';', 1)
+        before = semi_colon[0]
+        after  = semi_colon[1:]
+        if after:
+            after = ' '.join(after)
+            after_semi_colon = after.split(';')
+            analysis_dict = {}
+            for string in after_semi_colon:
+                equate = string.split('=')
+                if len(equate) == 2:
+                    keyword = equate[0].strip()
+                    key_var = equate[1].strip()
+                    analysis_dict[keyword] = key_var
+        else: analysis_dict = {}
+        
+        # Determine partial_to_variable
+        paired = before.split('=')
+        if len(paired) == 3:
+            wildcard = paired[0].strip()
+            match    = paired[1].strip()
+            variable = paired[2].strip()
+            wildcard_to_variable[(wildcard, match)] = [variable, analysis_dict]
+    return wildcard_to_variable
+
+
+#----------------------------#
+# Array processing functions #
+#----------------------------#
+# Write out the csv file for array processing
+def array_csv(outputs, abouts, wildcards, basename, log, max_len=10):
+    # sub_analysis to skip
+    sub2skip = ['xdata-raw', 'ydata-raw', 'xdata-clean', 'ydata-clean', 'xdata', 'ydata',
+                'lo_bounds', 'hi_bounds', 'lo_line', 'hi_line', 'lo_reg_x', 'hi_reg_x', 'lo_reg_y', 'hi_reg_y']
+    
+    # Find all unique columns
+    all_wildcards = set() # {Nwildcards1, Nwildcards2, ...}
+    all_outputs   = []    # ['analyis|sub-analysis',  'analyis|sub-analysis[index]', ...]
+    all_abouts    = {}    # {output-name:about-text}
+    for file in outputs:
+        all_wildcards.add(len(wildcards[file]))
+        for analysis in outputs[file]:
+            for sub_analysis in outputs[file][analysis]:
+                if sub_analysis in sub2skip: continue
+                column = '{}|{}'.format(analysis, sub_analysis)    
+                data = outputs[file][analysis][sub_analysis]
+                try: about = abouts[file][analysis][sub_analysis]
+                except: about = ''
+                if isinstance(data, (list, tuple)):
+                    if len(data) > max_len: continue
+                    for n, value in enumerate(data):
+                        if value is None: continue
+                        list_column = '{}[{}]'.format(column, n)
+                        if list_column not in all_outputs:
+                            all_outputs.append(list_column)
+                else:
+                    if data is None: continue
+                    if column not in all_outputs:
+                        all_outputs.append(column)
+                
+                # Log here in-case of a continue due to data being
+                # X-data or Y-data (or similar such as smoothed data)
+                all_abouts[column] = about
+
+    # Start making unique data structure to hold all possible combinations
+    # of wildards and computes - initialize all with None's in case value
+    # is missing.
+    all_outputs = sorted(all_outputs, key=lambda s: s[0])
+    columns = ['wildcards[{}]'.format(i) for i in range(max(all_wildcards))]
+    columns.extend( list(all_outputs) )
+    csv_data = {} # {'filename':{'wildcards[0]':'wildcard', 'Modulus|b1-raw':value, ... Nanalysis*Nsub-analysis},  ... Nfiles}
+    for file in outputs:
+        # Initialize all columns
+        csv_data[file] = {i:str(None) for i in columns}
+        
+        # Upate wildcards
+        for n, wildard in enumerate(wildcards[file]):
+            column = 'wildcards[{}]'.format(n)
+            csv_data[file][column] = wildard
+        
+        # Update analysis|sub-analysis data
+        for analysis in outputs[file]:
+            for sub_analysis in outputs[file][analysis]:
+                if sub_analysis in sub2skip: continue
+                column = '{}|{}'.format(analysis, sub_analysis)    
+                data = outputs[file][analysis][sub_analysis]
+                if isinstance(data, (list, tuple)):
+                    if len(data) > max_len: continue
+                    for n, value in enumerate(data):
+                        if value is None: continue
+                        list_column = '{}[{}]'.format(column, n)
+                        value = str(value)
+                        value = value.replace(',', '-')
+                        csv_data[file][list_column] = value
+                else:
+                    if data is None: continue
+                    value = str(data)
+                    value = value.replace(',', '-')
+                    csv_data[file][column] = value
+
+        
+    # Write output info
+    try:
+        output_name = '{}_output.csv'.format(basename)
+        with open(output_name, 'w') as f:
+            # Join with comma's and write titles
+            titles = ', '.join(['filename'] + columns)
+            f.write('{}\n'.format(titles))
+            
+            # Write rows
+            for file in csv_data:
+                data = csv_data[file]
+                outputs = [str(file)]
+                for column in columns:
+                    outputs.append(str(data[column]))
+                f.write('{}\n'.format(', '.join(outputs)))
+        log.out(f'Successfully wrote: {output_name}')
+    except: 
+        stack_trace_string = traceback.format_exc()
+        log.out(f'ERROR could not write {output_name}. File is likely open in another program.')
+        log.out('Traceback:')
+        log.out(stack_trace_string)
+
+        
+    # Write about info
+    try:
+        about_name = '{}_about.txt'.format(basename)
+        with open(about_name, 'w') as f:
+            f.write('This file contains details about the array_file header naming. Please note that if the about\n')
+            f.write('details is a list, the actual column name in the corresponding *_output.csv file will be \n')
+            f.write('indexed like a python list (starting at index 0). For example:\n')
+            f.write('\n')
+            f.write('  Calling "Regression Fringe Response Modulus" and setting the Name as RFR-mechanical\n')
+            f.write('  the yield point computed via derivatives will have a columns:\n')
+            f.write('    RFR-mechanical|yield_point_derivative[0] -> X-location of yield point\n')
+            f.write('    RFR-mechanical|yield_point_derivative[1] -> Y-location of yield point\n')
+            f.write('\n')
+            f.write('  Since the about statement defines this value as a list:\n')
+            f.write('    List of floats found from yield point determination, using derivative methods.\n')
+            f.write('    Order [X-yp, Y-yp] or [None, None] if not using yp. NOTE: SHIFTED based on\n')
+            f.write('    shift method\n')
+            
+            if all_abouts:
+                longest_key = max(all_abouts, key=len)
+                max_len = len(longest_key)
+                top_bottom = (max_len + 4)*'*'
+                text_len = 2*max_len
+                for key in all_abouts:
+                    about = all_abouts[key]                
+                    header = '* {:^{width}} *'.format(key, width=max_len)
+                    wrapped = '\n'.join(about[i:i+text_len].lstrip() for i in range(0, len(about), text_len))
+                    f.write('\n\n')
+                    f.write('{}\n'.format(top_bottom))
+                    f.write('{}\n'.format(header))
+                    f.write('{}\n'.format(top_bottom))
+                    f.write('{}\n'.format(wrapped))
+        log.out(f'Successfully wrote: {about_name}')
+    except: 
+        stack_trace_string = traceback.format_exc()
+        log.out(f'ERROR could not write {about_name}. File is likely open in another program.')
+        log.out('Traceback:')
+        log.out(stack_trace_string)
+    return
+
+#---------------------------------#
+# Array processing final function #
+#---------------------------------#
+def run(mode, plot=True, savefig=True, dpi=300, log=None, log_clear=False, ding=True):
+    if log is None:
+        log = io_functions.LUNAR_logger()
+        log.configure(level='production')
+
+    # Set up Tristan's "array" analysis using recursion
+    if not os.path.isfile(str(mode['logfile'])):
+        files = glob.glob(mode['logfile'])
+        array_time = time.time(); analyzed = None; 
+        figures   = {} # {'figure-description':[fig_instance, ..., Nprocessed_files]}
+        wildcards = {} # {filename : [wildcard1, wildcard2, ...]}
+        outputs   = {} # {filename : dict-of-outputs}
+        abouts    = {} # {filename : dict-of-outputs}
+        dirnames  = [] # [dirname1, dirname2, ...]
+        processed_files, failed_files = [], []
+        
+        # Check if user wants all matched files to be averaged together based on the sections format of
+        #   sections = "1,2,3-6; wavg=True; other_possible_settings=1"
+        # where additional settings appear after the first semi-colon character (;) 
+        if ';' in mode['sections']:
+            mode, files = wildcard_averaging(mode, files, log)
+        if files:
+            # Try sorting files
+            try:
+                from natsort import natsorted
+                files = natsorted(files)
+                log.out('Read in logfiles were sorted using natsort, thus they should be iterated through')
+                log.out('in a sequence that represents evolution or progression and logged in that order.')
+            except:
+                files = sorted(files)
+                log.warn('WARNING natsort was not installed and read in logfiles were sorted using pythons')
+                log.out('sorted function. The file iteration sequence may be unorder from a evolution or')
+                log.out('progression stand point. Depending on the names given to the read in files. You may')
+                log.out('intall natsort with:  pip3 install natsort   (if pip manager is installed)')
+            
+            outer_mode = copy.deepcopy(mode)
+            for n, file in enumerate(files, 1):
+                plt.close('all')
+                log.clear_all()
+                log.out('\n\nUsing array input option:')
+                log.out(' - logfile       : {}'.format(mode['logfile']))
+                log.out(' - matched file  : {}'.format(file))
+                log.out(' - elapsed time  : {:.2f} (seconds)'.format(time.time() - array_time))
+                log.out(' - progress      : {} of {} ({:.2f}%)'.format(n, len(files), 100*(n/len(files))))
+                if file.endswith('.jpeg') or file.endswith('.log.lunar') or file.endswith('.eps'):
+                    log.warn(f' - WARNING matched file {file} has an extension that does not make sense to process. Skipping file')
+                    continue
+                
+                # We will be mutating the mode, so make a deep copy to avoid
+                # weird mutation issues by making incremental modifications
+                inner_mode = copy.deepcopy(outer_mode)
+                inner_mode['logfile'] = file
+                wilcards_lst = glob_wildcards.get_glob_wildcards(mode['logfile'], file)
+                
+                # Check if user wants to use an X-compute and Y-compute to set 
+                # X-data and Y-data columns based on info in the logfile name
+                xcompute = inner_mode['xcompute'].strip()
+                ycompute = inner_mode['ycompute'].strip()
+                if xcompute.startswith('partial_name(') and ycompute.startswith('partial_name('):
+                    try:
+                        xpartial_to_variable = partial_name(xcompute)
+                        ypartial_to_variable = partial_name(ycompute)
+                        same_keys = set(xpartial_to_variable.keys()) == set(ypartial_to_variable.keys())
+                        if same_keys:
+                            parital_matched_key = None
+                            for key in xpartial_to_variable:
+                                if key in file:
+                                    parital_matched_key = key
+                                    break
+                            
+                            # Set up variables
+                            if parital_matched_key is not None:
+                                x_variable, x_analysis_dict = xpartial_to_variable[parital_matched_key]
+                                y_variable, y_analysis_dict = ypartial_to_variable[parital_matched_key]
+                                log.out(' - partial_name(): {} -> {}'.format(xcompute, x_variable))
+                                log.out(' - partial_name(): {} -> {}'.format(ycompute, y_variable))
+                                
+                                # Update the xdata, ydata, xcompute, and ycompute keys
+                                compute_chars = ['${', '}']
+                                if all(c in x_variable for c in compute_chars):
+                                    inner_mode['xcompute'] = x_variable
+                                else:
+                                    inner_mode['xcompute'] = ''
+                                    inner_mode['xdata'] = x_variable
+                                    
+                                if all(c in y_variable for c in compute_chars):
+                                    inner_mode['ycompute'] = y_variable
+                                else:
+                                    inner_mode['ycompute'] = ''
+                                    inner_mode['ydata'] = y_variable
+                                
+                                # Update the analysis columns
+                                analysis_dict = {**x_analysis_dict, **y_analysis_dict}
+                                for n, (method, xlo, xhi, misc, name) in enumerate(inner_mode['analysis']):
+                                    settings = get_misc_setting(misc, use_eval=True)
+                                    for key in analysis_dict:
+                                        if key in settings:
+                                            log.out(' - partial_name("{}", {}): {} -> {}'.format(method, key, settings[key], analysis_dict[key]))
+                                            settings[key] = analysis_dict[key]
+                                    new_misc = '; '.join( ['{}={}'.format(key, value) for key, value in settings.items()] )
+                                    inner_mode['analysis'][n][3] = new_misc 
+                        else:
+                            log.out(' - partial_name() x != y: {} != {}'.format(xcompute, ycompute))
+                            log.out(' - Skipping and hoping for the best (using supplied "xdata" and "ydata" columns)')
+                    except: pass
+                
+                if xcompute.startswith('wild_match(') and ycompute.startswith('wild_match('):
+                    try:
+                        xwildcard_to_variable = wild_match(xcompute)
+                        ywildcard_to_variable = wild_match(ycompute)
+                        same_keys = set(xwildcard_to_variable.keys()) == set(ywildcard_to_variable.keys())
+                        if same_keys:
+                            wilcards_set = {('wildcards[{}]'.format(n), str(value)) for n, value in enumerate(wilcards_lst)}
+                            wildcard_matched_key = None
+                            for key in xwildcard_to_variable:
+                                if key in wilcards_set:
+                                    wildcard_matched_key = key
+                                    break
+    
+                            # Set up variables
+                            if wildcard_matched_key is not None:
+                                x_variable, x_analysis_dict = xwildcard_to_variable[wildcard_matched_key]
+                                y_variable, y_analysis_dict = ywildcard_to_variable[wildcard_matched_key]
+                                log.out(' - wild_match()  : {} -> {}'.format(xcompute, x_variable))
+                                log.out(' - wild_match()  : {} -> {}'.format(ycompute, y_variable))
+                                
+                                # Update the xdata, ydata, xcompute, and ycompute keys
+                                compute_chars = ['${', '}']
+                                if all(c in x_variable for c in compute_chars):
+                                    inner_mode['xcompute'] = x_variable
+                                else:
+                                    inner_mode['xcompute'] = ''
+                                    inner_mode['xdata'] = x_variable
+                                    
+                                if all(c in y_variable for c in compute_chars):
+                                    inner_mode['ycompute'] = y_variable
+                                else:
+                                    inner_mode['ycompute'] = ''
+                                    inner_mode['ydata'] = y_variable
+                                    
+                                # Update the analysis columns
+                                analysis_dict = {**x_analysis_dict, **y_analysis_dict}
+                                for n, (method, xlo, xhi, misc, name) in enumerate(inner_mode['analysis']):
+                                    settings = get_misc_setting(misc, use_eval=True)
+                                    for key in analysis_dict:
+                                        if key in settings:
+                                            log.out(' - partial_name("{}", {}): {} -> {}'.format(method, key, settings[key], analysis_dict[key]))
+                                            settings[key] = analysis_dict[key]
+                                    new_misc = '; '.join( ['{}={}'.format(key, value) for key, value in settings.items()] )
+                                    inner_mode['analysis'][n][3] = new_misc 
+                        else:
+                            log.out(' - wild_match()   x != y: {} != {}'.format(xcompute, ycompute))
+                            log.out(' - Skipping and hoping for the best (using supplied "xdata" and "ydata" columns)')
+                    except: pass
+                
+                try: # we dont want crashes to exit this loop
+                    analyzed = analysis(inner_mode, plot=True, savefig=savefig, dpi=dpi, log=log, log_clear=False)
+                    
+                    basename = analyzed.get_basename_and_builder_dirs()
+                    basename =  io_functions.path_to_string(basename)
+                    dirnames.append(os.path.dirname(basename))
+                    processed_files.append(file)
+                    
+                    wildcards[file] = wilcards_lst
+                    outputs[file] = analyzed.outputs
+                    abouts[file] = analyzed.about
+                    for fig_name, fig_instance in analyzed.figures.items():
+                        if fig_name not in figures:
+                            figures[fig_name] = [fig_instance]
+                        else: figures[fig_name].append(fig_instance)
+                    
+                    log.out(' - analysis state: SUCCESS')
+                    
+                    # Clear all logs and data structs to keep
+                    # RAM usage down and consistent logging 
+                    #analyzed.figures.clear()
+                    log.clear_all()
+                    #del analyzed
+
+                except: 
+                    failed_files.append(file)
+                    stack_trace_string = traceback.format_exc()
+                    log.out(' - analysis state: FAILED')
+                    log.out(' - traceback     :')
+                    log.out(' {}'.format(stack_trace_string))
+        
+        # Finalize the array run
+        array_file = mode.get('array_file', '')
+        if outputs and dirnames and array_file:
+            dirname = dirnames[-1]
+            array_file = mode['array_file']
+            output_basename = os.path.join(dirname, array_file)
+            array_csv(outputs, abouts, wildcards, output_basename, log)
+            for fig_name, figs in figures.items():
+                try:
+                    pdf_title = '{}_{}.pdf'.format(output_basename, fig_name)
+                    pdf = PdfPages(pdf_title)
+                    for n, fig in enumerate(figs):
+                        try: filename = os.path.basename(processed_files[n])
+                        except: filename = ''
+                        try:
+                            existing_title = fig.get_suptitle()
+                            if existing_title: # If plot already has sup, newline the filename
+                                filename = f'{existing_title}\n{filename}'
+                            fig.suptitle(filename)
+                            try: fig.tight_layout()
+                            except: pass
+                            pdf.savefig(fig)
+                        except: 
+                            stack_trace_string = traceback.format_exc()
+                            log.out(f'\nAn error occurred: {stack_trace_string}')
+                        finally:
+                            # free memory now
+                            if n + 1 < len(figs): plt.close(fig)
+                    log.out(' - pdf_plots={}'.format(pdf_title))
+                    pdf.close()
+                except:
+                    stack_trace_string = traceback.format_exc()
+                    log.out(' - FAILED to write pdf_plots={}'.format(pdf_title))
+                    log.out(f'\nAn error occurred: {stack_trace_string}')
+                    
+        if failed_files:
+            log.out('\n\nFiles that failed to be analyzed for unknown reasons:')
+            for file in failed_files:
+                log.out(' - {}'.format(file))
+        
+        if ding: print('\a') # Alert
+        #plt.show()
+        #if '*' not in mode['logfile']: plt.show()
+    else:
+        analyzed = analysis(mode, plot=True, savefig=savefig, dpi=dpi, log=log, log_clear=log_clear)
+
+    return analyzed
 
 
 ################################
@@ -58,7 +706,7 @@ class analysis:
         if log is None:
             log = io_functions.LUNAR_logger()
         log.configure(level='production')
-        #log.configure(level='debug', print2console=False
+        #log.configure(level='debug', print2console=False)
         if log_clear: log.clear_all()
         
         #################################
@@ -70,6 +718,10 @@ class analysis:
         self.columns = [] # list of columns from log file
         self.outputs = {} # {analysis-name:dict-of-outputs-based-on-method}
         self.about = {} # {analysis-name:dict-of-outputs-about-information}
+        
+        # Setup dict to store figures *NOTE: the 'figure_description', should be short as it
+        # will be used for setting up a "{}_{}.pdf".format(array_file, figure_description)
+        self.figures = {} # {'figure-description':fig_instance}
         
         
         #############################
@@ -86,13 +738,26 @@ class analysis:
             if os.path.isfile(logfile):
                 keywords = mode['keywords']
                 sections = mode['sections']
+                
+                # Sections may have additional settings behind the 1st ";" char so remove if needed
+                if ';' in str(sections):
+                    sections_only, additional_settings = str(sections).split(';', 1)
+                    sections_only       = sections_only.strip()
+                    additional_settings = additional_settings.strip()
+                    sections = sections_only # update sections
+                
                 self.log.out('  keywords={}'.format(mode['keywords']))
                 self.log.out('  sections={}'.format(sections))
                 logged = read_log.file(logfile, keywords=keywords, pflag=self.log.print2console)
                 data = logged.get_data(sections, remove_duplicates=True, pflag=self.log.print2console) # {column-name:[lst of data]}
                 self.columns = list(data.keys())
             else: data = {}; self.log.GUI_error(f'ERROR lammps logfile {logfile} does not exist');
-        except: data = {}; self.log.GUI_error('ERROR failed to read logfile and load data');
+        except: 
+            data = {}
+            stack_trace_string = traceback.format_exc()
+            self.log.out('Traceback:')
+            self.log.out(stack_trace_string)
+            self.log.GUI_error('ERROR failed to read logfile and load data')
         
         
         ##################################
@@ -103,24 +768,27 @@ class analysis:
         else:
             # Try to closing any currently open plots, before starting
             if plot:
-                try: plt.close()
+                try: plt.close('all')
                 except: pass
             
             # Get X- and Y-data
             xdata = mode['xdata']
             ydata = mode['ydata']
-            self.log.out('  xdata={}'.format(xdata))
-            self.log.out('  ydata={}'.format(ydata))
+            
+            self.log.out('  xdata="{}"'.format(xdata))
+            self.log.out('  ydata="{}"'.format(ydata))
+            #print( list(data.keys()) )
             
             # Check to see if xdata and ydata exists in data
             if xdata not in data and not mode['xcompute']:
-                self.log.GUI_error(f'ERROR X-data column {xdata} does not exist in logfile. Please check that keywords, sections, and X-data is correct.')
+                self.log.GUI_error(f'ERROR X-data column "{xdata}" does not exist in logfile. Please check that keywords, sections, and X-data is correct.')
             elif ydata not in data and not mode['ycompute']:
-                self.log.GUI_error(f'ERROR Y-data column {xdata} does not exist in logfile. Please check that keywords, sections, and Y-data is correct.')
+                self.log.GUI_error(f'ERROR Y-data column "{ydata}" does not exist in logfile. Please check that keywords, sections, and Y-data is correct.')
             else:
                 # Perform compute on data
                 xcompute = mode['xcompute']
                 ycompute = mode['ycompute']
+                indexes2remove = []
                 if xcompute:
                     x, message = vectorized_string_compute.thermo_data(data, xcompute)
                     self.log.out('  xcompute={}'.format(xcompute))
@@ -133,7 +801,7 @@ class analysis:
                     self.log.out('  {}'.format(message))
                     ydata = 'ycompute'
                 else: y = data[ydata] 
-
+                
                 # Remove paired x/y values if either value is NaN or infinite
                 if xcompute or ycompute:
                     x_values = np.asarray(x, dtype=float)
@@ -143,8 +811,10 @@ class analysis:
                     if indexes2remove:
                         self.log.out('  Removing non-finite x/y values at indexes: {}'.format(indexes2remove))
                         x = x_values[valid].tolist()
-                        y = y_values[valid].tolist()                
-
+                        y = y_values[valid].tolist()
+                
+                x = list(x)
+                y = list(y)
                 self.log.out('  len(xdata)={}'.format(len(x)))
                 self.log.out('  len(ydata)={}'.format(len(y)))
                 
@@ -230,6 +900,71 @@ class analysis:
                 for method in LAMMPS_cleaning:
                     xlo, xhi, misc, name = LAMMPS_cleaning[method]
                     LAMMPS_data_xlos.add(xlo); LAMMPS_data_xhis.add(xhi)
+                    
+                    #-------------------------------------------#
+                    # Apply linear interpolation to LAMMPS data #
+                    #-------------------------------------------#
+                    if method == 'LAMMPS data (apply linear-interp)':
+                        if name == '': name = 'LAMMPS data w/linear-interp'
+                        setting = self.get_misc_setting(misc)
+                        
+                        if 'dx' in misc:
+                            dx = setting['dx']
+                        else: 
+                            dx = None
+                            misc = ' default-dx=None'
+                            
+                        if 'n_points' in misc:
+                            n_points = setting['n_points']
+                        else: 
+                            n_points = None
+                            misc = ' default-n_points=None'
+                        
+                        # Perform linear interp "cleaning"
+                        self.log.out('  Implementing: LAMMPS data (apply linear-interp) with {} settings'.format(misc))
+                        x, y = self.interp_constant_dx(x, y, xlo, xhi, dx, n_points)
+                        data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
+                        self.log.out('  len(xdata)={}'.format(len(x)))
+                        self.log.out('  len(ydata)={}'.format(len(y)))
+                        
+                        # Log info from method for use in other analysis such as RFR stres-strain analysis for transverse strain "cleaning"
+                        cleaning_settings[method] = [dx, n_points]
+                    
+                    #-------------------------------------#
+                    # Apply moving average to LAMMPS data #
+                    #-------------------------------------#
+                    if method == 'LAMMPS data (apply bin average)':
+                        if name == '': name = 'LAMMPS data w/bin average'
+                        setting = self.get_misc_setting(misc)
+                        
+                        if 'dx' in misc:
+                            dx = setting['dx']
+                        else: 
+                            dx = 1
+                            misc = ' default-dx=1'
+
+                        if 'start' in misc:
+                            start = setting['start']
+                        else: 
+                            start = None
+                            misc = ' default-start=None'
+                            
+                        if 'stop' in misc:
+                            stop = setting['stop']
+                        else: 
+                            stop = None
+                            misc = ' default-stop=None'
+                        
+                        
+                        # Perform moving average "cleaning"
+                        self.log.out('  Implementing: LAMMPS data (apply bin average) with {} settings'.format(misc))
+                        x, y = self.bin_average(x, y, xlo, xhi, dx, start, stop)
+                        data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
+                        self.log.out('  len(xdata)={}'.format(len(x)))
+                        self.log.out('  len(ydata)={}'.format(len(y)))
+                        
+                        # Log info from method for use in other analysis such as RFR stres-strain analysis for transverse strain "cleaning"
+                        cleaning_settings[method] = [dx, start, stop]
                     
                     #-------------------------------------#
                     # Apply moving average to LAMMPS data #
@@ -437,6 +1172,36 @@ class analysis:
                                   'threshold': threshold}
                         self.outputs[name] = output
                         self.about[name] = about
+                        
+                    #----------------------------------------------#
+                    # Apply Savitzky-Golay smoother to LAMMPS data #
+                    #----------------------------------------------#
+                    if method == 'LAMMPS data (Savitzky-Golay)':
+                        if name == '': name = 'LAMMPS data (Savitzky-Golay)'
+                        setting = self.get_misc_setting(misc)
+                        if 'window' in setting:
+                            window = setting['window']
+                        else: threshold=100; misc += ' default-window=100;';
+                        
+                        if 'order' in setting:
+                            order = setting['order']
+                        else: order=1; misc = 'default-order=1';
+                        
+                        self.log.out('  Implementing: LAMMPS data (Savitzky-Golay) with {} settings'.format(misc))
+                        x, y = self.SavitzkyGolay(x, y, xlo, xhi, window, order)
+                        data2plot.append(self.plot_parms(x=x, y=y, style='point', marker='.', line='-', size=4, label=name, shiftable=True))
+                        
+                        # Log info from method for use in other analysis such as RFR stres-strain analysis for transverse strain "cleaning"
+                        cleaning_settings[method] = [window, order]
+                        
+                        # Grant access to Whittaker-Eilers-data outside of this class
+                        about = {'xdata': 'List of Savitzky-Golay X-data w/window={}; max_iter={}.'.format(window, order),
+                                 'ydata': 'List of Savitzky-Golay Y-data w/window={}; max_iter={}.'.format(window, order)}
+                        output = {'xdata': x,
+                                  'ydata': y}
+                        self.outputs[name] = output
+                        self.about[name] = about
+
     
     
                 # Set "Global" LAMMPS_data_xlo (maximize) and LAMMPS_data_xhi (minimize) values
@@ -479,6 +1244,7 @@ class analysis:
                                   'ydata': yout}
                         self.outputs[name] = output
                         self.about[name] = about
+                    
                     
                     #---------------------------------------------------------------------------------------------------------#
                     # Apply butterworth low pass filter for "seeing trends" in data (nothing will be done on raw LAMMPS data) #
@@ -645,14 +1411,17 @@ class analysis:
                     # Apply a hyperbola fit to the data and return hyperbola parameters #
                     #-------------------------------------------------------------------#
                     if method == 'hyperbola':
-                        minimum_convergence=None
-                        initial_guess=False
+                        minimum_convergence = None
+                        initial_guess = False
+                        slope_method = 'asymptote'
                         setting = self.get_misc_setting(misc)
                         if 'p' in setting:
                             minimum_convergence = setting['p']
                         if 'initial_guess' in setting:
                             initial_guess = setting['initial_guess']
-                        xout, yout, params, center, slopes, transition, tangent_intersection, tangents = self.fit_hyperbola(x, y, xlo, xhi, minimum_convergence=minimum_convergence, initial_guess=initial_guess, maxiter=10**6)
+                        if 'slope_method' in setting:
+                            slope_method = setting['slope_method']
+                        xout, yout, params, center, slopes, transition, tangent_intersection, tangents = self.fit_hyperbola(x, y, xlo, xhi, slope_method, minimum_convergence=minimum_convergence, initial_guess=initial_guess, maxiter=10**6)
                         self.log.out(self.format_analysis(method, xlo, xhi, misc, name))
                         
                         label = '{} slopes (lower-slope={};\nupper-slope={})'.format(name, slopes[0], slopes[1])
@@ -732,10 +1501,11 @@ class analysis:
                         label = '{} slopes and points: \n'.format(name)
                         for i, j in slopes:
                             slope = slopes[(i, j)]
-                            label += '   slope between (p{}, p{}) = {}\n'.format(i, j, slope)
-                            label += '    p{} = ({}, {})\n'.format(i, xbreaks[i], ybreaks[i]-shift_amount)
-                            label += '    p{} = ({}, {})\n'.format(j, xbreaks[j], ybreaks[j]-shift_amount)
+                            label += '   slope between (p{} - p{}) = {}\n'.format(i, j, slope)
+                            label += '    p{} = ({} - {})\n'.format(i, xbreaks[i], ybreaks[i]-shift_amount)
+                            label += '    p{} = ({} - {})\n'.format(j, xbreaks[j], ybreaks[j]-shift_amount)
                         self.log.out(f'  {label}')
+                        label = '{}'.format(name)
                         breakdata = self.plot_parms(x=xbreaks, y=ybreaks, style='point', marker='.', line='-', size=10, label=label, shiftable=True)
                         data2plot.append(breakdata)
                         
@@ -746,10 +1516,19 @@ class analysis:
                                  'ybreaks': 'List of "break points" found from peicewise-regression in Y-direction',
                                  'slopes': 'Dictionary of slopes between break points format = {(i, i+1):slope}, where i and i+1 are indexes of break point in xbreaks and ybreaks'}
                         output = {'xdata': xout,
-                                  'ydata': yout,
-                                  'xbreaks': xbreaks,
-                                  'ybreaks': ybreaks,
-                                  'slopes': slopes}
+                                  'ydata': yout}
+                                  # 'xbreaks': xbreaks,
+                                  # 'ybreaks': ybreaks,
+                                  # 'slopes': slopes}
+                        for n, (xb, yb) in enumerate( zip(xbreaks, ybreaks) ):
+                            xb_label = 'xbreaks[{}]'.format(n)
+                            yb_label = 'ybreaks[{}]'.format(n)
+                            output[xb_label] = xb
+                            output[yb_label] = yb
+                        for key in slopes:
+                            s_label = 'slope[{}-{}]'.format(key[0], key[1])
+                            slope = slopes[key]
+                            output[s_label] = slope
                         self.outputs[name] = output
                         self.about[name] = about
                     
@@ -897,7 +1676,7 @@ class analysis:
                         if method == 'minimum': yvalue = min(yout)
                         if method == 'maximum': yvalue = max(yout)
                         xvalue = xout[yout.index(yvalue)]
-                        label = '{} (x={}, y={})'.format(name, xvalue, yvalue)
+                        label = '{} (x={}; y={})'.format(name, xvalue, yvalue)
                         minmaxdata = self.plot_parms(x=xvalue, y=yvalue, style='point', marker='o', line='-', size=8, label=label, shiftable=True)
                         data2plot.append(minmaxdata)
                         self.log.out('  {}'.format(label))
@@ -978,6 +1757,124 @@ class analysis:
                         
                         self.log.out(self.format_analysis(method, xlo, xhi, misc, name))
                         self.integrate_data(x, y, xlo, xhi, order, write_data, mode['xlabel'], mode['ylabel'], c_savefig, figname, dpi)
+                        
+                    #--------------------------------------------------------------------------#
+                    # Find the elastic constants using the "Regression Fringe Response" Method #
+                    #--------------------------------------------------------------------------#
+                    if method == 'Regression Fringe Response Thermal':
+                        setting = self.get_misc_setting(misc)
+                        savefig = setting.get('savefig', True)
+                        if savefig:
+                            figname = '{}_X={}_Y={}_RFR_thermal'.format(self.get_basename_and_builder_dirs(), xdata, ydata)
+                        else: figname = ''
+
+                        
+                        if 'minspan' in setting:
+                            min_span = setting['minspan']
+                        else: min_span=25; misc += ' default-minspace=25';
+                        
+                        if 'rtemp' in setting:
+                            rtemp = setting['rtemp']
+                        else: rtemp=tuple([]); misc += ' default-rtemp=()';
+                        
+                        # Get X- and Y-units
+                        if '(' in mode['xlabel'] and ')' in mode['xlabel']:
+                            tmp1 = mode['xlabel'].rpartition('(')
+                            tmp2 = tmp1[2].rpartition(')')
+                            x_units = '({})'.format(tmp2[0])
+                            x_label = tmp1[0]
+                        else:
+                            x_units = ''
+                            x_label = ''
+                        if '(' in mode['ylabel'] and ')' in mode['ylabel']:
+                            tmp1 = mode['ylabel'].rpartition('(')
+                            tmp2 = tmp1[2].rpartition(')')
+                            y_units = '({})'.format(tmp2[0])
+                            y_label = tmp1[0]
+                        else:
+                            y_units = ''
+                            y_label = ''
+                        
+                        self.log.out(self.format_analysis(method, xlo, xhi, misc, name))
+                        rfr_thermal_outputs, fig = self.rfr_thermal(x, y, xlo, xhi, min_span, rtemp, setting, x_label, y_label, x_units, y_units, figname, dpi)
+                        if fig is not None: self.figures['RFR_thermal'] = fig
+
+                        # plot and log lo-CTE Results                        
+                        x_reg = rfr_thermal_outputs['glassy_reg_x']
+                        y_reg = rfr_thermal_outputs['glassy_reg_y']
+                        b0, b1, r2 = rfr_thermal_outputs['glassy_line']
+                        label = '{} y = {:.6f}x + {:.6f} ("Glassy-CTE"; $r^2$={:.6f})'.format(name, b1, b0, r2)
+                        self.log.out('  {}'.format(label))
+                        regdata = self.plot_parms(x=x_reg, y=y_reg, style='both', marker='|', line='--', size=12, label=label, shiftable=False)
+                        data2plot.append(regdata)
+                        
+                        # plot and log hi-CTE Results                        
+                        x_reg = rfr_thermal_outputs['rubbery_reg_x']
+                        y_reg = rfr_thermal_outputs['rubbery_reg_y']
+                        b0, b1, r2 = rfr_thermal_outputs['rubbery_line']
+                        label = '{} y = {:.6f}x + {:.6f} ("Rubbery-CTE"; $r^2$={:.6f})'.format(name, b1, b0, r2)
+                        self.log.out('  {}'.format(label))
+                        regdata = self.plot_parms(x=x_reg, y=y_reg, style='both', marker='|', line='--', size=12, label=label, shiftable=False)
+                        data2plot.append(regdata)
+                        
+                        # plot and log Tg results
+                        intersection = rfr_thermal_outputs['tg']
+                        label = '{} CTE intersection (Tg; x={:.4f}; y={:.4f})'.format(name, intersection[0], intersection[1])
+                        self.log.out('  {}'.format(label))
+                        tg_data = self.plot_parms(x=intersection[0], y=intersection[1], style='point', marker='p', line='-', size=12, label=label, shiftable=False)
+
+                        # plot "linear regression extensions"
+                        x_extension = [rfr_thermal_outputs['glassy_reg_x'][-1], intersection[0], rfr_thermal_outputs['rubbery_reg_x'][0]]
+                        y_extension = [rfr_thermal_outputs['glassy_reg_y'][-1], intersection[1], rfr_thermal_outputs['rubbery_reg_y'][0]]
+                        label = '{} CTE intersection extensions'.format(name)
+                        ext_data = self.plot_parms(x=x_extension, y=y_extension, style='both', marker='|', line='--', size=12, label=label, shiftable=False)
+                        data2plot.append(ext_data)
+                        data2plot.append(tg_data) # Append this here so it is "in front"
+                    
+                        # plot and log transition data
+                        transition = rfr_thermal_outputs['transition']
+                        label = '{} transition region (xlo={:.4f}; xhi={:.4f})'.format(name, transition[0], transition[1])
+                        self.log.out('  {}'.format(label))
+                        miny = [min(y) for _ in transition]
+                        transitiondata = self.plot_parms(x=transition, y=miny, style='both', marker='|', line='-', size=12, label=label, shiftable=False)
+                        data2plot.append(transitiondata)
+                        
+                        
+                        # Create nice table of outputs for easy copy and pasting
+                        self.log.out('\n{:>2}-------------------Table of outputs-------------------'.format(''))
+                        self.log.out('{:>4}{:<28}: {}'.format('', 'Tg', rfr_thermal_outputs['tg'][0]))
+                        self.log.out('{:>4}{:<28}: {}'.format('', 'Glassy-CTE', rfr_thermal_outputs['glassy_cte']))
+                        self.log.out('{:>4}{:<28}: {}'.format('', 'Rubbery-CTE', rfr_thermal_outputs['rubbery_cte']))
+                        self.log.out('{:>4}{:<28}: {}'.format('', 'Glassy-slope', rfr_thermal_outputs['glassy_line'][1]))
+                        self.log.out('{:>4}{:<28}: {}'.format('', 'Rubbery-slope', rfr_thermal_outputs['rubbery_line'][1]))
+                        self.log.out('{:>4}{:<28}: {}'.format('', 'Glassy Volume', rfr_thermal_outputs['glassy_volume']))
+                        self.log.out('{:>4}{:<28}: {}'.format('', 'Rubbery Volume', rfr_thermal_outputs['rubbery_volume']))
+                        self.log.out('{:>4}{:<28}: {}'.format('', 'Glassy-transition', min(transition)))
+                        self.log.out('{:>4}{:<28}: {}'.format('', 'Rubbery-transition', max(transition)))
+                        self.log.out('{:>4}{:<28}: {}'.format('', 'Transition span',  max(transition)-min(transition)))
+                        self.log.out('{:>2}{}\n'.format('', '------------------------------------------------------'))
+                        
+                        
+                        # Grant access to Muzzy-modulus-data outside of this class
+                        about = {'glassy_bounds': 'Lower bounds for "cold CTE"',
+                                 'rubbery_bounds': 'Upper bounds for "hot CTE"',
+                                 'glassy_line': 'Linear regression parameters for lo-CTE [b0, b1, r^2]',
+                                 'rubbery_line': 'Linear regression parameters for hi-CTE [b0, b1, r^2]',
+                                 'tg': 'Glass transition point [xpoint, ypoint]',                                 
+                                 # 'glassy_slope':   'slope of glassy region',
+                                 # 'rubbery_slope':  'slope of rubbery region',
+                                 'glassy_volume':  'if rtemp provide this is the computed reference volume for the glassy-CTE as a float; else None',
+                                 'rubbery_volume': 'if rtemp provide this is the computed reference volume for the rubbery-CTE as a float; else None',
+                                 'glassy_cte':     'if rtemp provided Glassy-CTE as a float; else None',
+                                 'rubbery_cte':    'if rtemp provided Rubbery-CTE as a float; else None',
+                                 'transition': 'Transition region [xlo, xhi]',
+                                 'glassy_reg_x':  'Lower linear regression X-data [x1, x2]', 
+                                 'glassy_reg_y':  'Lower linear regression Y-data [y1, y2]', 
+                                 'rubbery_reg_x': 'Upper linear regression X-data [x1, x2]', 
+                                 'rubbery_reg_y': 'Upper linear regression Y-data [y1, y2]'}
+                        
+                        self.outputs[name] = rfr_thermal_outputs
+                        self.about[name] = about
 
                      
                     #--------------------------------------------------------------------------#
@@ -1058,11 +1955,31 @@ class analysis:
                         # get settings for poisson's ratio
                         t1 = []; t2 = [];
                         if 't1' in setting:
-                            try: t1 = [data[setting['t1']]]
+                            try: 
+                                column = setting['t1']
+                                if column in data: 
+                                    t1 = [data[column]]
+                                elif all(char in column for char in '${}'):
+                                    log.out('  Attempting to use compute option for t1:')
+                                    t1_data, message = vectorized_string_compute.thermo_data(data, column)
+                                    t1 = [t1_data]
+                                    log.out('    t1_compute={}'.format(column))
+                                    log.out('    {}'.format(message))
                             except: t1 = []; self.log.GUI_error(f'ERROR t1 column {setting["t1"]} does not exist in logfile. Skipping poissons ratio calculation from -d(trans)/d(axial). Please check that t1, keywords, and sections is correct.')
                         else: t1 = []; misc += ' default-t1=[]'
+                        
+                        
                         if 't2' in setting:
-                            try: t2 = [data[setting['t2']]]
+                            try: 
+                                column = setting['t2']
+                                if column in data: 
+                                    t2 = [data[column]]
+                                elif all(char in column for char in '${}'):
+                                    log.out('  Attempting to use compute option for t2:')
+                                    t2_data, message = vectorized_string_compute.thermo_data(data, column)
+                                    t2 = [t2_data]
+                                    log.out('    t1_compute={}'.format(column))
+                                    log.out('    {}'.format(message))
                             except: t2 = []; self.log.GUI_error(f'ERROR t2 column {setting["t2"]} does not exist in logfile. Skipping poissons ratio calculation from -d(trans)/d(axial). Please check that t1, keywords, and sections is correct.')
                         else: t2 = []; misc += ' default-t2=[]'
                         
@@ -1091,6 +2008,29 @@ class analysis:
                                 t1_tmp.reverse()
                                 t2_tmp.reverse()
                             for lmp_cleaning in cleaning_settings:
+                                if lmp_cleaning == 'LAMMPS data (apply linear-interp)':
+                                    dx, n_points = cleaning_settings[lmp_cleaning]
+                                    if t1_tmp: 
+                                        self.log.out('\n  Applying linear-interp to "t1" transverse strain direcion.')
+                                        xdummy, t1_tmp = self.interp_constant_dx(xlmp, t1_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, dx, n_points)
+                                        t1 = [t1_tmp] # Bin average can not be used with raw data, so reset t1 completely
+                                    if t2_tmp:
+                                        self.log.out('\n  Applying linear-interp to "t2" transverse strain direcion.')
+                                        xdummy, t2_tmp = self.interp_constant_dx(xlmp, t2_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, dx, n_points)
+                                        t2 = [t2_tmp] # Bin average can not be used with raw data, so reset t1 completely
+                                
+                                if lmp_cleaning == 'LAMMPS data (apply bin average)':
+                                    dx, start, stop = cleaning_settings[lmp_cleaning]
+                                    if t1_tmp: 
+                                        self.log.out('\n  Applying bin average to "t1" transverse strain direcion.')
+                                        xdummy, t1_tmp = self.bin_average(xlmp, t1_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, dx, start, stop)
+                                        t1 = [t1_tmp] # Bin average can not be used with raw data, so reset t1 completely
+                                    if t2_tmp:
+                                        self.log.out('\n  Applying bin average to "t2" transverse strain direcion.')
+                                        xdummy, t2_tmp = self.bin_average(xlmp, t2_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, dx, start, stop)
+                                        t2 = [t2_tmp] # Bin average can not be used with raw data, so reset t1 completely
+                                
+                                
                                 if lmp_cleaning == 'LAMMPS data (apply moving average)':
                                     LAMMPS_window = cleaning_settings[lmp_cleaning]
                                     if t1_tmp: 
@@ -1156,6 +2096,17 @@ class analysis:
                                         self.log.out('\n  Applying iFFT filter to "t2" transverse strain direcion.')
                                         t2_tmp, qm_iFFT = self.iFFT_filter(xlmp, t2_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, threshold, LAMMPS_qm, LAMMPS_savefig,  figname+'_t2', dpi)
                                         t2.append(t2_tmp)
+                                        
+                                if lmp_cleaning == 'LAMMPS data (Savitzky-Golay)':
+                                    window, order = cleaning_settings[lmp_cleaning]
+                                    if t1_tmp:
+                                        self.log.out('\n  Applying Savitzky-Golay smoother to "t1" transverse strain direcion.')
+                                        x_tmp, t1_tmp = self.SavitzkyGolay(xlmp, t1_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, window, order)
+                                        t1.append(t1_tmp)
+                                    if t2_tmp:
+                                        self.log.out('\n  Applying Savitzky-Golay smoother to "t2" transverse strain direcion.')
+                                        x_tmp, t2_tmp = self.SavitzkyGolay(xlmp, t2_tmp, LAMMPS_data_xlo, LAMMPS_data_xhi, window, order)
+                                        t2.append(t2_tmp)
                         
                         # Get stress units
                         if '(' in mode['ylabel'] and ')' in mode['ylabel']:
@@ -1166,15 +2117,18 @@ class analysis:
                         
                         # Perform the RFR-analysis
                         self.log.out(self.format_analysis(method, xlo, xhi, misc, name))
-                        xlo_out, xhi_out, yield_point_derivative, yield_point_offset, nu1, nu2, nu12_avg, ultimate_point = self.rfr_mechanical(x, y, xlo, xhi, minxhi, maxxhi, xlo_method, yp, up,
-                                                                                                                                               offset, t1, t2, stress_units, write_data, derivative_span,
-                                                                                                                                               derivative_degree, grid, t12_avg, rfr_savefig, figname, dpi)
+                        xlo_out, xhi_out, yield_point_derivative, yield_point_offset, nu1, nu2, nu12_avg, ultimate_point, fig1, fig2 = self.rfr_mechanical(x, y, xlo, xhi, minxhi, maxxhi, xlo_method, yp, up,
+                                                                                                                                                           offset, t1, t2, stress_units, write_data, derivative_span,
+                                                                                                                                                           derivative_degree, grid, t12_avg, rfr_savefig, figname, dpi)
                         
                         # Fit linear regression model to x/y and xlmp/ylmp (if no "LAMMPS data (i)" is used x/y and xlmp/ylmp will be the same )
                         b0_clean, b1_clean, xreg_clean, yreg_clean, r2_clean, ci_clean = self.linear_regression(x, y, xlo_out, xhi_out, confidence_interval)
                         b0_raw, b1_raw, xreg_raw, yreg_raw, r2_raw, ci_raw = self.linear_regression(xlmp, ylmp, xlo_out, xhi_out, confidence_interval)
                         b0 = (b0_clean + b0_raw)/2 # use an average of b0's for shifting and determining apparent offset
                         b1 = (b1_clean + b1_raw)/2 # use an average of b1's for shifting and determining apparent offset 
+                        
+                        if fig1 is not None: self.figures['RFR_mechanical_stress_strain'] = fig1
+                        if fig2 is not None: self.figures['RFR_mechanical_strain_strain'] = fig2
                         
                         # If shift equals 'yint', shift data by the yintercept
                         if shift == 'yint': 
@@ -1226,7 +2180,7 @@ class analysis:
                                             
                         # Plot yield point calculations
                         if yp_derivative:
-                            label = '{} yield point from derivative ({}, {})'.format(name, yp_derivative[0], yp_derivative[1])
+                            label = '{} yield point from derivative (x={}; y={})'.format(name, yp_derivative[0], yp_derivative[1])
                             yielding = self.plot_parms(x=yp_derivative[0], y=yp_derivative[1], style='point', marker='o', line='-', size=8, label=label, shiftable=False)
                             data2plot.append(yielding)
                             
@@ -1236,13 +2190,13 @@ class analysis:
                             apparent_offset = abs(slope_xvalue - yp_derivative[0])
                             self.log.out('  RFR Modulus found the "apparent offset" to compute the yield strength to be {:.6f}'.format(apparent_offset))
                         if yp_offset:
-                            label = '{} yield point from offset ({}, {})'.format(name, yp_offset[0], yp_offset[1])
+                            label = '{} yield point from offset (x={}; y={})'.format(name, yp_offset[0], yp_offset[1])
                             yielding = self.plot_parms(x=yp_offset[0], y=yp_offset[1], style='point', marker='o', line='-', size=8, label=label, shiftable=False)
                             data2plot.append(yielding)
                             
                         # Plot ultimate point calculations
                         if ultimate_point:
-                            label = '{} ultimate point from derivative ({}, {})'.format(name, ultimate_point[0], ultimate_point[1])
+                            label = '{} ultimate point from derivative (x={}; y={})'.format(name, ultimate_point[0], ultimate_point[1])
                             ultimate = self.plot_parms(x=ultimate_point[0], y=ultimate_point[1], style='point', marker='o', line='-', size=8, label=label, shiftable=False)
                             data2plot.append( ultimate)
                         
@@ -1281,7 +2235,7 @@ class analysis:
                         self.log.out('{:>4}{:<28}: {}'.format('', '  - proportional limit (x)', xreg_clean[-1]))
                         self.log.out('{:>4}{:<28}: {}'.format('', '  - proportional limit (y)', yreg_clean[-1]))
                         self.log.out('{:>4}{:<28}: {}'.format('', '  - Y-intercept', b0_clean))
-                        if ci_raw is not None:
+                        if ci_clean is not None:
                             b0_name = '{:<28}'.format('  - Y-intercept (C.I. '+str(confidence_interval)+')')
                             b1_name = '{:<28}'.format('  - Slope (C.I. '+str(confidence_interval)+')')
                             ci_b0 = ci_clean[0]
@@ -1364,6 +2318,13 @@ class analysis:
                             outputs['b0-ci'] = None
                             outputs['b1-ci'] = None
                             
+                        if ci_raw is not None:
+                            outputs['b0-ci-raw'] = ci_raw[0]
+                            outputs['b1-ci-raw'] = ci_raw[1]
+                        else:
+                            outputs['b0-ci-raw'] = None
+                            outputs['b1-ci-raw'] = None
+                            
                         # Update based on raw setting
                         if raw:
                             about['xdata-raw'] = 'List of X-data defining the linear-regresion model fit to "raw MD data", order [xlo, xhi].'
@@ -1372,16 +2333,12 @@ class analysis:
                             about['b0-raw'] = 'Float value of b0 parameter (Y-intercept) for general equation of line y = b1*x + b0, when linear regression is fit to "raw MD data".'
                             about['b1-raw-ci'] = 'b1 confidence_interval of {} or None if not computed'.format(confidence_interval)
                             about['b0-raw-ci'] = 'b0 confidence_interval of {} or None if not computed'.format(confidence_interval)
+                            about['b0-raw-ci'] = 'b0 confidence_interval of {} or None if not computed'.format(confidence_interval)
+                            about['b1-raw-ci'] = 'b1 confidence_interval of {} or None if not computed'.format(confidence_interval)
                             outputs['xdata-raw'] = xreg_raw
                             outputs['ydata-raw'] = yreg_raw
                             outputs['b1-raw'] = b1_raw
                             outputs['b0-raw'] = b0_raw  
-                            if ci_raw is not None:
-                                outputs['b0-raw-ci'] = ci_raw[0]
-                                outputs['b1-raw-ci'] = ci_raw[1]
-                            else:
-                                outputs['b0-raw-ci'] = None
-                                outputs['b1-raw-ci'] = None
                             
                         self.outputs[name] = outputs
                         self.about[name] = about
@@ -1391,21 +2348,14 @@ class analysis:
                 #----------------------------#
                 if plot: 
                     fig, ax = plt.subplots()
-                    #colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
-                    #color_index = 0
-                    
-                    # Color wheel defined by matplotlib:
-                    #   colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
-                    # However, we can construct our own color wheel to prioritize the colors we want first and we can 
-                    # have way more colors defined than what matplotlib defines. Below is Josh's preferred color wheel
-                    colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:purple', 'tab:red', 'tab:gray','tab:olive', 'tab:cyan', 'tab:pink', 'teal',
-                              'crimson', 'lime', 'tomato',  'blue', 'orange', 'green', 'purple', 'red', 'gray', 'olive', 'cyan', 'pink', 'tab:brown']
                     color_index = 0
-                csv_data = {} # { label: [[xdata], [ydata]], ... }
+                
+                maxpoints = 5_000 # Maximum number of points to plot and save to .csv
+                csv_data  = {} # { label: [[xdata], [ydata]], ... }
                 for data in data2plot:
                     xx = data['x']
                     yy = data['y']
-                    label = data['label']
+                    label = data['label'].replace('\n', ' ')
                     style = data['style']
                     shiftable = data['shiftable']
                     marker = data['marker']
@@ -1413,6 +2363,12 @@ class analysis:
                     size = data['size']
                     if plot: 
                         color = colors[color_index]
+                        
+                    # Limit the max points plotted
+                    if isinstance(xx, (list, tuple, np.ndarray)) and style in ['line', 'point', 'both']:
+                        if len(xx) > maxpoints:
+                            self.log.warn('WARNING during plotting: label="{}" has npoints={}, for performance reasons data is being sampled to npoints={}'.format(label, len(xx), maxpoints))
+                            xx, yy = self.limit_points(xx, yy, maxpoints)
                     
                     # Skip lammps data if rm_lmp_data and label is 'LAMMPS data'
                     if rm_lmp_data and label == 'LAMMPS data': continue
@@ -1464,6 +2420,8 @@ class analysis:
                     fig.set_size_inches(12, 4, forward=True)
                     fig.tight_layout()
                     
+                    self.figures['main'] = fig
+                    
                     
                     # Save current image
                     if savefig:
@@ -1490,6 +2448,28 @@ class analysis:
     ########################################################
     # Start of methods that are used throughout this class #
     ########################################################
+    #----------------------------------------------#
+    # Method to limit the number of points plotted #
+    #----------------------------------------------#
+    def limit_points(self, x, y, maxpoints):
+        if len(x) != len(y):
+            raise ValueError("x and y must have the same length")
+        if maxpoints < 1:
+            raise ValueError("maxpoints must be at least 1")
+        if len(x) <= maxpoints:
+            return list(x), list(y)
+    
+        n = len(x)
+    
+        # Choose evenly spaced indices. When keeping multiple points,
+        # this includes the first and last points.
+        if maxpoints == 1:
+            indices = [0]
+        else:
+            indices = [round(i * (n - 1) / (maxpoints - 1)) for i in range(maxpoints)]
+    
+        return [x[i] for i in indices], [y[i] for i in indices]
+    
     #------------------------------------------#
     # Method to write plotted data to csv file #
     #------------------------------------------#
@@ -1592,6 +2572,31 @@ class analysis:
         plot_setup['shiftable'] = shiftable
         return plot_setup
     
+    #---------------------------------------------------------#
+    # Method to linear interpolate data onto constant dx grid #
+    #---------------------------------------------------------#
+    def interp_constant_dx(self, x, y, xlo, xhi, dx, n_points):
+        reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
+        if reduced_x and reduced_y:
+            xinterp, yinterp = misc_funcs.interp_constant_dx(reduced_x, reduced_y, dx, n_points)
+        else:
+            xinterp, yinterp = x, y
+            self.log.GUI_error(f'ERROR (bin average) no LAMMPS data in xrange {xlo} - {xhi}. Returning uninterpolated data')
+        return list(xinterp), list(yinterp)
+    
+    
+    #---------------------------------------#
+    # Method implementing a box car average #
+    #---------------------------------------#
+    def bin_average(self, x, y, xlo, xhi, dx, start, stop):
+        reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
+        if reduced_x and reduced_y:
+            x_binavg, y_binavg = misc_funcs.bin_average(reduced_x, reduced_y, dx, start=start, stop=stop)
+        else:
+            x_binavg = [0, 1]; y_binavg = [0, 1]
+            self.log.GUI_error(f'ERROR (bin average) no LAMMPS data in xrange {xlo} - {xhi}')
+        return list(x_binavg), list(y_binavg)
+    
     #-----------------------------------------------#
     # Method implementing a moving average function #
     #-----------------------------------------------#
@@ -1666,9 +2671,9 @@ class analysis:
         return list(xfilter), list(yfilter), wn, qm
     
     
-    #--------------------------------------------------#
-    # Method implementing a Whittaker-Eilers smoothing #
-    #--------------------------------------------------#
+    #--------------------------------------#
+    # Method implementing a Fourier filter #
+    #--------------------------------------#
     def iFFT_filter(self, x, y, xlo, xhi, threshold, qm, savefig, figname, dpi):
         reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
         if reduced_x and reduced_y:
@@ -1677,6 +2682,20 @@ class analysis:
             iFFT_y = y
         return list(iFFT_y), qm
     
+
+    #----------------------------------------------#
+    # Method implementing a SavitzkyGolay smoother #
+    #----------------------------------------------#
+    def SavitzkyGolay(self, x, y, xlo, xhi, window, order):
+        from scipy.signal import savgol_filter
+        reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
+        if reduced_x and reduced_y:
+            xout = reduced_x.copy()
+            yout = savgol_filter(np.array(reduced_y), window, order)
+        else:
+            xout = x
+            yout = y
+        return list(xout), list(yout)
     
     #--------------------------------------------------#
     # Method implementing a Whittaker-Eilers smoothing #
@@ -1769,10 +2788,10 @@ class analysis:
     # Uncertainty quantification in molecular dynamics studies of the glass transition    #
     # temperature - Paul N. Patrone, Andrew Dienstfrey, ... - Polymer Volume 87 - 2016    #
     #-------------------------------------------------------------------------------------#
-    def fit_hyperbola(self, x, y, xlo, xhi, minimum_convergence=None, initial_guess=False, maxiter=10**4):
+    def fit_hyperbola(self, x, y, xlo, xhi, slope_method, minimum_convergence=None, initial_guess=False, maxiter=10**4):
         reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
         if reduced_x and reduced_y:        
-            xout, yout, params, center, slopes, transition, tangent_intersection, tangents = misc_funcs.fit_hyperbola(reduced_x, reduced_y, xlo, xhi, minimum_convergence, initial_guess, maxiter)
+            xout, yout, params, center, slopes, transition, tangent_intersection, tangents = misc_funcs.fit_hyperbola(reduced_x, reduced_y, xlo, xhi, minimum_convergence, initial_guess, maxiter, slope_method=slope_method)
         else:
             xout = [0, 1]; yout = [0, 1]; slopes = [0, 1]
             center = [0, 0]; params = [0, 0, 0, 0, 0];
@@ -1801,6 +2820,7 @@ class analysis:
     def rfr_mechanical(self, x, y, xlo, xhi, minxhi, maxxhi, xlo_method, yp, up, offset, t1, t2,stress_units, write_data, derivative_span, derivative_degree, grid, t_12_avg, savefig, figname, dpi):
         strain, stress = misc_funcs.reduce_data(x, y, xlo, xhi)
         t1_reduced = []; t2_reduced = []
+        fig1, fig2 = None, None
         for trans1 in t1:
             xdummy, t1_tmp = misc_funcs.reduce_data(x, trans1, xlo, xhi)
             t1_reduced.append(t1_tmp)
@@ -1810,11 +2830,31 @@ class analysis:
         if strain and stress:
             out = rfr_mechanical.compute(strain, stress, minxhi, maxxhi, xlo_method, yp, up, offset, t1_reduced, t2_reduced, stress_units, write_data,
                                          derivative_span, derivative_degree, grid, t_12_avg, savefig, figname, dpi)
-            xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12, ultimate_point = out
+            xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12, ultimate_point, fig1, fig2 = out
         else:
             xlo = min(x); xhi = max(x);  yield_point_derivative = []; yield_point_offset = []; nu1 = None; nu2 = None; ultimate_point = []
             self.log.GUI_error(f'ERROR (Regression Fringe Response Modulus) no LAMMPS data in xrange {xlo} - {xhi}')
-        return xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12, ultimate_point
+        return xlo, xhi, yield_point_derivative, yield_point_offset, nu1, nu2, nu12, ultimate_point, fig1, fig2
+    
+    #--------------------------------------------------#
+    # Method implementing the RFR thermal calculations #
+    #--------------------------------------------------#
+    def rfr_thermal(self, x, y, xlo, xhi, min_span, rtemp, settings, x_label, y_label, x_units, y_units, figname, dpi):
+        reduced_x, reduced_y = misc_funcs.reduce_data(x, y, xlo, xhi)
+        fig = None
+        if reduced_x and reduced_y:
+            outputs, fig = rfr_thermal.compute(reduced_x, reduced_y, min_span, rtemp, settings, x_label, y_label, x_units, y_units, figname, dpi)
+        else:
+            outputs = {'lo_bounds': [min(x), max(x)],
+                       'hi_bounds': [min(x), max(x)],
+                       'lo_line': 3*[0],
+                       'hi_line': 3*[0],
+                       'tg': [0.0, 0.0],
+                       'lo_reg_x': [min(x), max(x)], 
+                       'lo_reg_y': [min(y), max(y)], 
+                       'hi_reg_x': [min(x), max(x)], 
+                       'hi_reg_y': [min(y), max(y)]}
+        return outputs, fig
     
     #---------------------------------------------#
     # Method implementing derivative calculations #

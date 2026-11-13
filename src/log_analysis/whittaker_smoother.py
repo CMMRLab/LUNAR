@@ -101,8 +101,6 @@ def Whittaker_Eilers_without_interpolation(x, y, d, lmbda, compute_cve=False, cv
         w = np.zeros_like(y)
         w[::nevery] = 1.0
         y = w*y
-        #x = x[::nevery]
-        #y = y[::nevery]
     
     # If we want to compute the CVE in 'fast' mode, we need to re-normalize y to be multiples of n
     if compute_cve and cve_mode == 'fast':
@@ -257,20 +255,36 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
                   'z':   [],
                   'n':   [],
                   'cve': [],
+                  'ACF': [],
+                  'rmse': [],
                   'lambda': [],
-                  'min_diff': []}
+                  'min_diff': [],
+                  'residuals': [],
+                  'sum(residuals)': [],
+                  'sum(residuals2)': []}
         break_count = 0 # Count of break out conditions
         nover       = 2 # Number of times we went over the break out conditions
         for i, n in enumerate(range(n_min, n_max+1, n_inc)):
             lmbda_method_loop = 'op<{}, {}, {}, {}>'.format(min_lambda, max_lambda, num_lambda, n)
             course_optimized_lambda, fine_optimized_lambda, fig_loop = Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method_loop, lambda_out='both')
+            x_loop, z_loop, cve_loop = Whittaker_Eilers_without_interpolation(x, y, d, fine_optimized_lambda, compute_cve=False)
+            residuals = y - z_loop       
+            rmse = np.mean( np.abs(residuals) )
+            lag_times, acf = autocorrelation(x, residuals)
+    
+            
             lambda_loop = min(course_optimized_lambda, fine_optimized_lambda)
             min_diff = lambda_loop - min_lambda
             plt.close(fig_loop)
             
             serial['n'].append( n )
+            serial['ACF'].append( (lag_times, acf) )
+            serial['rmse'].append( rmse )
             serial['lambda'].append( lambda_loop )
             serial['min_diff'].append( lambda_loop - min_lambda )
+            serial['residuals'].append( residuals )
+            serial['sum(residuals)'].append( sum(residuals) )
+            serial['sum(residuals2)'].append( sum(residuals**2) )
             
             # Setup break out conditions
             if i > 0:
@@ -278,11 +292,15 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
                     break_count += 1
             if break_count > nover: break
             
+        # Find spacing between 1st and 2nd course lambda's
+        # to use as the reference
+        r = (max_lambda / min_lambda)** (1 / (num_lambda - 1))
+        spacing = min_lambda*(r - 1)
             
         # Find the nevery, that bumps the computed lambda
         # off of the lower bound for the first time.
         min_diff = np.array(serial['min_diff'])
-        possible_indexes = np.where(min_diff > min_lambda)[0]
+        possible_indexes = np.where(min_diff > spacing)[0]
         if len(possible_indexes) == 0:
             index = 0
         else: index = min(possible_indexes)
@@ -480,7 +498,7 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
             if basename:
                 figname = basename+'_WE_LOO-CVE.jpeg'
                 print(f'Rendering {figname}')
-                fig.savefig(figname, dpi=300)
+                fig.savefig(figname, dpi=100)
                 
         if lambda_out == 'fine':
             return fine_optimized_lambda, fig
@@ -488,6 +506,217 @@ def Whittaker_Eilers_optimize_lambda(x, y, d, lmbda_method, xlabel='', ylabel=''
             return course_optimized_lambda, fig
         elif lambda_out == 'both':
             return course_optimized_lambda, fine_optimized_lambda, fig
+        
+        
+##########################################################
+# Function to find zero crossing (intial version came    #
+# from Tristan Muzzy - This version is fully vectorized) #
+##########################################################
+def value_crossing(xdata, ydata, yvalue=0, style='low'):
+    # Convert to numpy arrays
+    x = np.array(xdata)
+    y = np.array(ydata) - yvalue
+        
+    # Use Tristan's method of signs to find a zero crossing
+    s = np.sign(y)
+    flips = s[1:]*s[:-1]
+    lo = np.where(flips == -1)[0]
+    hi = lo[lo <= np.size(x)-2] + 1
+    if style == 'low':
+        x_cross = x[lo]
+        y_cross = y[lo] + yvalue
+    elif style == 'high':
+        x_cross = x[hi]
+        y_cross = y[hi] + yvalue
+    elif style == 'interp':
+        x_cross = -y[lo]*( (x[hi] - x[lo])/(y[hi] - y[lo]) ) + x[lo]
+        y_cross = np.zeros_like(x_cross) + yvalue
+    else:
+        raise Exception(f'ERROR style {style} not recognized. Currently supported styles are "low" or "high" or "interp".')
+    return x_cross, y_cross
+        
+        
+#################################################################
+# Function to increment lambda's, compute cve, and minimize cve #
+#################################################################
+def Whittaker_Eilers_res_zero_lambda(x, y, d, lmbda_method, xlabel='', ylabel='', basename='', colors=None):
+    #--------------------------------------------------------------------------------------#
+    # Check for user values based on lmbda_method = 'op<MinLambda,MaxLambda,NumLambda>' or #
+    # 'op<MinLambda,MaxLambda,NumLambda>-p' and let user know. If not set defaults and let #
+    # user know what defaults are being used for lambda spacing.                           #
+    #--------------------------------------------------------------------------------------#
+    successful_parse = False
+    if '<' in lmbda_method and '>' in lmbda_method and lmbda_method.count(',') >= 2:
+        min_lambda, max_lambda, num_lambda, successful_parse, values = parse_lambda_settings(lmbda_method)
+        nevery = 1
+        print(f'User supplied inputs to set lambda spacing and range via {lmbda_method}. Spacing parameters:')
+        print('{:>12}: {}'.format('MinLambda', min_lambda))
+        print('{:>12}: {}'.format('MaxLambda', max_lambda))
+        print('{:>12}: {}'.format('NumLambda', num_lambda))  
+        if len(values) == 4:
+            try:
+                nevery = int(values[3])
+                print('{:>12}: {}'.format('Nevery',    nevery)) 
+            except: pass
+        if not successful_parse:
+            print(f'WARNING could not parse {lmbda_method}. Please ensure format is "op<MinLambda,MaxLambda,NumLambda>" or "op<MinLambda,MaxLambda,NumLambda>-p"')
+    if not successful_parse:
+        min_lambda = 1e-2
+        max_lambda = 1e12
+        num_lambda = 50
+        nevery = 1
+        print('Using defaults to set lambda spacing. Spacing parameters:')
+        print('{:>12}: {}'.format('MinLambda', min_lambda))
+        print('{:>12}: {}'.format('MaxLambda', max_lambda))
+        print('{:>12}: {}'.format('NumLambda', num_lambda)) 
+        print('{:>12}: {}'.format('Nevery',    nevery)) 
+        
+    #-----------------------------------------------------------#
+    # Check for errors in min_lamba, max_lambda, and multiplier #
+    #-----------------------------------------------------------#
+    if min_lambda >= max_lambda:
+        raise Exception(f'ERROR MinLambda >= MaxLambda. {min_lambda} >= {max_lambda}.')
+    if min_lambda < 0:
+        raise Exception(f'ERROR MinLambda < 0. MinLambda = {min_lambda} and must be greater than 0.')
+    if num_lambda < 2:
+        raise Exception(f'ERROR NumLambda < 2. NumLambda = {num_lambda} and must be greater than 2.')
+    
+    #----------------------------------------------------------------------------------------#
+    # Set the mode in which to compute the Cross-validation error (CVE) based on length of   #
+    # y-data. Eilers recommends anything larger then 1000, be computed with the 'fast' mode. #
+    #----------------------------------------------------------------------------------------#
+    if len(y) > 500:
+        cve_mode = 'fast'
+        print(f'\n\nCross-validation mode is set to "{cve_mode}" because length of y-data is > 500. Length of data {len(y)}.')
+    else:
+        cve_mode = 'scipy'
+        print(f'\n\nCross-validation mode is set to "{cve_mode}" because length of y-data is <= 500. Length of data {len(y)}.')  
+        
+        
+    #------------------------------#
+    # Compute course CVE "spectra" #
+    #------------------------------#
+    optimized_lambda = 1
+    # Compute the course Cross-validation error (CVE) for each lamba
+    if min_lambda > 0:
+        course_lambdas = np.geomspace(min_lambda, max_lambda, num=num_lambda, endpoint=True, dtype='float64', axis=0)
+    else:
+        course_lambdas = np.geomspace(1e-16, max_lambda, num=num_lambda, endpoint=True, dtype='float64', axis=0)
+        course_lambdas = np.insert(course_lambdas, 0, 0)
+    print(f'\nComputing Course Cross-validation error for {len(course_lambdas)} different lambdas ...')
+    course_zs, summed_residuals, summed_residuals2 = [], [], []
+    for n, lmbda in enumerate(course_lambdas):
+        x_out, z, cve = Whittaker_Eilers_without_interpolation(x, y, d, lmbda, compute_cve=False, cve_mode=cve_mode, nevery=nevery)
+        residuals = (y - z)**1
+        
+        sum_res = sum(residuals)
+        lo_index  = 0
+        hi_index  = len(z) - 1
+        mid_index = int( (hi_index - lo_index)//2 )
+        
+        first_res = residuals[lo_index]
+        last_res  = residuals[hi_index]
+        mid_res   = residuals[ int( (hi_index - lo_index)//2 ) ]
+        
+        total_res = sum_res + min(residuals) + max(residuals)
+        #total_res = sum_res + first_res + last_res + mid_res
+        total_res = sum(residuals[lo_index:mid_index]) + sum(residuals[mid_index:hi_index])
+        
+        total_res = sum_res
+        
+        course_zs.append(z)
+        summed_residuals.append( sum(residuals) )
+        summed_residuals2.append( sum(residuals**2) )
+        
+    x_cross, y_cross = value_crossing(course_lambdas, summed_residuals, yvalue=0, style='interp')
+    if x_cross.size > 0:
+        optimized_lambda = x_cross[-1]
+        
+        
+    # Plot the CVE vs lambda plot
+    fs = 12
+    legend_fs_scale = 0.8
+    label_rel_pos = (0.005, 0.99)
+    label_rel_pos = ()
+    fig = None
+    if str(lmbda_method).endswith('-p'):
+        if isinstance(colors, (tuple , list)):
+            colors = colors
+        else:
+            # Color wheel defined by matplotlib:
+            #   colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+            # However, we can construct our own color wheel to prioritize the colors we want first and we can 
+            # have way more colors defined than what matplotlib defines. Below is Josh's preferred color wheel
+            colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:purple', 'tab:red', 'tab:gray','tab:olive', 'tab:cyan', 'tab:pink', 'teal',
+                      'crimson', 'lime', 'tomato',  'blue', 'orange', 'green', 'purple', 'red', 'gray', 'olive', 'cyan', 'pink', 'tab:brown']
+        
+        # Function to walk around the color wheel defined by colors and get the next color,
+        # if the color index is exceeds the color wheel, it will reset the color index to 0
+        def walk_colors(color_index, colors):
+            color = colors[color_index]
+            color_index += 1
+            if color_index + 1 > len(colors): color_index = 0
+            return color, color_index
+        
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(2*5, 2*4))
+        
+        
+        ax1.plot(course_lambdas, summed_residuals, color='tab:blue')
+        ax1.set_xscale('log')
+        ax1.set_xlabel(r'$\lambda$', fontsize=fs)
+        ax1.set_ylabel('Residuals', fontsize=fs)
+        
+        tx1 = ax1.twinx()
+        tx1.plot(course_lambdas, summed_residuals2, color='tab:red')
+        tx1.set_xscale('log')
+        
+
+        
+        
+        ax2.plot(course_lambdas, summed_residuals, color='tab:blue')
+        ax2.plot(x_cross, y_cross, 's', ms=8, mec='black', lw=3, color='tab:green', zorder=1)
+        
+        ax2.set_xscale('log')
+        ax2.set_xlabel(r'$\lambda$', fontsize=fs)
+        ax2.set_ylabel('Residuals', fontsize=fs)
+        
+        
+        
+        nplotted = 8 # maximum number of plotted lambdas
+        modulus = math.floor(len(course_lambdas)/nplotted)
+        color_index = 0
+        ax3.plot(x, y, '-', lw=5, color='tab:blue', label='Raw data')
+        for n, (lamda, z, sr) in enumerate(zip(course_lambdas, course_zs, summed_residuals), 1):
+            if n%modulus == 0:
+                course_x, course_z, course_cve = Whittaker_Eilers_without_interpolation(x, y, d, lamda, compute_cve=False, cve_mode=cve_mode)
+                label = '{}={:.1e}'.format(r'$\lambda$', lamda)
+                color, color_index = walk_colors(color_index, colors)
+                ax1.plot(lamda, sr, 's', ms=8, mec='black', lw=3, color=color, zorder=1)
+                ax3.plot(course_x, course_z, '-', lw=2, color=color, label=label)
+        # ax3.set_xlabel('{}'.format(xlabel), fontsize=fs)
+        # ax3.set_ylabel('{}'.format(ylabel), fontsize=fs)
+        # ax3.legend(loc='upper right', bbox_to_anchor=(1.0, 1.0), fancybox=True, ncol=1, fontsize=legend_fs_scale*fs)
+        # if label_rel_pos: ax3.text(*label_rel_pos, '(c)', transform=ax3.transAxes, fontsize=fs, fontweight='bold', va='top', ha='left')
+        
+        fine_x, fine_z, fine_cve = Whittaker_Eilers_without_interpolation(x, y, d, optimized_lambda, compute_cve=False, cve_mode=cve_mode)
+        ax4.plot(x, y, '-', lw=5, color='tab:blue', label='Raw data')
+        ax4.plot(x, fine_z, '-', lw=2, color='lime', label='Fine Minimum CVE Z-series')
+        ax4.set_xlabel('{}'.format(xlabel), fontsize=fs)
+        ax4.set_ylabel('{}'.format(ylabel), fontsize=fs)
+        ax4.legend(loc='upper right', bbox_to_anchor=(1.0, 1.0), fancybox=True, ncol=1, fontsize=legend_fs_scale*fs)
+        if label_rel_pos: ax4.text(*label_rel_pos, '(d)', transform=ax4.transAxes, fontsize=fs, fontweight='bold', va='top', ha='left')
+        
+        
+        fig.tight_layout()
+        if basename:
+            figname = basename+'_WE_LOO-CVE.jpeg'
+            print(f'Rendering {figname}')
+            fig.savefig(figname, dpi=100)
+    
+        
+    
+    
+    return optimized_lambda, fig
             
 
 
@@ -502,25 +731,74 @@ def smooth(xdata, ydata, order, lmbda, xlabel='', ylabel='', basename='', colors
     y = np.array(ydata.copy())
     # Automatic lambda optimization
     if str(lmbda).startswith('op'):
-        optimal_lambda, fig = Whittaker_Eilers_optimize_lambda(x, y, order, lmbda, xlabel=xlabel, ylabel=ylabel, basename=basename, colors=colors)
+        optimal_lambda, fig = Whittaker_Eilers_optimize_lambda(x, y, order, lmbda, xlabel=xlabel, ylabel=ylabel, basename=basename, colors=colors, lambda_out='fine')
+        lmbda = optimal_lambda 
+    elif str(lmbda).startswith('zr'):
+        optimal_lambda, fig = Whittaker_Eilers_res_zero_lambda(x, y, order, lmbda, xlabel=xlabel, ylabel=ylabel, basename=basename, colors=colors)
         lmbda = optimal_lambda 
     else: optimal_lambda, fig = None, None
     x_out, smoothed, cve = Whittaker_Eilers_without_interpolation(x, y, order, lmbda, compute_cve=False)
     return smoothed, optimal_lambda, fig
 
 
+######################################################################
+# Function to compute the autocorrelation of a time and order series #
+######################################################################
+def autocorrelation(time, order):
+    """
+    Compute the normalized autocorrelation function (ACF)
+    of potential energy (or any time series).
+
+    Parameters
+    ----------
+    time  : array-like
+           Time values (ps, fs, etc.)
+    order : array-like
+           Potential energy values corresponding to 'time'.
+
+    Returns
+    -------
+    lag_times : numpy array
+        Time lag values for the autocorrelation (same units as 'time').
+    acf : numpy array
+        Normalized autocorrelation function values.
+    """
+
+    # Convert inputs to numpy arrays
+    time  = np.asarray(time)
+    order = np.asarray(order)
+
+    # Remove mean to avoid bias
+    order = order - np.mean(order)
+
+    # Compute raw autocorrelation using full convolution
+    acf_full = np.correlate(order, order, mode='full')
+
+    # Keep only positive time lags
+    acf = acf_full[acf_full.size // 2:]
+
+    # Normalize so acf[0] = 1
+    acf = acf / acf[0]
+
+    # Compute time lag array
+    # Handles unevenly spaced time automatically using differences
+    dt = np.mean(np.diff(time))
+    lag_times = np.arange(len(acf))*dt
+    return lag_times, acf
 
 
 ########################
 # Testing the smoother #
 ########################
 if __name__ == "__main__": 
+    plt.close('all')
+    
     # Seed for reproducability
     seed = 1
     
     # Generate "real" data
     x = np.linspace(0, 0.1, 1200)
-    y_real = (1/(1+np.exp(-x*50))-0.5)*2000
+    y_real = -(1/(1+np.exp(-x*50))-0.5)*2000
     
     # Generate "noisy" data with an underlying sine wave
     if seed > 0: np.random.seed(seed)
@@ -540,7 +818,8 @@ if __name__ == "__main__":
     in1_lmbda = 'op' # use default spacing and do not plot
     in1_lmbda = 'op-p' # use default spacing and plot
     in1_lmbda = 'op<1e-2, 1e10, 50>-p' # Adjust spacing and plot
-    y_smooth, out1_lmbda = smooth(y_noisy, order, in1_lmbda)
+    in1_lmbda = 'zr<1e-2, 1e10, 50>-p' # Adjust spacing and plot
+    y_smooth, out1_lmbda, fig = smooth(x, y_noisy, order, in1_lmbda)
     if out1_lmbda is None: out1_lmbda = in1_lmbda
     
     # Smooth "noisy" data using PyPi version
@@ -550,9 +829,9 @@ if __name__ == "__main__":
     if out2_lmbda is None: out2_lmbda = in2_lmbda
     
     # Plot the data
-    fig, ax = plt.subplots()
-    ax.plot(x, y_noisy,'tab:blue', lw=2, label='Noisy y')
-    ax.plot(x, y_real, 'tab:orange', lw=4, label='Real y')
-    ax.plot(x, y_smooth, 'tab:cyan', ls='--', lw=3, label='Joshs implementation (order={}; lambda={})'.format(order, out1_lmbda))
-    ax.plot(x, y_PyPi, 'tab:green', ls='-.', lw=2, label='PyPi implementation (order={}; lambda={})'.format(order, out2_lmbda))
-    ax.legend()
+    # fig, ax = plt.subplots()
+    # ax.plot(x, y_noisy,'tab:blue', lw=2, label='Noisy y')
+    # ax.plot(x, y_real, 'tab:orange', lw=4, label='Real y')
+    # ax.plot(x, y_smooth, 'tab:cyan', ls='--', lw=3, label='Joshs implementation (order={}; lambda={})'.format(order, out1_lmbda))
+    # ax.plot(x, y_PyPi,   'tab:green', ls='-.', lw=2, label='PyPi implementation (order={}; lambda={})'.format(order, out2_lmbda))
+    # ax.legend()

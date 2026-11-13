@@ -19,6 +19,11 @@ LUNAR (version 13November2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+13November2026    JDK          - log_analysis.py: added RFR-thermal to the public version of LUNAR. Load the
+                                                  LUNAR/src/log_analysis/modes/default_Tg_and_CTE_using_RFR_BW.py
+                                                  file to see an example and read about the parameters in the 
+                                                  "analysis help" button.
+
 13November2026    JDK          - bond_react_merge.py: added a hydrogen mapping refinement after the globabl
                                                       mapping, such that the hydrogen stays attached to the
                                                       backbone atoms, no matter what the global minization says.

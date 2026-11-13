@@ -43,13 +43,18 @@ def most_frequent(List):
     return max(set(List), key = List.count)
 
 # Function to get int valued sectionIDs from strings like:
-#    'all' or  '1,2,3'  or  '1-4'  or  '1,3-5' or '-1' or '-2'
+#    'all' or  '1,2,3'  or  '1-4'  or  '1,3-5' or '-1' or '-2' 
+#    'start-end' or 'start-10' or '10-end'
 def get_sections(log_sections, sections):
     # Force sections to be a string for this, so users can supply ints if they want
     sections = str(sections); sectionIDs = []
     if 'all' in sections:
         sectionIDs = log_sections
     else:
+        if 'start' in sections:
+            sections = sections.replace( 'start', '{}'.format(min(log_sections)) )
+        if 'end' in sections:
+            sections = sections.replace( 'end', '{}'.format(max(log_sections)) )
         IDs = sections.split(',')
         for i in IDs:
             if '-' in i:
@@ -222,5 +227,14 @@ if __name__ == "__main__":
     # split sections based on digits
     digits = [int(i) for i in re.split(r'(\d+)', sections) if i.isdigit()]
     print(digits)
-    
     print(sections, log_sections, flip)
+    
+    
+    print('\n\nAdding "start" and "end"')
+    sections = 'start-end'    
+    if 'start' in sections:
+        sections = sections.replace( 'start', '{}'.format(min(log_sections)) )
+    if 'end' in sections:
+        sections = sections.replace( 'end', '{}'.format(max(log_sections)) )
+    digits = [int(i) for i in re.split(r'(\d+)', sections) if i.isdigit()]
+    print(digits)

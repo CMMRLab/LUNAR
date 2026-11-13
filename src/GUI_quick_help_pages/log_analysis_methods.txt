@@ -9,7 +9,7 @@
 #
 # The maximum column position should be restricted to 145.
 #
-# Last edited 2/26/2026
+# Last edited 7/28/2026
 #
 ************
 * Overview *
@@ -48,6 +48,79 @@
     During loading of a mode file, it maybe desired to load in the logfile that was saved to the mode file or to not load in that file. If this
     Boolean is set to False, the logfile path will not be updated with what is saved in the mode file, where as if the Boolean is True, the logfile 
     path will be updated with what is saved in the mode file.
+	
+*************
+* Data2load *
+*************
+
+    The Data2load section controls how data are extracted from the input logfile before any computations or analysis methods are applied. These
+    settings define which logfile sections and columns are read, optionally reduce the number of loaded data points, and provide axis labels for
+    generated figures.
+
+    keywords=<string>, where <string> is a comma-separated list of column names used to locate thermodynamic data blocks within the logfile. The
+    supplied keywords should match the header line immediately preceding the desired data. Examples:
+      Step,Temp
+      Step,Time
+      Step,Temp,Press
+
+    sections=<string>, where <string> specifies which matching logfile sections are loaded. Multiple sections may be listed using commas and ranges.
+    Negative indexing is supported, where -1 represents the last matching section.
+
+    Additional options may be supplied after the first semicolon (;). These options are provided as semicolon-separated keyword=value pairs. Currently
+    the following option is supported:
+
+      wavg=<True|False>
+        When True and the logfile is specified using a wildcard, all matching logfiles are loaded, interpolated onto a common X-data domain, averaged
+        together, and written as a temporary LAMMPS logfile. All subsequent analysis is then performed on the averaged logfile rather than on each
+        individual logfile.
+
+    Examples:
+      all
+      1
+      1,3,5
+      2-6
+      1,3-5
+     -1
+     -2
+      start-end
+      3-end
+      start-4
+      all; wavg=True
+      start-end; wavg=True
+      1-5; wavg=True
+
+    X-data=<string>, where <string> is the name of the loaded column to use as the x-axis variable. The list of available columns is automatically
+    populated after successfully reading the logfile. Examples:
+      Temp
+      Step
+      Time
+      v_ramp_temp
+
+    Y-data=<string>, where <string> is the name of the loaded column to use as the y-axis variable. The list of available columns is automatically
+    populated after successfully reading the logfile. Examples:
+      Volume
+      Density
+      Press
+      f_vol_ave
+
+    nevery=<integer>, where <integer> specifies the sampling interval applied after the logfile has been read. Every nevery-th data point is
+    retained. A value of 1 loads every data point. Examples:
+      1
+      2
+      10
+      100
+
+    X-label=<string>, where <string> defines the x-axis label used for plots. This setting only affects figure labeling and does not modify the
+    loaded data. If the string is empty the axis labels default to the X-data/X-compute name and Y-data/Y-compute name. Examples:
+      Temperature (K)
+      Time (ps)
+      Engineering Strain
+
+    Y-label=<string>, where <string> defines the y-axis label used for plots. This setting only affects figure labeling and does not modify the
+    loaded data. If the string is empty the axis labels default to the X-data/X-compute name and Y-data/Y-compute name. Examples:
+      Volume (Å$^3$)
+      Density (g/cm$^3$)
+      Engineering Stress (MPa)
 	
 ********************
 * Array processing *
@@ -130,6 +203,7 @@
 ***********
 
   Methods that use the "X-lo" and "X-hi" columns
+    - "DMA-FFT"
     - "moving avrage"
     - "Butterworth (low pass)"
     - "Whittaker-Eilers"
@@ -145,7 +219,8 @@
     - "maximum"
     - "Calculus: Integrate Data"
     - "Calculus: Differentiate Data"
-    - "Regression Fringe Response Modulus"
+    - "Regression Fringe Response Mechanical"
+    - "Regression Fringe Response Thermal"
     - "LAMMPS data (apply moving average)"
     - "LAMMPS data (apply Butterworth filter)"
     - "LAMMPS data (apply Whittaker-Eilers)"
@@ -442,7 +517,13 @@
           initial_guess=False        # use default starting values
           initial_guess=True         # guess and use computed starting values	
           p=0.9; initial_guess=True  # guess and use computed starting values and also show convergence
-          initial_guess=True; p=0.9	 # guess and use computed starting values and also show convergence	  
+          initial_guess=True; p=0.9	 # guess and use computed starting values and also show convergence	 
+
+        slope_method=<string>, where string can be "asymptote" which uses the hyperbola asymptotes to define the glassy and rubbery slopes or
+        "tangent" which uses a numerical derivative at the edges to define the glassy and rubbery slopes. If this parameter is not passed, it
+        defaults to "asymptote". Examples:
+          slope_method=asymptote
+          slope_method=tangent	  
 		  
         This method requires the Python scipy package (install via: pip install scipy)
 
@@ -693,6 +774,185 @@
         will be under taken. This option requires scipy to be installed to be able to compute the two sided "t-statistic". Examples:
           ci=0
           ci=0.95
+		  
+        savefig=<string>, where <string> can have 'all' or integer values ('0' or '1'). This
+        string controls which figures generated during the RFR-thermal analysis are saved.
+        Integers currently have the following meanings:
+
+          '0' no figures will be saved. This can also be an empty string or any string that
+              does not contain the integer value 1.
+
+          '1' saves the complete RFR-thermal visualization containing the glassy region,
+              rubbery region, initial-condition study, Tg probability density function, and
+              guessed linear regressions.
+
+        The 'all' flag can be used to save every figure generated by the method. Since the
+        current implementation generates only one figure, 'all' is equivalent to '1'. The
+        default, if not specified, is 'all'. Examples:
+          savefig=0
+          savefig=1
+          savefig=all
+		  
+    - "Regression Fringe Response Thermal"
+        This method implements the "Regression Fringe Response Thermal" (RFR-thermal) calculation to determine the glass transition temperature
+        (Tg) and coefficients of thermal expansion (CTE) from temperature-vs-volume or temperature-vs-density data generated by molecular dynamics
+        simulations. The method applies a multi-pass Regression Fringe Response (RFR) algorithm to automatically identify the glassy and rubbery
+        linear regions.
+
+        The glassy region is determined by a forward-backward-forward (FBF) search beginning from the low-temperature end of the data. The rubbery
+        region is then determined by performing a backward-forward-backward (BFB) search over many initial-condition (IC) temperatures. The many IC
+        conditions are evaluated on a grid of size min_span/2 starting at the end of the glassy region (rounded to nearest IC increment). Each valid
+        rubbery region produces a candidate Tg from the intersection of the glassy and rubbery linear regression models.
+
+        Since different initial conditions can produce different valid Tg predictions, all candidate Tg values are collected and an estimated
+        probability density function (PDF) is generated using a Gaussian kernel density estimate (KDE). The desired Tg is then selected from this PDF
+        using one of the selection rules described by the "tg" keyword below. Once the final Tg has been selected, the rubbery linear regression whose
+        intersection is closest to the selected Tg is used for the final CTE calculation.
+
+        The KDE-based PDF provides a robust statistical summary of the Tg values obtained from many valid rubbery-region initial conditions, reducing
+        sensitivity to any single initial-condition choice while naturally identifying multiple plausible transition temperatures. The Gaussian kernel
+        bandwidth is chosen equal to the IC increment, reflecting the temperature resolution of the initial-condition search. Although some ICs are
+        rejected by the regression validity criteria, no additional resolution is introduced beyond the original IC sampling. The following
+        keywords are available:
+
+        minspan=<float>, where <float> defines the minimum temperature span used when fitting each regression fringe response. Larger values require
+        longer linear regions before regression statistics are computed, while smaller values allow shorter regions to be considered. This parameter
+        also controls the spacing between the rubbery initial condition (IC) search temperatures, which are evaluated every minspan/2. Examples:
+          minspan=20
+          minspan=25
+          minspan=50
+
+        rtemp=<float,float>, where the two floating point values define a temperature range over which the average volume (or density) is computed for
+        calculating the coefficient of thermal expansion (CTE). If this keyword is omitted the CTE values will not be computed, however Tg will still
+        be determined. Examples:
+          rtemp=290,310
+          rtemp=295,305
+          rtemp=300,300
+		  
+        weights=<string>, where <string> defines an optional mathematical expression used to weight each candidate Tg when constructing the Gaussian
+        kernel density estimate (KDE). By default all candidate Tg values contribute equally to the estimated probability density function (PDF).
+        Weighting allows candidate Tg values associated with more physically desirable rubbery-region regressions to contribute more strongly to the
+        estimated PDF. The weighting expression is evaluated element-wise using NumPy and must return one weight for each candidate Tg. The following
+        arrays are currently available:
+
+          rw
+            Normalized rubbery-region width, computed as the width of each rubbery regression region divided by the maximum rubbery-region
+            width. Larger values favor Tg candidates obtained from longer rubbery linear regions.
+
+          rs
+            Normalized rubbery-region slope, computed as the ratio of the rubbery-region slope to the glassy-region slope. This can be
+            used to emphasize Tg candidates associated with larger changes in slope across the glass transition.
+			
+          bw
+            Boundary weight computed from the cumulative penetration distance of each candidate Tg into physically invalid regions. The total
+            penetration distance, p (K), is computed as
+
+                                p = p_glassy + p_rubbery #+ p_lower + p_upper
+
+            where
+                p_glassy  = max(0, Tglassy,upper - Tg); Penetration of the candidate Tg into the glassy regression region.
+                p_rubbery = max(0, Tg - Trubbery,lower); Penetration of the candidate Tg into the rubbery regression region.
+                #p_lower   = max(0, Tmin - Tg); Penetration of the candidate Tg below the minimum simulation temperature.
+                #p_upper   = max(0, Tg - Tmax); Penetration of the candidate Tg above the maximum simulation temperature.
+
+            Each term contributes only when its corresponding boundary is violated; otherwise it contributes zero. Thus, candidates satisfying
+            all boundary constraints have p=0. The cumulative penetration distance is converted into a dimensionless boundary weight according to
+
+               bw = exp(-p / tau)
+
+            where tau is the boundary-penalty decay length specified by the tau keyword. Candidates satisfying all boundary constraints receive
+            bw=1, while progressively larger boundary violations are smoothly down-weighted toward zero.
+
+        Standard NumPy mathematical operations and functions are supported through the np namespace. Example weighting expressions include:
+          weights=rw
+          weights=rs
+          weights=bw
+          weights=rw*rs
+          weights=bw*rw
+          weights=bw*rs
+          weights=bw*rw*rs
+          weights=0.5*rw + 0.5*rs
+          weights=np.sqrt(rw)
+          weights=np.exp(-rs)
+		  
+        tau=<float>, where <float> defines the characteristic decay length (in temperature units) used when computing the boundary-penalty weight
+        assigned to each candidate Tg. The boundary penalty is computed as the cumulative penetration distance by which a candidate Tg violates any
+        physical boundary constraints, including Tg estimates that fall outside the simulation temperature range or overlap either the glassy or
+        rubbery regression regions. The resulting penalty, p, is converted into a dimensionless boundary weight according to
+
+          bw = exp(-p / tau)
+
+        where p is the total penetration distance (K). Candidates satisfying all boundary constraints have p=0 and therefore receive a boundary
+        weight of bw=1. As the total penetration distance increases, the boundary weight decreases smoothly toward zero. If tau is not specified
+        it defaults to min_span/4.
+
+        Smaller values of tau penalize boundary violations more aggressively, causing even small violations to contribute very little to the kernel
+        density estimate (KDE). Larger values reduce the severity of the penalty, allowing mildly inconsistent candidates to retain more influence.
+        If omitted, tau defaults to minspan/4. Examples:
+          tau=2
+          tau=5
+          tau=10
+		  
+        kernel_width=<float>, where <float> defines the effective width of the Gaussian kernel used when constructing the kernel density estimate
+        (KDE) of the candidate Tg values. The kernel width is defined as the total temperature span containing approximately 99.7% of the Gaussian
+        probability mass (±3σ), allowing the smoothing scale to be specified directly in temperature units rather than by the Gaussian standard
+        deviation.
+
+        Larger kernel widths produce smoother estimated probability density functions (PDFs) by merging nearby Tg populations into broader peaks,
+        while smaller kernel widths preserve finer structure but may introduce artificial multimodal behavior caused by the discrete initial-condition
+        (IC) temperature sampling. A kernel width comparable to the IC increment generally provides a good balance between smoothness and
+        resolution. If omitted, the kernel width defaults to the IC increment. Examples:
+          kernel_width=2
+          kernel_width=5
+          kernel_width=10
+
+        tg=<string>, where <string> defines how the final Tg is selected from the estimated probability density function (PDF) generated from all
+        valid Tg candidates using a Gaussian kernel density estimate (scipy.stats.gaussian_kde). The following selection rules are currently
+        supported:
+
+          PDF(max)
+              Select the Tg corresponding to the global maximum of the estimated probability density function.
+
+          PDF(temp, index)
+              Detect all PDF peaks, sort them by increasing temperature, and select the specified peak index. Indexing follows standard Python
+              indexing, therefore index=0 selects the lowest-temperature peak, index=1 selects the next lowest, and negative indexing is also
+              supported.
+
+          PDF(density, index)
+              Detect all PDF peaks, sort them by decreasing probability density (peak height), and select the specified peak index. Indexing
+              follows standard Python indexing, therefore index=0 selects the highest-density peak, index=1 selects the second highest-density
+              peak, and negative indexing is also supported.
+			  
+          PDF(prom, index)
+              Detect all PDF peaks, sort them by decreasing peak prominence, and select the specified peak index. Peak prominence measures how
+              much a peak stands out from the surrounding probability density, making this option useful for selecting the most statistically
+              significant Tg populations rather than simply the tallest peaks. Indexing follows standard Python indexing, therefore index=0
+              selects the most prominent peak, index=1 selects the second most prominent peak, and negative indexing is also supported.
+			  
+          PDF(prob, index)
+              Detect all PDF peaks and partition the estimated probability density function into individual Tg populations using the local minima
+              between neighboring peaks. The probability associated with each Tg population is computed by integrating the estimated PDF over its
+              corresponding region, yielding the probability mass assigned to that peak. Peaks are then sorted by decreasing probability, where
+              index=0 selects the most probable Tg population, index=1 selects the second most probable Tg population, and negative indexing is also
+              supported.
+
+        Examples:
+          tg=PDF(max)
+          tg=PDF(temp,0)
+          tg=PDF(temp,1)
+          tg=PDF(temp,-1)
+          tg=PDF(density,0)
+          tg=PDF(density,-1)
+          tg=PDF(prom,0)
+          tg=PDF(prom,-1)
+          tg=PDF(prob,0)
+          tg=PDF(prob,-1)
+		  
+        min_tg=<float>, where <float> sets the minium Tg to consider. This is useful because sometimes the maximum of the PDF degenerates to being
+        a repeat section of the glassy region. A good default is min_tg=350, for most materials. If this is not supplied, it defaults to using the
+        maximum of the glassy bounds. Examples:
+          min_tg=300
+          min_tg=350		  
 
 ********************************
 * LAMMPS data cleaning methods *
@@ -700,8 +960,8 @@
 
     - "LAMMPS data (apply moving average)" or "LAMMPS data (apply Butterworth filter)" or "LAMMPS data (fit polynomial)" or "LAMMPS data (apply
        Whittaker-Eilers)" or "LAMMPS data (LOWESS)" or "LAMMPS data (apply iFFT filter)"
-        Can be used as a "global" method to clean the LAMMPS data before analyzing. The "LAMMPS data i", where i is "moving average", "Butterworth (low
-        pass)", "fit polynomial", "Whittaker-Eilers", "LOWESS", and "iFFT filter" settings and keywords can be read in the above methods.
+        Can be used as a "global" method to clean the LAMMPS data before analyzing. The "LAMMPS data i", where i is "moving average", "Butterworth
+        (low pass)", "fit polynomial", "Whittaker-Eilers", "LOWESS", and "iFFT filter" settings and keywords can be read in the above methods.
 	  
         NOTE more the one instance of a LAMMPS data cleaning can be used. The order of implementation will be set by the order in which they appear
         in the "Methods" stack, going from top to bottom. So if two cleaning methods are implemented say "LAMMPS data (apply Whittaker-Eilers)" and

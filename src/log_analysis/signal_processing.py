@@ -252,17 +252,21 @@ def data_extension(xdata, ydata, lo=1, hi=1, index=0):
     
     # Perform hi padding operations
     if hi == 2:
-        hi_xdata = -min(xdata) + max(xdata) + xdata[index+1:]  
+        hi_xdata = (max(xdata) - min(xdata)) + xdata[index+1:]  
         hi_ydata = ydata[::-1][index+1:]
     elif hi == 3:
-        hi_xdata = -min(xdata) + max(xdata) + xdata[index+1:]  
-        hi_ydata = ydata[index] - ydata[::-1][index+1:] + 2*ydata[-(index+1)] + ydata[index]
+        hi_xdata = (max(xdata) - min(xdata)) + xdata[index+1:]  
+        hi_ydata = ydata[index] - ydata[::-1][index+1:] + 2*ydata[-(index+1)] + ydata[index] # OLD
+        hi_ydata = 2*ydata[-(index+1)] - ydata[::-1][index+1:]
     elif hi == 4:
-        hi_xdata = -min(xdata) + max(xdata) + xdata[index+1:]  
-        hi_ydata = ydata[-(index+1)] + ydata[index+1:]
+        hi_xdata = (max(xdata) - min(xdata)) + xdata[index+1:]  
+        hi_ydata = ydata[-(index+1)] + ydata[index+1:] # OLD
+        hi_ydata = (ydata[-(index+1)] - ydata[index]) + ydata[index+1:]
     else:
         hi_xdata = np.array([])
         hi_ydata = np.array([])
+        
+
         
     # Assemble data
     if lo in [2, 3, 4] and hi in [2, 3, 4]:
@@ -305,7 +309,8 @@ def determine_mirroring_locations(xdata, ydata, wn, order, quadrant_mirror):
     #------------------------------#
     # First: Optimize the "lo" end #
     #------------------------------#
-    lo_quads2test = [1, 2, 3, 4]; lo_summed_residuals2 = {} # {quadrant_mirror:sum-of-residuals-squared}
+    lo_quads2test = [0, 1, 2, 3, 4]; lo_summed_residuals2 = {} # {quadrant_mirror:sum-of-residuals-squared}
+    lo_quads2test = [1, 2, 3, 4]
     for quad in lo_quads2test: 
         quadrants = '{},{}'.format(quad, 1) # hold hi constant at 1
         ybutter, qm = butter_lowpass_filter(xdata, ydata, wn, order, quadrants, write_data, savefig, figname, dpi, pflag=False)
@@ -343,7 +348,7 @@ def determine_mirroring_locations(xdata, ydata, wn, order, quadrant_mirror):
 # Function to define of a butterworth filter #
 ##############################################
 def butter_lowpass_filter(xdata, ydata, wn, order, quadrant_mirror, write_data, savefig, figname, dpi, pflag=True):
-    from scipy.signal import butter, sosfiltfilt
+    from scipy.signal import butter, sosfiltfilt, filtfilt
     
     #--------------------------------------------------------------#
     # Setup csv data structure to append to for quadrant mirroring #
@@ -371,33 +376,40 @@ def butter_lowpass_filter(xdata, ydata, wn, order, quadrant_mirror, write_data, 
     # Perfrom quadrant mirroring operations if two digits are in quadrant_mirror #
     #----------------------------------------------------------------------------#
     digits = [int(i) for i in str(quadrant_mirror) if i.isdigit()]
+    sum_digits = 0
     if len(digits) == 2:
-        lo, hi = digits
-        xdata, ydata, lo_trim, hi_trim, lo_xdata, lo_ydata, hi_xdata, hi_ydata = data_extension(xdata, ydata, lo=lo, hi=hi)
-            
-        # Plot the data if the '-p' flag is at the end of quadrant_mirror
-        if str(quadrant_mirror).endswith('-p'):
-            fig, ax = plt.subplots(figsize=(6, 4))
-            ax.plot(lo_xdata, lo_ydata, 'o', ms=4, color='tab:green', label='lo data in quadrant {}'.format(lo))
-            ax.plot(xdata[lo_trim:hi_trim], ydata[lo_trim:hi_trim], 'o', ms=4, color='tab:blue', label='Orignal data w/o mirror')
-            ax.plot(hi_xdata, hi_ydata, 'o', ms=4, color='tab:cyan', label='hi data in quadrant {}'.format(hi))
-            ax.axhline(0, ls='--', color='black', lw=1)
-            ax.axvline(0, ls='--', color='black', lw=1)
-            ax.legend()
-            
-            csv_data['lo-QM={}'.format(lo)] = [list(lo_xdata), list(lo_ydata)]
-            csv_data['hi-QM={}'.format(hi)] = [list(hi_xdata), list(hi_ydata)]
-            csv_data['original-data'] = [list(xdata[lo_trim:hi_trim]), list(ydata[lo_trim:hi_trim])]
+        sum_digits = sum(digits)
+        if sum_digits > 1:
+            lo, hi = digits
+            xdata, ydata, lo_trim, hi_trim, lo_xdata, lo_ydata, hi_xdata, hi_ydata = data_extension(xdata, ydata, lo=lo, hi=hi)
+                
+            # Plot the data if the '-p' flag is at the end of quadrant_mirror
+            if str(quadrant_mirror).endswith('-p'):
+                fig, ax = plt.subplots(figsize=(6, 4))
+                ax.plot(lo_xdata, lo_ydata, 'o', ms=4, color='tab:green', label='lo data in quadrant {}'.format(lo))
+                ax.plot(xdata[lo_trim:hi_trim], ydata[lo_trim:hi_trim], 'o', ms=4, color='tab:blue', label='Orignal data w/o mirror')
+                ax.plot(hi_xdata, hi_ydata, 'o', ms=4, color='tab:cyan', label='hi data in quadrant {}'.format(hi))
+                ax.axhline(0, ls='--', color='black', lw=1)
+                ax.axvline(0, ls='--', color='black', lw=1)
+                ax.legend()
+                
+                csv_data['lo-QM={}'.format(lo)] = [list(lo_xdata), list(lo_ydata)]
+                csv_data['hi-QM={}'.format(hi)] = [list(hi_xdata), list(hi_ydata)]
+                csv_data['original-data'] = [list(xdata[lo_trim:hi_trim]), list(ydata[lo_trim:hi_trim])]
     
     #-----------------------------------------------------------#
     # Get the filter coefficients and filter the prepared ydata #
     #-----------------------------------------------------------#
-    sos = butter(order, wn, btype='low', analog=False, output='sos', fs=None)
-    y = sosfiltfilt(sos, ydata, axis=-1, padtype=None)
+    if sum_digits > 1:
+        sos = butter(order, wn, btype='low', analog=False, output='sos', fs=None)
+        y = sosfiltfilt(sos, ydata, axis=-1, padtype=None)
+    else:
+        b, a = butter(order, wn, btype='low', analog=False, output='ba', fs=None)
+        y = filtfilt(b, a, ydata, axis=-1, padtype=None, method='gust', irlen=None)
     csv_data['filtered-data'] = [list(xdata), list(y)]
     
     # If quadrant mirroring and plotting, append the filter response to the plot
-    if str(quadrant_mirror).endswith('-p') and len(digits) == 2:
+    if str(quadrant_mirror).endswith('-p') and len(digits) == 2 and sum_digits > 1:
         ax.plot(xdata, y, '-', lw=4, color='tab:orange', label='Filtered data')
         ax.legend()
         
@@ -415,7 +427,7 @@ def butter_lowpass_filter(xdata, ydata, wn, order, quadrant_mirror, write_data, 
         misc_funcs.savedata_to_csv(csv_data, figname+'.csv')
     
     # If quadrant mirroring was used, get orginal length of data and
-    if len(digits) == 2: y = y[lo_trim:hi_trim] 
+    if len(digits) == 2 and sum_digits > 1: y = y[lo_trim:hi_trim] 
     if decreasing_x: y = y[::-1]
     return y, quadrant_mirror
 
@@ -559,6 +571,16 @@ def plot_fft_and_wn(freq, y_fft, y_amp, y_psd, wns, fs, wn=None, threshold=None,
 # Function to optimize wn for butter_lowpass_filter using residuals #
 #####################################################################
 def butter_optimize_wn_with_FFT(xdata, ydata, wn_method, write_data, savefig, figname, dpi):
+    # Make x/y-data a numpy array
+    xdata = np.array(xdata)
+    ydata = np.array(ydata)
+    
+    # Ensure closests y-data point to zero is moved to be zero
+    closests_zero_index = np.argmin(np.abs(ydata - 0))
+    yshift = -ydata[closests_zero_index]
+    ydata = ydata + yshift
+    
+    
     # Compute power spectrum and find wns
     freq, y_fft, y_amp, y_psd, fs, N = compute_FFT(xdata, ydata)
     wns = freq/(0.5*fs)
@@ -567,7 +589,6 @@ def butter_optimize_wn_with_FFT(xdata, ydata, wn_method, write_data, savefig, fi
     threshold = 'mean'; wn_error = False
     if '<' in wn_method and '>' in wn_method:
         value = wn_method.split('<')[-1].split('>')[0].split(',')[0]
-        print(value)
         
         try:
             values = [float(i) for i in wn_method.split('<')[-1].split('>')[0].split(',')]
@@ -582,14 +603,20 @@ def butter_optimize_wn_with_FFT(xdata, ydata, wn_method, write_data, savefig, fi
     # Find first time psd or amp crosses the threshold
     wn = None; mode = 'psd'
     if wn_method.startswith('op'):
-        if threshold == 'mean': threshold = np.mean(y_psd)
-        index = np.min(np.where(y_psd <= threshold)[0])
+        if threshold == 'mean': 
+            threshold = np.mean(y_psd)
+        
+        try: index = np.min(np.where(y_psd <= threshold)[0])
+        except: index = 1
         if index == 0: index = 1 # wn cant be the DC-offset
         wn = wns[index]
         mode = 'psd'
     if wn_method.startswith('oa'):
-        if threshold == 'mean': threshold = np.mean(y_amp)
-        index = np.min(np.where(y_amp <= threshold)[0])
+        if threshold == 'mean':
+            threshold = np.mean(y_amp)
+            
+        try: index = np.min(np.where(y_amp <= threshold)[0])
+        except: index = 1
         if index == 0: index = 1 # wn cant be the DC-offset
         wn = wns[index]
         mode = 'amp'
