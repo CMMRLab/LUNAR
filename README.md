@@ -57,7 +57,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 - Note that Python v3.11+ will run about 1.5x as quick vs v3.10, thus it is recommended to install v.3.11+ even though the code assumes v3.7+ features.
 
 ## Helpful per-code notes
-- bond_react_merge.py:
+- **bond_react_merge.py:
   - Moving forward, Josh is recommendeding the usage of "BondingIDs" and "Reduce" keywords to let this code cut-down the reaction templates automatically. This is because it is quicker and solves many problems such as:
     - atom typing (atom_typing.py)
 	- charge assigment (all2lmp.py)
