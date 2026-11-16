@@ -15,10 +15,13 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 13November2026)
+LUNAR (version 16November2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+16November2026    JDK          - bond_react_merge.py: changed default of write_rxn_datafiles from False to True,
+                                                      for easier help diagnosing others rxn-templates.
+
 13November2026    JDK          - log_analysis.py: added RFR-thermal to the public version of LUNAR. Load the
                                                   LUNAR/src/log_analysis/modes/default_Tg_and_CTE_using_RFR_BW.py
                                                   file to see an example and read about the parameters in the 
