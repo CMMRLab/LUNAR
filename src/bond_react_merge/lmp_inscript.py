@@ -134,6 +134,9 @@ def bond_react(filename, newfile, version, merge, atom_style, new, pairids, temp
                 if ':' in newfile or newfile == '':
                     newname = io_functions.get_basename(oldname, newfile=newfile, character=':', pflag=True)
                 else: newname = ('{}{}'.format(oldname, newfile))
+                sx += abs(xlo)
+                sy += abs(ylo)
+                sz += abs(zlo)
                 f.write('{:<15} {}.data add append shift {:.0f} {:.0f} {:.0f}\n'.format('read_data', newname, round(sx), round(sy), round(sz)))
         else:
             f.write('# The extra/... keywords enable extra B/A/D/I due to topology changes caused by reactions\n')
