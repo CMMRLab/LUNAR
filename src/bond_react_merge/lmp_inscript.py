@@ -84,21 +84,71 @@ def bond_react(filename, newfile, version, merge, atom_style, new, pairids, temp
         f.write('{:<15} {}\n'.format('neighbor', '2.0 bin'))
         f.write('{:<15} {}\n'.format('neigh_modify', 'delay 0 every 1 check yes one 5000 page 100000'))
         
+        # Count dataN tagged files
+        dataNs = [merge[file] for file in merge if file.startswith('data')]
+        
         # Write read_data
         f.write('\n\n#------------Read datafile------------\n')
-        f.write('# The extra/... keywords enable extra B/A/D/I due to topology changes caused by reactions\n')
-        f.write('{:<15} {}\n'.format('read_data', 'UPDATE_ME.data &'))
-        f.write('{:<15} {}\n'.format('', 'extra/special/per/atom 20 &'))
-        f.write('{:<15} {}\n'.format('', 'extra/bond/per/atom 10 &'))
-        f.write('{:<15} {}\n'.format('', 'extra/angle/per/atom 20 &'))
-        f.write('{:<15} {}\n'.format('', 'extra/dihedral/per/atom 50 &'))
-        f.write('{:<15} {}\n'.format('', 'extra/improper/per/atom 20'))
-        f.write('\n# Reading the other files if needed (shifting them as desired) ...\n')
-        f.write('#{:<15} {}\n'.format('read_data', 'UPDATE_ME1.data add append shift 10  0  0'))
-        f.write('#{:<15} {}\n'.format('read_data', 'UPDATE_ME2.data add append shift 10  5  5'))
-        f.write('#{:<15} {}\n'.format('read_data', 'UPDATE_ME3.data add append shift  5 15 15'))
-        f.write('\n# Also note that cell_builder.py may be used to randomize\n')
-        f.write('# molecules with easy control over stoichiometric ratio.')
+        if dataNs:
+            def get_box_dims(data):
+                xlo, xhi, ylo, yhi, zlo, zhi = 0, 0, 0, 0, 0, 0
+                try:
+                    xbox_line = data.xbox_line.split()
+                    xlo = float(xbox_line[0])
+                    xhi = float(xbox_line[1])
+                except: pass
+            
+                try:
+                    ybox_line = data.ybox_line.split()
+                    ylo = float(ybox_line[0])
+                    yhi = float(ybox_line[1])
+                except: pass
+            
+                try:
+                    zbox_line = data.zbox_line.split()
+                    zlo = float(zbox_line[0])
+                    zhi = float(zbox_line[1])
+                except: pass
+                return xlo, xhi, ylo, yhi, zlo, zhi
+            
+            # Find old name and make new name
+            dataN = dataNs.pop(0)
+            oldname = os.path.basename(dataN.filename)
+            if ':' in newfile or newfile == '':
+                newname = io_functions.get_basename(oldname, newfile=newfile, character=':', pflag=True)
+            else: newname = ('{}{}'.format(oldname, newfile))
+            f.write('# The extra/... keywords enable extra B/A/D/I due to topology changes caused by reactions\n')
+            f.write('{:<15} {}.data {}\n'.format('read_data', newname, '&'))
+            f.write('{:<15} {}\n'.format('', 'extra/special/per/atom 20 &'))
+            f.write('{:<15} {}\n'.format('', 'extra/bond/per/atom 10 &'))
+            f.write('{:<15} {}\n'.format('', 'extra/angle/per/atom 20 &'))
+            f.write('{:<15} {}\n'.format('', 'extra/dihedral/per/atom 50 &'))
+            f.write('{:<15} {}\n'.format('', 'extra/improper/per/atom 20'))
+            
+            f.write('\n# Reading the other files (shifting them along the positive diagonal - THIS LIKELY NEEDS MANUAL UPDATING TO BUILD A TEST SYSTEM) ...\n')
+            xlo, xhi, ylo, yhi, zlo, zhi = get_box_dims(dataN)
+            sx, sy, sz = xhi, yhi, zhi
+            for dataN in dataNs:
+                xlo, xhi, ylo, yhi, zlo, zhi = get_box_dims(dataN)
+                oldname = os.path.basename(dataN.filename)
+                if ':' in newfile or newfile == '':
+                    newname = io_functions.get_basename(oldname, newfile=newfile, character=':', pflag=True)
+                else: newname = ('{}{}'.format(oldname, newfile))
+                f.write('{:<15} {}.data add append shift {:.0f} {:.0f} {:.0f}\n'.format('read_data', newname, round(sx), round(sy), round(sz)))
+        else:
+            f.write('# The extra/... keywords enable extra B/A/D/I due to topology changes caused by reactions\n')
+            f.write('{:<15} {}\n'.format('read_data', 'UPDATE_ME.data &'))
+            f.write('{:<15} {}\n'.format('', 'extra/special/per/atom 20 &'))
+            f.write('{:<15} {}\n'.format('', 'extra/bond/per/atom 10 &'))
+            f.write('{:<15} {}\n'.format('', 'extra/angle/per/atom 20 &'))
+            f.write('{:<15} {}\n'.format('', 'extra/dihedral/per/atom 50 &'))
+            f.write('{:<15} {}\n'.format('', 'extra/improper/per/atom 20'))
+            f.write('\n# Reading the other files if needed (shifting them as desired) ...\n')
+            f.write('#{:<15} {}\n'.format('read_data', 'UPDATE_ME1.data add append shift 10  0  0'))
+            f.write('#{:<15} {}\n'.format('read_data', 'UPDATE_ME2.data add append shift 10  5  5'))
+            f.write('#{:<15} {}\n'.format('read_data', 'UPDATE_ME3.data add append shift  5 15 15'))
+            f.write('\n# Also note that cell_builder.py may be used to randomize\n')
+            f.write('# molecules with easy control over stoichiometric ratio.')
         
         # Write Settings
         ptemp = 300; nevery = 10;

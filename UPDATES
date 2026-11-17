@@ -15,10 +15,19 @@ Notes for formatting this file
 
 
 -------------------------------------------------------------------------------------------------------------
-LUNAR (version 16November2026)
+LUNAR (version 17November2026)
 
 Date               Developer   Description
 -------------------------------------------------------------------------------------------------------------
+17November2026    JDK          - bond_react_merge.py: for the written example LAMMPS script: in.fix_bond_react.script
+                                                      the code now automatically generates "read_data" commands
+                                                      for every dataN tagged to file make testing quicker and also
+                                                      lower the barry-to-entry - since it is possible to directly
+                                                      run in.fix_bond_react.script with no modifications. THIS IS
+                                                      ONLY FOR BUILDING A TEST SYSTEM TO TEST THE RXN TEMPLATES. For
+                                                      production systems use LUNAR/cell_builder.py or LAMMPS "create_atoms"
+                                                      command or PackMol or your own custom methods. 
+
 16November2026    JDK          - bond_react_merge.py: changed default of write_rxn_datafiles from False to True,
                                                       for easier help diagnosing others rxn-templates.
 
